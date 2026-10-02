@@ -1,5 +1,6 @@
 "use client";
 
+import { useLinkStatus } from "next/link";
 import { useTranslations } from "next-intl";
 
 import { Link, usePathname } from "@/i18n/navigation";
@@ -36,23 +37,44 @@ export function BottomNav() {
               <Link
                 href={tab.href}
                 aria-current={active ? "page" : undefined}
-                className={`flex min-h-16 w-full flex-col items-center justify-center gap-0.5 text-xs font-semibold ${
+                className={`relative flex min-h-16 w-full flex-col items-center justify-center gap-0.5 text-xs font-semibold ${
                   active ? "text-primary" : "text-text-muted"
                 }`}
               >
-                {central ? (
-                  <span className="flex size-11 items-center justify-center rounded-full bg-primary text-on-primary shadow-sm">
-                    <Icon name={tab.icon} size={26} />
-                  </span>
-                ) : (
-                  <Icon name={tab.icon} />
-                )}
-                <span className={central ? "sr-only" : ""}>{t(tab.key)}</span>
+                <TabContent icon={tab.icon} label={t(tab.key)} central={central} />
               </Link>
             </li>
           );
         })}
       </ul>
     </nav>
+  );
+}
+
+/**
+ * Contenu d'un onglet : dès le clic, l'onglet s'allume et une barre s'anime en attendant la
+ * page, pour que la navigation se voie même quand le serveur met un peu de temps à répondre.
+ */
+function TabContent({ icon, label, central }: { icon: keyof typeof ICONS; label: string; central: boolean }) {
+  const { pending } = useLinkStatus();
+  return (
+    <>
+      <span
+        aria-hidden="true"
+        className={`absolute inset-x-3 top-0 h-0.5 rounded-full bg-primary ${pending ? "animate-pulse" : "hidden"}`}
+      />
+      {central ? (
+        <span
+          className={`flex size-11 items-center justify-center rounded-full bg-primary text-on-primary shadow-sm ${pending ? "animate-pulse" : ""}`}
+        >
+          <Icon name={icon} size={26} />
+        </span>
+      ) : (
+        <span className={pending ? "text-primary" : ""}>
+          <Icon name={icon} />
+        </span>
+      )}
+      <span className={central ? "sr-only" : pending ? "text-primary" : ""}>{label}</span>
+    </>
   );
 }

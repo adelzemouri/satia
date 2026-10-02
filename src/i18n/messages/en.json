@@ -12,7 +12,8 @@
     "optional": "optional",
     "kcal": "{value, number} kcal",
     "grams": "{value, number} g",
-    "kg": "{value, number} kg"
+    "kg": "{value, number} kg",
+    "loading": "Loading…"
   },
   "nav": {
     "home": "Home",
