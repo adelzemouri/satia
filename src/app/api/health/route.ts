@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 
 import { db } from "@/db/client";
+import { invalidEnvKeys } from "@/server/env";
 import { checkBucket } from "@/server/storage";
 
 export const dynamic = "force-dynamic";
@@ -17,9 +18,14 @@ async function probe(fn: () => Promise<unknown>): Promise<Check> {
   }
 }
 
-/** Vérifie que la base et le stockage objet répondent. Ne divulgue aucun détail. */
+/**
+ * Vérifie la configuration, la base et le stockage objet. Seuls les noms des variables
+ * d'environnement en défaut sont exposés, jamais leurs valeurs.
+ */
 export async function GET() {
+  const invalid = invalidEnvKeys(process.env);
+  const config = invalid.length === 0 ? "ok" : invalid;
   const [database, storage] = await Promise.all([probe(() => db().execute(sql`select 1`)), probe(() => checkBucket())]);
-  const ok = database === "ok" && storage === "ok";
-  return Response.json({ status: ok ? "ok" : "degraded", database, storage }, { status: ok ? 200 : 503 });
+  const ok = config === "ok" && database === "ok" && storage === "ok";
+  return Response.json({ status: ok ? "ok" : "degraded", config, database, storage }, { status: ok ? 200 : 503 });
 }

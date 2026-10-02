@@ -31,10 +31,16 @@ const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>;
 
+/** Noms des variables absentes ou invalides (jamais leurs valeurs). */
+export function invalidEnvKeys(source: Record<string, string | undefined>): string[] {
+  const result = envSchema.safeParse(source);
+  return result.success ? [] : [...new Set(result.error.issues.map((issue) => issue.path.join(".")))];
+}
+
 export function parseEnv(source: Record<string, string | undefined>): Env {
   const result = envSchema.safeParse(source);
   if (!result.success) {
-    const missing = result.error.issues.map((issue) => issue.path.join(".")).join(", ");
+    const missing = [...new Set(result.error.issues.map((issue) => issue.path.join(".")))].join(", ");
     throw new Error(`Variables d'environnement invalides ou manquantes : ${missing}`);
   }
   return result.data;
