@@ -23,6 +23,51 @@ const RESPONSES: Record<string, unknown | ((request: LlmRequest) => unknown)> = 
     highlights: ["Des petits-déjeuners réguliers", "Une bonne hydratation"],
     ideas: ["Ajoute une portion de légumes au déjeuner"],
   },
+  // Un nouveau plat le premier jour au dîner, la première recette de la liste le lendemain midi.
+  menu_plan: {
+    meals: [
+      {
+        day: 0,
+        slot: "dinner",
+        recipe: null,
+        name: "Poêlée de lentilles aux carottes",
+        ingredients: [
+          { name: "lentille cuite", grams: 200 },
+          { name: "carotte crue", grams: 120 },
+          { name: "huile d'olive", grams: 10 },
+        ],
+      },
+      { day: 1, slot: "lunch", recipe: 1, name: "", ingredients: [] },
+    ],
+  },
+  fridge: {
+    ingredients: ["œuf", "tomate", "fromage râpé", "pain"],
+    ideas: [
+      {
+        name: "Omelette à la tomate",
+        ingredients: [
+          { name: "œuf entier cru", grams: 120 },
+          { name: "tomate crue", grams: 100 },
+          { name: "huile d'olive", grams: 5 },
+        ],
+      },
+      {
+        name: "Tartines gratinées",
+        ingredients: [
+          { name: "pain baguette", grams: 80 },
+          { name: "tomate crue", grams: 80 },
+          { name: "emmental râpé", grams: 30 },
+        ],
+      },
+      {
+        name: "Salade de tomates et œuf dur",
+        ingredients: [
+          { name: "tomate crue", grams: 200 },
+          { name: "œuf dur", grams: 60 },
+        ],
+      },
+    ],
+  },
   // Un aliment par ligne du message : mêmes valeurs moyennes pour chacun.
   food_estimates: (request: LlmRequest) => ({
     items: request.user

@@ -143,7 +143,7 @@ export const photoInputSchema = z.object({
 });
 
 /** Vérifie la signature du fichier : JPEG (FF D8 FF) ou WebP (RIFF....WEBP). */
-function isImage(bytes: Uint8Array, mime: (typeof PHOTO_MIME_TYPES)[number]): boolean {
+export function isImage(bytes: Uint8Array, mime: (typeof PHOTO_MIME_TYPES)[number]): boolean {
   if (mime === "image/jpeg") return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
   const ascii = (start: number, end: number) => String.fromCharCode(...bytes.subarray(start, end));
   return ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP";

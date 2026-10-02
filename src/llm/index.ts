@@ -19,11 +19,14 @@ import {
 } from "./prompts/meal";
 import { providerFor } from "./providers";
 import { coachSystem, weeklyReviewSystem } from "./prompts/coach";
+import { FRIDGE_SYSTEM, MENU_PLAN_SYSTEM } from "./prompts/planning";
 import {
   coachReplySchema,
   connectionTestSchema,
   foodEstimatesSchema,
+  fridgeSchema,
   mealItemsSchema,
+  menuPlanSchema,
   weeklyReviewSchema,
 } from "./schemas";
 import { AiUnavailableError, type LlmImage, LlmProviderError, type LlmUsage } from "./types";
@@ -215,6 +218,41 @@ export async function writeWeeklyReview(userId: string, style: CoachStyle, data:
     schemaName: "weekly_review",
     schema: weeklyReviewSchema,
     maxOutputTokens: COACH_OUTPUT_TOKENS,
+  });
+  return result.data;
+}
+
+export type MenuPlan = z.infer<typeof menuPlanSchema>;
+
+/** Menu de la semaine proposé par le coach (un seul appel, modèle texte). */
+export async function proposeMenu(userId: string, user: string): Promise<MenuPlan> {
+  const result = await callLlm({
+    userId,
+    feature: "menu_plan",
+    kind: "text",
+    system: MENU_PLAN_SYSTEM,
+    user,
+    schemaName: "menu_plan",
+    schema: menuPlanSchema,
+    maxOutputTokens: 4096,
+  });
+  return result.data;
+}
+
+export type FridgeScan = z.infer<typeof fridgeSchema>;
+
+/** Scanner de frigo : ingrédients visibles et 3 idées de plats (modèle vision, basse résolution). */
+export async function scanFridge(userId: string, image: LlmImage, user: string): Promise<FridgeScan> {
+  const result = await callLlm({
+    userId,
+    feature: "fridge",
+    kind: "vision",
+    system: FRIDGE_SYSTEM,
+    user,
+    images: [image],
+    schemaName: "fridge",
+    schema: fridgeSchema,
+    maxOutputTokens: 2048,
   });
   return result.data;
 }

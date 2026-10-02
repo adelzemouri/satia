@@ -551,6 +551,70 @@ test("coach : bilan, conversation (LLM simulé), garde-fou et personnalité", as
   await expect(page.getByText(/Aucun message pour l'instant/)).toBeVisible();
 });
 
+test("menu de la semaine, liste de courses commune, recettes et scanner de frigo (LLM simulé)", async ({ page }) => {
+  test.slow(); // parcours sur quatre écrans
+  await signInWithTotp(page);
+  await page.getByRole("link", { name: "Menu de la semaine" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Menu de la semaine");
+  const add = page.getByRole("region", { name: "Ajouter un plat" });
+  await add.getByLabel("Repas").selectOption("dinner");
+  await add.getByLabel("Recette du foyer").selectOption({ label: "Gratin du dimanche" });
+  await add.getByLabel("Nombre de parts").fill("4");
+  await add.getByRole("button", { name: "Ajouter au menu" }).click();
+  await expect(page.getByRole("link", { name: "Servir Gratin du dimanche et le partager" })).toBeVisible();
+  await add.getByLabel("Nom du plat").fill("Restes");
+  await add.getByRole("button", { name: "Ajouter au menu" }).click();
+  await page.getByRole("button", { name: "Retirer Restes" }).click();
+  await expect(page.getByRole("button", { name: "Retirer Restes" })).toHaveCount(0);
+  await expectNoA11yViolations(page);
+
+  // Semaine suivante : le coach (simulé) remplit le déjeuner et le dîner encore vides.
+  await page.getByRole("link", { name: "Semaine suivante" }).click();
+  await expect(page).toHaveURL(/\?week=/);
+  await page.getByRole("button", { name: "Proposer un menu" }).click();
+  await expect(page.getByText("2 repas ajoutés au menu.")).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: /^lundi/ }).getByText("Poêlée de lentilles aux carottes"),
+  ).toBeVisible();
+
+  await page.goto("/shopping");
+  await page.getByRole("button", { name: "Remplir avec le menu de la semaine" }).click();
+  await expect(page.getByText(/articles? tirés? du menu/)).toBeVisible();
+  // 600 g de pâtes pour 4 parts, 4 parts au menu.
+  const grocery = page.getByRole("region", { name: "Épicerie" });
+  await expect(grocery.getByText(/^Pâtes.* · 600 g$/)).toBeVisible();
+  await page.getByRole("textbox", { name: "Article" }).fill("Papier cuisson");
+  await page.getByRole("button", { name: "Ajouter", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Autres" }).getByText("Papier cuisson")).toBeVisible();
+  await withServerAction(page, () => grocery.getByRole("checkbox", { name: /^Pâtes/ }).click());
+  await page.reload();
+  await expect(
+    page.getByRole("region", { name: "Dans le panier" }).getByRole("checkbox", { name: /^Pâtes/ }),
+  ).toBeChecked();
+  await expectNoA11yViolations(page);
+  await page.getByRole("button", { name: "Retirer les articles cochés" }).click();
+  await expect(page.getByRole("region", { name: "Dans le panier" })).toHaveCount(0);
+
+  await page.goto("/recipes");
+  await expect(page.getByRole("region", { name: "Recettes du foyer" }).getByText("Gratin du dimanche")).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Recettes du foyer" }).getByText("Poêlée de lentilles aux carottes"),
+  ).toBeVisible();
+  await expectNoA11yViolations(page);
+
+  await page.goto("/fridge");
+  await page
+    .getByLabel("Choisir une photo")
+    .setInputFiles({ name: "frigo.png", mimeType: "image/png", buffer: MEAL_PNG });
+  const omelette = page.getByRole("listitem", { name: "Omelette à la tomate" });
+  await expect(omelette.getByText(/^\d+ kcal la portion · /)).toBeVisible();
+  await expect(page.getByText(/^Repéré : œuf, tomate/)).toBeVisible();
+  await expectNoA11yViolations(page);
+  await omelette.getByRole("button", { name: "Enregistrer et ajouter au journal" }).click();
+  await expect(page).toHaveURL(/\/add\?food=/);
+  await expect(page.getByText("Omelette à la tomate").first()).toBeVisible();
+});
+
 test("mon métabolisme et budget hebdomadaire avec un jour plus large", async ({ page }) => {
   await signInWithTotp(page);
   await page.getByRole("link", { name: "Mon métabolisme" }).click();

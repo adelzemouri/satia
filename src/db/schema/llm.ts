@@ -9,6 +9,8 @@ export const LLM_FEATURES = [
   "estimate",
   "coach",
   "weekly_review",
+  "menu_plan",
+  "fridge",
 ] as const;
 export type LlmFeature = (typeof LLM_FEATURES)[number];
 
