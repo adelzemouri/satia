@@ -61,8 +61,10 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           {t("home.todayGoal")}
         </h2>
         <CalorieRing totals={summary.totals} goal={summary.goal} />
-        {summary.training.burnedKcal > 0 && (
-          <p className="text-sm text-text-muted">{t("home.trainingBurned", { kcal: summary.training.burnedKcal })}</p>
+        {summary.training.burnedKcal + summary.activity.burnedKcal > 0 && (
+          <p className="text-sm text-text-muted">
+            {t("home.activityBurned", { kcal: summary.training.burnedKcal + summary.activity.burnedKcal })}
+          </p>
         )}
         <MacroBars totals={summary.totals} goal={summary.goal} />
         <QualityBars quality={quality} />
@@ -152,6 +154,8 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             ["/family", "family", t("family.title")],
             ["/plan", "book", t("plan.title")],
             ["/week", "calendar", t("week.title")],
+            ["/activity", "run", t("activity.title")],
+            ["/body", "ruler", t("body.title")],
             ["/metabolism", "pulse", t("metabolism.title")],
             ["/quality", "sprout", t("quality.title")],
           ] as const

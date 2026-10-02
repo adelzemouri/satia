@@ -92,6 +92,13 @@
       "when": 1790973273203,
       "tag": "0012_training",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1790975579795,
+      "tag": "0013_body_activity",
+      "breakpoints": true
     }
   ]
 }

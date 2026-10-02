@@ -92,6 +92,7 @@ describe("onboarding et données", () => {
     const files = unzipSync(toCsvZip(data));
     expect(Object.keys(files).sort()).toEqual([
       "account.csv",
+      "activities.csv",
       "ai-calls.csv",
       "checkins.csv",
       "coach-messages.csv",
@@ -106,11 +107,14 @@ describe("onboarding et données", () => {
       "larger-days.csv",
       "meal-photos.csv",
       "meals.csv",
+      "measurements.csv",
       "metabolism-checks.csv",
       "profile.csv",
+      "progress-photos.csv",
       "push-devices.csv",
       "recipe-items.csv",
       "shared-meals.csv",
+      "steps.csv",
       "training-profile.csv",
       "training-sessions.csv",
       "water.csv",

@@ -48,7 +48,7 @@
     "streak": "{days, plural, =0 {Pas encore de série : un repas saisi aujourd'hui la lance.} one {# jour d'affilée} other {# jours d'affilée}}",
     "streakFrozen": "Un jour de repos a été couvert cette semaine, ta série continue.",
     "more": "Raccourcis",
-    "trainingBurned": "Dont {kcal} kcal dépensées à l'entraînement."
+    "activityBurned": "Dont {kcal} kcal dépensées en activité."
   },
   "theme": {
     "label": "Thème",
@@ -344,7 +344,13 @@
     "push_not_configured": "Les notifications ne sont pas encore configurées.",
     "training_profile_missing": "Complète d'abord ton profil sportif.",
     "too_many": "Tu as atteint le nombre maximal d'éléments.",
-    "training_days_required": "Choisis au moins un jour d'entraînement."
+    "training_days_required": "Choisis au moins un jour d'entraînement.",
+    "measurement_range": "Indique une valeur entre 10 et 250 cm.",
+    "duration_range": "Indique une durée entre 1 et 600 minutes.",
+    "steps_range": "Indique un nombre de pas entre 0 et 100 000.",
+    "import_invalid": "Ce fichier n'a pas pu être lu : il faut un CSV avec une colonne de date et une colonne de pas ou de durée.",
+    "import_too_large": "Ce fichier est trop volumineux (1,5 Mo et 5 000 lignes au plus). Essaie d'exporter une période plus courte.",
+    "import_empty": "Aucune ligne exploitable dans ce fichier."
   },
   "slots": {
     "breakfast": "Petit-déjeuner",
@@ -488,7 +494,9 @@
     "delete": "Supprimer la pesée du {date}",
     "chart": "Courbe de poids et tendance lissée",
     "empty": "Aucune pesée pour l'instant.",
-    "metabolismLink": "Voir mon métabolisme"
+    "metabolismLink": "Voir mon métabolisme",
+    "bodyLink": "Mensurations et photos",
+    "activityLink": "Activité et pas"
   },
   "scan": {
     "title": "Scanner un code-barres",
@@ -1187,6 +1195,104 @@
       "deleteLabel": "Supprimer {name}",
       "noCustom": "Aucun exercice personnel.",
       "stress": "Zones sollicitées : {list}"
+    }
+  },
+  "body": {
+    "title": "Corps",
+    "intro": "Tes mensurations et tes photos de progression, visibles par toi uniquement. Le mètre ruban raconte souvent ce que la balance ne dit pas.",
+    "measureTitle": "Noter une mensuration",
+    "kind": "Tour mesuré",
+    "value": "Valeur (cm)",
+    "date": "Date",
+    "save": "Enregistrer",
+    "kinds": {
+      "waist": "Taille",
+      "hips": "Hanches",
+      "chest": "Poitrine",
+      "arm": "Bras",
+      "thigh": "Cuisse",
+      "neck": "Cou"
+    },
+    "changesTitle": "Évolution",
+    "empty": "Aucune mensuration pour l'instant. Une première mesure suffit pour démarrer.",
+    "cm": "{value, number} cm",
+    "change": "{value} cm depuis le début",
+    "stable": "stable depuis le début",
+    "history": "Dernières mesures",
+    "delete": "Supprimer la mesure {kind} du {date}",
+    "photos": {
+      "title": "Photo de progression",
+      "pose": "Pose",
+      "poses": {
+        "front": "De face",
+        "side": "De profil",
+        "back": "De dos"
+      },
+      "date": "Date",
+      "file": "Photo",
+      "privacy": "Tes photos restent privées : stockage protégé, jamais partagées ni analysées par l'IA. Même lumière et même pose d'une fois sur l'autre rendent la comparaison plus parlante.",
+      "save": "Ajouter la photo",
+      "sending": "Envoi…",
+      "compare": "Avant / maintenant",
+      "recent": "Dernières photos",
+      "alt": "{pose} : photo du {date}",
+      "delete": "Supprimer la photo du {date} ({pose})"
+    }
+  },
+  "activity": {
+    "title": "Activité",
+    "today": "Aujourd'hui",
+    "burned": "{kcal} kcal dépensées",
+    "goalHint": "Ces calories s'ajoutent à ton objectif du jour, et tes macros suivent. Les séances de l'espace Training sont comptées aussi.",
+    "add": "Ajouter une activité",
+    "type": "Activité",
+    "intensity": "Intensité",
+    "duration": "Durée (min)",
+    "date": "Date",
+    "save": "Enregistrer",
+    "intensityHint": "Légère : tu parles sans effort. Modérée : tu parles, mais tu ne chantes plus. Soutenue : quelques mots à la fois.",
+    "types": {
+      "walking": "Marche",
+      "running": "Course à pied",
+      "cycling": "Vélo",
+      "swimming": "Natation",
+      "hiking": "Randonnée",
+      "dancing": "Danse",
+      "yoga": "Yoga, pilates, étirements",
+      "strength": "Renforcement musculaire",
+      "team_sport": "Sport collectif",
+      "racket_sport": "Sport de raquette",
+      "climbing": "Escalade",
+      "skiing": "Ski",
+      "gardening": "Jardinage",
+      "housework": "Ménage, bricolage",
+      "other": "Autre activité"
+    },
+    "intensities": {
+      "light": "légère",
+      "moderate": "modérée",
+      "vigorous": "soutenue"
+    },
+    "recent": "Activités des 14 derniers jours",
+    "empty": "Aucune activité notée ces derniers jours.",
+    "line": "{minutes} min, {intensity}, {kcal} kcal",
+    "imported": "importée",
+    "delete": "Supprimer {name} du {date}",
+    "trainingLink": "Voir mes séances Training",
+    "steps": {
+      "title": "Pas",
+      "count": "Nombre de pas",
+      "date": "Date",
+      "save": "Enregistrer les pas",
+      "value": "{steps, number} pas",
+      "hint": "Ton niveau d'activité compte déjà environ {baseline, number} pas par jour : seuls les pas au-delà ajoutent des calories."
+    },
+    "import": {
+      "title": "Importer un fichier",
+      "hint": "Export CSV de Google Fit, Apple Santé ou d'une montre : Satia repère les colonnes date, pas, type d'activité et durée. Un nouvel import des mêmes jours remplace le précédent.",
+      "file": "Fichier CSV",
+      "submit": "Importer",
+      "done": "Import terminé : {days, plural, =0 {aucun jour de pas} one {# jour de pas} other {# jours de pas}}, {activities, plural, =0 {aucune activité} one {# activité} other {# activités}}, {skipped, plural, =0 {aucune ligne ignorée} one {# ligne ignorée} other {# lignes ignorées}}."
     }
   }
 }

@@ -48,7 +48,7 @@
     "streak": "{days, plural, =0 {No streak yet: logging a meal today starts one.} one {# day in a row} other {# days in a row}}",
     "streakFrozen": "A rest day was covered this week, your streak goes on.",
     "more": "Shortcuts",
-    "trainingBurned": "Including {kcal} kcal burned while training."
+    "activityBurned": "Including {kcal} kcal burned through activity."
   },
   "theme": {
     "label": "Theme",
@@ -344,7 +344,13 @@
     "push_not_configured": "Notifications aren't set up yet.",
     "training_profile_missing": "Fill in your training profile first.",
     "too_many": "You've reached the maximum number of items.",
-    "training_days_required": "Pick at least one training day."
+    "training_days_required": "Pick at least one training day.",
+    "measurement_range": "Enter a value between 10 and 250 cm.",
+    "duration_range": "Enter a duration between 1 and 600 minutes.",
+    "steps_range": "Enter a step count between 0 and 100,000.",
+    "import_invalid": "This file couldn't be read: it needs to be a CSV with a date column and a steps or duration column.",
+    "import_too_large": "This file is too large (1.5 MB and 5,000 rows at most). Try exporting a shorter period.",
+    "import_empty": "No usable rows in this file."
   },
   "slots": {
     "breakfast": "Breakfast",
@@ -488,7 +494,9 @@
     "delete": "Delete the weigh-in of {date}",
     "chart": "Weight chart and smoothed trend",
     "empty": "No weigh-in yet.",
-    "metabolismLink": "See my metabolism"
+    "metabolismLink": "See my metabolism",
+    "bodyLink": "Measurements and photos",
+    "activityLink": "Activity and steps"
   },
   "scan": {
     "title": "Scan a barcode",
@@ -1187,6 +1195,104 @@
       "deleteLabel": "Delete {name}",
       "noCustom": "No personal exercise.",
       "stress": "Areas loaded: {list}"
+    }
+  },
+  "body": {
+    "title": "Body",
+    "intro": "Your measurements and progress photos, visible only to you. The tape measure often tells what the scale doesn't.",
+    "measureTitle": "Log a measurement",
+    "kind": "Measured area",
+    "value": "Value (cm)",
+    "date": "Date",
+    "save": "Save",
+    "kinds": {
+      "waist": "Waist",
+      "hips": "Hips",
+      "chest": "Chest",
+      "arm": "Arm",
+      "thigh": "Thigh",
+      "neck": "Neck"
+    },
+    "changesTitle": "Progress",
+    "empty": "No measurements yet. One first measurement is enough to start.",
+    "cm": "{value, number} cm",
+    "change": "{value} cm since the start",
+    "stable": "unchanged since the start",
+    "history": "Latest measurements",
+    "delete": "Delete the {kind} measurement from {date}",
+    "photos": {
+      "title": "Progress photo",
+      "pose": "Pose",
+      "poses": {
+        "front": "Front",
+        "side": "Side",
+        "back": "Back"
+      },
+      "date": "Date",
+      "file": "Photo",
+      "privacy": "Your photos stay private: protected storage, never shared or analysed by AI. Same light and same pose each time make the comparison clearer.",
+      "save": "Add the photo",
+      "sending": "Sending…",
+      "compare": "Then / now",
+      "recent": "Latest photos",
+      "alt": "{pose}: photo from {date}",
+      "delete": "Delete the photo from {date} ({pose})"
+    }
+  },
+  "activity": {
+    "title": "Activity",
+    "today": "Today",
+    "burned": "{kcal} kcal burned",
+    "goalHint": "These calories are added to today's goal, and your macros follow. Sessions from the Training space count too.",
+    "add": "Add an activity",
+    "type": "Activity",
+    "intensity": "Intensity",
+    "duration": "Duration (min)",
+    "date": "Date",
+    "save": "Save",
+    "intensityHint": "Light: you talk easily. Moderate: you can talk but not sing. Vigorous: a few words at a time.",
+    "types": {
+      "walking": "Walking",
+      "running": "Running",
+      "cycling": "Cycling",
+      "swimming": "Swimming",
+      "hiking": "Hiking",
+      "dancing": "Dancing",
+      "yoga": "Yoga, pilates, stretching",
+      "strength": "Strength training",
+      "team_sport": "Team sport",
+      "racket_sport": "Racket sport",
+      "climbing": "Climbing",
+      "skiing": "Skiing",
+      "gardening": "Gardening",
+      "housework": "Housework, DIY",
+      "other": "Other activity"
+    },
+    "intensities": {
+      "light": "light",
+      "moderate": "moderate",
+      "vigorous": "vigorous"
+    },
+    "recent": "Activities from the last 14 days",
+    "empty": "No activity logged in the last few days.",
+    "line": "{minutes} min, {intensity}, {kcal} kcal",
+    "imported": "imported",
+    "delete": "Delete {name} from {date}",
+    "trainingLink": "See my Training sessions",
+    "steps": {
+      "title": "Steps",
+      "count": "Step count",
+      "date": "Date",
+      "save": "Save steps",
+      "value": "{steps, number} steps",
+      "hint": "Your activity level already includes about {baseline, number} steps a day: only steps above that add calories."
+    },
+    "import": {
+      "title": "Import a file",
+      "hint": "CSV export from Google Fit, Apple Health or a watch: Satia finds the date, steps, activity type and duration columns. Importing the same days again replaces the previous import.",
+      "file": "CSV file",
+      "submit": "Import",
+      "done": "Import complete: {days, plural, =0 {no step days} one {# step day} other {# step days}}, {activities, plural, =0 {no activities} one {# activity} other {# activities}}, {skipped, plural, =0 {no rows skipped} one {# row skipped} other {# rows skipped}}."
     }
   }
 }
