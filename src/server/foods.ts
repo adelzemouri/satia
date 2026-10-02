@@ -26,6 +26,7 @@ export const foodSummaryColumns = {
   densityGPerMl: foods.densityGPerMl,
   unitWeights: foods.unitWeights,
   servings: foods.servings,
+  imageUrl: foods.imageUrl,
 };
 export type FoodSummary = {
   id: string;
@@ -40,6 +41,7 @@ export type FoodSummary = {
   densityGPerMl: number | null;
   unitWeights: Food["unitWeights"];
   servings: number | null;
+  imageUrl: string | null;
 };
 
 /** Aliments visibles par un utilisateur : publics, ou à lui. */

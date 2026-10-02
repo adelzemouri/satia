@@ -12,6 +12,7 @@ export type FoodItem = {
   fatG: number;
   densityGPerMl: number | null;
   unitWeights: Partial<Record<"portion" | "piece" | "slice", number>> | null;
+  imageUrl: string | null;
 };
 
 /** Produit Open Food Facts proposé avant import (voir server/open-food-facts.ts). */
@@ -24,6 +25,7 @@ export type OffItem = {
   carbsG: number;
   fatG: number;
   servingGrams: number | null;
+  imageUrl: string | null;
 };
 
 /** Unité proposée par défaut : la portion ou la pièce si on la connaît, sinon les grammes. */

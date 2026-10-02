@@ -25,7 +25,8 @@ const OFF_SEARCH_BASE = process.env.OFF_SEARCH_URL ?? "https://search.openfoodfa
 /** Au-delà, un produit en cache est relu sur OFF (les fiches évoluent, les recettes aussi). */
 const CACHE_MAX_AGE_DAYS = 30;
 const USER_AGENT = `${APP_NAME}/0.1 (application familiale de suivi nutritionnel)`;
-const FIELDS = "code,product_name,product_name_fr,brands,nutriments,serving_quantity";
+const FIELDS =
+  "code,product_name,product_name_fr,brands,nutriments,serving_quantity,image_front_small_url,image_front_url";
 const TIMEOUT_MS = 8000;
 /** OFF demande de rester sous 10 recherches par minute. */
 const SEARCH_RULE = { window: 60, max: 8 };
@@ -51,6 +52,8 @@ const productSchema = z.object({
   brands: z.union([z.string(), z.array(z.string())]).optional(),
   nutriments: nutrimentsSchema.optional(),
   serving_quantity: z.coerce.number().optional(),
+  image_front_small_url: z.string().optional(),
+  image_front_url: z.string().optional(),
 });
 type OffProduct = z.infer<typeof productSchema>;
 
@@ -66,6 +69,7 @@ export type OffCandidate = {
   sugarsG: number | null;
   saltG: number | null;
   servingGrams: number | null;
+  imageUrl: string | null;
 };
 
 /** Produit exploitable (nom et valeurs pour 100 g), sinon null. */
@@ -91,7 +95,24 @@ export function toCandidate(product: OffProduct): OffCandidate | null {
     sugarsG: n.sugars_100g ?? null,
     saltG: n.salt_100g ?? null,
     servingGrams: product.serving_quantity && product.serving_quantity > 0 ? product.serving_quantity : null,
+    imageUrl: safeImageUrl(product.image_front_small_url ?? product.image_front_url),
   };
+}
+
+/**
+ * N'accepte que les images servies en HTTPS par Open Food Facts (ou par le serveur simulé des
+ * tests) : l'URL est affichée telle quelle dans l'app.
+ */
+export function safeImageUrl(raw: string | undefined): string | null {
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    const official = url.protocol === "https:" && /(^|\.)openfoodfacts\.org$/.test(url.hostname);
+    const mock = process.env.OFF_BASE_URL !== undefined && url.origin === new URL(process.env.OFF_BASE_URL).origin;
+    return official || mock ? url.toString() : null;
+  } catch {
+    return null;
+  }
 }
 
 async function offFetch(url: string): Promise<unknown> {
@@ -200,6 +221,7 @@ export async function cacheProduct(candidate: OffCandidate): Promise<string> {
     sugarsG: candidate.sugarsG,
     saltG: candidate.saltG,
     unitWeights: candidate.servingGrams ? { portion: candidate.servingGrams } : null,
+    imageUrl: candidate.imageUrl,
     fetchedAt: new Date(),
     updatedAt: new Date(),
   };

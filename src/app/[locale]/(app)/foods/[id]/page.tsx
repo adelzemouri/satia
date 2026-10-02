@@ -7,6 +7,7 @@ import { MEAL_SLOTS } from "@/domain/meals";
 import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { DomainError } from "@/server/errors";
+import { ProductThumb } from "@/features/foods/product-thumb";
 import { type Food, getFoodDetails } from "@/server/foods";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
@@ -50,13 +51,16 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
 
   return (
     <>
-      <div className="flex flex-col gap-1">
-        <p className="text-sm font-semibold text-text-muted">{t(`add.sources.${food.source}`)}</p>
-        <h1 className="font-display text-3xl font-semibold">{food.nameFr}</h1>
-        {food.brand && <p className="text-lg">{food.brand}</p>}
-        {food.source === "off" && food.sourceRef && (
-          <p className="text-sm text-text-muted">{t("product.barcode", { code: food.sourceRef })}</p>
-        )}
+      <div className="flex items-start gap-4">
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <p className="text-sm font-semibold text-text-muted">{t(`add.sources.${food.source}`)}</p>
+          <h1 className="font-display text-3xl font-semibold">{food.nameFr}</h1>
+          {food.brand && <p className="text-lg">{food.brand}</p>}
+          {food.source === "off" && food.sourceRef && (
+            <p className="text-sm text-text-muted">{t("product.barcode", { code: food.sourceRef })}</p>
+          )}
+        </div>
+        {food.imageUrl && <ProductThumb src={food.imageUrl} size={112} />}
       </div>
 
       <Link

@@ -213,6 +213,7 @@ test("ajout d'un produit par code-barres (Open Food Facts simulé)", async ({ pa
   await page.getByLabel("Saisir le code-barres").fill("3017620422003");
   await page.getByRole("button", { name: "Chercher ce produit" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pâte à tartiner noisettes");
+  await expect(page.locator('img[src$="/images/front.png"]')).toBeVisible();
   await expect(page.getByText("Code-barres 3017620422003")).toBeVisible();
   await expect(page.getByRole("columnheader", { name: "Par portion (15 g)" })).toBeVisible();
   await expectNoA11yViolations(page);

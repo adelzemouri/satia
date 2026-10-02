@@ -15,6 +15,7 @@ import {
   deleteOwnFood,
   favoriteFoods,
   getFood,
+  getFoodDetails,
   recentFoods,
   searchFoods,
   setFavorite,
@@ -322,6 +323,26 @@ describe("Open Food Facts", () => {
         vi.fn(async () => new Response("", { status: 503 })),
       );
       expect(await findByBarcode(userId, product.code)).toBe(id);
+    });
+
+    it("garde la photo OFF du produit, et seulement si elle vient d'Open Food Facts", async () => {
+      const userId = await setupUser();
+      const image = "https://images.openfoodfacts.org/images/products/301/762/042/2003/front_fr.4.200.jpg";
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async () => Response.json({ product: { ...product, image_front_small_url: image } })),
+      );
+      const id = await findByBarcode(userId, product.code);
+      expect((await getFoodDetails(userId, id)).imageUrl).toBe(image);
+
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async () =>
+          Response.json({ product: { ...product, image_front_small_url: "http://example.org/x.jpg" } }),
+        ),
+      );
+      await importOpenFoodFactsProduct(userId, product.code);
+      expect((await getFoodDetails(userId, id)).imageUrl).toBeNull();
     });
 
     it("signale un code invalide ou un produit inconnu", async () => {
