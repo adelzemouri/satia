@@ -22,7 +22,8 @@
     "journal": "Diary",
     "add": "Add",
     "weight": "Weight",
-    "main": "Main navigation"
+    "main": "Main navigation",
+    "training": "Training"
   },
   "home": {
     "greeting": "Hello {name}!",
@@ -46,7 +47,8 @@
     "openJournal": "See the full diary",
     "streak": "{days, plural, =0 {No streak yet: logging a meal today starts one.} one {# day in a row} other {# days in a row}}",
     "streakFrozen": "A rest day was covered this week, your streak goes on.",
-    "more": "Shortcuts"
+    "more": "Shortcuts",
+    "trainingBurned": "Including {kcal} kcal burned while training."
   },
   "theme": {
     "label": "Theme",
@@ -339,7 +341,10 @@
     "share_nobody": "Choose at least one person, or enter your own portion.",
     "portion_required": "Enter your portion.",
     "larger_day_range": "You can mark today or a day within the next 8 weeks.",
-    "push_not_configured": "Notifications aren't set up yet."
+    "push_not_configured": "Notifications aren't set up yet.",
+    "training_profile_missing": "Fill in your training profile first.",
+    "too_many": "You've reached the maximum number of items.",
+    "training_days_required": "Pick at least one training day."
   },
   "slots": {
     "breakfast": "Breakfast",
@@ -973,5 +978,215 @@
     "newFamily": "New household recipe",
     "edit": "Edit",
     "editLabel": "Edit {name}"
+  },
+  "training": {
+    "title": "Training",
+    "intro": "Workouts matched to your level, equipment and time, always with a warm-up and a cool-down.",
+    "disclaimer": "These workouts are general suggestions, not medical advice. Listen to your body: if something hurts, stop the exercise and flag it. If you have any doubt about your health, ask a professional.",
+    "setup": {
+      "title": "My training profile",
+      "intro": "A few questions to build your program. You can change everything later.",
+      "level": "Your level",
+      "goal": "Your goal",
+      "place": "Where do you train?",
+      "equipment": "Available equipment",
+      "equipmentHint": "Tick what you have at hand.",
+      "days": "Available days",
+      "minutes": "Session length",
+      "zones": "Areas to protect",
+      "zonesHint": "Exercises that load them won't be suggested.",
+      "save": "Save my profile",
+      "saved": "Profile saved, your program is ready."
+    },
+    "levels": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced",
+      "beginnerHint": "I'm starting or getting back into it.",
+      "intermediateHint": "I've been moving regularly for a few months.",
+      "advancedHint": "I've been training regularly for a long time."
+    },
+    "goals": {
+      "weight_loss": "Weight loss",
+      "strength": "Strength",
+      "muscle": "Muscle gain",
+      "endurance": "Endurance",
+      "mobility": "Mobility"
+    },
+    "places": {
+      "home_none": "At home, no equipment",
+      "home_equipped": "At home, with some equipment",
+      "gym": "At the gym",
+      "outdoor": "Outdoors"
+    },
+    "equipment": {
+      "dumbbells": "Dumbbells",
+      "bands": "Resistance bands",
+      "pullup_bar": "Pull-up bar",
+      "kettlebell": "Kettlebell",
+      "jump_rope": "Jump rope",
+      "bench": "Bench",
+      "barbell": "Barbell and plates",
+      "machines": "Gym machines",
+      "none": "No equipment"
+    },
+    "zones": {
+      "knees": "Knees",
+      "back": "Back",
+      "shoulders": "Shoulders",
+      "wrists": "Wrists",
+      "hips": "Hips"
+    },
+    "muscles": {
+      "legs": "Legs",
+      "glutes": "Glutes",
+      "chest": "Chest",
+      "back": "Back",
+      "shoulders": "Shoulders",
+      "arms": "Arms",
+      "core": "Core",
+      "full_body": "Full body",
+      "cardio": "Cardio",
+      "mobility": "Mobility"
+    },
+    "focus": {
+      "full_body": "Full body",
+      "upper": "Upper body",
+      "lower": "Lower body",
+      "cardio": "Cardio",
+      "mobility": "Mobility"
+    },
+    "weekdays": {
+      "0": "Monday",
+      "1": "Tuesday",
+      "2": "Wednesday",
+      "3": "Thursday",
+      "4": "Friday",
+      "5": "Saturday",
+      "6": "Sunday"
+    },
+    "minutes": "{count} min",
+    "exercises": "{count, plural, one {# exercise} other {# exercises}}",
+    "home": {
+      "today": "Today's workout",
+      "rest": "Rest day: recovery is part of the program.",
+      "start": "Start the workout",
+      "replace": "Swap",
+      "replaceHint": "Another workout of the same type and length.",
+      "replaced": "Swapped workout",
+      "backToPlanned": "Back to the planned workout",
+      "express": "Express workout (10 min)",
+      "expressHint": "A short circuit for busy days.",
+      "onDemand": "Workout on demand",
+      "onDemandHint": "Pick a length, the rest is prepared for you.",
+      "duration": "Length",
+      "type": "Workout type",
+      "noEquipment": "No equipment",
+      "prepare": "Prepare the workout",
+      "week": "This week's program",
+      "doneDay": "Done",
+      "streak": "{count, plural, =0 {Your first workout starts your streak of active weeks.} one {# active week in a row} other {# active weeks in a row}}",
+      "personalizing": "The coach is preparing tips for the week…",
+      "doneToday": "Workout done today: {kcal} kcal added to your daily budget.",
+      "library": "Exercises",
+      "history": "My progress",
+      "profile": "My training profile",
+      "restShort": "Rest"
+    },
+    "snack": {
+      "beforeTitle": "Before the workout",
+      "before": "If your last meal was more than 3 hours ago, a light snack 1 hour before helps: a banana, toast with honey or a fruit purée.",
+      "afterTitle": "After the workout",
+      "after": "In the following hours, think protein: plain yogurt and a handful of almonds, or a glass of milk and a piece of fruit.",
+      "afterPlant": "In the following hours, think protein: soy yogurt and a handful of almonds, or roasted chickpeas and a piece of fruit."
+    },
+    "session": {
+      "warmup": "Warm-up",
+      "main": "Exercises",
+      "cooldown": "Cool-down",
+      "overview": "On the menu",
+      "start": "Let's go",
+      "step": "Step {current} of {total}",
+      "set": "Set {current} of {total}",
+      "targetReps": "{count} reps",
+      "targetSeconds": "{count} seconds",
+      "repsDone": "Reps done",
+      "weight": "Load in kg (optional)",
+      "setDone": "Set done",
+      "rest": "Rest",
+      "skipRest": "Skip rest",
+      "timer": "Start the timer",
+      "pause": "Pause",
+      "resume": "Resume",
+      "next": "Next",
+      "skip": "Skip exercise",
+      "how": "How to",
+      "watch": "Watch out for",
+      "easier": "Gentler: {text}",
+      "harder": "Harder: {text}",
+      "pain": "Pain or area to protect",
+      "painDone": "Exercise set aside: it won't be suggested again. Moving on.",
+      "finishTitle": "Workout done, well done!",
+      "elapsed": "Duration: {minutes} min",
+      "feeling": "How was it?",
+      "feelings": {
+        "easy": "Too easy",
+        "good": "Good",
+        "hard": "Too hard"
+      },
+      "feelingHint": "Your feedback adjusts next week's difficulty.",
+      "save": "Save the workout",
+      "saved": "Workout saved.",
+      "quit": "Leave the workout",
+      "awake": "Screen kept on during the workout.",
+      "unavailable": "This workout is no longer in the program."
+    },
+    "history": {
+      "title": "My progress",
+      "calendar": "Consistency (last 8 weeks)",
+      "calendarDay": "{date}: {count, plural, =0 {no workout} one {# workout} other {# workouts}}",
+      "volume": "Sets per muscle group (last 4 weeks)",
+      "volumeValue": "{count, plural, one {# set} other {# sets}}",
+      "records": "Records",
+      "noRecords": "Your records will show up after your first workouts.",
+      "recordReps": "{count} reps",
+      "recordKg": "{value} kg",
+      "recordSeconds": "{count} s",
+      "sessions": "Workouts",
+      "none": "No workout yet.",
+      "summary": "{minutes} min · {kcal} kcal",
+      "delete": "Delete",
+      "deleteLabel": "Delete the workout of {date}"
+    },
+    "library": {
+      "title": "Exercise library",
+      "intro": "Every exercise in the app, with instructions and a gentler variant. Exercise descriptions are in French.",
+      "muscle": "Group",
+      "equipment": "Equipment",
+      "level": "Level",
+      "all": "All",
+      "filter": "Filter",
+      "count": "{count, plural, =0 {No exercise} one {# exercise} other {# exercises}}",
+      "levelValue": "Level {level} of 3",
+      "set": "Exercise set aside",
+      "excludedTitle": "Exercises set aside",
+      "excludedHint": "Flagged during a workout, they are no longer suggested.",
+      "restore": "Restore",
+      "restoreLabel": "Restore {name}",
+      "customTitle": "My exercises",
+      "customHint": "To keep track of your own exercises (they are not added to suggested workouts).",
+      "name": "Name",
+      "mode": "Measure",
+      "modes": {
+        "reps": "Reps",
+        "time": "Duration"
+      },
+      "notes": "Notes (optional)",
+      "add": "Add the exercise",
+      "delete": "Delete",
+      "deleteLabel": "Delete {name}",
+      "noCustom": "No personal exercise.",
+      "stress": "Areas loaded: {list}"
+    }
   }
 }

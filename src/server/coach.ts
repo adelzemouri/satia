@@ -19,6 +19,7 @@ import {
   type DayStats,
   type DishCandidate,
   mentionsMedicalTopic,
+  workoutRequest,
   suggestDish,
   weekStats,
 } from "@/domain/coach";
@@ -38,6 +39,7 @@ import { daySummary } from "./journal";
 import { getGoalOn, getProfile } from "./profile";
 import { checkinOn, dayQualityFor, qualityItems } from "./quality";
 import { getCalorieFloors } from "./settings";
+import { coachWorkoutLine } from "./training";
 
 /** Derniers échanges envoyés au LLM avec le nouveau message, et nombre de messages gardés. */
 const PROMPT_HISTORY = 6;
@@ -131,11 +133,18 @@ export async function sendCoachMessage(userId: string, text: string): Promise<Co
   } else if (mentionsMedicalTopic(message)) {
     reply = { content: "", notice: "medical" };
   } else {
-    const [context, history] = await Promise.all([coachContextFor(userId), listCoachMessages(userId, PROMPT_HISTORY)]);
+    const workout = workoutRequest(message);
+    const [context, history, workoutLine] = await Promise.all([
+      coachContextFor(userId),
+      listCoachMessages(userId, PROMPT_HISTORY),
+      workout ? coachWorkoutLine(userId, workout) : null,
+    ]);
     const conversation = history
       .filter((entry) => entry.notice === null)
       .map((entry) => `${entry.role === "user" ? "Moi" : "Coach"} : ${entry.content}`);
-    const prompt = [`Contexte :\n${context}`, ...conversation, `Moi : ${message}`].join("\n");
+    const prompt = [`Contexte :\n${context}`, workoutLine, ...conversation, `Moi : ${message}`]
+      .filter(Boolean)
+      .join("\n");
     reply = { content: await coachReply(userId, profile.coachStyle, prompt), notice: null };
   }
 

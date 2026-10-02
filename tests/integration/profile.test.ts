@@ -98,6 +98,7 @@ describe("onboarding et données", () => {
       "coach-reviews.csv",
       "containers.csv",
       "corrections.csv",
+      "custom-exercises.csv",
       "expressions.csv",
       "favorites.csv",
       "foods.csv",
@@ -110,6 +111,8 @@ describe("onboarding et données", () => {
       "push-devices.csv",
       "recipe-items.csv",
       "shared-meals.csv",
+      "training-profile.csv",
+      "training-sessions.csv",
       "water.csv",
       "weights.csv",
     ]);

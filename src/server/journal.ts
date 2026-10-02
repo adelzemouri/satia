@@ -9,6 +9,7 @@ import { todayIso } from "@/domain/dates";
 import { addDays, computePlan } from "@/domain/energy";
 import { energyZone, type EnergyZone, type Nutrients, nutrientsFor, sumNutrients } from "@/domain/nutrition";
 import { computeStreak, type Streak } from "@/domain/streak";
+import { trainingDayGoal } from "@/domain/training/program";
 import { UNITS, toGrams } from "@/domain/units";
 import { projectGoalDate, type TrendPoint, weeklyChangeKg, weightTrend } from "@/domain/weight-trend";
 
@@ -17,6 +18,7 @@ import { getFood, per100 } from "./foods";
 import { dayGoal } from "./adaptive";
 import { getProfile } from "./profile";
 import { getCalorieFloors } from "./settings";
+import { trainingOn } from "./training-day";
 
 export type MealEntry = typeof mealEntries.$inferSelect;
 
@@ -194,17 +196,24 @@ export type DaySummary = {
   goal: { kcal: number; proteinG: number; carbsG: number; fatG: number } | null;
   water: { glasses: number; goal: number };
   zone: EnergyZone | null;
+  /** Calories dépensées à l'entraînement (déjà ajoutées à l'objectif) et nombre de séances. */
+  training: { burnedKcal: number; sessions: number };
 };
 
 /** Tout ce qu'il faut pour le tableau de bord et le journal d'un jour. */
 export async function daySummary(userId: string, date: string): Promise<DaySummary> {
-  const [entries, glasses, profile, weight] = await Promise.all([
+  const [entries, glasses, profile, weight, training] = await Promise.all([
     entriesOn(userId, date),
     waterOn(userId, date),
     getProfile(userId),
     latestWeight(userId, date),
+    trainingOn(userId, date),
   ]);
-  const goal = await dayGoal(userId, date, profile?.budgetMode ?? "daily");
+  const baseGoal = await dayGoal(userId, date, profile?.budgetMode ?? "daily");
+  // Jour d'entraînement : dépense ajoutée au budget et protéines un peu relevées.
+  const goal = baseGoal
+    ? trainingDayGoal(baseGoal, training.burnedKcal, training.sessions > 0 || training.planned)
+    : null;
   const bySlot = Object.fromEntries(
     MEAL_SLOTS.map((slot) => {
       const slotEntries = entries.filter((entry) => entry.slot === slot);
@@ -238,6 +247,7 @@ export async function daySummary(userId: string, date: string): Promise<DaySumma
     goal,
     water: { glasses, goal: profile?.waterGoalGlasses ?? 8 },
     zone,
+    training: { burnedKcal: training.burnedKcal, sessions: training.sessions },
   };
 }
 

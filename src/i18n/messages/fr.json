@@ -22,7 +22,8 @@
     "journal": "Journal",
     "add": "Ajouter",
     "weight": "Poids",
-    "main": "Navigation principale"
+    "main": "Navigation principale",
+    "training": "Training"
   },
   "home": {
     "greeting": "Bonjour {name} !",
@@ -46,7 +47,8 @@
     "openJournal": "Voir le détail du journal",
     "streak": "{days, plural, =0 {Pas encore de série : un repas saisi aujourd'hui la lance.} one {# jour d'affilée} other {# jours d'affilée}}",
     "streakFrozen": "Un jour de repos a été couvert cette semaine, ta série continue.",
-    "more": "Raccourcis"
+    "more": "Raccourcis",
+    "trainingBurned": "Dont {kcal} kcal dépensées à l'entraînement."
   },
   "theme": {
     "label": "Thème",
@@ -339,7 +341,10 @@
     "share_nobody": "Choisis au moins une personne, ou indique ta portion.",
     "portion_required": "Indique ta portion.",
     "larger_day_range": "Tu peux marquer aujourd'hui ou un jour des 8 prochaines semaines.",
-    "push_not_configured": "Les notifications ne sont pas encore configurées."
+    "push_not_configured": "Les notifications ne sont pas encore configurées.",
+    "training_profile_missing": "Complète d'abord ton profil sportif.",
+    "too_many": "Tu as atteint le nombre maximal d'éléments.",
+    "training_days_required": "Choisis au moins un jour d'entraînement."
   },
   "slots": {
     "breakfast": "Petit-déjeuner",
@@ -973,5 +978,215 @@
     "newFamily": "Nouvelle recette du foyer",
     "edit": "Modifier",
     "editLabel": "Modifier {name}"
+  },
+  "training": {
+    "title": "Entraînement",
+    "intro": "Des séances adaptées à ton niveau, ton matériel et ton temps, toujours avec échauffement et retour au calme.",
+    "disclaimer": "Ces séances sont des propositions générales, pas un avis médical. Écoute ton corps : en cas de douleur, arrête l'exercice et signale-le. Si tu as un doute sur ta santé, demande conseil à un professionnel.",
+    "setup": {
+      "title": "Mon profil sportif",
+      "intro": "Quelques questions pour bâtir ton programme. Tu pourras tout changer plus tard.",
+      "level": "Ton niveau",
+      "goal": "Ton objectif",
+      "place": "Où t'entraînes-tu ?",
+      "equipment": "Matériel disponible",
+      "equipmentHint": "Coche ce que tu as sous la main.",
+      "days": "Jours disponibles",
+      "minutes": "Durée d'une séance",
+      "zones": "Zones à ménager",
+      "zonesHint": "Les exercices qui les sollicitent ne te seront pas proposés.",
+      "save": "Enregistrer mon profil",
+      "saved": "Profil enregistré, ton programme est prêt."
+    },
+    "levels": {
+      "beginner": "Débutant",
+      "intermediate": "Intermédiaire",
+      "advanced": "Confirmé",
+      "beginnerHint": "Je reprends ou je débute.",
+      "intermediateHint": "Je bouge régulièrement depuis quelques mois.",
+      "advancedHint": "Je m'entraîne régulièrement depuis longtemps."
+    },
+    "goals": {
+      "weight_loss": "Perte de poids",
+      "strength": "Renforcement",
+      "muscle": "Prise de muscle",
+      "endurance": "Endurance",
+      "mobility": "Mobilité"
+    },
+    "places": {
+      "home_none": "À la maison, sans matériel",
+      "home_equipped": "À la maison, avec un peu de matériel",
+      "gym": "En salle de sport",
+      "outdoor": "Dehors"
+    },
+    "equipment": {
+      "dumbbells": "Haltères",
+      "bands": "Élastiques",
+      "pullup_bar": "Barre de traction",
+      "kettlebell": "Kettlebell",
+      "jump_rope": "Corde à sauter",
+      "bench": "Banc",
+      "barbell": "Barre et disques",
+      "machines": "Machines guidées",
+      "none": "Sans matériel"
+    },
+    "zones": {
+      "knees": "Genoux",
+      "back": "Dos",
+      "shoulders": "Épaules",
+      "wrists": "Poignets",
+      "hips": "Hanches"
+    },
+    "muscles": {
+      "legs": "Jambes",
+      "glutes": "Fessiers",
+      "chest": "Pectoraux",
+      "back": "Dos",
+      "shoulders": "Épaules",
+      "arms": "Bras",
+      "core": "Sangle abdominale",
+      "full_body": "Corps entier",
+      "cardio": "Cardio",
+      "mobility": "Mobilité"
+    },
+    "focus": {
+      "full_body": "Corps entier",
+      "upper": "Haut du corps",
+      "lower": "Bas du corps",
+      "cardio": "Cardio",
+      "mobility": "Mobilité"
+    },
+    "weekdays": {
+      "0": "Lundi",
+      "1": "Mardi",
+      "2": "Mercredi",
+      "3": "Jeudi",
+      "4": "Vendredi",
+      "5": "Samedi",
+      "6": "Dimanche"
+    },
+    "minutes": "{count} min",
+    "exercises": "{count, plural, one {# exercice} other {# exercices}}",
+    "home": {
+      "today": "Séance du jour",
+      "rest": "Jour de repos : la récupération fait partie du programme.",
+      "start": "Démarrer la séance",
+      "replace": "Remplacer",
+      "replaceHint": "Une autre séance du même type et de la même durée.",
+      "replaced": "Séance de remplacement",
+      "backToPlanned": "Revenir à la séance prévue",
+      "express": "Séance express (10 min)",
+      "expressHint": "Un circuit court, quand le temps manque.",
+      "onDemand": "Séance à la demande",
+      "onDemandHint": "Choisis une durée, le reste est préparé pour toi.",
+      "duration": "Durée",
+      "type": "Type de séance",
+      "noEquipment": "Sans matériel",
+      "prepare": "Préparer la séance",
+      "week": "Programme de la semaine",
+      "doneDay": "Faite",
+      "streak": "{count, plural, =0 {Ta première séance lance ta série de semaines actives.} one {# semaine active d'affilée} other {# semaines actives d'affilée}}",
+      "personalizing": "Le coach prépare ses conseils pour la semaine…",
+      "doneToday": "Séance faite aujourd'hui : {kcal} kcal ajoutées à ton budget du jour.",
+      "library": "Exercices",
+      "history": "Mon suivi",
+      "profile": "Mon profil sportif",
+      "restShort": "Repos"
+    },
+    "snack": {
+      "beforeTitle": "Avant la séance",
+      "before": "Si ton dernier repas date de plus de 3 heures, une collation légère 1 h avant aide : une banane, une tartine de miel ou une compote.",
+      "afterTitle": "Après la séance",
+      "after": "Dans les heures qui suivent, pense aux protéines : un yaourt nature et une poignée d'amandes, ou un verre de lait et un fruit.",
+      "afterPlant": "Dans les heures qui suivent, pense aux protéines : un yaourt au soja et une poignée d'amandes, ou des pois chiches grillés et un fruit."
+    },
+    "session": {
+      "warmup": "Échauffement",
+      "main": "Exercices",
+      "cooldown": "Retour au calme",
+      "overview": "Au programme",
+      "start": "C'est parti",
+      "step": "Étape {current} sur {total}",
+      "set": "Série {current} sur {total}",
+      "targetReps": "{count} répétitions",
+      "targetSeconds": "{count} secondes",
+      "repsDone": "Répétitions faites",
+      "weight": "Charge en kg (facultatif)",
+      "setDone": "Série faite",
+      "rest": "Repos",
+      "skipRest": "Passer le repos",
+      "timer": "Lancer le minuteur",
+      "pause": "Pause",
+      "resume": "Reprendre",
+      "next": "Suivant",
+      "skip": "Passer l'exercice",
+      "how": "Comment faire",
+      "watch": "Points d'attention",
+      "easier": "Plus doux : {text}",
+      "harder": "Plus difficile : {text}",
+      "pain": "Douleur ou zone à ménager",
+      "painDone": "Exercice mis de côté : il ne te sera plus proposé. On passe à la suite.",
+      "finishTitle": "Séance terminée, bravo !",
+      "elapsed": "Durée : {minutes} min",
+      "feeling": "Comment c'était ?",
+      "feelings": {
+        "easy": "Trop facile",
+        "good": "Bien",
+        "hard": "Trop dur"
+      },
+      "feelingHint": "Ton ressenti ajuste la difficulté de la semaine suivante.",
+      "save": "Enregistrer la séance",
+      "saved": "Séance enregistrée.",
+      "quit": "Quitter la séance",
+      "awake": "Écran maintenu allumé pendant la séance.",
+      "unavailable": "Cette séance n'est plus au programme."
+    },
+    "history": {
+      "title": "Mon suivi",
+      "calendar": "Régularité (8 dernières semaines)",
+      "calendarDay": "{date} : {count, plural, =0 {pas de séance} one {# séance} other {# séances}}",
+      "volume": "Séries par groupe (4 dernières semaines)",
+      "volumeValue": "{count, plural, one {# série} other {# séries}}",
+      "records": "Records",
+      "noRecords": "Tes records apparaîtront après tes premières séances.",
+      "recordReps": "{count} rép.",
+      "recordKg": "{value} kg",
+      "recordSeconds": "{count} s",
+      "sessions": "Séances",
+      "none": "Aucune séance pour l'instant.",
+      "summary": "{minutes} min · {kcal} kcal",
+      "delete": "Supprimer",
+      "deleteLabel": "Supprimer la séance du {date}"
+    },
+    "library": {
+      "title": "Bibliothèque d'exercices",
+      "intro": "Tous les exercices de l'app, avec leurs consignes et une variante plus douce.",
+      "muscle": "Groupe",
+      "equipment": "Matériel",
+      "level": "Niveau",
+      "all": "Tous",
+      "filter": "Filtrer",
+      "count": "{count, plural, =0 {Aucun exercice} one {# exercice} other {# exercices}}",
+      "levelValue": "Niveau {level} sur 3",
+      "set": "Exercice mis de côté",
+      "excludedTitle": "Exercices mis de côté",
+      "excludedHint": "Signalés pendant une séance, ils ne sont plus proposés.",
+      "restore": "Réintégrer",
+      "restoreLabel": "Réintégrer {name}",
+      "customTitle": "Mes exercices",
+      "customHint": "Pour garder une trace de tes propres exercices (ils ne sont pas ajoutés aux séances proposées).",
+      "name": "Nom",
+      "mode": "Mesure",
+      "modes": {
+        "reps": "Répétitions",
+        "time": "Durée"
+      },
+      "notes": "Notes (facultatif)",
+      "add": "Ajouter l'exercice",
+      "delete": "Supprimer",
+      "deleteLabel": "Supprimer {name}",
+      "noCustom": "Aucun exercice personnel.",
+      "stress": "Zones sollicitées : {list}"
+    }
   }
 }

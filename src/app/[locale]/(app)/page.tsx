@@ -61,6 +61,9 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           {t("home.todayGoal")}
         </h2>
         <CalorieRing totals={summary.totals} goal={summary.goal} />
+        {summary.training.burnedKcal > 0 && (
+          <p className="text-sm text-text-muted">{t("home.trainingBurned", { kcal: summary.training.burnedKcal })}</p>
+        )}
         <MacroBars totals={summary.totals} goal={summary.goal} />
         <QualityBars quality={quality} />
         {summary.zone && <p className="rounded-2xl bg-surface-muted px-4 py-3">{t(`home.zone.${summary.zone}`)}</p>}

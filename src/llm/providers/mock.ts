@@ -68,6 +68,22 @@ const RESPONSES: Record<string, unknown | ((request: LlmRequest) => unknown)> = 
       },
     ],
   },
+  // Une ligne « S<n> … » par séance : titre fixe et exercices principaux dans l'ordre inverse.
+  training_plan: (request: LlmRequest) => ({
+    intro: "Une semaine progressive : on construit la régularité avant l'intensité.",
+    sessions: request.user
+      .split("\n")
+      .filter((line) => /^S\d+/.test(line))
+      .map((line) => {
+        const count = (line.match(/\d+\. /g) ?? []).length;
+        return {
+          index: Number(line.match(/^S(\d+)/)![1]),
+          title: `Séance ${line.match(/^S(\d+)/)![1]} en douceur`,
+          tip: "Souffle à l'effort et garde le dos bien aligné.",
+          order: Array.from({ length: count }, (_, i) => count - i),
+        };
+      }),
+  }),
   // Un aliment par ligne du message : mêmes valeurs moyennes pour chacun.
   food_estimates: (request: LlmRequest) => ({
     items: request.user

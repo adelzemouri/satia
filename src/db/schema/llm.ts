@@ -11,6 +11,7 @@ export const LLM_FEATURES = [
   "weekly_review",
   "menu_plan",
   "fridge",
+  "training_plan",
 ] as const;
 export type LlmFeature = (typeof LLM_FEATURES)[number];
 

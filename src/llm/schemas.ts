@@ -66,3 +66,18 @@ export const fridgeSchema = z.object({
     .array(z.object({ name: z.string().trim().min(1).max(80), ingredients: z.array(ingredient).min(1).max(12) }))
     .max(3),
 });
+
+/** Personnalisation du programme d'entraînement : titres, conseils et ordre des exercices. */
+export const trainingPlanSchema = z.object({
+  intro: z.string().trim().max(400),
+  sessions: z
+    .array(
+      z.object({
+        index: z.number().int().min(1).max(7),
+        title: z.string().trim().min(1).max(60),
+        tip: z.string().trim().max(240),
+        order: z.array(z.number().int().min(1).max(12)).max(12),
+      }),
+    )
+    .max(7),
+});

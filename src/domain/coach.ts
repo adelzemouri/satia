@@ -122,3 +122,17 @@ export function suggestDish(
   const hash = [...seed].reduce((sum, char) => (sum * 31 + char.charCodeAt(0)) >>> 0, 7);
   return fitting[hash % fitting.length]!;
 }
+
+/**
+ * Demande de séance dans le chat (« j'ai 20 minutes, pas de matériel ») : durée et matériel.
+ * La séance est alors construite par les règles et le coach se contente de la présenter.
+ */
+export function workoutRequest(message: string): { minutes: number; noEquipment: boolean } | null {
+  const text = message.toLowerCase();
+  if (!/(séance|seance|entra[iî]n|exercice|workout|sport|muscu|circuit)/.test(text)) return null;
+  const minutes = Number(text.match(/(\d{1,2})\s*(?:min|minutes|mn)\b/)?.[1] ?? 20);
+  return {
+    minutes: Math.min(60, Math.max(10, minutes)),
+    noEquipment: /(sans|pas de|aucun)\s+(?:de\s+)?mat[ée]riel|no equipment/.test(text),
+  };
+}
