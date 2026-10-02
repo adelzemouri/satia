@@ -255,8 +255,9 @@ describe("Open Food Facts", () => {
   it("propose des produits complets et met en cache celui qui est choisi", async () => {
     const userId = await setupUser();
     const fetchMock = vi.fn(async (url: string) => {
-      if (url.includes("/cgi/search.pl")) {
-        return Response.json({ products: [product, { code: "123456", product_name: "Sans valeurs" }] });
+      if (url.startsWith("https://search.openfoodfacts.org/search")) {
+        const hit = { ...product, brands: ["Marque A", "Marque B"] };
+        return Response.json({ hits: [hit, { code: "123456", product_name: "Sans valeurs" }] });
       }
       return Response.json({ product });
     });
@@ -272,7 +273,19 @@ describe("Open Food Facts", () => {
     expect(cached).toMatchObject({ source: "off", kcal: 539, unitWeights: { portion: 15 } });
     const [row] = await db().select({ ref: foods.sourceRef }).from(foods).where(eq(foods.id, id));
     expect(row?.ref).toBe(product.code);
-    expect(fetchMock.mock.calls[0]?.[0]).toContain("world.openfoodfacts.org");
+    expect(fetchMock.mock.calls.at(-1)?.[0]).toContain("world.openfoodfacts.org/api/v2/product/");
+  });
+
+  it("se replie sur l'ancienne recherche si le moteur de recherche ne répond pas", async () => {
+    const userId = await setupUser();
+    const fetchMock = vi.fn(async (url: string) => {
+      if (url.startsWith("https://search.openfoodfacts.org")) return new Response("", { status: 503 });
+      return Response.json({ products: [product] });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const results = await searchOpenFoodFacts(userId, "pâte à tartiner");
+    expect(results).toEqual([expect.objectContaining({ code: product.code, brand: "Marque A" })]);
+    expect(fetchMock.mock.calls[1]?.[0]).toContain("world.openfoodfacts.org/cgi/search.pl");
   });
 
   it("signale un produit incomplet ou un service indisponible", async () => {
