@@ -1,3 +1,4 @@
+export * from "./adaptive";
 export * from "./access-links";
 export * from "./auth";
 export * from "./foods";

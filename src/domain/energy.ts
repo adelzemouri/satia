@@ -99,23 +99,7 @@ export function computePlan(input: PlanInput): Plan {
   const age = ageOn(input.birthDate, input.today);
   const bmr = basalMetabolicRate(input.sex, input.weightKg, input.heightCm, age);
   const tdee = bmr * ACTIVITY_FACTORS[input.activityLevel];
-  const notices: PlanNotice[] = [];
-
-  let target = tdee;
-  if (input.goal === "lose_weight") {
-    const requested = LOSS_KG_PER_WEEK[input.pace];
-    const cap = input.weightKg * MAX_WEEKLY_LOSS_RATIO;
-    if (requested > cap) notices.push("loss_capped");
-    target = tdee - (Math.min(requested, cap) * KCAL_PER_KG) / 7;
-  } else if (input.goal === "gain_muscle") {
-    target = tdee + GAIN_SURPLUS_KCAL[input.pace];
-  }
-
-  const floor = floors[input.sex];
-  if (target < floor) {
-    target = floor;
-    notices.push("floor_applied");
-  }
+  const { target, notices } = targetFromTdee(tdee, input, floors);
   const kcal = Math.round(target / 10) * 10;
   const weeklyChangeKg = round2(((kcal - tdee) * 7) / KCAL_PER_KG);
 
@@ -131,7 +115,36 @@ export function computePlan(input: PlanInput): Plan {
   };
 }
 
-function macrosFor(kcal: number, input: PlanInput): Plan["macros"] {
+/**
+ * Objectif calorique à partir d'une dépense (estimée ou mesurée) : déficit ou surplus
+ * selon l'objectif et le rythme, perte plafonnée à 1 % du poids par semaine, plancher.
+ * Non arrondi.
+ */
+export function targetFromTdee(
+  tdee: number,
+  input: Pick<PlanInput, "goal" | "pace" | "weightKg" | "sex">,
+  floors: CalorieFloors = DEFAULT_CALORIE_FLOORS,
+): { target: number; notices: PlanNotice[] } {
+  const notices: PlanNotice[] = [];
+  let target = tdee;
+  if (input.goal === "lose_weight") {
+    const requested = LOSS_KG_PER_WEEK[input.pace];
+    const cap = input.weightKg * MAX_WEEKLY_LOSS_RATIO;
+    if (requested > cap) notices.push("loss_capped");
+    target = tdee - (Math.min(requested, cap) * KCAL_PER_KG) / 7;
+  } else if (input.goal === "gain_muscle") {
+    target = tdee + GAIN_SURPLUS_KCAL[input.pace];
+  }
+  const floor = floors[input.sex];
+  if (target < floor) {
+    target = floor;
+    notices.push("floor_applied");
+  }
+  return { target, notices };
+}
+
+/** Répartition des macros pour un objectif calorique donné. */
+export function macrosFor(kcal: number, input: Pick<PlanInput, "goal" | "weightKg" | "heightCm">): Plan["macros"] {
   // Au-delà d'un IMC de 30, les protéines se calculent sur un poids de référence (IMC 25).
   const referenceWeight =
     bmi(input.weightKg, input.heightCm) > REFERENCE_BMI_CAP

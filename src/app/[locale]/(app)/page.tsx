@@ -5,9 +5,11 @@ import { MEAL_SLOTS } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { CalorieRing, MacroBars } from "@/features/journal/day-overview";
 import { WaterTracker } from "@/features/journal/water-tracker";
+import { WeekGauge } from "@/features/adaptive/week-gauge";
 import { PendingShares } from "@/features/family/pending-shares";
 import { Link, redirect } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
+import { ensureWeeklyCheck, weekBudget } from "@/server/adaptive";
 import { pendingShares } from "@/server/family";
 import { daySummary, streakFor } from "@/server/journal";
 import { getProfile } from "@/server/profile";
@@ -22,10 +24,13 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const profile = await getProfile(user.id);
   if (!profile) return redirect({ href: "/onboarding", locale });
   const today = todayIso();
-  const [summary, streak, shares] = await Promise.all([
+  // Bilan hebdomadaire de l'objectif adaptatif (une fois par semaine) avant d'afficher l'objectif.
+  await ensureWeeklyCheck(user.id, today);
+  const [summary, streak, shares, week] = await Promise.all([
     daySummary(user.id, today),
     streakFor(user.id, today),
     pendingShares(user.id),
+    profile.budgetMode === "weekly" ? weekBudget(user.id, today) : null,
   ]);
   const t = await getTranslations();
 
@@ -49,6 +54,14 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         <CalorieRing totals={summary.totals} goal={summary.goal} />
         <MacroBars totals={summary.totals} goal={summary.goal} />
         {summary.zone && <p className="rounded-2xl bg-surface-muted px-4 py-3">{t(`home.zone.${summary.zone}`)}</p>}
+        {week && (
+          <>
+            <WeekGauge consumed={week.consumed} total={week.total} />
+            <Link href="/week" className="font-semibold text-primary underline-offset-4 hover:underline">
+              {t("week.open")}
+            </Link>
+          </>
+        )}
       </Card>
 
       <Card aria-labelledby="streak-title">
@@ -96,15 +109,26 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         <WaterTracker date={today} glasses={summary.water.glasses} goal={summary.water.goal} />
       </Card>
 
-      <Link
-        href="/family"
-        className="flex min-h-14 items-center gap-3 rounded-[var(--radius-card)] border border-border bg-surface px-5 py-3 font-semibold shadow-sm hover:bg-surface-muted"
-      >
-        <span className="text-primary">
-          <Icon name="family" />
-        </span>
-        {t("family.title")}
-      </Link>
+      <nav aria-label={t("home.more")} className="flex flex-col gap-3">
+        {(
+          [
+            ["/family", "family", t("family.title")],
+            ["/week", "calendar", t("week.title")],
+            ["/metabolism", "pulse", t("metabolism.title")],
+          ] as const
+        ).map(([href, icon, label]) => (
+          <Link
+            key={href}
+            href={href}
+            className="flex min-h-14 items-center gap-3 rounded-[var(--radius-card)] border border-border bg-surface px-5 py-3 font-semibold shadow-sm hover:bg-surface-muted"
+          >
+            <span className="text-primary">
+              <Icon name={icon} />
+            </span>
+            {label}
+          </Link>
+        ))}
+      </nav>
 
       <p className="mt-auto text-sm text-text-muted">{t("disclaimer", { appName: APP_NAME })}</p>
     </>

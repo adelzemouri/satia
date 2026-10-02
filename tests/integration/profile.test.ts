@@ -25,6 +25,7 @@ const answers: OnboardingInput = {
   diet: "no_pork",
   foodsToAvoid: "coriandre",
   mealTimes: { breakfast: "07:30", lunch: "12:30", dinner: "20:00" },
+  budgetMode: "daily" as const,
   disclaimerAccepted: true,
 };
 
@@ -97,8 +98,10 @@ describe("onboarding et données", () => {
       "favorites.csv",
       "foods.csv",
       "goals.csv",
+      "larger-days.csv",
       "meal-photos.csv",
       "meals.csv",
+      "metabolism-checks.csv",
       "profile.csv",
       "recipe-items.csv",
       "shared-meals.csv",

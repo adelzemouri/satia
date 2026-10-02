@@ -2,7 +2,16 @@ import { z } from "zod";
 
 import { todayIso } from "@/domain/dates";
 import { checkTargetWeight } from "@/domain/energy";
-import { ACTIVITY_LEVELS, allowedGoals, DIETS, goalChangesWeight, GOALS, PACES, SEXES } from "@/domain/profile";
+import {
+  ACTIVITY_LEVELS,
+  allowedGoals,
+  BUDGET_MODES,
+  DIETS,
+  goalChangesWeight,
+  GOALS,
+  PACES,
+  SEXES,
+} from "@/domain/profile";
 
 const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "invalid_time");
 
@@ -24,6 +33,7 @@ export const onboardingSchema = z
     diet: z.enum(DIETS, "required"),
     foodsToAvoid: z.string().trim().max(500),
     mealTimes: z.object({ breakfast: time, lunch: time, dinner: time }),
+    budgetMode: z.enum(BUDGET_MODES),
     disclaimerAccepted: z.literal(true, "disclaimer_required"),
   })
   .superRefine((value, ctx) => {

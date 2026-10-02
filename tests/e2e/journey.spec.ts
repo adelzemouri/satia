@@ -96,6 +96,8 @@ test("onboarding complet d'un adulte avec plan expliqué", async ({ page }) => {
   await page.getByLabel("Aliments que tu préfères éviter").fill("coriandre");
   await next.click();
   await next.click(); // horaires par défaut
+  await expect(page.getByLabel("Budget quotidien")).toBeChecked();
+  await next.click();
   await next.click();
   await expect(alertIn(page)).toHaveText("Merci de confirmer avoir lu ce message.");
   await page.getByLabel("J'ai compris").check();
@@ -458,6 +460,39 @@ test("repas partagé : l'admin partage un plat du foyer, le membre le valide ave
   await expect(teen.getByRole("region", { name: "Repas partagés à valider" })).toHaveCount(0);
   await teen.goto("/journal");
   await expect(teen.getByRole("region", { name: "Dîner" }).getByText(/^75 g ·/)).toBeVisible();
+});
+
+test("mon métabolisme et budget hebdomadaire avec un jour plus large", async ({ page }) => {
+  await signInWithTotp(page);
+  await page.getByRole("link", { name: "Mon métabolisme" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mon métabolisme");
+  await expect(page.getByText(/il faut au moins 14 jours de suivi/)).toBeVisible();
+  await expect(page.getByText("Calculé avec la formule de départ.")).toBeVisible();
+  await expectNoA11yViolations(page);
+  await page.getByRole("button", { name: "Figer mon objectif" }).click();
+  await expect(page.getByText(/Ton objectif est figé/)).toBeVisible();
+  await page.getByRole("button", { name: "Laisser l'objectif s'ajuster" }).click();
+  await expect(page.getByRole("button", { name: "Figer mon objectif" })).toBeVisible();
+
+  await page.goto("/week");
+  await expect(page.getByLabel("Budget quotidien")).toBeChecked();
+  await page.getByLabel("Budget hebdomadaire").check();
+  const days = page.getByRole("region", { name: "Jour par jour" });
+  await expect(days.getByRole("progressbar", { name: "Cette semaine" })).toBeVisible();
+  const lastDay = days.getByRole("checkbox", { name: /^Jour plus large/ }).last();
+  await lastDay.check();
+  await expect(lastDay).toBeChecked();
+  await expectNoA11yViolations(page);
+  await page.reload();
+  await expect(days.getByRole("checkbox", { name: /^Jour plus large/ }).last()).toBeChecked();
+
+  await page.goto("/");
+  await expect(page.getByRole("progressbar", { name: "Cette semaine" })).toBeVisible();
+  await expectNoA11yViolations(page);
+  // Retour au budget quotidien pour les tests suivants.
+  await page.goto("/week");
+  await page.getByLabel("Budget quotidien").check();
+  await expect(page.getByRole("region", { name: "Jour par jour" })).toHaveCount(0);
 });
 
 test("export des données en JSON et CSV", async ({ page }) => {

@@ -4,6 +4,7 @@ import { todayIso } from "@/domain/dates";
 import { DeleteWeightButton } from "@/features/weight/delete-weight-button";
 import { WeightChart } from "@/features/weight/weight-chart";
 import { WeightForm } from "@/features/weight/weight-form";
+import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { weightOverview } from "@/server/journal";
 import { requireUser } from "@/server/session";
@@ -81,6 +82,10 @@ export default async function WeightPage({ params }: PageProps<"/[locale]/weight
           </ul>
         )}
       </Card>
+
+      <Link href="/metabolism" className="font-semibold text-primary underline-offset-4 hover:underline">
+        {t("metabolismLink")}
+      </Link>
     </>
   );
 }

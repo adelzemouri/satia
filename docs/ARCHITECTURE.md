@@ -315,6 +315,28 @@ Téléphone                                     Serveur (Vercel fra1)           
 - **Confidentialité** : un membre ne voit que les partages qui lui sont adressés, jamais
   le journal des autres. Seuls les noms des membres sont exposés.
 
+## Objectif adaptatif et budget hebdomadaire (phase 7)
+
+- **Calcul pur** dans `src/domain/adaptive.ts` et `src/domain/weekly-budget.ts`, sans LLM.
+- **Dépense mesurée** : sur les 28 derniers jours complets (14 au minimum), apport moyen
+  des jours saisis − pente de la tendance de poids lissée × 7 700 kcal/kg. Il faut au moins
+  3 pesées et 80 % des jours saisis ; sinon l'écran dit ce qui manque. Une dépense hors
+  1 000–5 000 kcal est jugée incohérente et ne change rien.
+- **Ajustement** : même logique que la formule de départ (déficit, surplus, 1 % du poids
+  par semaine au plus, plancher), appliquée à la dépense mesurée, puis limitée à ±150 kcal
+  par rapport à l'objectif actuel. Nouvel objectif `goals.source = adaptive`.
+  L'utilisateur peut figer son objectif (`profiles.goal_locked`).
+- **Bilan hebdomadaire** (`metabolism_checks`, un par utilisateur et par semaine ISO) :
+  fait au premier passage sur l'accueil, « Ma semaine » ou « Mon métabolisme » à partir
+  du lundi, idempotent (clé primaire + `on conflict do nothing`). Pas de cron : rien à
+  configurer, et un compte inactif n'est pas recalculé à vide.
+- **Budget hebdomadaire** (`profiles.budget_mode`) : 7 × objectif quotidien, le reste
+  réparti sur les jours restants. Un jour passé sans saisie compte comme un jour à
+  l'objectif (ne pas saisir ne libère rien). Les jours « plus larges » (`larger_days`)
+  pèsent 1,3. Chaque jour reste entre max(plancher, 80 % de l'objectif) et +20 %
+  (+50 % pour un jour plus large). Une semaine dépassée n'est pas reportée.
+  Les protéines restent fixes, glucides et lipides suivent l'écart.
+
 ## 6. Sécurité (rappel des points structurants)
 
 HTTPS imposé par l'hébergeur, en-têtes CSP/HSTS via le middleware Next.js, jeton

@@ -10,6 +10,8 @@ import {
   ACTIVITY_LEVELS,
   type ActivityLevel,
   allowedGoals,
+  BUDGET_MODES,
+  type BudgetMode,
   type Diet,
   DIETS,
   type Goal,
@@ -43,6 +45,7 @@ type Draft = {
   diet: Diet | null;
   foodsToAvoid: string;
   mealTimes: { breakfast: string; lunch: string; dinner: string };
+  budgetMode: BudgetMode;
   disclaimerAccepted: boolean;
 };
 
@@ -58,6 +61,7 @@ type Step =
   | "pace"
   | "diet"
   | "meals"
+  | "budget"
   | "disclaimer"
   | "summary";
 
@@ -74,6 +78,7 @@ const INITIAL: Draft = {
   diet: null,
   foodsToAvoid: "",
   mealTimes: { breakfast: "07:30", lunch: "12:30", dinner: "19:30" },
+  budgetMode: "daily",
   disclaimerAccepted: false,
 };
 
@@ -96,6 +101,7 @@ function toInput(draft: Draft): OnboardingInput {
     diet: draft.diet!,
     foodsToAvoid: draft.foodsToAvoid,
     mealTimes: draft.mealTimes,
+    budgetMode: draft.budgetMode,
     disclaimerAccepted: draft.disclaimerAccepted as true,
   };
 }
@@ -162,7 +168,7 @@ export function OnboardingWizard({ defaultFirstName }: { defaultFirstName: strin
     if (changesWeight) list.push("targetWeight");
     list.push("activity");
     if (changesWeight) list.push("pace");
-    list.push("diet", "meals", "disclaimer", "summary");
+    list.push("diet", "meals", "budget", "disclaimer", "summary");
     return list;
   }, [draft.goal]);
 
@@ -389,6 +395,21 @@ export function OnboardingWizard({ defaultFirstName }: { defaultFirstName: strin
               />
             ))}
           </>
+        )}
+
+        {step === "budget" && (
+          <OptionList
+            legend={t("budget.title")}
+            hideLegend
+            name="budgetMode"
+            value={draft.budgetMode}
+            onChange={(budgetMode) => update({ budgetMode })}
+            options={BUDGET_MODES.map((value) => ({
+              value,
+              label: t(`budget.${value}.label`),
+              hint: t(`budget.${value}.hint`),
+            }))}
+          />
         )}
 
         {step === "disclaimer" && (

@@ -14,7 +14,8 @@ import { projectGoalDate, type TrendPoint, weeklyChangeKg, weightTrend } from "@
 
 import { DomainError } from "./errors";
 import { getFood, per100 } from "./foods";
-import { getGoalOn, getProfile } from "./profile";
+import { dayGoal } from "./adaptive";
+import { getProfile } from "./profile";
 import { getCalorieFloors } from "./settings";
 
 export type MealEntry = typeof mealEntries.$inferSelect;
@@ -197,13 +198,13 @@ export type DaySummary = {
 
 /** Tout ce qu'il faut pour le tableau de bord et le journal d'un jour. */
 export async function daySummary(userId: string, date: string): Promise<DaySummary> {
-  const [entries, goal, glasses, profile, weight] = await Promise.all([
+  const [entries, glasses, profile, weight] = await Promise.all([
     entriesOn(userId, date),
-    getGoalOn(userId, date),
     waterOn(userId, date),
     getProfile(userId),
     latestWeight(userId, date),
   ]);
+  const goal = await dayGoal(userId, date, profile?.budgetMode ?? "daily");
   const bySlot = Object.fromEntries(
     MEAL_SLOTS.map((slot) => {
       const slotEntries = entries.filter((entry) => entry.slot === slot);
@@ -234,7 +235,7 @@ export async function daySummary(userId: string, date: string): Promise<DaySumma
     entries,
     bySlot,
     totals,
-    goal: goal && { kcal: goal.kcal, proteinG: goal.proteinG, carbsG: goal.carbsG, fatG: goal.fatG },
+    goal,
     water: { glasses, goal: profile?.waterGoalGlasses ?? 8 },
     zone,
   };

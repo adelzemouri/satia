@@ -23,6 +23,8 @@ import {
   weightEntries,
 } from "@/db/schema";
 
+import { adaptiveExport } from "./adaptive";
+
 /** Toutes les données personnelles d'un utilisateur, sans aucun secret (mots de passe, TOTP, sessions). */
 export async function collectUserData(userId: string) {
   const [account] = await db()
@@ -126,6 +128,7 @@ export async function collectUserData(userId: string) {
     .innerJoin(sharedMeals, eq(sharedMeals.id, sharedMealShares.sharedMealId))
     .where(eq(sharedMealShares.userId, userId))
     .orderBy(asc(sharedMeals.date));
+  const adaptive = await adaptiveExport(userId);
   return {
     exportedAt: new Date().toISOString(),
     account: account ?? null,
@@ -143,6 +146,8 @@ export async function collectUserData(userId: string) {
     corrections: correctionRows,
     mealPhotos: photoRows,
     sharedMeals: shareRows,
+    metabolismChecks: adaptive.checks,
+    largerDays: adaptive.larger,
   };
 }
 
@@ -169,6 +174,8 @@ export function toCsvZip(data: UserData): Uint8Array {
     "account.csv": strToU8(toCsv(data.account ? [data.account] : [])),
     "profile.csv": strToU8(toCsv(data.profile ? [data.profile] : [])),
     "goals.csv": strToU8(toCsv(data.goals)),
+    "metabolism-checks.csv": strToU8(toCsv(data.metabolismChecks)),
+    "larger-days.csv": strToU8(toCsv(data.largerDays)),
     "meals.csv": strToU8(toCsv(data.meals)),
     "water.csv": strToU8(toCsv(data.water)),
     "weights.csv": strToU8(toCsv(data.weights)),
