@@ -1,3 +1,5 @@
+import { ZodError } from "zod";
+
 import { DomainError } from "@/server/errors";
 import { searchOpenFoodFacts } from "@/server/open-food-facts";
 import { RateLimitedError } from "@/server/rate-limit";
@@ -16,6 +18,8 @@ export async function GET(request: Request) {
   } catch (error) {
     if (error instanceof RateLimitedError) return Response.json({ error: "rate_limited" }, { status: 429 });
     if (error instanceof DomainError) return Response.json({ error: error.code }, { status: 502 });
-    throw error;
+    // Réponse d'OFF dans un format inattendu : même message pour l'utilisateur, détail dans les logs.
+    console.error("[off] recherche impossible :", error instanceof ZodError ? error.issues : error);
+    return Response.json({ error: "off_unavailable" }, { status: 502 });
   }
 }

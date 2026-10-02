@@ -16,6 +16,8 @@ import { enforceRateLimit } from "./rate-limit";
  * mise en cache locale du produit choisi. L'attribution est affichée dans l'interface.
  */
 const OFF_BASE = "https://world.openfoodfacts.org";
+/** Moteur de recherche dédié d'OFF (« search-a-licious ») : plus rapide et prévu pour les API. */
+const OFF_SEARCH_BASE = "https://search.openfoodfacts.org";
 const USER_AGENT = `${APP_NAME}/0.1 (application familiale de suivi nutritionnel)`;
 const FIELDS = "code,product_name,product_name_fr,brands,nutriments,serving_quantity";
 const TIMEOUT_MS = 8000;
@@ -39,7 +41,8 @@ const productSchema = z.object({
   code: z.string().regex(/^\d{6,14}$/),
   product_name: z.string().optional(),
   product_name_fr: z.string().optional(),
-  brands: z.string().optional(),
+  // Chaîne « Marque A, Marque B » sur l'API produit, liste sur le moteur de recherche.
+  brands: z.union([z.string(), z.array(z.string())]).optional(),
   nutriments: nutrimentsSchema.optional(),
   serving_quantity: z.coerce.number().optional(),
 });
@@ -73,7 +76,7 @@ export function toCandidate(product: OffProduct): OffCandidate | null {
   return {
     code: product.code,
     name,
-    brand: product.brands?.split(",")[0]?.trim() || null,
+    brand: (Array.isArray(product.brands) ? product.brands[0] : product.brands?.split(",")[0])?.trim() || null,
     kcal: round2(kcal),
     proteinG: round2(protein),
     carbsG: round2(carbs),
@@ -85,40 +88,58 @@ export function toCandidate(product: OffProduct): OffCandidate | null {
   };
 }
 
-async function offFetch(path: string): Promise<unknown> {
+async function offFetch(url: string): Promise<unknown> {
   let response: Response;
   try {
-    response = await fetch(`${OFF_BASE}${path}`, {
+    response = await fetch(url, {
       headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
-  } catch {
+  } catch (error) {
+    console.warn(`[off] ${new URL(url).host} injoignable :`, error instanceof Error ? error.message : error);
     throw new DomainError("off_unavailable");
   }
   if (response.status === 404) throw new DomainError("not_found");
-  if (!response.ok) throw new DomainError("off_unavailable");
+  if (!response.ok) {
+    console.warn(`[off] ${new URL(url).host} a répondu ${response.status}`);
+    throw new DomainError("off_unavailable");
+  }
   return response.json();
 }
 
+function toCandidates(products: unknown[]): OffCandidate[] {
+  return products
+    .map((raw) => productSchema.safeParse(raw))
+    .flatMap((parsed) => (parsed.success ? [toCandidate(parsed.data)] : []))
+    .filter((candidate): candidate is OffCandidate => candidate !== null);
+}
+
+/** Moteur de recherche d'OFF, avec repli sur l'ancienne recherche s'il ne répond pas. */
 export async function searchOpenFoodFacts(userId: string, query: string): Promise<OffCandidate[]> {
   const q = query.trim();
   if (q.length < 2) return [];
   await enforceRateLimit(`off:search:${userId}`, SEARCH_RULE);
-  const params = new URLSearchParams({
-    search_terms: q,
-    search_simple: "1",
-    action: "process",
-    json: "1",
-    page_size: "20",
-    fields: FIELDS,
-  });
-  const body = z
-    .object({ products: z.array(z.unknown()).default([]) })
-    .parse(await offFetch(`/cgi/search.pl?${params}`));
-  return body.products
-    .map((raw) => productSchema.safeParse(raw))
-    .flatMap((parsed) => (parsed.success ? [toCandidate(parsed.data)] : []))
-    .filter((candidate): candidate is OffCandidate => candidate !== null);
+  try {
+    const params = new URLSearchParams({ q, langs: "fr", page_size: "20", fields: FIELDS });
+    const body = z
+      .object({ hits: z.array(z.unknown()).default([]) })
+      .parse(await offFetch(`${OFF_SEARCH_BASE}/search?${params}`));
+    return toCandidates(body.hits);
+  } catch (error) {
+    if (!(error instanceof DomainError || error instanceof z.ZodError)) throw error;
+    const params = new URLSearchParams({
+      search_terms: q,
+      search_simple: "1",
+      action: "process",
+      json: "1",
+      page_size: "20",
+      fields: FIELDS,
+    });
+    const body = z
+      .object({ products: z.array(z.unknown()).default([]) })
+      .parse(await offFetch(`${OFF_BASE}/cgi/search.pl?${params}`));
+    return toCandidates(body.products);
+  }
 }
 
 /** Récupère un produit par son code-barres et le met en cache. Renvoie l'id de l'aliment. */
@@ -130,7 +151,7 @@ export async function importOpenFoodFactsProduct(userId: string, code: string): 
   await enforceRateLimit(`off:product:${userId}`, { window: 60, max: 30 });
   const body = z
     .object({ product: z.unknown().optional() })
-    .parse(await offFetch(`/api/v2/product/${barcode}.json?fields=${FIELDS}`));
+    .parse(await offFetch(`${OFF_BASE}/api/v2/product/${barcode}.json?fields=${FIELDS}`));
   const parsed = productSchema.safeParse({ ...(body.product as object), code: barcode });
   const candidate = parsed.success ? toCandidate(parsed.data) : null;
   if (!candidate) throw new DomainError("off_incomplete");
