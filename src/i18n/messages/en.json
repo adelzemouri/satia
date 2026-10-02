@@ -505,6 +505,12 @@
     "cost": "Cost",
     "failures": "{count, plural, one {# failure} other {# failures}}",
     "deletedMember": "Deleted account",
-    "estimateNote": "Costs estimated from the configured prices; the provider's invoice is authoritative."
+    "estimateNote": "Costs estimated from the configured prices; the provider's invoice is authoritative.",
+    "providers": {
+      "openai": "OpenAI-compatible",
+      "anthropic": "Anthropic",
+      "mock": "Simulated (tests)",
+      "none": "None"
+    }
   }
 }

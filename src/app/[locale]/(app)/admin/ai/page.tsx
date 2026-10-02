@@ -49,7 +49,13 @@ export default async function AiAdminPage({ params }: PageProps<"/[locale]/admin
         <p className="font-semibold">{t(`states.${state}`)}</p>
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
           <dt className="text-text-muted">{t("provider")}</dt>
-          <dd>{status.configured ? config.provider : "—"}</dd>
+          <dd className="break-all">
+            {status.configured
+              ? [t(`providers.${config.provider}`), config.baseUrl && new URL(config.baseUrl).host]
+                  .filter(Boolean)
+                  .join(" · ")
+              : "—"}
+          </dd>
           <dt className="text-text-muted">{t("modelVision")}</dt>
           <dd className="break-all">{config.models.vision || "—"}</dd>
           <dt className="text-text-muted">{t("modelText")}</dt>
