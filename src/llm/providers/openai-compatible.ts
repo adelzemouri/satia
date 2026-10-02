@@ -18,6 +18,7 @@ export function openAiCompatibleProvider(options: {
   baseUrl: string;
   apiKey: string;
   jsonMode: "json_schema" | "json_object";
+  reasoningEffort?: string | undefined;
 }): LlmProvider {
   return {
     name: "openai",
@@ -44,6 +45,7 @@ export function openAiCompatibleProvider(options: {
             { role: "user", content },
           ],
           max_tokens: request.maxOutputTokens,
+          ...(options.reasoningEffort && { reasoning_effort: options.reasoningEffort }),
           response_format:
             options.jsonMode === "json_schema"
               ? { type: "json_schema", json_schema: { name: request.schemaName, schema: request.jsonSchema } }

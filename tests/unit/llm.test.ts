@@ -103,6 +103,7 @@ describe("fournisseurs", () => {
     expect(body.messages[1].content[1].image_url).toEqual({ url: "data:image/webp;base64,AAAA", detail: "low" });
     expect(body.response_format.json_schema.name).toBe("meal_items");
     expect(body.max_tokens).toBe(200);
+    expect(body).not.toHaveProperty("reasoning_effort");
   });
 
   it("API compatible OpenAI : une réponse illisible garde les tokens consommés", async () => {
@@ -112,10 +113,17 @@ describe("fournisseurs", () => {
         Response.json({ choices: [{ message: { content: "pas du JSON" } }], usage: { prompt_tokens: 50 } }),
       ),
     );
-    const provider = openAiCompatibleProvider({ baseUrl: "https://llm.test/v1", apiKey: "k", jsonMode: "json_object" });
+    const provider = openAiCompatibleProvider({
+      baseUrl: "https://llm.test/v1",
+      apiKey: "k",
+      jsonMode: "json_object",
+      reasoningEffort: "low",
+    });
     const error = await provider.complete(request).catch((caught: unknown) => caught);
     expect(error).toBeInstanceOf(LlmProviderError);
     expect(error).toMatchObject({ kind: "invalid_json", usage: { inputTokens: 50, outputTokens: 0 } });
+    const body = JSON.parse(String(vi.mocked(fetch).mock.calls[0]![1]!.body));
+    expect(body).toMatchObject({ reasoning_effort: "low", response_format: { type: "json_object" } });
   });
 
   it("API compatible OpenAI : une erreur HTTP devient une erreur fournisseur", async () => {

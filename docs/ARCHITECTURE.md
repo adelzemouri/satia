@@ -221,7 +221,8 @@ Mise en œuvre (phase 4) :
 - **Configuration** : `LLM_PROVIDER` vaut `openai` par défaut dès qu'une clé est fournie,
   `none` sinon (IA désactivée proprement). Tarifs `LLM_PRICE_{VISION,TEXT}_{INPUT,OUTPUT}`
   en dollars par million de tokens ; `LLM_JSON_MODE=json_object` pour les fournisseurs
-  sans schéma JSON. `/api/health` renvoie `llm` : `ok`, `disabled` ou les noms des
+  sans schéma JSON. `LLM_REASONING_EFFORT` (`low` conseillé pour Gemini 3, dont la réflexion
+  ne se désactive pas) limite les tokens de réflexion, facturés en sortie. `/api/health` renvoie `llm` : `ok`, `disabled` ou les noms des
   variables en défaut.
 - **Schéma envoyé** : réduit à la structure (types, champs, listes) pour être accepté par
   tous les fournisseurs ; les bornes sont vérifiées par Zod à la réception.
