@@ -9,6 +9,7 @@ import { existsSync, readFileSync } from "node:fs";
 import postgres from "postgres";
 
 import { normalizeForSearch } from "../src/domain/search";
+import { fruitVegShareForGroup } from "../src/domain/quality";
 import { CIQUAL_COLUMNS, parseCsvLine } from "./ciqual/format";
 
 const FILE = "data/ciqual-2020.csv";
@@ -53,6 +54,7 @@ try {
         fiber_g: num(f.fiber_g!),
         sugars_g: num(f.sugars_g!),
         salt_g: num(f.salt_g!),
+        fruit_veg_share: fruitVegShareForGroup(f.group_fr || null),
         density_g_per_ml: num(f.density_g_ml!),
         unit_weights: f.unit_weights ? JSON.parse(f.unit_weights) : null,
       };
@@ -67,7 +69,7 @@ try {
             name_fr = excluded.name_fr, name_en = excluded.name_en, group_fr = excluded.group_fr,
             search_name = excluded.search_name, kcal = excluded.kcal, protein_g = excluded.protein_g,
             carbs_g = excluded.carbs_g, fat_g = excluded.fat_g, fiber_g = excluded.fiber_g,
-            sugars_g = excluded.sugars_g, salt_g = excluded.salt_g,
+            sugars_g = excluded.sugars_g, salt_g = excluded.salt_g, fruit_veg_share = excluded.fruit_veg_share,
             density_g_per_ml = excluded.density_g_per_ml, unit_weights = excluded.unit_weights,
             updated_at = now()
         `;

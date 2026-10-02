@@ -80,3 +80,19 @@ export const weightEntries = pgTable(
   },
   (t) => [primaryKey({ columns: [t.userId, t.date] })],
 );
+
+/** Ressenti du jour, facultatif et privé : faim, énergie, humeur de 1 à 5. */
+export const dailyCheckins = pgTable(
+  "daily_checkins",
+  {
+    userId: uuid()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    date: date({ mode: "string" }).notNull(),
+    hunger: smallint(),
+    energy: smallint(),
+    mood: smallint(),
+    updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.date] })],
+);

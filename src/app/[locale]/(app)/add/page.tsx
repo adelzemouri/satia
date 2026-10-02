@@ -6,10 +6,12 @@ import { parseDayParam } from "@/domain/day-param";
 import { MEAL_SLOTS, slotAt } from "@/domain/meals";
 import { FoodPicker } from "@/features/foods/food-picker";
 import type { FoodItem } from "@/features/foods/food-types";
+import { HabitualMealCard } from "@/features/quality/habitual-meal-card";
 import { toLocale } from "@/i18n/routing";
 import { aiAvailability } from "@/server/ai-availability";
 import { familyRecipes, favoriteFoods, type FoodSummary, getFood, ownFoods, recentFoods } from "@/server/foods";
 import { listContainers } from "@/server/personal";
+import { habitualMeal } from "@/server/quality";
 import { requireUser } from "@/server/session";
 
 function toItem(food: FoodSummary): FoodItem {
@@ -24,7 +26,7 @@ export default async function AddPage({ params, searchParams }: PageProps<"/[loc
   const date = parseDayParam(query.date, todayIso());
   const slot = MEAL_SLOTS.find((value) => value === query.slot) ?? slotAt(new Date(), APP_TIMEZONE);
   const foodId = typeof query.food === "string" ? query.food : null;
-  const [recent, favorites, mine, family, preselected, availability, containers] = await Promise.all([
+  const [recent, favorites, mine, family, preselected, availability, containers, habit] = await Promise.all([
     recentFoods(user.id),
     favoriteFoods(user.id),
     ownFoods(user.id),
@@ -33,12 +35,14 @@ export default async function AddPage({ params, searchParams }: PageProps<"/[loc
     foodId && /^[0-9a-f-]{36}$/.test(foodId) ? getFood(user.id, foodId).catch(() => null) : null,
     aiAvailability(),
     listContainers(user.id),
+    foodId ? null : habitualMeal(user.id, slot, date),
   ]);
   const t = await getTranslations("add");
 
   return (
     <>
       <h1 className="font-display text-3xl font-semibold">{t("title")}</h1>
+      {habit && <HabitualMealCard meal={habit} date={date} />}
       <FoodPicker
         date={date}
         slot={slot}

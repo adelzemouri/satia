@@ -218,6 +218,9 @@ test("ajout d'un produit par code-barres (Open Food Facts simulé)", async ({ pa
   await expect(page.locator('img[src$="/images/front.png"]')).toBeVisible();
   await expect(page.getByText("Code-barres 3017620422003")).toBeVisible();
   await expect(page.getByRole("columnheader", { name: "Par portion (15 g)" })).toBeVisible();
+  const labels = page.getByRole("list", { name: "Indicateurs de qualité" });
+  await expect(labels.getByText("Nutri-Score E")).toBeVisible();
+  await expect(labels.getByText("NOVA 4")).toBeVisible();
   await expectNoA11yViolations(page);
 
   await page.getByRole("link", { name: "Ajouter au journal" }).click();
@@ -460,6 +463,24 @@ test("repas partagé : l'admin partage un plat du foyer, le membre le valide ave
   await expect(teen.getByRole("region", { name: "Repas partagés à valider" })).toHaveCount(0);
   await teen.goto("/journal");
   await expect(teen.getByRole("region", { name: "Dîner" }).getByText(/^75 g ·/)).toBeVisible();
+});
+
+test("ressenti du jour et bilan qualité de la semaine", async ({ page }) => {
+  await signInWithTotp(page);
+  const checkin = page.getByRole("region", { name: "Comment tu te sens ?" });
+  await checkin.getByRole("radio", { name: "Énergie : 4 sur 5" }).check({ force: true });
+  await expect(checkin.getByRole("radio", { name: "Énergie : 4 sur 5" })).toBeChecked();
+  await expect(page.getByRole("progressbar", { name: "Fibres" })).toBeVisible();
+  await expectNoA11yViolations(page);
+  await page.reload();
+  await expect(checkin.getByRole("radio", { name: "Énergie : 4 sur 5" })).toBeChecked();
+
+  await page.getByRole("link", { name: "Bilan qualité" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bilan qualité");
+  await expect(page.getByRole("heading", { name: "Idées pour la semaine" })).toBeVisible();
+  // La pâte à tartiner scannée plus tôt est un produit ultra-transformé (NOVA 4).
+  await expect(page.getByText(/Ultra-transformés les plus présents : .*Pâte à tartiner noisettes/)).toBeVisible();
+  await expectNoA11yViolations(page);
 });
 
 test("mon métabolisme et budget hebdomadaire avec un jour plus large", async ({ page }) => {

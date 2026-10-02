@@ -337,6 +337,27 @@ Téléphone                                     Serveur (Vercel fra1)           
   (+50 % pour un jour plus large). Une semaine dépassée n'est pas reportée.
   Les protéines restent fixes, glucides et lipides suivent l'écart.
 
+## Qualité nutritionnelle et habitudes (phase 8)
+
+- **Données** : `foods.nutriscore` et `foods.nova_group` viennent d'Open Food Facts
+  (`nutriscore_grade`, `nova_group`) ; Ciqual ne les fournit pas. Le Nutri-Score est affiché
+  en texte, sans reprendre le logo officiel. `foods.fruit_veg_share` (0 à 1) vaut 1 pour
+  les groupes Ciqual « fruits » et « légumes » et pour quelques catégories OFF (fruits et
+  légumes frais, surgelés ou en conserve, hors boissons et produits sucrés). Pour une
+  recette, c'est la part du poids cru de ses ingrédients. Fibres, sucres et sel d'une
+  recette ne sont connus que si tous ses ingrédients les connaissent.
+- **Repères du jour** (`src/domain/quality.ts`) : 30 g de fibres (ANSES) et 5 portions
+  de 80 g de fruits et légumes (PNNS), calculés en joignant le journal aux aliments.
+- **Bilan qualité** (`/quality`, 7 derniers jours) : part des calories ultra-transformées
+  (NOVA 4) parmi celles dont le groupe est connu, avec cette couverture affichée ; fibres,
+  sel, sucres et fruits/légumes moyens par jour saisi ; aliments les plus contributeurs ;
+  une ou deux idées formulées en « ajouter », choisies par règles, sans LLM.
+- **Repas habituel** : sur l'écran d'ajout, le même ensemble d'aliments saisi au moins
+  3 fois sur ce créneau en 6 semaines est proposé, sauf si le créneau est déjà rempli.
+  L'ajout recopie le jour le plus récent.
+- **Ressenti du jour** (`daily_checkins`) : faim, énergie, humeur de 1 à 5, chaque réponse
+  enregistrée seule. Privé, inclus dans l'export.
+
 ## 6. Sécurité (rappel des points structurants)
 
 HTTPS imposé par l'hébergeur, en-têtes CSP/HSTS via le middleware Next.js, jeton

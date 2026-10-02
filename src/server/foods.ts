@@ -6,6 +6,7 @@ import { z } from "zod";
 import { db } from "@/db/client";
 import { favorites, foods, mealEntries, recipeItems, user } from "@/db/schema";
 import { kcalFromMacros, type Nutrients, nutrientsFor, recipePer100g } from "@/domain/nutrition";
+import { recipeQuality } from "@/domain/quality";
 import { normalizeForSearch } from "@/domain/search";
 
 import { DomainError } from "./errors";
@@ -240,7 +241,13 @@ export type RecipeInput = z.input<typeof recipeSchema>;
 async function computeRecipe(userId: string, data: z.infer<typeof recipeSchema>) {
   const ingredientIds = [...new Set(data.items.map((item) => item.foodId))];
   const ingredients = await db()
-    .select(foodSummaryColumns)
+    .select({
+      ...foodSummaryColumns,
+      fiberG: foods.fiberG,
+      sugarsG: foods.sugarsG,
+      saltG: foods.saltG,
+      fruitVegShare: foods.fruitVegShare,
+    })
     .from(foods)
     .where(and(inArray(foods.id, ingredientIds), visibleTo(userId)));
   const byId = new Map(ingredients.map((food) => [food.id, food]));
@@ -255,10 +262,15 @@ async function computeRecipe(userId: string, data: z.infer<typeof recipeSchema>)
     data.items.map((item) => nutrientsFor(byId.get(item.foodId)!, item.grams)),
     totalGrams,
   );
+  const quality = recipeQuality(
+    data.items.map((item) => ({ ...byId.get(item.foodId)!, grams: item.grams })),
+    totalGrams,
+  );
   return {
     nameFr: data.name,
     searchName: normalizeForSearch(data.name),
     ...per100,
+    ...quality,
     servings: data.servings,
     unitWeights: { portion: round2(totalGrams / data.servings) },
   };

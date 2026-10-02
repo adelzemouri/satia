@@ -23,7 +23,7 @@ export type MealEntry = typeof mealEntries.$inferSelect;
 const isoDate = z.iso.date();
 
 /** On ne saisit pas dans le futur ; les jours passés restent modifiables. */
-function assertNotFuture(date: string) {
+export function assertNotFuture(date: string) {
   if (date > todayIso()) throw new DomainError("future_date");
 }
 

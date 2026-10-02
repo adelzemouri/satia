@@ -57,6 +57,13 @@
       "when": 1790957540449,
       "tag": "0007_adaptive",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790959133573,
+      "tag": "0008_quality",
+      "breakpoints": true
     }
   ]
 }

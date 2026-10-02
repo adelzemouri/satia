@@ -85,6 +85,21 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
         </div>
       )}
 
+      {(food.nutriscore || food.novaGroup) && (
+        <ul className="flex flex-wrap gap-2" aria-label={t("quality.labels")}>
+          {food.nutriscore && (
+            <li className="rounded-full border border-border bg-surface-muted px-4 py-2 font-semibold">
+              {t("quality.nutriscore", { grade: food.nutriscore.toUpperCase() })}
+            </li>
+          )}
+          {food.novaGroup && (
+            <li className="rounded-full border border-border bg-surface-muted px-4 py-2 font-semibold">
+              {t("quality.nova", { group: food.novaGroup })}
+            </li>
+          )}
+        </ul>
+      )}
+
       <Card aria-labelledby="nutrients">
         <h2 id="nutrients" className="text-xl font-semibold">
           {t("product.nutrients")}

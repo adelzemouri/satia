@@ -1,0 +1,172 @@
+/**
+ * Qualité nutritionnelle (calcul pur) : repères indicatifs du jour et bilan de la semaine.
+ * Repères : 30 g de fibres par jour (ANSES), 5 portions de 80 g de fruits et légumes (PNNS),
+ * 5 g de sel par jour (OMS).
+ */
+export const NUTRISCORE_GRADES = ["a", "b", "c", "d", "e"] as const;
+export type NutriscoreGrade = (typeof NUTRISCORE_GRADES)[number];
+
+export const FIBER_GOAL_G = 30;
+export const FRUIT_VEG_PORTION_G = 80;
+export const FRUIT_VEG_GOAL_PORTIONS = 5;
+export const SALT_REFERENCE_G = 5;
+
+/** Groupes Ciqual comptés comme fruits et légumes (les fruits à coque et les jus n'en font pas partie). */
+const FRUIT_VEG_GROUPS = new Set(["fruits", "légumes"]);
+
+export function fruitVegShareForGroup(groupFr: string | null): number {
+  return groupFr !== null && FRUIT_VEG_GROUPS.has(groupFr) ? 1 : 0;
+}
+
+/** Catégories Open Food Facts de fruits et légumes, hors boissons et produits sucrés. */
+const OFF_FRUIT_VEG = [
+  "en:fresh-fruits",
+  "en:fresh-vegetables",
+  "en:frozen-vegetables",
+  "en:frozen-fruits",
+  "en:canned-vegetables",
+];
+const OFF_EXCLUDED = ["en:beverages", "en:jams", "en:fruit-juices", "en:sweet-snacks", "en:compotes"];
+
+export function fruitVegShareForCategories(tags: readonly string[]): number {
+  if (tags.some((tag) => OFF_EXCLUDED.includes(tag))) return 0;
+  return tags.some((tag) => OFF_FRUIT_VEG.includes(tag)) ? 1 : 0;
+}
+
+export function toNutriscore(raw: string | undefined): NutriscoreGrade | null {
+  const grade = raw?.toLowerCase();
+  return NUTRISCORE_GRADES.find((value) => value === grade) ?? null;
+}
+
+export function toNovaGroup(raw: number | undefined): number | null {
+  return raw !== undefined && Number.isInteger(raw) && raw >= 1 && raw <= 4 ? raw : null;
+}
+
+/** Une ligne de journal avec les valeurs de qualité de son aliment (pour 100 g). */
+export type QualityItem = {
+  date: string;
+  name: string;
+  grams: number;
+  kcal: number;
+  fiberG: number | null;
+  sugarsG: number | null;
+  saltG: number | null;
+  novaGroup: number | null;
+  fruitVegShare: number;
+};
+
+export type DayQuality = { fiberG: number; fruitVegPortions: number };
+
+export function dayQuality(items: readonly QualityItem[]): DayQuality {
+  return {
+    fiberG: round1(items.reduce((sum, item) => sum + ((item.fiberG ?? 0) * item.grams) / 100, 0)),
+    fruitVegPortions: round1(fruitVegGrams(items) / FRUIT_VEG_PORTION_G),
+  };
+}
+
+function fruitVegGrams(items: readonly QualityItem[]): number {
+  return items.reduce((sum, item) => sum + item.grams * item.fruitVegShare, 0);
+}
+
+export type Suggestion = "fiber" | "fruitVeg" | "homemade" | "salt" | "keepGoing";
+
+export type WeekQuality = {
+  daysLogged: number;
+  /** Part des calories venant d'aliments ultra-transformés (NOVA 4), parmi celles dont le groupe est connu. */
+  ultraProcessedShare: number | null;
+  /** Part des calories dont le groupe NOVA est connu. */
+  novaCoverage: number;
+  fiberPerDay: number;
+  saltPerDay: number;
+  sugarsPerDay: number;
+  fruitVegPortionsPerDay: number;
+  /** Aliments qui apportent le plus de sel, et ultra-transformés qui apportent le plus de calories. */
+  topSalt: string[];
+  topUltraProcessed: string[];
+  /** Une ou deux idées, formulées en « ajouter » plutôt qu'en « retirer ». */
+  suggestions: Suggestion[];
+};
+
+/** Bilan qualité d'une période ; les moyennes portent sur les jours saisis. */
+export function weekQuality(items: readonly QualityItem[]): WeekQuality | null {
+  const days = new Set(items.map((item) => item.date)).size;
+  if (days === 0) return null;
+  const totalKcal = items.reduce((sum, item) => sum + item.kcal, 0);
+  const known = items.filter((item) => item.novaGroup !== null);
+  const knownKcal = known.reduce((sum, item) => sum + item.kcal, 0);
+  const upf = known.filter((item) => item.novaGroup === 4);
+  const upfKcal = upf.reduce((sum, item) => sum + item.kcal, 0);
+  const perDay = (pick: (item: QualityItem) => number | null) =>
+    round1(items.reduce((sum, item) => sum + ((pick(item) ?? 0) * item.grams) / 100, 0) / days);
+
+  const result: Omit<WeekQuality, "suggestions"> = {
+    daysLogged: days,
+    ultraProcessedShare: knownKcal > 0 ? round2(upfKcal / knownKcal) : null,
+    novaCoverage: totalKcal > 0 ? round2(knownKcal / totalKcal) : 0,
+    fiberPerDay: perDay((item) => item.fiberG),
+    saltPerDay: perDay((item) => item.saltG),
+    sugarsPerDay: perDay((item) => item.sugarsG),
+    fruitVegPortionsPerDay: round1(fruitVegGrams(items) / FRUIT_VEG_PORTION_G / days),
+    topSalt: topBy(items, (item) => ((item.saltG ?? 0) * item.grams) / 100),
+    topUltraProcessed: topBy(upf, (item) => item.kcal),
+  };
+  return { ...result, suggestions: suggestionsFor(result) };
+}
+
+function suggestionsFor(week: Omit<WeekQuality, "suggestions">): Suggestion[] {
+  const list: Suggestion[] = [];
+  if (week.fruitVegPortionsPerDay < FRUIT_VEG_GOAL_PORTIONS - 1) list.push("fruitVeg");
+  if (week.fiberPerDay < FIBER_GOAL_G - 5) list.push("fiber");
+  if (week.ultraProcessedShare !== null && week.novaCoverage >= 0.3 && week.ultraProcessedShare > 0.3) {
+    list.push("homemade");
+  }
+  if (week.saltPerDay > SALT_REFERENCE_G + 1) list.push("salt");
+  return list.length > 0 ? list.slice(0, 2) : ["keepGoing"];
+}
+
+/** Les 3 aliments (par nom) qui pèsent le plus selon `weight`. */
+function topBy(items: readonly QualityItem[], weight: (item: QualityItem) => number): string[] {
+  const totals = new Map<string, number>();
+  for (const item of items) totals.set(item.name, (totals.get(item.name) ?? 0) + weight(item));
+  return [...totals]
+    .filter(([, value]) => value > 0)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([name]) => name);
+}
+
+/**
+ * Valeurs de qualité d'une recette pour 100 g : fibres, sucres et sel connus seulement si
+ * tous les ingrédients les connaissent ; part de fruits et légumes rapportée au poids cru.
+ */
+export function recipeQuality(
+  ingredients: readonly {
+    grams: number;
+    fiberG: number | null;
+    sugarsG: number | null;
+    saltG: number | null;
+    fruitVegShare: number;
+  }[],
+  totalGrams: number,
+): { fiberG: number | null; sugarsG: number | null; saltG: number | null; fruitVegShare: number } {
+  const rawGrams = ingredients.reduce((sum, item) => sum + item.grams, 0);
+  const per100 = (pick: (item: (typeof ingredients)[number]) => number | null) =>
+    ingredients.every((item) => pick(item) !== null)
+      ? round2(ingredients.reduce((sum, item) => sum + (pick(item)! * item.grams) / 100, 0) * (100 / totalGrams))
+      : null;
+  return {
+    fiberG: per100((item) => item.fiberG),
+    sugarsG: per100((item) => item.sugarsG),
+    saltG: per100((item) => item.saltG),
+    fruitVegShare:
+      rawGrams > 0 ? round2(ingredients.reduce((sum, item) => sum + item.grams * item.fruitVegShare, 0) / rawGrams) : 0,
+  };
+}
+
+function round1(value: number): number {
+  return Math.round(value * 10) / 10;
+}
+
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
+}
