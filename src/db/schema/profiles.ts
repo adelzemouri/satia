@@ -13,6 +13,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import type { ACTIVITY_LEVELS } from "@/domain/profile";
+import { DEFAULT_NOTIFICATION_PREFS, type NotificationPrefs } from "@/domain/notifications";
 import { BUDGET_MODES, COACH_STYLES, DIETS, GOALS, PACES, SEXES } from "@/domain/profile";
 
 import { user } from "./auth";
@@ -43,6 +44,8 @@ export const profiles = pgTable("profiles", {
   /** L'utilisateur a figé son objectif : le bilan hebdomadaire ne le modifie plus. */
   goalLocked: boolean().notNull().default(false),
   coachStyle: text({ enum: COACH_STYLES }).notNull().default("teacher"),
+  /** Types de rappels activés et plage silencieuse (les abonnements sont par appareil). */
+  notificationPrefs: jsonb().$type<NotificationPrefs>().notNull().default(DEFAULT_NOTIFICATION_PREFS),
   disclaimerAcceptedAt: timestamp({ withTimezone: true }).notNull(),
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),

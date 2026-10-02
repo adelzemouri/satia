@@ -15,6 +15,11 @@ const envSchema = z.object({
   SETUP_TOKEN: z.string().min(16).optional(),
   /** Secret des tâches planifiées (purge des photos), envoyé par le cron de l'hébergeur. */
   CRON_SECRET: z.string().min(16).optional(),
+  /** Clés VAPID du Web Push (base64url), générées depuis la page admin. Sans elles, pas de notifications. */
+  VAPID_PUBLIC_KEY: z.string().min(80).optional(),
+  VAPID_PRIVATE_KEY: z.string().min(40).optional(),
+  /** Contact des services de push (« mailto:… » ou URL https) ; par défaut, l'adresse de l'app. */
+  VAPID_SUBJECT: z.string().optional(),
   /** Domaines personnalisés supplémentaires, séparés par des virgules. */
   APP_HOSTS: z
     .string()

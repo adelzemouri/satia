@@ -128,6 +128,30 @@ test("le thème choisi dans le profil est appliqué et conservé", async ({ page
   await expectNoA11yViolations(page);
 });
 
+test("réglages des notifications et génération des clés côté admin", async ({ page }) => {
+  await signIn(page, ADMIN);
+  await page.goto("/profile");
+  const card = page.getByRole("region", { name: "Notifications" });
+  await expect(card.getByText("Les notifications ne sont pas encore configurées par l'admin.")).toBeVisible();
+  await expect(card.getByLabel("Repas non saisis")).toBeChecked();
+  await card.getByLabel("Hydratation").uncheck();
+  await card.getByLabel("De", { exact: true }).fill("21:30");
+  await card.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(card.getByText("Préférences enregistrées.")).toBeVisible();
+  await expectNoA11yViolations(page);
+  await page.reload();
+  await expect(card.getByLabel("Hydratation")).not.toBeChecked();
+  await expect(card.getByLabel("De", { exact: true })).toHaveValue("21:30");
+
+  await page.goto("/admin");
+  const push = page.getByRole("region", { name: "Notifications" });
+  await push.getByRole("button", { name: "Générer une paire de clés" }).click();
+  await expect(push.getByText("VAPID_PUBLIC_KEY")).toBeVisible();
+  await expect(push.getByText("VAPID_PRIVATE_KEY")).toBeVisible();
+  await expect(push.locator("code").first()).toHaveText(/^[A-Za-z0-9_-]{87}$/);
+  await expectNoA11yViolations(page);
+});
+
 test("ajout manuel d'un repas depuis la base Ciqual", async ({ page }) => {
   await signIn(page, ADMIN);
   await page.getByRole("link", { name: "Ajouter au déjeuner" }).click();
