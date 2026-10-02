@@ -62,6 +62,10 @@ test("la page hors-ligne est servie par le service worker", async ({ page, conte
     await navigator.serviceWorker.ready;
   });
   await page.reload();
+  // Attendre que le worker contrôle la page et que la page hors-ligne soit en cache.
+  await page.waitForFunction(async () => {
+    return navigator.serviceWorker.controller !== null && (await caches.match("/~offline")) !== undefined;
+  });
   await context.setOffline(true);
   await page.goto("/une-page-jamais-visitee").catch(() => undefined);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Hors ligne");
