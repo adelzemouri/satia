@@ -22,14 +22,8 @@ export function proxy(request: NextRequest) {
   return response;
 }
 
+// Les préchargements du routeur (en-têtes `next-router-prefetch`) passent aussi par ici : sans la
+// réécriture de next-intl vers `/fr/...`, ils tombaient en 404 et chaque clic rechargeait la page.
 export const config = {
-  matcher: [
-    {
-      source: "/((?!api|serwist|_next|_vercel|manifest.webmanifest|.*\\..*).*)",
-      missing: [
-        { type: "header", key: "next-router-prefetch" },
-        { type: "header", key: "purpose", value: "prefetch" },
-      ],
-    },
-  ],
+  matcher: ["/((?!api|serwist|_next|_vercel|manifest.webmanifest|.*\\..*).*)"],
 };

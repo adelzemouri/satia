@@ -1,5 +1,7 @@
 /** Coach (calcul pur) : contexte compact, garde-fous locaux, statistiques du bilan, plat suggéré. */
 
+import type { MealSlot } from "./meals";
+
 /**
  * Demande explicite d'un apport sous le plancher (« 800 kcal par jour ») : le coach répond
  * sans appel au LLM, avec bienveillance.
@@ -104,19 +106,32 @@ export function weekStats(days: readonly DayStats[], proteinGoalG: number): Week
   };
 }
 
-export type DishCandidate = { id: string; name: string; portionKcal: number };
+export type DishCandidate = {
+  id: string;
+  name: string;
+  portionKcal: number;
+  /** Repas où l'utilisateur l'a déjà noté (vide s'il ne l'a jamais noté). */
+  slots: readonly MealSlot[];
+};
+
+/** Part indicative de l'objectif du jour pour chaque repas. */
+export const SLOT_SHARES: Record<MealSlot, number> = { breakfast: 0.25, lunch: 0.35, snack: 0.1, dinner: 0.3 };
 
 /**
- * Plat suggéré sans appel au LLM : une recette ou un favori dont une portion tient dans le
- * budget restant (et en utilise au moins un tiers), qui change chaque jour.
+ * Plat suggéré sans appel au LLM : une recette ou un favori adapté au repas qui vient (déjà
+ * noté à ce repas, ou jamais noté et proposé au déjeuner ou au dîner seulement), dont une
+ * portion tient dans la part de ce repas et dans le reste du jour, qui change chaque jour.
  */
 export function suggestDish(
   candidates: readonly DishCandidate[],
-  remainingKcal: number,
+  { slot, goalKcal, remainingKcal }: { slot: MealSlot; goalKcal: number; remainingKcal: number },
   seed: string,
 ): DishCandidate | null {
+  const budget = Math.min(remainingKcal, Math.round(goalKcal * SLOT_SHARES[slot] * 1.2));
+  if (budget < 80) return null;
   const fitting = candidates
-    .filter((dish) => dish.portionKcal <= remainingKcal && dish.portionKcal >= remainingKcal / 3)
+    .filter((dish) => (dish.slots.length > 0 ? dish.slots.includes(slot) : slot === "lunch" || slot === "dinner"))
+    .filter((dish) => dish.portionKcal <= budget && dish.portionKcal >= budget / 3)
     .sort((a, b) => a.id.localeCompare(b.id));
   if (fitting.length === 0) return null;
   const hash = [...seed].reduce((sum, char) => (sum * 31 + char.charCodeAt(0)) >>> 0, 7);

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, desc, eq, gte, lte, notInArray, sum } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, lte, notInArray, sum } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db/client";
@@ -26,7 +26,7 @@ import {
 import { APP_TIMEZONE } from "@/config/app";
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
-import { slotAt } from "@/domain/meals";
+import { type MealSlot, slotAt } from "@/domain/meals";
 import { COACH_STYLES, type CoachStyle } from "@/domain/profile";
 import { weekQuality } from "@/domain/quality";
 import { isoWeekStart } from "@/domain/streak";
@@ -288,22 +288,37 @@ export async function ensureWeeklyReview(userId: string, today: string = todayIs
 export type SuggestedDish = DishCandidate & { imageUrl: string | null };
 
 /**
- * Plat du jour qui tient dans le budget restant, choisi parmi les recettes (perso et du foyer)
- * et les favoris, sans appel au LLM.
+ * Plat qui convient au repas qui vient et tient dans le budget, choisi parmi les recettes
+ * (perso et du foyer) et les favoris, sans appel au LLM.
  */
 export async function suggestedDish(
   userId: string,
-  remainingKcal: number,
+  { slot, goalKcal, remainingKcal }: { slot: MealSlot; goalKcal: number; remainingKcal: number },
   date: string,
 ): Promise<SuggestedDish | null> {
-  if (remainingKcal < 150) return null;
-  const candidates = (await dishPool(userId)).map((row) => ({
+  if (remainingKcal < 80) return null;
+  const pool = await dishPool(userId);
+  if (pool.length === 0) return null;
+  const history = await db()
+    .selectDistinct({ foodId: mealEntries.foodId, slot: mealEntries.slot })
+    .from(mealEntries)
+    .where(
+      and(
+        eq(mealEntries.userId, userId),
+        inArray(
+          mealEntries.foodId,
+          pool.map((row) => row.id),
+        ),
+      ),
+    );
+  const candidates = pool.map((row) => ({
     id: row.id,
     name: row.name,
     portionKcal: Math.round((row.kcal * (row.unitWeights?.portion ?? 100)) / 100),
     imageUrl: row.imageUrl,
+    slots: history.filter((entry) => entry.foodId === row.id).map((entry) => entry.slot),
   }));
-  const dish = suggestDish(candidates, remainingKcal, `${userId}:${date}`);
+  const dish = suggestDish(candidates, { slot, goalKcal, remainingKcal }, `${userId}:${date}`);
   return dish ? (candidates.find((candidate) => candidate.id === dish.id) ?? null) : null;
 }
 
