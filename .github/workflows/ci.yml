@@ -2,6 +2,8 @@ name: CI
 
 on:
   pull_request:
+  # Relancée par le workflow « Données Ciqual » : un push fait avec GITHUB_TOKEN ne déclenche pas la CI.
+  workflow_dispatch:
   push:
     branches: [main]
 
