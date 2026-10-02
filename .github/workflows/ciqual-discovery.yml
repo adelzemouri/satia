@@ -7,11 +7,19 @@ jobs:
   discover:
     runs-on: ubuntu-latest
     steps:
-      - name: Jeux de données data.gouv.fr
+      - name: Contenu de l'archive XML 2020
         run: |
-          curl -s "https://www.data.gouv.fr/api/1/datasets/?q=ciqual&page_size=10" \
-            | jq -r '.data[] | "## \(.slug) | \(.organization.name // "-") | \(.last_update)", (.resources[] | "  \(.title) | \(.format) | \(.filesize) | \(.url)")'
-      - name: Liens du site Ciqual
+          curl -sL -o ciqual.zip "https://ciqual.anses.fr/cms/sites/default/files/inline-files/XML_2020_07_07.zip"
+          ls -l ciqual.zip; unzip -o -q ciqual.zip -d x; ls -lR x
+          for f in $(find x -name '*.xml'); do echo "=== $f"; file "$f"; head -c 1500 "$f" | iconv -f windows-1252 -t utf-8 || head -c 1500 "$f"; echo; done
+      - name: Constituants
         run: |
-          curl -sL https://ciqual.anses.fr/ -o home.html; wc -c home.html
-          grep -oiE 'href="[^"]+"' home.html | grep -iE 'zip|xls|csv|xml|download|telecharg' | sort -u | head -50
+          f=$(find x -iname 'const*.xml'); iconv -f windows-1252 -t utf-8 "$f" | tr -d '\r' | paste -sd' ' | sed 's#</CONST>#</CONST>\n#g' | sed -E 's#<[^>]+>#|#g; s#\|+#|#g' | head -80
+      - name: Exemples de composition
+        run: |
+          f=$(find x -iname 'compo*.xml'); iconv -f windows-1252 -t utf-8 "$f" | tr -d '\r' | paste -sd' ' | sed 's#</COMPO>#</COMPO>\n#g' | sed -E 's#<[^>]+>#|#g; s#\|+#|#g' | grep -E '^\|? ?(2028|20516|13050) ' | head -40
+          echo; iconv -f windows-1252 -t utf-8 "$f" | grep -o '<teneur>[^<]*</teneur>' | sort | uniq -c | sort -rn | head -15
+      - name: Exemples d'aliments
+        run: |
+          f=$(find x -iname 'alim_2*.xml'); iconv -f windows-1252 -t utf-8 "$f" | tr -d '\r' | paste -sd' ' | sed 's#</ALIM>#</ALIM>\n#g' | sed -E 's#<[^>]+>#|#g; s#\|+#|#g' | head -15
+          iconv -f windows-1252 -t utf-8 "$f" | grep -c '<ALIM>'
