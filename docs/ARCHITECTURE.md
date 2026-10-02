@@ -124,7 +124,7 @@ app_settings, rate_limits
 | `households` | name | Un seul foyer en pratique ; prépare la v2. |
 | `users` | household_id, email, name, role (`admin`/`member`), locale, theme, energy_unit (`kcal`/`kj`), deleted_at | Plus les tables Better Auth (`sessions`, `accounts` avec hash argon2, `two_factors`). |
 | `invitations` | household_id, email, token_hash, expires_at, used_at, invited_by | Lien à usage unique, seul le hash du jeton est stocké. |
-| `profiles` | first_name, sex, birth_date, height_cm, activity_level (1–5), goal, pace (`gentle`/`moderate`), target_weight_kg, diet, foods_to_avoid, meal_times (jsonb), disclaimer_accepted_at | Si âge < 18 ans, `goal` limité à maintien/équilibre (contrainte applicative). |
+| `profiles` | first_name, sex (`female`/`male`, obligatoire), birth_date, height_cm, activity_level (1–5), goal, pace (`gentle`/`moderate`), target_weight_kg, diet, foods_to_avoid, meal_times (jsonb), disclaimer_accepted_at | Si âge < 18 ans, `goal` limité à maintien/équilibre (contrainte applicative). |
 | `goals` | user_id, effective_from, kcal, protein_g, carbs_g, fat_g, water_ml, source (`formula`/`manual`) | Historisé pour que les jours passés gardent leur objectif. |
 | `foods` | source (`ciqual`/`off`/`custom`/`estimated`), source_ref (code Ciqual ou EAN), owner_user_id (null si public), name_fr, name_en, brand, kcal, protein, carbs, fat, fiber, sugars, salt (pour 100 g), density_g_ml, unit_weights (jsonb : pièce, tranche…), fetched_at | Index trigram sur `unaccent(name)`. Les produits OFF scannés sont mis en cache ici (phase 3). |
 | `recipes` / `recipe_items` | owner_user_id, name, servings / food_id, grams | Recettes personnelles en v1. |
@@ -142,6 +142,14 @@ app_settings, rate_limits
 
 Le streak n'a pas de table : il se calcule depuis `meal_entries`, avec un jour de gel
 appliqué automatiquement par semaine civile.
+
+## Décisions produit (2026-10-02)
+
+- Onboarding v1 sans les écrans mode de budget, coach et jeûne : ils arrivent à
+  leur phase (7, 9, 14).
+- Le sexe est obligatoire (femme ou homme) : il fixe la formule Mifflin-St Jeor
+  et le plancher calorique.
+- Le jour de gel du streak est appliqué automatiquement, une fois par semaine.
 
 ## 4. Couche d'abstraction LLM (`src/llm/`)
 
