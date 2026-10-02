@@ -19,6 +19,18 @@ function alertIn(page: Page) {
   return page.locator('[role="alert"]:not(#__next-route-announcer__)');
 }
 
+/**
+ * Lance une action dont l'affichage est optimiste et attend la réponse de l'action serveur,
+ * pour qu'un rechargement juste après relise bien la valeur enregistrée.
+ */
+async function withServerAction(page: Page, act: () => Promise<unknown>) {
+  const done = page.waitForResponse(
+    (response) => response.request().method() === "POST" && !!response.request().headers()["next-action"],
+  );
+  await act();
+  await done;
+}
+
 async function expectNoA11yViolations(page: Page) {
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
   expect(results.violations).toEqual([]);
@@ -212,7 +224,7 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await expect(page.getByRole("region", { name: "Petit-déjeuner" }).getByText("Granola maison")).toBeVisible();
 
   await page.getByRole("link", { name: "Accueil" }).click();
-  await page.getByRole("button", { name: "Verre 3" }).click();
+  await withServerAction(page, () => page.getByRole("button", { name: "Verre 3" }).click());
   await expect(page.getByText("3 / 8 verres")).toBeVisible();
   await page.reload();
   await expect(page.getByText("3 / 8 verres")).toBeVisible();
@@ -495,7 +507,7 @@ test("repas partagé : l'admin partage un plat du foyer, le membre le valide ave
 test("ressenti du jour et bilan qualité de la semaine", async ({ page }) => {
   await signInWithTotp(page);
   const checkin = page.getByRole("region", { name: "Comment tu te sens ?" });
-  await checkin.getByRole("radio", { name: "Énergie : 4 sur 5" }).check({ force: true });
+  await withServerAction(page, () => checkin.getByRole("radio", { name: "Énergie : 4 sur 5" }).check({ force: true }));
   await expect(checkin.getByRole("radio", { name: "Énergie : 4 sur 5" })).toBeChecked();
   await expect(page.getByRole("progressbar", { name: "Fibres" })).toBeVisible();
   await expectNoA11yViolations(page);
@@ -530,7 +542,7 @@ test("coach : bilan, conversation (LLM simulé), garde-fou et personnalité", as
   await expect(conversation.getByText(/en dessous de ton minimum journalier/)).toBeVisible();
   await expectNoA11yViolations(page);
 
-  await page.getByLabel("Gourmand").check();
+  await withServerAction(page, () => page.getByLabel("Gourmand").check());
   await page.reload();
   await expect(page.getByLabel("Gourmand")).toBeChecked();
   await expect(conversation.getByText(/Tu me demandais/)).toBeVisible();
@@ -557,7 +569,7 @@ test("mon métabolisme et budget hebdomadaire avec un jour plus large", async ({
   const days = page.getByRole("region", { name: "Jour par jour" });
   await expect(days.getByRole("progressbar", { name: "Cette semaine" })).toBeVisible();
   const lastDay = days.getByRole("checkbox", { name: /^Jour plus large/ }).last();
-  await lastDay.check();
+  await withServerAction(page, () => lastDay.check());
   await expect(lastDay).toBeChecked();
   await expectNoA11yViolations(page);
   await page.reload();
