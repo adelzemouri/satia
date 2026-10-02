@@ -1,7 +1,19 @@
-import { date, index, jsonb, numeric, pgTable, smallint, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  date,
+  index,
+  jsonb,
+  numeric,
+  pgTable,
+  smallint,
+  text,
+  timestamp,
+  unique,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 import type { ACTIVITY_LEVELS } from "@/domain/profile";
-import { DIETS, GOALS, PACES, SEXES } from "@/domain/profile";
+import { BUDGET_MODES, DIETS, GOALS, PACES, SEXES } from "@/domain/profile";
 
 import { user } from "./auth";
 
@@ -26,6 +38,10 @@ export const profiles = pgTable("profiles", {
   mealTimes: jsonb().$type<Record<"breakfast" | "lunch" | "dinner", string>>().notNull(),
   /** Objectif d'eau en verres de 250 ml. */
   waterGoalGlasses: smallint().notNull().default(8),
+  /** Budget calorique quotidien, ou hebdomadaire (réparti sur les jours restants). */
+  budgetMode: text({ enum: BUDGET_MODES }).notNull().default("daily"),
+  /** L'utilisateur a figé son objectif : le bilan hebdomadaire ne le modifie plus. */
+  goalLocked: boolean().notNull().default(false),
   disclaimerAcceptedAt: timestamp({ withTimezone: true }).notNull(),
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
@@ -44,7 +60,7 @@ export const goals = pgTable(
     proteinG: smallint().notNull(),
     carbsG: smallint().notNull(),
     fatG: smallint().notNull(),
-    source: text({ enum: ["formula", "manual"] }).notNull(),
+    source: text({ enum: ["formula", "manual", "adaptive"] }).notNull(),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index().on(t.userId), unique().on(t.userId, t.effectiveFrom)],

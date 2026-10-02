@@ -21,6 +21,8 @@ export const ICONS = {
   close: "M6 6l12 12M18 6 6 18",
   family:
     "M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm8 1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM3 20a5 5 0 0 1 10 0M13.5 20a4 4 0 0 1 7.5-2",
+  calendar: "M5 6h14v14H5V6Zm0 4h14M9 4v4M15 4v4M8.5 14h2M13.5 14h2M8.5 17h2",
+  pulse: "M3 12h4l2-5 4 10 2-5h6",
 } as const;
 
 export function Icon({

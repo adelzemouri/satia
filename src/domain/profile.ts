@@ -19,6 +19,9 @@ export type ActivityLevel = (typeof ACTIVITY_LEVELS)[number];
 export const DIETS = ["omnivore", "flexitarian", "pescatarian", "vegetarian", "vegan", "no_pork"] as const;
 export type Diet = (typeof DIETS)[number];
 
+export const BUDGET_MODES = ["daily", "weekly"] as const;
+export type BudgetMode = (typeof BUDGET_MODES)[number];
+
 export const ADULT_AGE = 18;
 
 /** Âge révolu à une date donnée (dates ISO « AAAA-MM-JJ »). */

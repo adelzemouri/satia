@@ -50,6 +50,7 @@ const answers: OnboardingInput = {
   diet: "omnivore",
   foodsToAvoid: "",
   mealTimes: { breakfast: "07:30", lunch: "12:30", dinner: "20:00" },
+  budgetMode: "daily" as const,
   disclaimerAccepted: true,
 };
 

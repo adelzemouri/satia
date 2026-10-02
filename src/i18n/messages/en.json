@@ -45,7 +45,8 @@
     "addTo": "Add to {slot}",
     "openJournal": "See the full diary",
     "streak": "{days, plural, =0 {No streak yet: logging a meal today starts one.} one {# day in a row} other {# days in a row}}",
-    "streakFrozen": "A rest day was covered this week, your streak goes on."
+    "streakFrozen": "A rest day was covered this week, your streak goes on.",
+    "more": "Shortcuts"
   },
   "theme": {
     "label": "Theme",
@@ -213,6 +214,17 @@
       "floor": "To keep you well, your goal never goes below {floor} kcal a day, even if that slows things down a little.",
       "capped": "To keep it sustainable and safe, weight loss is limited to about 1% of your weight per week.",
       "start": "Let's go!"
+    },
+    "budget": {
+      "title": "How would you like to manage your calories?",
+      "daily": {
+        "label": "Daily budget",
+        "hint": "The same goal every day. Simple and steady."
+      },
+      "weekly": {
+        "label": "Weekly budget",
+        "hint": "One total for the week: each day adjusts to the previous ones, and you can plan bigger days."
+      }
     }
   },
   "profile": {
@@ -315,7 +327,8 @@
     "dish_weight_required": "Enter the weight of the whole dish.",
     "dish_not_shared": "This recipe is personal: make it a household recipe to share it.",
     "share_nobody": "Choose at least one person, or enter your own portion.",
-    "portion_required": "Enter your portion."
+    "portion_required": "Enter your portion.",
+    "larger_day_range": "You can mark today or a day within the next 8 weeks."
   },
   "slots": {
     "breakfast": "Breakfast",
@@ -458,7 +471,8 @@
     "history": "Recent weigh-ins",
     "delete": "Delete the weigh-in of {date}",
     "chart": "Weight chart and smoothed trend",
-    "empty": "No weigh-in yet."
+    "empty": "No weigh-in yet.",
+    "metabolismLink": "See my metabolism"
   },
   "scan": {
     "title": "Scan a barcode",
@@ -642,5 +656,63 @@
     "whoHint": "Each person gets the dish to confirm: nothing is added to their journal without their approval.",
     "notEating": "I'm not having any",
     "share": "Share"
+  },
+  "week": {
+    "title": "My week",
+    "open": "See my week",
+    "mode": "Budget mode",
+    "daysTitle": "Day by day",
+    "gauge": "This week",
+    "gaugeValue": "{consumed, number} / {total, number} kcal",
+    "overspent": "This week is already well filled: the remaining days keep a comfortable goal, and everything starts fresh on Monday.",
+    "largerHint": "A family meal or a night out coming up? Tick the day: it gets a bit more, the others a bit less.",
+    "larger": "Bigger day",
+    "largerFor": "Bigger day: {day}",
+    "today": "today",
+    "pastDay": "{consumed, number} kcal logged",
+    "target": "Goal: {kcal, number} kcal",
+    "dailyHint": "With a weekly budget you have a total for the week: what you didn't eat one day carries over to the following days, within sensible limits.",
+    "notLogged": "Nothing logged: counted as a day on target"
+  },
+  "metabolism": {
+    "title": "My metabolism",
+    "intro": "Your starting expenditure is an estimate. From your meals and weigh-ins, the app measures your real expenditure and adjusts your goal every week.",
+    "expenditure": "Your daily expenditure",
+    "startEstimate": "Estimated at the start",
+    "measured": "Measured",
+    "kcalPerDay": "{value, number} kcal",
+    "notYet": "Soon",
+    "measuredDetail": "Over the last {days} days, you ate {intake, number} kcal on average and your weight trend changed by {change, number, ::sign-always .00} kg per week.",
+    "insufficient": "Measuring your expenditure takes at least {days} days of tracking. Still missing:",
+    "missingDays": "{count, plural, one {# day of tracking} other {# days of tracking}}",
+    "missingWeighIns": "{count, plural, one {# weigh-in} other {# weigh-ins}} in the period",
+    "missingLogged": "{count, plural, one {# day with logged meals} other {# days with logged meals}}",
+    "inconsistent": "The last few weeks look incomplete (some meals not logged, perhaps): we keep your current goal, and that's perfectly fine.",
+    "currentEstimate": "With your current weight, the formula estimates your expenditure at {value, number} kcal per day.",
+    "goal": "Your goal",
+    "source": {
+      "formula": "Calculated with the starting formula.",
+      "manual": "Set manually.",
+      "adaptive": "Adjusted from your measured expenditure."
+    },
+    "lockedHint": "Your goal is locked: the weekly check no longer changes it.",
+    "unlockedHint": "Each week, the goal can move by 150 kcal at most, never below the floor.",
+    "lock": "Lock my goal",
+    "unlock": "Let my goal adjust",
+    "history": "Weekly checks",
+    "chart": "Estimated expenditure (dashed) and measured expenditure (solid), week by week",
+    "weekOf": "Week of {date}",
+    "status": {
+      "adjusted": "Measured expenditure {measured, number} kcal: goal adjusted from {before, number} to {after, number} kcal.",
+      "unchanged": "Measured expenditure {measured, number} kcal: your goal of {after, number} kcal still fits.",
+      "locked": "Measured expenditure {measured, number} kcal: goal locked at {after, number} kcal.",
+      "insufficient": "Not enough data yet: goal unchanged.",
+      "inconsistent": "Incomplete data: goal unchanged."
+    },
+    "howTitle": "How does it work?",
+    "how1": "Over the last {days} days, we compare what you ate with how your weight trend moved (the smoothed curve, not daily weigh-ins).",
+    "how2": "If your weight goes down more slowly than expected, you spend a little less than the estimate; faster, a little more. Your goal then gently moves towards what works for you.",
+    "how3": "It takes at least 14 days of tracking, 3 weigh-ins and meals logged 8 days out of 10. Adjustments are limited to 150 kcal per week and never go below the calorie floor.",
+    "disclaimer": "{appName} is not medical advice. For any health question, talk to a professional."
   }
 }
