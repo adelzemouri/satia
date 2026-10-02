@@ -17,8 +17,11 @@ Le choix précis te revient, mais il doit respecter :
 - Hébergement cloud managé (PaaS ou serverless), pas de serveur à administrer.
   En phase 0, proposer 2 ou 3 hébergeurs comparés sur : coût mensuel estimé pour
   ~6 utilisateurs, région UE disponible, base managée, stockage objet, tâches
-  planifiées (cron), facilité de déploiement depuis GitLab CI. Attendre mon choix.
-- Données hébergées dans l'Union européenne (base, photos, sauvegardes).
+  planifiées (cron), facilité de déploiement depuis GitHub Actions. Attendre mon choix.
+  Choix retenu (2026-10-02) : le moins cher → Vercel Hobby + Neon + Cloudflare R2,
+  détaillé dans `docs/ARCHITECTURE.md`.
+- Données de préférence dans l'Union européenne (base, photos, sauvegardes) quand
+  c'est sans surcoût ; ce n'est plus une obligation.
 - Base PostgreSQL managée avec sauvegardes automatiques activées.
 - Photos stockées dans un stockage objet compatible S3, bucket privé, accès par
   URL signée à durée courte.
@@ -95,7 +98,7 @@ Le choix précis te revient, mais il doit respecter :
 - Tests d'intégration pour les routes API ; tests e2e (Playwright) pour les parcours
   critiques : onboarding, ajout d'un repas manuel, par code-barres, par photo (LLM mocké).
 - Les tests ne doivent jamais appeler un vrai LLM : provider mock déterministe.
-- Lint + format + typecheck en CI ; fournir un `.gitlab-ci.yml` (lint, test, build,
+- Lint + format + typecheck en CI ; workflows GitHub Actions (lint, test, build,
   déploiement automatique en production sur la branche `main`).
 - Accessibilité : contrastes WCAG AA, navigation clavier, labels ARIA.
 
