@@ -34,7 +34,12 @@ export default async function FoodsPage({ params }: PageProps<"/[locale]/foods">
             {foods.map((food) => (
               <li key={food.id} className="flex flex-wrap items-center gap-2 py-2">
                 <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate font-semibold">{food.nameFr}</span>
+                  <Link
+                    href={`/foods/${food.id}`}
+                    className="truncate font-semibold underline-offset-4 hover:underline"
+                  >
+                    {food.nameFr}
+                  </Link>
                   <span className="text-sm text-text-muted">
                     {t(`add.sources.${food.source}`)} · {t("add.per100", { kcal: Math.round(food.kcal) })}
                   </span>

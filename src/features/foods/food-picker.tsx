@@ -159,6 +159,10 @@ export function FoodPicker({
         <Icon name="barcode" />
         {t("scan")}
       </Link>
+      <Link href={{ pathname: "/family/share", query: { date, slot } }} className={buttonClass("secondary")}>
+        <Icon name="family" />
+        {t("shareWithFamily")}
+      </Link>
 
       <div id="food-panel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="flex flex-col gap-4">
         {tab === "search" && (

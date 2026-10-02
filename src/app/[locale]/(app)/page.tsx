@@ -5,8 +5,10 @@ import { MEAL_SLOTS } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { CalorieRing, MacroBars } from "@/features/journal/day-overview";
 import { WaterTracker } from "@/features/journal/water-tracker";
+import { PendingShares } from "@/features/family/pending-shares";
 import { Link, redirect } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
+import { pendingShares } from "@/server/family";
 import { daySummary, streakFor } from "@/server/journal";
 import { getProfile } from "@/server/profile";
 import { requireUser } from "@/server/session";
@@ -20,12 +22,25 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const profile = await getProfile(user.id);
   if (!profile) return redirect({ href: "/onboarding", locale });
   const today = todayIso();
-  const [summary, streak] = await Promise.all([daySummary(user.id, today), streakFor(user.id, today)]);
+  const [summary, streak, shares] = await Promise.all([
+    daySummary(user.id, today),
+    streakFor(user.id, today),
+    pendingShares(user.id),
+  ]);
   const t = await getTranslations();
 
   return (
     <>
       <h1 className="font-display text-3xl font-semibold">{t("home.greeting", { name: profile.firstName })}</h1>
+
+      {shares.length > 0 && (
+        <Card aria-labelledby="pending-title">
+          <h2 id="pending-title" className="text-xl font-semibold">
+            {t("family.pendingTitle")}
+          </h2>
+          <PendingShares shares={shares} />
+        </Card>
+      )}
 
       <Card aria-labelledby="today-title">
         <h2 id="today-title" className="font-semibold text-text-muted">
@@ -80,6 +95,16 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         </h2>
         <WaterTracker date={today} glasses={summary.water.glasses} goal={summary.water.goal} />
       </Card>
+
+      <Link
+        href="/family"
+        className="flex min-h-14 items-center gap-3 rounded-[var(--radius-card)] border border-border bg-surface px-5 py-3 font-semibold shadow-sm hover:bg-surface-muted"
+      >
+        <span className="text-primary">
+          <Icon name="family" />
+        </span>
+        {t("family.title")}
+      </Link>
 
       <p className="mt-auto text-sm text-text-muted">{t("disclaimer", { appName: APP_NAME })}</p>
     </>

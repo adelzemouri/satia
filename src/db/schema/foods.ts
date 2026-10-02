@@ -15,6 +15,7 @@ import {
 import type { CountUnit } from "@/domain/units";
 
 import { user } from "./auth";
+import { households } from "./households";
 
 export const FOOD_SOURCES = ["ciqual", "off", "custom", "recipe"] as const;
 export type FoodSource = (typeof FOOD_SOURCES)[number];
@@ -35,6 +36,8 @@ export const foods = pgTable(
     sourceRef: text(),
     /** Propriétaire d'un aliment personnel ou d'une recette ; null pour les aliments publics. */
     ownerUserId: uuid().references(() => user.id, { onDelete: "cascade" }),
+    /** Recette du foyer : visible et modifiable par tous ses membres (alors sans propriétaire). */
+    householdId: uuid().references(() => households.id, { onDelete: "cascade" }),
     nameFr: text().notNull(),
     nameEn: text(),
     brand: text(),
@@ -61,6 +64,7 @@ export const foods = pgTable(
   (t) => [
     unique().on(t.source, t.sourceRef),
     index().on(t.ownerUserId),
+    index().on(t.householdId),
     index("foods_search_name_trgm").using("gin", sql`${t.searchName} gin_trgm_ops`),
   ],
 );

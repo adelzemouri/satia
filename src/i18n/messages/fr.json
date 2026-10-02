@@ -310,7 +310,12 @@
     "food_required": "Choisis un aliment pour chaque ligne.",
     "speech_denied": "Le micro n'est pas autorisé. Tu peux écrire ton repas à la place.",
     "speech_failed": "La dictée n'a pas fonctionné. Réessaie, ou écris ton repas.",
-    "container_size_required": "Indique au moins le volume ou le diamètre."
+    "container_size_required": "Indique au moins le volume ou le diamètre.",
+    "family_recipe_personal_ingredient": "Une recette du foyer ne peut pas contenir tes aliments personnels : les autres membres ne les voient pas.",
+    "dish_weight_required": "Indique le poids du plat entier.",
+    "dish_not_shared": "Cette recette est personnelle : rends-la commune au foyer (case « Recette du foyer ») pour la partager.",
+    "share_nobody": "Choisis au moins une personne, ou indique ta portion.",
+    "portion_required": "Indique ta portion."
   },
   "slots": {
     "breakfast": "Petit-déjeuner",
@@ -392,9 +397,11 @@
       "ciqual": "Ciqual",
       "off": "Open Food Facts",
       "custom": "Mon aliment",
-      "recipe": "Ma recette"
+      "recipe": "Ma recette",
+      "family": "Recette du foyer"
     },
-    "scan": "Scanner un code-barres"
+    "scan": "Scanner un code-barres",
+    "shareWithFamily": "Partager un plat avec la famille"
   },
   "foods": {
     "title": "Mes aliments et recettes",
@@ -422,7 +429,12 @@
     "addIngredient": "Ajouter un ingrédient",
     "ingredientGrams": "Quantité de {name} en grammes",
     "removeIngredient": "Retirer {name}",
-    "recipeSummary": "{kcal, number} kcal par portion"
+    "recipeSummary": "{kcal, number} kcal par portion",
+    "familyRecipe": "Recette du foyer",
+    "familyRecipeHint": "Visible et modifiable par tous les membres du foyer.",
+    "fromPhoto": "Remplir à partir d'une photo",
+    "photoNotFound": "Pas trouvé dans la base, à ajouter toi-même : {names}.",
+    "editRecipe": "Modifier la recette"
   },
   "water": {
     "title": "Eau",
@@ -598,5 +610,37 @@
     "otherFood": "Changer",
     "save": "Enregistrer",
     "remove": "Supprimer {name}"
+  },
+  "family": {
+    "title": "Espace famille",
+    "intro": "Les recettes et les repas partagés sont communs au foyer. Ton poids, tes objectifs et ton journal restent privés.",
+    "pendingTitle": "Repas partagés à valider",
+    "sharedBy": "{name} a partagé ce plat pour le {slot} du {day}.",
+    "someone": "Un membre du foyer",
+    "partInfo": "{parts, number} parts · 1 part ≈ {grams, number} g, {kcal, number} kcal",
+    "myPortion": "Ma portion",
+    "parts": "{value} {count, plural, one {part} other {parts}}",
+    "inGrams": "En grammes",
+    "gramsLabel": "Poids de ma portion (g)",
+    "portionPreview": "Ça fait {grams, number} g, {kcal, number} kcal",
+    "accept": "Ajouter à mon journal",
+    "decline": "Pas pour moi",
+    "shareDish": "Partager un plat",
+    "newRecipe": "Nouvelle recette du foyer",
+    "recipesTitle": "Recettes du foyer",
+    "noRecipes": "Aucune recette commune pour l'instant. Crée-en une, ou rends une de tes recettes commune depuis sa fiche.",
+    "shareTitle": "Partager un plat",
+    "shareIntro": "Tu as cuisiné pour plusieurs ? Saisis le plat une fois : chacun indique sa portion et valide avant que ce soit ajouté à son journal.",
+    "chooseDish": "Quel plat ?",
+    "newDish": "Nouveau plat (ingrédients ou photo)",
+    "otherDish": "Changer",
+    "totalParts": "Nombre de parts",
+    "totalGrams": "Poids du plat entier (g)",
+    "partPreview": "1 part ≈ {grams, number} g, {kcal, number} kcal",
+    "weightHint": "Indique le nombre de parts et le poids du plat entier.",
+    "who": "Avec qui ?",
+    "whoHint": "Chacun recevra le plat à valider : rien n'est ajouté à son journal sans son accord.",
+    "notEating": "Je n'en mange pas",
+    "share": "Partager"
   }
 }

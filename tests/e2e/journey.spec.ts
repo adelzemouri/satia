@@ -417,6 +417,49 @@ test("l'admin génère un lien de nouveau mot de passe pour un membre", async ({
   await expect(teen).toHaveURL(/\/onboarding$/);
 });
 
+test("repas partagé : l'admin partage un plat du foyer, le membre le valide avec sa portion", async ({
+  page,
+  browser,
+}) => {
+  test.slow(); // deux sessions (admin puis membre) dans le même test
+  await signInWithTotp(page);
+  await page.goto("/family/share?slot=dinner");
+  await page.getByRole("button", { name: "Nouveau plat (ingrédients ou photo)" }).click();
+  await page.getByLabel("Nom", { exact: true }).fill("Gratin du dimanche");
+  await page.getByLabel("Nombre de portions").fill("4");
+  await page.getByLabel("Ajouter un ingrédient").fill("pâtes cuites");
+  await page
+    .getByRole("button", { name: /^Pâtes/ })
+    .first()
+    .click();
+  await page.getByRole("textbox", { name: /Quantité de Pâtes/ }).fill("600");
+  await page.getByRole("button", { name: "Créer" }).click();
+
+  await expect(page.getByRole("heading", { name: "Gratin du dimanche" })).toBeVisible();
+  await expect(page.getByLabel("Poids du plat entier (g)")).toHaveValue("600");
+  await expect(page.getByText(/^1 part ≈ 150 g, \d+ kcal$/)).toBeVisible();
+  await expect(page.getByLabel("Léa")).toBeChecked();
+  await expectNoA11yViolations(page);
+  await page.getByRole("button", { name: "Partager" }).click();
+  await expect(page).toHaveURL(/\/journal\?date=/);
+  await expect(page.getByRole("region", { name: "Dîner" }).getByText("Gratin du dimanche")).toBeVisible();
+
+  const teen = await newPage(browser);
+  await signIn(teen, { email: TEEN.email, password: "nouveau-mot-de-passe-lea" });
+  await teen.goto("/family");
+  const pending = teen.getByRole("region", { name: "Repas partagés à valider" });
+  await expect(pending.getByRole("heading", { name: "Gratin du dimanche" })).toBeVisible();
+  await expect(pending.getByText(/^Adel a partagé ce plat pour le dîner/)).toBeVisible();
+  await expect(teen.getByRole("region", { name: "Recettes du foyer" }).getByText("Gratin du dimanche")).toBeVisible();
+  await expectNoA11yViolations(teen);
+  await pending.getByText("½ part", { exact: true }).click();
+  await expect(pending.getByText(/^Ça fait 75 g, \d+ kcal$/)).toBeVisible();
+  await pending.getByRole("button", { name: "Ajouter à mon journal" }).click();
+  await expect(teen.getByRole("region", { name: "Repas partagés à valider" })).toHaveCount(0);
+  await teen.goto("/journal");
+  await expect(teen.getByRole("region", { name: "Dîner" }).getByText(/^75 g ·/)).toBeVisible();
+});
+
 test("export des données en JSON et CSV", async ({ page }) => {
   await signInWithTotp(page);
   await page.goto("/profile");

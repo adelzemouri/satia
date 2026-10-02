@@ -43,6 +43,13 @@
       "when": 1790953085962,
       "tag": "0005_meal_ai",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790955585513,
+      "tag": "0006_family",
+      "breakpoints": true
     }
   ]
 }

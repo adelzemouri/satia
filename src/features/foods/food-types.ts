@@ -13,6 +13,10 @@ export type FoodItem = {
   densityGPerMl: number | null;
   unitWeights: Partial<Record<"portion" | "piece" | "slice", number>> | null;
   imageUrl: string | null;
+  /** Renseigné pour une recette du foyer. */
+  householdId?: string | null;
+  /** Nombre de portions d'une recette. */
+  servings?: number | null;
 };
 
 /** Produit Open Food Facts proposé avant import (voir server/open-food-facts.ts). */

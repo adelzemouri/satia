@@ -10,6 +10,7 @@ import {
   deleteOwnFood,
   type RecipeInput,
   setFavorite,
+  updateRecipe,
 } from "@/server/foods";
 import {
   addEntry,
@@ -74,6 +75,10 @@ export async function createFoodAction(input: CustomFoodInput): Promise<IdState>
 
 export async function createRecipeAction(input: RecipeInput): Promise<IdState> {
   return run(async (userId) => ({ ok: true, id: await createRecipe(userId, input) }));
+}
+
+export async function updateRecipeAction(id: string, input: RecipeInput): Promise<IdState> {
+  return run(async (userId) => (await updateRecipe(userId, id, input), { ok: true, id }));
 }
 
 export async function deleteFoodAction(foodId: string): Promise<IdState> {

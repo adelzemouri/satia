@@ -109,3 +109,10 @@ describe("prompts de saisie", () => {
     expect(parsed.items.map((item) => item.name)).toEqual(["plat inconnu", "autre plat"]);
   });
 });
+
+describe("portions d'un plat partagé", () => {
+  it("affiche les fractions usuelles", async () => {
+    const { portionLabel } = await import("@/domain/portions");
+    expect([0.5, 1, 1.5, 2, 0.25, 2.75, 1.2].map(portionLabel)).toEqual(["½", "1", "1½", "2", "¼", "2¾", "1.2"]);
+  });
+});

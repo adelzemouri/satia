@@ -53,7 +53,9 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
     <>
       <div className="flex items-start gap-4">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <p className="text-sm font-semibold text-text-muted">{t(`add.sources.${food.source}`)}</p>
+          <p className="text-sm font-semibold text-text-muted">
+            {t(food.householdId ? "add.sources.family" : `add.sources.${food.source}`)}
+          </p>
           <h1 className="font-display text-3xl font-semibold">{food.nameFr}</h1>
           {food.brand && <p className="text-lg">{food.brand}</p>}
           {food.source === "off" && food.sourceRef && (
@@ -69,6 +71,19 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
       >
         {t("product.add")}
       </Link>
+      {food.source === "recipe" && (food.ownerUserId === user.id || food.householdId === user.householdId) && (
+        <div className="flex flex-wrap gap-3">
+          <Link href={`/foods/${food.id}/edit`} className={buttonClass("secondary")}>
+            {t("foods.editRecipe")}
+          </Link>
+          <Link
+            href={{ pathname: "/family/share", query: { food: food.id, date, ...(slot && { slot }) } }}
+            className={buttonClass("secondary")}
+          >
+            {t("add.shareWithFamily")}
+          </Link>
+        </div>
+      )}
 
       <Card aria-labelledby="nutrients">
         <h2 id="nutrients" className="text-xl font-semibold">
