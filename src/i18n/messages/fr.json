@@ -505,6 +505,12 @@
     "cost": "Coût",
     "failures": "{count, plural, one {# échec} other {# échecs}}",
     "deletedMember": "Compte supprimé",
-    "estimateNote": "Coûts estimés d'après les tarifs configurés ; la facture du fournisseur fait foi."
+    "estimateNote": "Coûts estimés d'après les tarifs configurés ; la facture du fournisseur fait foi.",
+    "providers": {
+      "openai": "Compatible OpenAI",
+      "anthropic": "Anthropic",
+      "mock": "Simulé (tests)",
+      "none": "Aucun"
+    }
   }
 }
