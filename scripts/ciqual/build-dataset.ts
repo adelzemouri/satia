@@ -31,7 +31,7 @@ function records(xml: string): Record<string, string>[] {
   const result: Record<string, string>[] = [];
   for (const match of xml.matchAll(new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`, "g"))) {
     const fields: Record<string, string> = {};
-    for (const field of match[1]!.matchAll(/<(\w+)>([^<]*)<\/\1>/g)) {
+    for (const field of match[1]!.matchAll(/<(\w+)[^>]*>([^<]*)<\/\1>/g)) {
       fields[field[1]!.toLowerCase()] = decodeEntities(field[2]!).trim();
     }
     result.push(fields);
@@ -79,7 +79,13 @@ for (const compo of records(readXml("compo"))) {
 const lines = [CIQUAL_COLUMNS.join(",")];
 let skipped = 0;
 for (const alim of records(readXml("alim_2"))) {
-  const code = alim.alim_code!;
+  const code = alim.alim_code;
+  const name = alim.alim_nom_fr;
+  if (!code || !name) {
+    console.warn("Enregistrement incomplet ignoré :", JSON.stringify(alim));
+    skipped += 1;
+    continue;
+  }
   const v = values.get(code) ?? new Map<string, number | null>();
   const protein = v.get(CONST.protein) ?? v.get(CONST.proteinCrude) ?? null;
   const carbs = v.get(CONST_OTHER.carbs) ?? null;
@@ -91,7 +97,6 @@ for (const alim of records(readXml("alim_2"))) {
     skipped += 1;
     continue;
   }
-  const name = alim.alim_nom_fr!;
   const hints = ciqualHints(name, alim.alim_grp_code ?? "");
   lines.push(
     toCsvLine([
