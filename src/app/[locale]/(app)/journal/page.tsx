@@ -8,11 +8,13 @@ import { availableUnits, type Unit } from "@/domain/units";
 import { CopyButton } from "@/features/journal/copy-button";
 import { CalorieRing, MacroBars } from "@/features/journal/day-overview";
 import { EntryRow } from "@/features/journal/entry-row";
+import { QualityBars } from "@/features/quality/quality-bars";
 import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { getFoods } from "@/server/foods";
 import { daySummary, entriesOn } from "@/server/journal";
 import { photoUrls } from "@/server/photos";
+import { dayQualityFor } from "@/server/quality";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
 import { Card } from "@/ui/card";
@@ -26,9 +28,10 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
   const today = todayIso();
   const date = parseDayParam((await searchParams).date, today);
   const yesterday = addDays(today, -1);
-  const [summary, yesterdayEntries] = await Promise.all([
+  const [summary, yesterdayEntries, quality] = await Promise.all([
     daySummary(user.id, date),
     date === today ? entriesOn(user.id, yesterday) : Promise.resolve([]),
+    dayQualityFor(user.id, date),
   ]);
   const foods = new Map(
     (
@@ -85,6 +88,7 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
         </h2>
         <CalorieRing totals={summary.totals} goal={summary.goal} />
         <MacroBars totals={summary.totals} goal={summary.goal} />
+        <QualityBars quality={quality} />
       </Card>
 
       {date === today && yesterdayEntries.length > 0 && summary.entries.length === 0 && (

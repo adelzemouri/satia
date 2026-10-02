@@ -10,7 +10,7 @@ export async function resetDatabase(): Promise<void> {
   await db().execute(sql`
     truncate table access_links, accounts, sessions, two_factors, verifications, goals, profiles,
       meal_entries, water_logs, weight_entries, favorites, recipe_items, rate_limits, llm_calls, photos,
-      food_corrections, containers, personal_expressions, shared_meals, shared_meal_shares, metabolism_checks, larger_days restart identity
+      food_corrections, containers, personal_expressions, shared_meals, shared_meal_shares, metabolism_checks, larger_days, daily_checkins restart identity
   `);
   await db().execute(sql`delete from foods where source <> 'ciqual'`);
   await db().execute(sql`delete from users`);

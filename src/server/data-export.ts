@@ -24,6 +24,7 @@ import {
 } from "@/db/schema";
 
 import { adaptiveExport } from "./adaptive";
+import { checkinExport } from "./quality";
 
 /** Toutes les données personnelles d'un utilisateur, sans aucun secret (mots de passe, TOTP, sessions). */
 export async function collectUserData(userId: string) {
@@ -148,6 +149,7 @@ export async function collectUserData(userId: string) {
     sharedMeals: shareRows,
     metabolismChecks: adaptive.checks,
     largerDays: adaptive.larger,
+    checkins: await checkinExport(userId),
   };
 }
 
@@ -176,6 +178,7 @@ export function toCsvZip(data: UserData): Uint8Array {
     "goals.csv": strToU8(toCsv(data.goals)),
     "metabolism-checks.csv": strToU8(toCsv(data.metabolismChecks)),
     "larger-days.csv": strToU8(toCsv(data.largerDays)),
+    "checkins.csv": strToU8(toCsv(data.checkins)),
     "meals.csv": strToU8(toCsv(data.meals)),
     "water.csv": strToU8(toCsv(data.water)),
     "weights.csv": strToU8(toCsv(data.weights)),

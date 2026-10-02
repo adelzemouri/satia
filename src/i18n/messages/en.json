@@ -714,5 +714,67 @@
     "how2": "If your weight goes down more slowly than expected, you spend a little less than the estimate; faster, a little more. Your goal then gently moves towards what works for you.",
     "how3": "It takes at least 14 days of tracking, 3 weigh-ins and meals logged 8 days out of 10. Adjustments are limited to 150 kcal per week and never go below the calorie floor.",
     "disclaimer": "{appName} is not medical advice. For any health question, talk to a professional."
+  },
+  "quality": {
+    "title": "Quality check",
+    "dayTitle": "Today's markers",
+    "fiber": "Fibre",
+    "fruitVeg": "Fruit and veg",
+    "salt": "Salt",
+    "sugars": "Sugars",
+    "fiberValue": "{value, number} / {goal, number} g",
+    "fruitVegValue": "{value, number} / {goal, number} portions",
+    "indicative": "Indicative markers: 30 g of fibre and 5 portions of fruit and veg (80 g) per day.",
+    "period": "The last 7 days, from {from} to {to}.",
+    "empty": "Nothing logged in the last 7 days: the check will appear with your first meals.",
+    "ideasTitle": "Ideas for the week",
+    "suggestions": {
+      "fruitVeg": "Add a piece of fruit as a snack or a handful of raw veg at lunch: every portion counts.",
+      "fiber": "A bit more fibre? Think lentils, chickpeas, wholemeal bread or oats.",
+      "homemade": "One more homemade recipe this week, even a simple one, easily replaces a ready meal.",
+      "salt": "Herbs, spices, lemon and garlic add flavour: other ways to season than salt.",
+      "keepGoing": "Great week! Keep it up, and add colour to your plate."
+    },
+    "averagesTitle": "Daily averages ({days, plural, one {# day logged} other {# days logged}})",
+    "gramsPerDay": "{value, number} g",
+    "portionsPerDay": "{value, number} portions",
+    "portions": "{count, plural, one {# portion} other {# portions}}",
+    "reference": "Marker: {value}",
+    "averagesHint": "Calculated from foods whose values are known.",
+    "processingTitle": "Level of processing",
+    "ultraProcessed": "of calories come from ultra-processed foods (NOVA 4), among the {coverage}% whose NOVA group is known.",
+    "novaUnknown": "The NOVA group is only known for store-bought products scanned or found on Open Food Facts.",
+    "novaHint": "NOVA ranks foods from 1 (unprocessed) to 4 (ultra-processed).",
+    "topUltraProcessed": "Most frequent ultra-processed foods: {names}.",
+    "topSalt": "Biggest salt sources: {names}.",
+    "sources": "Sources: Ciqual (Anses) and Open Food Facts. ANSES, PNNS and WHO markers, for guidance only.",
+    "labels": "Quality indicators",
+    "nutriscore": "Nutri-Score {grade}",
+    "nova": "NOVA {group}"
+  },
+  "checkin": {
+    "title": "How are you feeling?",
+    "hint": "Optional and only visible to you.",
+    "hunger": {
+      "label": "Hunger",
+      "low": "Not hungry",
+      "high": "Very hungry"
+    },
+    "energy": {
+      "label": "Energy",
+      "low": "Drained",
+      "high": "Full of energy"
+    },
+    "mood": {
+      "label": "Mood",
+      "low": "Low",
+      "high": "Great"
+    },
+    "scaleValue": "{question}: {value} out of 5",
+    "scaleHint": "From 1 ({low}) to 5 ({high})."
+  },
+  "habitual": {
+    "title": "{slot, select, breakfast {Your usual breakfast?} lunch {Your usual lunch?} dinner {Your usual dinner?} other {Your usual snack?}}",
+    "add": "Add it"
   }
 }

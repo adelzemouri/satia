@@ -8,6 +8,9 @@ const PRODUCT = {
   serving_quantity: 15,
   image_front_small_url: `http://localhost:${Number(process.env.OFF_MOCK_PORT ?? 3199)}/images/front.png`,
   nutriments: { "energy-kcal_100g": 540, proteins_100g: 6, carbohydrates_100g: 57, fat_100g: 31, sugars_100g: 56 },
+  nutriscore_grade: "e",
+  nova_group: 4,
+  categories_tags: ["en:spreads", "en:sweet-spreads"],
 };
 
 // Image 1×1 px servie comme photo du produit.

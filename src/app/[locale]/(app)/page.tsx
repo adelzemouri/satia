@@ -6,11 +6,14 @@ import { todayIso } from "@/domain/dates";
 import { CalorieRing, MacroBars } from "@/features/journal/day-overview";
 import { WaterTracker } from "@/features/journal/water-tracker";
 import { WeekGauge } from "@/features/adaptive/week-gauge";
+import { CheckinCard } from "@/features/quality/checkin-card";
+import { QualityBars } from "@/features/quality/quality-bars";
 import { PendingShares } from "@/features/family/pending-shares";
 import { Link, redirect } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { ensureWeeklyCheck, weekBudget } from "@/server/adaptive";
 import { pendingShares } from "@/server/family";
+import { checkinOn, dayQualityFor } from "@/server/quality";
 import { daySummary, streakFor } from "@/server/journal";
 import { getProfile } from "@/server/profile";
 import { requireUser } from "@/server/session";
@@ -26,11 +29,13 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const today = todayIso();
   // Bilan hebdomadaire de l'objectif adaptatif (une fois par semaine) avant d'afficher l'objectif.
   await ensureWeeklyCheck(user.id, today);
-  const [summary, streak, shares, week] = await Promise.all([
+  const [summary, streak, shares, week, quality, checkin] = await Promise.all([
     daySummary(user.id, today),
     streakFor(user.id, today),
     pendingShares(user.id),
     profile.budgetMode === "weekly" ? weekBudget(user.id, today) : null,
+    dayQualityFor(user.id, today),
+    checkinOn(user.id, today),
   ]);
   const t = await getTranslations();
 
@@ -53,6 +58,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         </h2>
         <CalorieRing totals={summary.totals} goal={summary.goal} />
         <MacroBars totals={summary.totals} goal={summary.goal} />
+        <QualityBars quality={quality} />
         {summary.zone && <p className="rounded-2xl bg-surface-muted px-4 py-3">{t(`home.zone.${summary.zone}`)}</p>}
         {week && (
           <>
@@ -102,6 +108,14 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         </Link>
       </Card>
 
+      <Card aria-labelledby="checkin-title">
+        <h2 id="checkin-title" className="text-xl font-semibold">
+          {t("checkin.title")}
+        </h2>
+        <p className="text-sm text-text-muted">{t("checkin.hint")}</p>
+        <CheckinCard date={today} initial={checkin} />
+      </Card>
+
       <Card aria-labelledby="water-title">
         <h2 id="water-title" className="text-xl font-semibold">
           {t("water.title")}
@@ -115,6 +129,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             ["/family", "family", t("family.title")],
             ["/week", "calendar", t("week.title")],
             ["/metabolism", "pulse", t("metabolism.title")],
+            ["/quality", "sprout", t("quality.title")],
           ] as const
         ).map(([href, icon, label]) => (
           <Link

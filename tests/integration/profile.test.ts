@@ -92,6 +92,7 @@ describe("onboarding et données", () => {
     expect(Object.keys(files).sort()).toEqual([
       "account.csv",
       "ai-calls.csv",
+      "checkins.csv",
       "containers.csv",
       "corrections.csv",
       "expressions.csv",

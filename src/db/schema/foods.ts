@@ -12,6 +12,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import { NUTRISCORE_GRADES } from "@/domain/quality";
 import type { CountUnit } from "@/domain/units";
 
 import { user } from "./auth";
@@ -51,6 +52,12 @@ export const foods = pgTable(
     fiberG: per100(),
     sugarsG: per100(),
     saltG: per100(),
+    /** Nutri-Score (a à e), quand Open Food Facts le fournit. */
+    nutriscore: text({ enum: NUTRISCORE_GRADES }),
+    /** Groupe NOVA (1 à 4 : degré de transformation), quand Open Food Facts le fournit. */
+    novaGroup: smallint(),
+    /** Part de fruits et légumes (0 à 1) : 1 pour un fruit ou un légume, calculée pour une recette. */
+    fruitVegShare: numeric({ precision: 3, scale: 2, mode: "number" }).notNull().default(0),
     densityGPerMl: numeric({ precision: 4, scale: 2, mode: "number" }),
     unitWeights: jsonb().$type<Partial<Record<CountUnit, number>>>(),
     /** Nombre de portions d'une recette. */

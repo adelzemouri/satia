@@ -714,5 +714,67 @@
     "how2": "Si ton poids baisse moins vite que prévu, c'est que tu dépenses un peu moins que l'estimation ; s'il baisse plus vite, un peu plus. L'objectif se rapproche alors doucement de ce qui marche pour toi.",
     "how3": "Il faut au moins 14 jours de suivi, 3 pesées et des repas saisis 8 jours sur 10. L'ajustement reste limité à 150 kcal par semaine et ne descend jamais sous le plancher calorique.",
     "disclaimer": "{appName} ne remplace pas un avis médical. Pour toute question de santé, parles-en à un professionnel."
+  },
+  "quality": {
+    "title": "Bilan qualité",
+    "dayTitle": "Repères du jour",
+    "fiber": "Fibres",
+    "fruitVeg": "Fruits et légumes",
+    "salt": "Sel",
+    "sugars": "Sucres",
+    "fiberValue": "{value, number} / {goal, number} g",
+    "fruitVegValue": "{value, number} / {goal, number} portions",
+    "indicative": "Repères indicatifs : 30 g de fibres et 5 portions de fruits et légumes (80 g) par jour.",
+    "period": "Les 7 derniers jours, du {from} au {to}.",
+    "empty": "Rien de saisi ces 7 derniers jours : le bilan apparaîtra avec tes premiers repas.",
+    "ideasTitle": "Idées pour la semaine",
+    "suggestions": {
+      "fruitVeg": "Ajoute un fruit au goûter ou une poignée de crudités au déjeuner : chaque portion compte.",
+      "fiber": "Un peu plus de fibres ? Pense aux lentilles, pois chiches, pain complet ou flocons d'avoine.",
+      "homemade": "Une recette maison de plus cette semaine, même simple, remplace facilement un plat tout prêt.",
+      "salt": "Herbes, épices, citron et ail donnent du goût : de quoi relever tes plats autrement qu'avec le sel.",
+      "keepGoing": "Belle semaine ! Continue comme ça, et varie les couleurs dans ton assiette."
+    },
+    "averagesTitle": "Moyennes par jour ({days, plural, one {# jour saisi} other {# jours saisis}})",
+    "gramsPerDay": "{value, number} g",
+    "portionsPerDay": "{value, number} portions",
+    "portions": "{count, plural, one {# portion} other {# portions}}",
+    "reference": "Repère : {value}",
+    "averagesHint": "Calculé à partir des aliments dont les valeurs sont connues.",
+    "processingTitle": "Degré de transformation",
+    "ultraProcessed": "des calories viennent d'aliments ultra-transformés (NOVA 4), parmi les {coverage} % dont le groupe NOVA est connu.",
+    "novaUnknown": "Le groupe NOVA n'est connu que pour les produits du commerce scannés ou trouvés sur Open Food Facts.",
+    "novaHint": "NOVA classe les aliments de 1 (bruts) à 4 (ultra-transformés).",
+    "topUltraProcessed": "Ultra-transformés les plus présents : {names}.",
+    "topSalt": "Ce qui apporte le plus de sel : {names}.",
+    "sources": "Sources : Ciqual (Anses) et Open Food Facts. Repères ANSES, PNNS et OMS, à titre indicatif.",
+    "labels": "Indicateurs de qualité",
+    "nutriscore": "Nutri-Score {grade}",
+    "nova": "NOVA {group}"
+  },
+  "checkin": {
+    "title": "Comment tu te sens ?",
+    "hint": "Facultatif, et visible seulement par toi.",
+    "hunger": {
+      "label": "Faim",
+      "low": "Pas faim",
+      "high": "Très faim"
+    },
+    "energy": {
+      "label": "Énergie",
+      "low": "À plat",
+      "high": "En pleine forme"
+    },
+    "mood": {
+      "label": "Humeur",
+      "low": "Morose",
+      "high": "Au top"
+    },
+    "scaleValue": "{question} : {value} sur 5",
+    "scaleHint": "De 1 ({low}) à 5 ({high})."
+  },
+  "habitual": {
+    "title": "{slot, select, breakfast {Ton petit-déj habituel ?} lunch {Ton déjeuner habituel ?} dinner {Ton dîner habituel ?} other {Ta collation habituelle ?}}",
+    "add": "L'ajouter"
   }
 }
