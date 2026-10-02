@@ -8,6 +8,7 @@ import {
   favorites,
   foods,
   goals,
+  llmCalls,
   mealEntries,
   profiles,
   recipeItems,
@@ -55,6 +56,19 @@ export async function collectUserData(userId: string) {
       .orderBy(asc(recipeItems.recipeId), asc(recipeItems.position)),
     db().select({ foodId: favorites.foodId }).from(favorites).where(eq(favorites.userId, userId)),
   ]);
+  const aiCalls = await db()
+    .select({
+      feature: llmCalls.feature,
+      model: llmCalls.model,
+      tokensIn: llmCalls.tokensIn,
+      tokensOut: llmCalls.tokensOut,
+      costUsdMicros: llmCalls.costUsdMicros,
+      status: llmCalls.status,
+      createdAt: llmCalls.createdAt,
+    })
+    .from(llmCalls)
+    .where(eq(llmCalls.userId, userId))
+    .orderBy(asc(llmCalls.createdAt));
   return {
     exportedAt: new Date().toISOString(),
     account: account ?? null,
@@ -66,6 +80,7 @@ export async function collectUserData(userId: string) {
     foods: ownFoods,
     recipeItems: ingredients,
     favorites: favoriteRows,
+    aiCalls,
   };
 }
 
@@ -98,5 +113,6 @@ export function toCsvZip(data: UserData): Uint8Array {
     "foods.csv": strToU8(toCsv(data.foods)),
     "recipe-items.csv": strToU8(toCsv(data.recipeItems)),
     "favorites.csv": strToU8(toCsv(data.favorites)),
+    "ai-calls.csv": strToU8(toCsv(data.aiCalls)),
   });
 }

@@ -259,7 +259,10 @@
     "floors": "Calorie floors",
     "floorsHint": "The daily goal never goes below these values.",
     "floorFemale": "Female (kcal)",
-    "floorMale": "Male (kcal)"
+    "floorMale": "Male (kcal)",
+    "ai": "Artificial intelligence",
+    "aiHint": "Provider, monthly spending cap and costs per member.",
+    "aiOpen": "Manage AI"
   },
   "errors": {
     "generic": "Something went wrong. Please try again in a moment.",
@@ -293,7 +296,11 @@
     "off_unavailable": "Open Food Facts isn't responding right now. Try again later.",
     "off_incomplete": "This product doesn't have complete nutrition values.",
     "invalid_barcode": "This barcode isn't valid. Check the digits.",
-    "barcode_not_found": "This product isn't in Open Food Facts yet."
+    "barcode_not_found": "This product isn't in Open Food Facts yet.",
+    "ai_not_configured": "AI is not configured. You can log your meal manually.",
+    "ai_disabled": "AI is paused. You can log your meal manually.",
+    "ai_budget_reached": "AI has reached its monthly cap. You can log your meal manually.",
+    "ai_provider_error": "The AI could not answer. Try again in a moment, or log your meal manually."
   },
   "slots": {
     "breakfast": "Breakfast",
@@ -462,5 +469,42 @@
     "add": "Add to diary",
     "updated": "Data updated on {date}",
     "nutrients": "Nutrition facts"
+  },
+  "aiAdmin": {
+    "title": "Artificial intelligence",
+    "back": "Administration",
+    "state": "Status",
+    "states": {
+      "active": "AI active",
+      "disabled": "AI turned off by the admin: manual entry is still available.",
+      "budgetReached": "Monthly cap reached: AI resumes next month, manual entry is still available.",
+      "notConfigured": "AI not configured"
+    },
+    "provider": "Provider",
+    "modelVision": "Photo model",
+    "modelText": "Text model",
+    "configureHint": "Set LLM_API_KEY, LLM_MODEL_VISION and LLM_MODEL_TEXT in the host's environment variables (see .env.example), then redeploy.",
+    "pricesMissing": "Prices not set (LLM_PRICE_*): costs show as 0 and the cap cannot do its job.",
+    "test": "Test the connection",
+    "testing": "Testing…",
+    "testOk": "{kind}: {model} answered in {ms} ms ({tokens} tokens, {cost}).",
+    "kind": {
+      "text": "Text",
+      "vision": "Photo"
+    },
+    "budgetTitle": "Monthly cap",
+    "spent": "Spent this month: {spent} of {budget}.",
+    "enabled": "AI features enabled",
+    "budget": "Monthly cap (dollars)",
+    "budgetHint": "Leave empty for the default ({amount} $). Beyond it, AI pauses until next month.",
+    "costs": "Costs per month and member",
+    "noCalls": "No AI calls yet.",
+    "member": "Member",
+    "calls": "Calls",
+    "tokens": "Tokens",
+    "cost": "Cost",
+    "failures": "{count, plural, one {# failure} other {# failures}}",
+    "deletedMember": "Deleted account",
+    "estimateNote": "Costs estimated from the configured prices; the provider's invoice is authoritative."
   }
 }

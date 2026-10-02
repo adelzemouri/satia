@@ -259,7 +259,10 @@
     "floors": "Planchers caloriques",
     "floorsHint": "L'objectif quotidien ne descend jamais sous ces valeurs.",
     "floorFemale": "Femme (kcal)",
-    "floorMale": "Homme (kcal)"
+    "floorMale": "Homme (kcal)",
+    "ai": "Intelligence artificielle",
+    "aiHint": "Fournisseur, plafond de dépense mensuel et coûts par membre.",
+    "aiOpen": "Gérer l'IA"
   },
   "errors": {
     "generic": "Une erreur est survenue. Réessaie dans un instant.",
@@ -293,7 +296,11 @@
     "off_unavailable": "Open Food Facts ne répond pas pour l'instant. Réessaie plus tard.",
     "off_incomplete": "Ce produit n'a pas de valeurs nutritionnelles complètes.",
     "invalid_barcode": "Ce code-barres n'est pas valide. Vérifie les chiffres.",
-    "barcode_not_found": "Ce produit n'est pas encore dans Open Food Facts."
+    "barcode_not_found": "Ce produit n'est pas encore dans Open Food Facts.",
+    "ai_not_configured": "L'IA n'est pas configurée. Tu peux saisir ton repas à la main.",
+    "ai_disabled": "L'IA est en pause. Tu peux saisir ton repas à la main.",
+    "ai_budget_reached": "L'IA a atteint son plafond du mois. Tu peux saisir ton repas à la main.",
+    "ai_provider_error": "L'IA n'a pas pu répondre. Réessaie dans un moment, ou saisis ton repas à la main."
   },
   "slots": {
     "breakfast": "Petit-déjeuner",
@@ -462,5 +469,42 @@
     "add": "Ajouter au journal",
     "updated": "Données mises à jour le {date}",
     "nutrients": "Valeurs nutritionnelles"
+  },
+  "aiAdmin": {
+    "title": "Intelligence artificielle",
+    "back": "Administration",
+    "state": "État",
+    "states": {
+      "active": "IA active",
+      "disabled": "IA désactivée par l'admin : la saisie manuelle reste disponible.",
+      "budgetReached": "Plafond du mois atteint : l'IA reprendra le mois prochain, la saisie manuelle reste disponible.",
+      "notConfigured": "IA non configurée"
+    },
+    "provider": "Fournisseur",
+    "modelVision": "Modèle photo",
+    "modelText": "Modèle texte",
+    "configureHint": "Renseigne LLM_API_KEY, LLM_MODEL_VISION et LLM_MODEL_TEXT dans les variables d'environnement de l'hébergeur (voir .env.example), puis redéploie.",
+    "pricesMissing": "Tarifs non renseignés (LLM_PRICE_*) : les coûts affichés valent 0 et le plafond ne peut pas jouer son rôle.",
+    "test": "Tester la connexion",
+    "testing": "Test en cours…",
+    "testOk": "{kind} : {model} a répondu en {ms} ms ({tokens} tokens, {cost}).",
+    "kind": {
+      "text": "Texte",
+      "vision": "Photo"
+    },
+    "budgetTitle": "Plafond mensuel",
+    "spent": "Dépensé ce mois-ci : {spent} sur {budget}.",
+    "enabled": "Fonctions IA activées",
+    "budget": "Plafond mensuel (dollars)",
+    "budgetHint": "Laisse vide pour la valeur par défaut ({amount} $). Au-delà, l'IA se met en pause jusqu'au mois suivant.",
+    "costs": "Coûts par mois et par membre",
+    "noCalls": "Aucun appel à l'IA pour l'instant.",
+    "member": "Membre",
+    "calls": "Appels",
+    "tokens": "Tokens",
+    "cost": "Coût",
+    "failures": "{count, plural, one {# échec} other {# échecs}}",
+    "deletedMember": "Compte supprimé",
+    "estimateNote": "Coûts estimés d'après les tarifs configurés ; la facture du fournisseur fait foi."
   }
 }

@@ -34,7 +34,8 @@ export default defineConfig({
     : [
         { command: "node tests/e2e/off-mock.mjs", url: `${offMock}/health`, reuseExistingServer: !process.env.CI },
         {
-          command: `PORT=${port} OFF_BASE_URL=${offMock} OFF_SEARCH_URL=${offMock} pnpm start:standalone`,
+          // LLM simulé et déterministe : les tests n'appellent jamais un vrai fournisseur.
+          command: `PORT=${port} OFF_BASE_URL=${offMock} OFF_SEARCH_URL=${offMock} LLM_PROVIDER=mock LLM_PRICE_TEXT_INPUT=0.1 LLM_PRICE_TEXT_OUTPUT=0.4 pnpm start:standalone`,
           url: `${baseURL}/api/health`,
           reuseExistingServer: !process.env.CI,
           timeout: 60_000,

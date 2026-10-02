@@ -3,6 +3,8 @@ import "server-only";
 import { APIError } from "better-auth/api";
 import { ZodError } from "zod";
 
+import { AiUnavailableError } from "@/llm/types";
+
 import { DomainError } from "./errors";
 import { RateLimitedError } from "./rate-limit";
 
@@ -11,6 +13,7 @@ export type ActionState = { ok?: boolean; error?: string; fieldErrors?: Record<s
 
 export function toActionState(error: unknown): ActionState {
   if (error instanceof DomainError) return { error: error.code };
+  if (error instanceof AiUnavailableError) return { error: `ai_${error.reason}` };
   if (error instanceof RateLimitedError) return { error: "rate_limited" };
   if (error instanceof ZodError) {
     const fieldErrors: Record<string, string> = {};

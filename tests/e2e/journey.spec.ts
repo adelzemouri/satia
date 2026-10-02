@@ -226,6 +226,30 @@ test("ajout d'un produit par code-barres (Open Food Facts simulé)", async ({ pa
   await expect(page.getByRole("region", { name: "Collations" }).getByText(/^Pâte à tartiner noisettes/)).toBeVisible();
 });
 
+test("l'admin teste l'IA (LLM simulé), suit les coûts et peut la mettre en pause", async ({ page }) => {
+  await signIn(page, ADMIN);
+  await page.goto("/admin");
+  await page.getByRole("link", { name: "Gérer l'IA" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Intelligence artificielle");
+  await expect(page.getByText("IA active")).toBeVisible();
+
+  await page.getByRole("button", { name: "Tester la connexion" }).click();
+  await expect(page.getByText(/^Texte : mock-text a répondu/)).toBeVisible();
+  await expect(page.getByText(/^Photo : mock-vision a répondu/)).toBeVisible();
+  const costs = page.getByRole("region", { name: "Coûts par mois et par membre" });
+  await expect(costs.getByRole("rowheader", { name: "Adel" })).toBeVisible();
+
+  await expectNoA11yViolations(page);
+
+  await page.getByLabel("Fonctions IA activées").uncheck();
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByText(/^IA désactivée par l'admin/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Tester la connexion" })).toBeDisabled();
+  await page.getByLabel("Fonctions IA activées").check();
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByText("IA active")).toBeVisible();
+});
+
 test("activation de la double authentification puis connexion avec un code", async ({ page }) => {
   await signIn(page, ADMIN);
   await page.goto("/profile");

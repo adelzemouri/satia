@@ -4,6 +4,7 @@ import { revokeInviteAction } from "@/features/admin/actions";
 import { FloorsForm } from "@/features/admin/floors-form";
 import { InviteForm } from "@/features/admin/invite-form";
 import { MemberActions } from "@/features/admin/member-actions";
+import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { listMembers, listPendingInvites } from "@/server/accounts";
 import { requireAdmin } from "@/server/session";
@@ -81,6 +82,16 @@ export default async function AdminPage({ params }: PageProps<"/[locale]/admin">
             </ul>
           </div>
         )}
+      </Card>
+
+      <Card aria-labelledby="ai">
+        <h2 id="ai" className="text-xl font-semibold">
+          {t("ai")}
+        </h2>
+        <p className="text-text-muted">{t("aiHint")}</p>
+        <Link href="/admin/ai" className={buttonClass("secondary")}>
+          {t("aiOpen")}
+        </Link>
       </Card>
 
       <Card aria-labelledby="floors">
