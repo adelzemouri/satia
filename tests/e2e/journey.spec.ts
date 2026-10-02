@@ -123,6 +123,79 @@ test("le thème choisi dans le profil est appliqué et conservé", async ({ page
   await expectNoA11yViolations(page);
 });
 
+test("ajout manuel d'un repas depuis la base Ciqual", async ({ page }) => {
+  await signIn(page, ADMIN);
+  await page.getByRole("link", { name: "Ajouter au déjeuner" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Ajouter un aliment");
+  await page.getByLabel("Rechercher un aliment").fill("pomme crue");
+  const result = page.getByRole("button", { name: /^Pomme, pulpe et peau, crue/ }).first();
+  await expect(result).toBeVisible();
+  await expectNoA11yViolations(page);
+  await result.click();
+
+  await expect(page.getByRole("heading", { name: "Combien ?" })).toBeVisible();
+  await page.getByLabel("Unité").selectOption("g");
+  await page.getByLabel("Quantité").fill("200");
+  await expect(page.getByText(/Ça fait \d+ kcal/)).toBeVisible();
+  await page.getByRole("button", { name: "Ajouter au journal" }).click();
+
+  await expect(page).toHaveURL(/\/journal\?date=/);
+  const lunch = page.getByRole("region", { name: "Déjeuner" });
+  await expect(lunch.getByText(/^Pomme, pulpe et peau, crue/)).toBeVisible();
+  await expect(lunch.getByText(/200 g ·/)).toBeVisible();
+  await expectNoA11yViolations(page);
+
+  // Modifier la quantité met les valeurs à jour.
+  await lunch.getByRole("button", { name: /^Modifier Pomme, pulpe et peau, crue/ }).click();
+  await lunch.getByLabel("Quantité").fill("100");
+  await lunch.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(lunch.getByText(/^100 g · 5\d kcal/)).toBeVisible();
+
+  await page.getByRole("link", { name: "Accueil" }).click();
+  await expect(page.getByText(/^\d+ kcal consommées$/)).not.toHaveText("0 kcal consommées");
+  await expect(page.getByText(/1 jour d'affilée/)).toBeVisible();
+  await expectNoA11yViolations(page);
+});
+
+test("aliment personnel, favori, eau et poids", async ({ page }) => {
+  await signIn(page, ADMIN);
+  await page.goto("/foods/new");
+  await page.getByLabel("Nom", { exact: true }).fill("Granola maison");
+  await page.getByLabel("Pour une portion").check();
+  await page.getByLabel("Poids d'une portion (g)").fill("50");
+  await page.getByLabel("Protéines (g)").fill("5");
+  await page.getByLabel("Glucides (g)").fill("30");
+  await page.getByLabel("Lipides (g)").fill("8");
+  await page.getByRole("button", { name: "Créer" }).click();
+  await expect(page).toHaveURL(/\/foods$/);
+  await expect(page.getByText("Granola maison")).toBeVisible();
+
+  await page.getByRole("link", { name: "Ajouter", exact: true }).click();
+  await page.getByRole("tab", { name: "Mes aliments" }).click();
+  await page.getByRole("button", { name: "Ajouter Granola maison aux favoris" }).click();
+  await page.getByRole("tab", { name: "Favoris" }).click();
+  await page.getByRole("button", { name: /^Granola maison/ }).click();
+  await expect(page.getByLabel("Unité")).toHaveValue("portion");
+  // Valeurs saisies pour une portion, énergie calculée depuis les macros : 5 × 4 + 30 × 4 + 8 × 9.
+  await expect(page.getByText("Ça fait 212 kcal")).toBeVisible();
+  await page.getByLabel("Repas").selectOption("breakfast");
+  await page.getByRole("button", { name: "Ajouter au journal" }).click();
+  await expect(page.getByRole("region", { name: "Petit-déjeuner" }).getByText("Granola maison")).toBeVisible();
+
+  await page.getByRole("link", { name: "Accueil" }).click();
+  await page.getByRole("button", { name: "Verre 3" }).click();
+  await expect(page.getByText("3 / 8 verres")).toBeVisible();
+  await page.reload();
+  await expect(page.getByText("3 / 8 verres")).toBeVisible();
+
+  await page.getByRole("link", { name: "Poids" }).click();
+  await page.getByLabel("Poids en kg").fill("82");
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByText("Tendance actuelle : 82 kg")).toBeVisible();
+  await expect(page.getByText(/Encore quelques pesées/)).toBeVisible();
+  await expectNoA11yViolations(page);
+});
+
 test("activation de la double authentification puis connexion avec un code", async ({ page }) => {
   await signIn(page, ADMIN);
   await page.goto("/profile");

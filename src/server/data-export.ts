@@ -1,10 +1,20 @@
 import "server-only";
 
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { strToU8, zipSync } from "fflate";
 
 import { db } from "@/db/client";
-import { goals, profiles, user } from "@/db/schema";
+import {
+  favorites,
+  foods,
+  goals,
+  mealEntries,
+  profiles,
+  recipeItems,
+  user,
+  waterLogs,
+  weightEntries,
+} from "@/db/schema";
 
 /** Toutes les données personnelles d'un utilisateur, sans aucun secret (mots de passe, TOTP, sessions). */
 export async function collectUserData(userId: string) {
@@ -23,11 +33,39 @@ export async function collectUserData(userId: string) {
     .where(eq(user.id, userId));
   const profileRows = await db().select().from(profiles).where(eq(profiles.userId, userId));
   const goalRows = await db().select().from(goals).where(eq(goals.userId, userId)).orderBy(goals.effectiveFrom);
+  const [meals, water, weights, ownFoods, ingredients, favoriteRows] = await Promise.all([
+    db()
+      .select()
+      .from(mealEntries)
+      .where(eq(mealEntries.userId, userId))
+      .orderBy(asc(mealEntries.date), asc(mealEntries.createdAt)),
+    db().select().from(waterLogs).where(eq(waterLogs.userId, userId)).orderBy(asc(waterLogs.date)),
+    db().select().from(weightEntries).where(eq(weightEntries.userId, userId)).orderBy(asc(weightEntries.date)),
+    db().select().from(foods).where(eq(foods.ownerUserId, userId)).orderBy(asc(foods.createdAt)),
+    db()
+      .select({
+        recipeId: recipeItems.recipeId,
+        foodId: recipeItems.foodId,
+        grams: recipeItems.grams,
+        position: recipeItems.position,
+      })
+      .from(recipeItems)
+      .innerJoin(foods, eq(foods.id, recipeItems.recipeId))
+      .where(eq(foods.ownerUserId, userId))
+      .orderBy(asc(recipeItems.recipeId), asc(recipeItems.position)),
+    db().select({ foodId: favorites.foodId }).from(favorites).where(eq(favorites.userId, userId)),
+  ]);
   return {
     exportedAt: new Date().toISOString(),
     account: account ?? null,
     profile: profileRows[0] ?? null,
     goals: goalRows,
+    meals,
+    water,
+    weights,
+    foods: ownFoods,
+    recipeItems: ingredients,
+    favorites: favoriteRows,
   };
 }
 
@@ -54,5 +92,11 @@ export function toCsvZip(data: UserData): Uint8Array {
     "account.csv": strToU8(toCsv(data.account ? [data.account] : [])),
     "profile.csv": strToU8(toCsv(data.profile ? [data.profile] : [])),
     "goals.csv": strToU8(toCsv(data.goals)),
+    "meals.csv": strToU8(toCsv(data.meals)),
+    "water.csv": strToU8(toCsv(data.water)),
+    "weights.csv": strToU8(toCsv(data.weights)),
+    "foods.csv": strToU8(toCsv(data.foods)),
+    "recipe-items.csv": strToU8(toCsv(data.recipeItems)),
+    "favorites.csv": strToU8(toCsv(data.favorites)),
   });
 }

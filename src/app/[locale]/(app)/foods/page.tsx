@@ -1,0 +1,50 @@
+import { getTranslations, setRequestLocale } from "next-intl/server";
+
+import { DeleteFoodButton } from "@/features/foods/delete-food-button";
+import { Link } from "@/i18n/navigation";
+import { toLocale } from "@/i18n/routing";
+import { ownFoods } from "@/server/foods";
+import { requireUser } from "@/server/session";
+import { buttonClass } from "@/ui/button";
+import { Card } from "@/ui/card";
+
+export default async function FoodsPage({ params }: PageProps<"/[locale]/foods">) {
+  const locale = toLocale((await params).locale);
+  setRequestLocale(locale);
+  const user = await requireUser(locale);
+  const foods = await ownFoods(user.id);
+  const t = await getTranslations();
+
+  return (
+    <>
+      <h1 className="font-display text-3xl font-semibold">{t("foods.title")}</h1>
+      <div className="flex flex-wrap gap-3">
+        <Link href="/foods/new" className={buttonClass("primary")}>
+          {t("foods.newFood")}
+        </Link>
+        <Link href="/foods/new-recipe" className={buttonClass("secondary")}>
+          {t("foods.newRecipe")}
+        </Link>
+      </div>
+      <Card>
+        {foods.length === 0 ? (
+          <p className="text-text-muted">{t("foods.empty")}</p>
+        ) : (
+          <ul className="flex flex-col divide-y divide-border">
+            {foods.map((food) => (
+              <li key={food.id} className="flex flex-wrap items-center gap-2 py-2">
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="truncate font-semibold">{food.nameFr}</span>
+                  <span className="text-sm text-text-muted">
+                    {t(`add.sources.${food.source}`)} · {t("add.per100", { kcal: Math.round(food.kcal) })}
+                  </span>
+                </span>
+                <DeleteFoodButton id={food.id} name={food.nameFr} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+    </>
+  );
+}

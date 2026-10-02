@@ -88,7 +88,17 @@ describe("onboarding et données", () => {
     expect(json).not.toMatch(/argon2|password|secret|token/i);
 
     const files = unzipSync(toCsvZip(data));
-    expect(Object.keys(files).sort()).toEqual(["account.csv", "goals.csv", "profile.csv"]);
+    expect(Object.keys(files).sort()).toEqual([
+      "account.csv",
+      "favorites.csv",
+      "foods.csv",
+      "goals.csv",
+      "meals.csv",
+      "profile.csv",
+      "recipe-items.csv",
+      "water.csv",
+      "weights.csv",
+    ]);
     expect(strFromU8(files["profile.csv"]!)).toContain("coriandre");
   });
 });

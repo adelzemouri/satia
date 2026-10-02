@@ -24,6 +24,8 @@ export const profiles = pgTable("profiles", {
   foodsToAvoid: text().notNull().default(""),
   /** Horaires habituels « HH:MM » par repas, pour les rappels. */
   mealTimes: jsonb().$type<Record<"breakfast" | "lunch" | "dinner", string>>().notNull(),
+  /** Objectif d'eau en verres de 250 ml. */
+  waterGoalGlasses: smallint().notNull().default(8),
   disclaimerAcceptedAt: timestamp({ withTimezone: true }).notNull(),
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),

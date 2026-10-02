@@ -105,9 +105,16 @@ const HINTS: [RegExp, Hints][] = [
 /** Groupe Ciqual 06 : boissons, toujours mesurables en volume. */
 const BEVERAGE_GROUP = "06";
 
+/** Formes transformées dont la « pièce » n'a plus le poids du produit frais (pomme sèche, frites…). */
+const PROCESSED = /(sèche|séché|déshydrat|appertis|au sirop|confit|en poudre|chips|frite|purée|flocons|noisette)/;
+
 export function ciqualHints(name: string, groupCode: string): Hints {
   const lower = name.toLowerCase();
-  const match = HINTS.find(([pattern]) => pattern.test(lower))?.[1] ?? {};
+  let match = HINTS.find(([pattern]) => pattern.test(lower))?.[1] ?? {};
+  if (match.unitWeights?.piece && PROCESSED.test(lower)) {
+    const { piece: _piece, ...others } = match.unitWeights;
+    match = { ...match, unitWeights: Object.keys(others).length > 0 ? others : undefined };
+  }
   if (groupCode === BEVERAGE_GROUP && match.densityGPerMl === undefined) return { ...match, densityGPerMl: 1 };
   return match;
 }

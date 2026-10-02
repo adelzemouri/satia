@@ -106,7 +106,7 @@ households ──< users ──< sessions, accounts, two_factors   (tables Bette
     └──< access_links           invitations et liens de nouveau mot de passe
                  ├── profiles (1–1)
                  ├──< goals                 historique des objectifs
-                 ├──< meal_entries >── foods / recipes
+                 ├──< meal_entries >── foods
                  ├──< favorites
                  ├──< water_logs
                  ├──< weight_entries
@@ -115,7 +115,7 @@ households ──< users ──< sessions, accounts, two_factors   (tables Bette
                  ├──< food_corrections
                  ├──< containers
                  └──< personal_expressions
-foods ──< recipe_items >── recipes
+foods (recette) ──< recipe_items >── foods (ingrédient)
 app_settings, rate_limits
 ```
 
@@ -126,11 +126,11 @@ app_settings, rate_limits
 | `access_links` | household_id, kind (`invite`/`password_reset`), token_hash, role, label, user_id, created_by, expires_at, used_at | Lien à usage unique (invitation 7 j, nouveau mot de passe 24 h), seul le hash SHA-256 du jeton est stocké. |
 | `profiles` | first_name, sex (`female`/`male`, obligatoire), birth_date, height_cm, activity_level (1–5), goal, pace (`gentle`/`moderate`), target_weight_kg, diet, foods_to_avoid, meal_times (jsonb), disclaimer_accepted_at | Si âge < 18 ans, `goal` limité à maintien/équilibre (contrainte applicative). |
 | `goals` | user_id, effective_from, kcal, protein_g, carbs_g, fat_g, water_ml, source (`formula`/`manual`) | Historisé pour que les jours passés gardent leur objectif. |
-| `foods` | source (`ciqual`/`off`/`custom`/`estimated`), source_ref (code Ciqual ou EAN), owner_user_id (null si public), name_fr, name_en, brand, kcal, protein, carbs, fat, fiber, sugars, salt (pour 100 g), density_g_ml, unit_weights (jsonb : pièce, tranche…), fetched_at | Index trigram sur `unaccent(name)`. Les produits OFF scannés sont mis en cache ici (phase 3). |
-| `recipes` / `recipe_items` | owner_user_id, name, servings / food_id, grams | Recettes personnelles en v1. |
-| `meal_entries` | user_id, date, slot (`breakfast`/`lunch`/`dinner`/`snack`), food_id ou recipe_id, label, quantity, unit, grams, kcal, protein, carbs, fat, is_estimated, input_method (`manual`/`barcode`/`photo`/`voice`/`text`/`copy`), photo_id | Valeurs **figées** à la saisie : modifier un aliment ne réécrit pas l'historique. |
-| `favorites` | user_id, food_id ou recipe_id | Les récents sont calculés depuis `meal_entries`. |
-| `water_logs` | user_id, date, glasses | Objectif dans `goals.water_ml`. |
+| `foods` | source (`ciqual`/`off`/`custom`/`recipe`), source_ref (code Ciqual ou EAN), owner_user_id (null si public), name_fr, name_en, brand, group_fr, search_name, kcal, protein, carbs, fat, fiber, sugars, salt (pour 100 g), density_g_ml, unit_weights (jsonb : portion, pièce, tranche), servings, fetched_at | `search_name` = nom normalisé (minuscules, sans accents) avec index GIN trigram (`pg_trgm`). Une recette est un aliment `recipe` dont les valeurs pour 100 g viennent de ses ingrédients, avec `unit_weights.portion` = poids total / portions. Les produits OFF choisis sont mis en cache ici. |
+| `recipe_items` | recipe_id, food_id, grams, position | Ingrédients d'une recette personnelle. |
+| `meal_entries` | user_id, date, slot (`breakfast`/`lunch`/`dinner`/`snack`), food_id (null si l'aliment a été supprimé), label, quantity, unit, grams, kcal, protein, carbs, fat, is_estimated, input_method (`manual`/`barcode`/`photo`/`voice`/`text`/`copy`), photo_id | Valeurs **figées** à la saisie : modifier un aliment ne réécrit pas l'historique. |
+| `favorites` | user_id, food_id | Les récents sont calculés depuis `meal_entries`. |
+| `water_logs` | user_id, date, glasses | Verres de 250 ml ; objectif dans `profiles.water_goal_glasses` (8 par défaut). |
 | `weight_entries` | user_id, date, weight_kg | Une pesée par jour ; tendance lissée calculée à la volée. |
 | `photos` | user_id, object_key, purge_after | Purge quotidienne par cron (défaut 90 j). |
 | `llm_calls` | user_id, feature, provider, model, tokens_in, tokens_out, cost_usd_micros, latency_ms, status | Alimente la page admin et le plafond mensuel. |
@@ -263,3 +263,23 @@ HTTPS imposé par l'hébergeur, en-têtes CSP/HSTS via le middleware Next.js, je
 CSRF sur les mutations (Better Auth + vérification de l'origine), limitation de débit
 sur la connexion et les routes `/api/ai/*`, autorisation systématique par `user_id`
 de session, secrets uniquement en variables d'env (`.env.example` fourni).
+
+## Base d'aliments (phase 2)
+
+- **Ciqual 2020** (Anses, licence ouverte) : le workflow GitHub Actions « Données Ciqual »
+  télécharge le XML officiel, le convertit avec `scripts/ciqual/build-dataset.ts` et
+  commite `data/ciqual-2020.csv` (≈ 3 000 aliments complets, valeurs pour 100 g, plus
+  des masses volumiques et poids unitaires usuels choisis pour l'app). `pnpm foods:import`
+  charge ce CSV ; il ne refait rien si l'empreinte SHA-256 du fichier n'a pas changé. Il
+  tourne dans `vercel-build`, en CI et dans le `docker compose` local.
+- **Recherche** : nom normalisé + `pg_trgm` (`word_similarity`, `similarity`), tolérante
+  aux accents et aux fautes. Ordre : aliments personnels, début du nom, premier mot, tous
+  les mots présents, proximité, longueur.
+- **Open Food Facts** (ODbL) : recherche à la demande quand la base locale ne suffit pas
+  (8 recherches par minute et par utilisateur), produit choisi mis en cache dans `foods`.
+  Attributions Ciqual et OFF affichées sur l'écran d'ajout.
+- **Unités** : g, kg, volumes (ml, cl, l, c. à café 5 ml, c. à soupe 15 ml, tasse 250 ml)
+  si la masse volumique est connue, portion / pièce / tranche si le poids unitaire l'est.
+
+En attendant l'espace Training (phase 12), l'onglet « Training » de la barre inférieure
+est remplacé par « Poids ».
