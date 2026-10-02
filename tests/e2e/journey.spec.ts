@@ -241,13 +241,91 @@ test("l'admin teste l'IA (LLM simulé), suit les coûts et peut la mettre en pau
 
   await expectNoA11yViolations(page);
 
+  const budget = page.getByRole("region", { name: "Plafond mensuel" });
   await page.getByLabel("Fonctions IA activées").uncheck();
-  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await budget.getByRole("button", { name: "Enregistrer" }).click();
   await expect(page.getByText(/^IA désactivée par l'admin/)).toBeVisible();
   await expect(page.getByRole("button", { name: "Tester la connexion" })).toBeDisabled();
   await page.getByLabel("Fonctions IA activées").check();
-  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await budget.getByRole("button", { name: "Enregistrer" }).click();
   await expect(page.getByText("IA active")).toBeVisible();
+
+  const photos = page.getByRole("region", { name: "Photos des repas" });
+  await photos.getByLabel("Conservation (jours)").fill("60");
+  await photos.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(photos.getByText("Durée de conservation enregistrée.")).toBeVisible();
+});
+
+/** Petite image PNG (2 × 2 px) : le navigateur la réduit et l'encode comme une vraie photo. */
+const MEAL_PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEElEQVR4nGM4UWEDRAwQCgArzgXx0HrtWgAAAABJRU5ErkJggg==",
+  "base64",
+);
+
+test("saisie d'un repas par photo (LLM simulé), avec contenant et écran de confirmation", async ({ page }) => {
+  await signIn(page, ADMIN);
+  await page.goto("/containers");
+  await page.getByLabel("Nom").fill("Grand bol");
+  await page.getByLabel("Volume (ml)").fill("500");
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByText("Bol · 500 ml")).toBeVisible();
+  await expectNoA11yViolations(page);
+
+  await page.goto("/add?slot=lunch");
+  await page
+    .getByLabel("Choisir une photo")
+    .setInputFiles({ name: "repas.png", mimeType: "image/png", buffer: MEAL_PNG });
+  await expect(page.getByRole("img", { name: "Photo de ton repas" })).toBeVisible();
+  await page.getByLabel("Une précision ? (facultatif)").fill("sauce à part");
+  await page.getByLabel("Dans quel contenant ?").selectOption({ label: "Grand bol" });
+  await page.getByRole("button", { name: "Analyser la photo" }).click();
+
+  await expect(page.getByRole("heading", { name: "On vérifie ensemble ?" })).toBeVisible();
+  await expect(page.getByText(/^Riz basmati, cuit/)).toBeVisible();
+  await expect(page.getByText("Reconnu : riz basmati cuit")).toBeVisible();
+  await page.getByLabel(/^Quantité de Riz basmati, cuit/).fill("150");
+  await expect(page.getByText(/^Total : \d+ kcal$/)).toBeVisible();
+  await expectNoA11yViolations(page);
+  await page.getByRole("button", { name: "Ajouter au journal" }).click();
+
+  await expect(page).toHaveURL(/\/journal\?date=/);
+  const lunch = page.getByRole("region", { name: "Déjeuner" });
+  await expect(lunch.getByText(/^Riz basmati, cuit/)).toBeVisible();
+  await expect(lunch.getByText(/^150 g ·/)).toBeVisible();
+  await expect(lunch.getByRole("img", { name: "Photo du déjeuner" })).toBeAttached();
+});
+
+test("saisie en texte libre, puis par le dictionnaire personnel sans appel à l'IA", async ({ page }) => {
+  await signIn(page, ADMIN);
+  await page.goto("/add?slot=dinner");
+  await page.getByLabel("Ou décris ton repas").fill("riz et poulet");
+  await page.getByRole("button", { name: "Analyser", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "On vérifie ensemble ?" })).toBeVisible();
+  await page.getByRole("button", { name: /^Retirer .*oulet/ }).click();
+  await expect(page.getByRole("button", { name: /^Retirer / })).toHaveCount(1);
+  await page.getByRole("button", { name: "Ajouter au journal" }).click();
+  await expect(page.getByRole("region", { name: "Dîner" }).getByText(/^Riz basmati, cuit/)).toBeVisible();
+
+  await page.goto("/dictionary");
+  await page.getByRole("textbox", { name: "Expression" }).fill("ma tartine");
+  await page.getByLabel("Aliment correspondant").fill("pain de mie courant");
+  await page
+    .getByRole("button", { name: /^Pain de mie, courant/ })
+    .first()
+    .click();
+  await page.getByLabel("Unité").selectOption("g");
+  await page.getByLabel("Quantité").fill("30");
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page.getByText("« ma tartine »")).toBeVisible();
+  await expectNoA11yViolations(page);
+
+  await page.goto("/add?slot=breakfast");
+  await page.getByLabel("Ou décris ton repas").fill("2 ma tartine");
+  await page.getByRole("button", { name: "Analyser", exact: true }).click();
+  await expect(page.getByText("Reconnu grâce à ton dictionnaire et à tes habitudes, sans appel à l'IA.")).toBeVisible();
+  await expect(page.getByLabel(/^Quantité de Pain de mie, courant/)).toHaveValue("60");
+  await page.getByRole("button", { name: "Ajouter au journal" }).click();
+  await expect(page.getByRole("region", { name: "Petit-déjeuner" }).getByText(/^Pain de mie, courant/)).toBeVisible();
 });
 
 test("activation de la double authentification puis connexion avec un code", async ({ page }) => {

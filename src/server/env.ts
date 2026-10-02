@@ -13,6 +13,8 @@ const envSchema = z.object({
   BETTER_AUTH_SECRET: z.string().min(32, "BETTER_AUTH_SECRET doit faire au moins 32 caractères"),
   /** Jeton à saisir pour créer le compte admin, tant qu'aucun compte n'existe. */
   SETUP_TOKEN: z.string().min(16).optional(),
+  /** Secret des tâches planifiées (purge des photos), envoyé par le cron de l'hébergeur. */
+  CRON_SECRET: z.string().min(16).optional(),
   /** Domaines personnalisés supplémentaires, séparés par des virgules. */
   APP_HOSTS: z
     .string()

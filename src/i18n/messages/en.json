@@ -233,7 +233,11 @@
     "deleteTitle": "Delete my account",
     "deleteHint": "All your data will be permanently erased. Enter your password to confirm.",
     "deleteSubmit": "Delete permanently",
-    "disclaimer": "{appName} does not replace medical advice. For any health question, talk to a professional."
+    "disclaimer": "{appName} does not replace medical advice. For any health question, talk to a professional.",
+    "aiEntry": "Photo, voice or text entry",
+    "aiEntryHint": "Your containers and expressions help the AI understand your meals better.",
+    "containers": "My containers",
+    "dictionary": "My dictionary"
   },
   "admin": {
     "title": "Admin",
@@ -300,7 +304,13 @@
     "ai_not_configured": "AI is not configured. You can log your meal manually.",
     "ai_disabled": "AI is paused. You can log your meal manually.",
     "ai_budget_reached": "AI has reached its monthly cap. You can log your meal manually.",
-    "ai_provider_error": "The AI could not answer. Try again in a moment, or log your meal manually."
+    "ai_provider_error": "The AI could not answer. Try again in a moment, or log your meal manually.",
+    "invalid_photo": "This image can't be read. Try another photo.",
+    "photo_unreadable": "This photo couldn't be prepared. Try another one.",
+    "food_required": "Choose a food for each line.",
+    "speech_denied": "Microphone access is blocked. You can type your meal instead.",
+    "speech_failed": "Dictation didn't work. Try again, or type your meal.",
+    "container_size_required": "Enter at least the volume or the diameter."
   },
   "slots": {
     "breakfast": "Breakfast",
@@ -346,7 +356,8 @@
     "copied": "{count, plural, one {# food copied} other {# foods copied}}",
     "duplicateYesterday": "Repeat yesterday",
     "estimated": "estimated",
-    "entryValues": "{grams, number} g · {kcal, number} kcal"
+    "entryValues": "{grams, number} g · {kcal, number} kcal",
+    "mealPhoto": "Photo of {slot}"
   },
   "add": {
     "title": "Add a food",
@@ -511,6 +522,81 @@
       "anthropic": "Anthropic",
       "mock": "Simulated (tests)",
       "none": "None"
-    }
+    },
+    "photosTitle": "Meal photos",
+    "photosHint": "Photos are kept in private storage, then deleted automatically every night after this period. A photo never added to the journal is deleted the next day.",
+    "retentionDays": "Retention (days)",
+    "photosSaved": "Retention period saved."
+  },
+  "aiEntry": {
+    "title": "Photo, voice or text",
+    "hint": "Snap your plate or describe your meal: you check everything before it's added.",
+    "takePhoto": "Take a photo",
+    "choosePhoto": "Choose a photo",
+    "photoAlt": "Photo of your meal",
+    "note": "Any detail? (optional)",
+    "noteHint": "For example: sauce on the side, half portion.",
+    "container": "Which container?",
+    "noContainer": "Not specified",
+    "analyzePhoto": "Analyse the photo",
+    "otherPhoto": "Choose another photo",
+    "describe": "Or describe your meal",
+    "describeHint": "For example: 2 scrambled eggs and a slice of buttered toast.",
+    "analyzeText": "Analyse",
+    "dictate": "Dictate",
+    "stopDictation": "Stop dictation",
+    "analyzing": "Analysing…",
+    "containersLink": "My containers",
+    "dictionaryLink": "My dictionary"
+  },
+  "aiConfirm": {
+    "title": "Shall we check together?",
+    "hint": "Here is what the AI recognised. Adjust foods and quantities if needed: your corrections will help it next time.",
+    "hintLocal": "Recognised from your dictionary and habits, without calling the AI.",
+    "nothingFound": "No food recognised. Add them yourself, or try again with another photo.",
+    "noMatch": "Food to choose",
+    "recognized": "Recognised: {label}",
+    "estimated": "Estimated values: this food isn't in the database.",
+    "remove": "Remove {name}",
+    "quantityOf": "Quantity of {name}",
+    "values": "{kcal, number} kcal · P {protein, number} g · C {carbs, number} g · F {fat, number} g",
+    "incomplete": "Choose a food and a quantity.",
+    "changeFood": "Change food",
+    "searchFor": "Replace “{label}” with",
+    "addFood": "Add a food",
+    "addLabel": "Food to add",
+    "total": "Total: {kcal, number} kcal",
+    "save": "Add to journal",
+    "restart": "Start over"
+  },
+  "personal": {
+    "containersTitle": "My containers",
+    "containersIntro": "Save your bowls, plates, glasses and mugs: pick one when you take a photo, or mention it when you describe your meal (“my big soup bowl”), for more accurate quantities.",
+    "noContainers": "No containers yet.",
+    "addContainer": "Add a container",
+    "containerName": "Name",
+    "containerNameHint": "Big bowl",
+    "containerKind": "Type",
+    "kinds": {
+      "bowl": "Bowl",
+      "plate": "Plate",
+      "glass": "Glass",
+      "mug": "Mug"
+    },
+    "volume": "Volume (ml)",
+    "diameter": "Diameter (cm)",
+    "sizeHint": "Enter at least the volume or the diameter.",
+    "volumeValue": "{ml, number} ml",
+    "diameterValue": "{cm, number} cm",
+    "dictionaryTitle": "My dictionary",
+    "dictionaryIntro": "Your own expressions (“my toast”, “my morning coffee”) linked to a specific food. In text or voice entry they are recognised right away, without calling the AI.",
+    "noExpressions": "No expressions yet.",
+    "addExpression": "Add an expression",
+    "phrase": "Expression",
+    "phraseHint": "My toast",
+    "food": "Matching food",
+    "otherFood": "Change",
+    "save": "Save",
+    "remove": "Delete {name}"
   }
 }

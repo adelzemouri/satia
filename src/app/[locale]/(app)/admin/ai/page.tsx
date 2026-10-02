@@ -1,6 +1,6 @@
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 
-import { AiSettingsForm } from "@/features/admin/ai-settings-form";
+import { AiSettingsForm, PhotoSettingsForm } from "@/features/admin/ai-settings-form";
 import { ConnectionTest } from "@/features/admin/connection-test";
 import { formatUsd } from "@/features/admin/format-usd";
 import { Link } from "@/i18n/navigation";
@@ -9,7 +9,7 @@ import { llmConfig } from "@/llm/config";
 import { aiStatus } from "@/llm/guard";
 import { monthlyCosts } from "@/llm/usage";
 import { requireAdmin } from "@/server/session";
-import { getAiSettings } from "@/server/settings";
+import { getAiSettings, getPhotoSettings } from "@/server/settings";
 import { Card } from "@/ui/card";
 
 export default async function AiAdminPage({ params }: PageProps<"/[locale]/admin/ai">) {
@@ -17,7 +17,12 @@ export default async function AiAdminPage({ params }: PageProps<"/[locale]/admin
   setRequestLocale(locale);
   await requireAdmin(locale);
   const config = llmConfig();
-  const [status, settings, costs] = await Promise.all([aiStatus(config), getAiSettings(), monthlyCosts()]);
+  const [status, settings, costs, photoSettings] = await Promise.all([
+    aiStatus(config),
+    getAiSettings(),
+    monthlyCosts(),
+    getPhotoSettings(),
+  ]);
   const t = await getTranslations("aiAdmin");
   const format = await getFormatter();
 
@@ -91,6 +96,14 @@ export default async function AiAdminPage({ params }: PageProps<"/[locale]/admin
           budgetUsd={settings.monthlyBudgetUsd}
           defaultBudgetUsd={config.defaultMonthlyBudgetUsd}
         />
+      </Card>
+
+      <Card aria-labelledby="ai-photos">
+        <h2 id="ai-photos" className="text-xl font-semibold">
+          {t("photosTitle")}
+        </h2>
+        <p className="text-text-muted">{t("photosHint")}</p>
+        <PhotoSettingsForm retentionDays={photoSettings.retentionDays} />
       </Card>
 
       <Card aria-labelledby="ai-costs">

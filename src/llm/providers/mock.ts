@@ -1,7 +1,7 @@
 import type { LlmProvider, LlmRequest, LlmResponse } from "../types";
 
 /** Réponses fixes par schéma de sortie : les tests n'appellent jamais un vrai LLM. */
-const RESPONSES: Record<string, unknown> = {
+const RESPONSES: Record<string, unknown | ((request: LlmRequest) => unknown)> = {
   connection_test: { ok: true },
   meal_items: {
     items: [
@@ -9,6 +9,13 @@ const RESPONSES: Record<string, unknown> = {
       { name: "poulet rôti", grams: 120, confidence: 0.7 },
     ],
   },
+  // Un aliment par ligne du message : mêmes valeurs moyennes pour chacun.
+  food_estimates: (request: LlmRequest) => ({
+    items: request.user
+      .split("\n")
+      .filter(Boolean)
+      .map((name) => ({ name, kcal: 150, proteinG: 5, carbsG: 20, fatG: 5 })),
+  }),
 };
 
 /**
@@ -19,7 +26,8 @@ export function mockProvider(): LlmProvider {
   return {
     name: "mock",
     async complete(request: LlmRequest): Promise<LlmResponse> {
-      const json = RESPONSES[request.schemaName] ?? {};
+      const response = RESPONSES[request.schemaName] ?? {};
+      const json = typeof response === "function" ? (response as (request: LlmRequest) => unknown)(request) : response;
       return {
         json,
         usage: {

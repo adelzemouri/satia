@@ -12,6 +12,7 @@ import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { getFoods } from "@/server/foods";
 import { daySummary, entriesOn } from "@/server/journal";
+import { photoUrls } from "@/server/photos";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
 import { Card } from "@/ui/card";
@@ -37,6 +38,11 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
       )
     ).map((food) => [food.id, food]),
   );
+  // Photos des repas saisis par photo (URL signées courtes) ; le journal s'affiche même si le stockage ne répond pas.
+  const photos = await photoUrls(
+    user.id,
+    summary.entries.flatMap((entry) => (entry.photoId ? [entry.photoId] : [])),
+  ).catch(() => new Map<string, string>());
   const t = await getTranslations();
 
   const unitsFor = (foodId: string | null, current: Unit): Unit[] => {
@@ -87,6 +93,9 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
 
       {MEAL_SLOTS.map((slot) => {
         const { entries, totals } = summary.bySlot[slot];
+        const slotPhotos = [...new Set(entries.flatMap((entry) => (entry.photoId ? [entry.photoId] : [])))].flatMap(
+          (id) => photos.get(id) ?? [],
+        );
         return (
           <Card key={slot} aria-labelledby={`slot-${slot}`}>
             <div className="flex items-center justify-between gap-3">
@@ -97,6 +106,19 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
                 {t("common.kcal", { value: Math.round(totals.kcal) })}
               </span>
             </div>
+            {slotPhotos.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {slotPhotos.map((url) => (
+                  // eslint-disable-next-line @next/next/no-img-element -- URL signée du stockage privé, valable 5 min
+                  <img
+                    key={url}
+                    src={url}
+                    alt={t("journal.mealPhoto", { slot: t(`slotsLower.${slot}`) })}
+                    className="size-24 rounded-2xl object-cover"
+                  />
+                ))}
+              </div>
+            )}
             {entries.length === 0 ? (
               <p className="text-text-muted">{t("journal.empty")}</p>
             ) : (

@@ -8,6 +8,7 @@ import { ThemeSwitcher } from "@/features/preferences/theme-switcher";
 import { WaterGoalForm } from "@/features/journal/water-goal-form";
 import { DeleteAccountForm } from "@/features/profile/delete-account-form";
 import { TwoFactorSection } from "@/features/profile/two-factor-section";
+import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { getProfile } from "@/server/profile";
 import { requireUser } from "@/server/session";
@@ -34,6 +35,21 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
         <ThemeSwitcher initialTheme={theme} />
         <LanguageSwitcher />
         <WaterGoalForm goal={profile?.waterGoalGlasses ?? 8} />
+      </Card>
+
+      <Card aria-labelledby="ai-entry">
+        <h2 id="ai-entry" className="text-xl font-semibold">
+          {t("aiEntry")}
+        </h2>
+        <p className="text-text-muted">{t("aiEntryHint")}</p>
+        <div className="flex flex-wrap gap-3">
+          <Link href="/containers" className={buttonClass("secondary")}>
+            {t("containers")}
+          </Link>
+          <Link href="/dictionary" className={buttonClass("secondary")}>
+            {t("dictionary")}
+          </Link>
+        </div>
       </Card>
 
       <Card aria-labelledby="security">

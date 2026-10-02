@@ -38,7 +38,7 @@ export const entrySchema = z.object({
 export type EntryInput = z.input<typeof entrySchema>;
 
 /** Calcule les grammes et les valeurs figées d'une ligne à partir de l'aliment. */
-async function resolveEntry(userId: string, foodId: string, quantity: number, unit: (typeof UNITS)[number]) {
+export async function resolveEntry(userId: string, foodId: string, quantity: number, unit: (typeof UNITS)[number]) {
   const food = await getFood(userId, foodId);
   const grams = toGrams(quantity, unit, food);
   if (grams === null) throw new DomainError("unit_not_available");

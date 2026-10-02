@@ -3,6 +3,9 @@
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
+import { type AiAvailability, AiEntry } from "@/features/ai/ai-entry";
+import type { MealDraft } from "@/features/ai/draft";
+import { MealConfirmation } from "@/features/ai/meal-confirmation";
 import { useErrorText } from "@/features/auth/use-error-text";
 import { importOffAction, setFavoriteAction } from "@/features/journal/actions";
 import type { MealSlot } from "@/domain/meals";
@@ -29,6 +32,7 @@ export function FoodPicker({
   mine,
   initialFood = null,
   inputMethod = "manual",
+  ai,
 }: {
   date: string;
   slot: MealSlot;
@@ -37,6 +41,8 @@ export function FoodPicker({
   mine: FoodItem[];
   initialFood?: FoodItem | null;
   inputMethod?: "manual" | "barcode";
+  /** Saisie par photo, voix ou texte libre ; absente, seul l'ajout manuel est proposé. */
+  ai?: { availability: AiAvailability; containers: { id: string; name: string }[] };
 }) {
   const t = useTranslations("add");
   const errorText = useErrorText();
@@ -46,6 +52,7 @@ export function FoodPicker({
   const [favorites, setFavorites] = useState(initialFavorites);
   const [off, setOff] = useState<{ query: string; results: OffItem[] } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [draft, setDraft] = useState<{ draft: MealDraft; preview: string | null } | null>(null);
   const [pending, startTransition] = useTransition();
   const { results, loading } = useFoodSearch(query);
   const favoriteIds = new Set(favorites.map((food) => food.id));
@@ -86,6 +93,18 @@ export function FoodPicker({
       });
     });
 
+  if (draft) {
+    return (
+      <MealConfirmation
+        draft={draft.draft}
+        photoPreview={draft.preview}
+        date={date}
+        slot={slot}
+        onCancel={() => setDraft(null)}
+      />
+    );
+  }
+
   if (selected) {
     return (
       <QuantityForm
@@ -107,6 +126,14 @@ export function FoodPicker({
 
   return (
     <div className="flex flex-col gap-4">
+      {ai && (
+        <AiEntry
+          availability={ai.availability}
+          containers={ai.containers}
+          onDraft={(value, preview) => setDraft({ draft: value, preview })}
+        />
+      )}
+
       <div role="tablist" aria-label={t("title")} className="grid grid-cols-4 gap-1 rounded-full bg-surface-muted p-1">
         {TABS.map((value) => (
           <button

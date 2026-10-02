@@ -6,11 +6,12 @@ import { and, count, eq, gt, isNull, sql } from "drizzle-orm";
 
 import { INVITE_TTL_DAYS, PASSWORD_RESET_TTL_HOURS } from "@/config/app";
 import { db } from "@/db/client";
-import { type AccessLinkKind, accessLinks, account, households, type Role, session, user } from "@/db/schema";
+import { type AccessLinkKind, accessLinks, account, households, photos, type Role, session, user } from "@/db/schema";
 
 import { env } from "./env";
 import { DomainError } from "./errors";
 import { hashPassword } from "./password";
+import { deleteObjects } from "./storage";
 import { generateToken, hashToken } from "./tokens";
 
 type Tx = Parameters<Parameters<ReturnType<typeof db>["transaction"]>[0]>[0];
@@ -198,12 +199,12 @@ export async function revokeInvite(householdId: string, linkId: string) {
  * ne peut pas être supprimé, pour que le foyer reste administrable.
  */
 export async function deleteUser(userId: string): Promise<void> {
-  await db().transaction(async (tx) => {
+  const photoKeys = await db().transaction(async (tx) => {
     const [target] = await tx
       .select({ householdId: user.householdId, role: user.role })
       .from(user)
       .where(eq(user.id, userId));
-    if (!target) return;
+    if (!target) return [];
     if (target.role === "admin") {
       const [row] = await tx
         .select({ n: count() })
@@ -211,8 +212,12 @@ export async function deleteUser(userId: string): Promise<void> {
         .where(and(eq(user.householdId, target.householdId), eq(user.role, "admin")));
       if ((row?.n ?? 0) <= 1) throw new DomainError("last_admin");
     }
+    const keys = await tx.select({ key: photos.objectKey }).from(photos).where(eq(photos.userId, userId));
     await tx.delete(user).where(eq(user.id, userId));
+    return keys.map((row) => row.key);
   });
+  // Les lignes `photos` partent en cascade ; on retire ensuite les fichiers du stockage.
+  await deleteObjects(photoKeys).catch((error: unknown) => console.error("Suppression des photos échouée", error));
 }
 
 /** Garde-fou : un admin n'agit que sur les membres de son propre foyer. */
