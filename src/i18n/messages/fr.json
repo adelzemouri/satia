@@ -12,7 +12,8 @@
     "optional": "facultatif",
     "kcal": "{value, number} kcal",
     "grams": "{value, number} g",
-    "kg": "{value, number} kg"
+    "kg": "{value, number} kg",
+    "loading": "Chargement…"
   },
   "nav": {
     "home": "Accueil",

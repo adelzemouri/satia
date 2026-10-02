@@ -12,6 +12,7 @@ describe("GET /api/health", () => {
       database: "ok",
       storage: "ok",
       llm: "disabled",
+      timing: { region: "local", databaseMs: expect.any(Number) },
     });
   });
 });

@@ -19,6 +19,21 @@ async function probe(fn: () => Promise<unknown>): Promise<Check> {
   }
 }
 
+/** Aller-retour vers la base (médiane de 3 requêtes après la première, qui peut réveiller la base). */
+async function databaseRoundTripMs(): Promise<number | null> {
+  try {
+    const samples: number[] = [];
+    for (let i = 0; i < 3; i++) {
+      const start = performance.now();
+      await db().execute(sql`select 1`);
+      samples.push(performance.now() - start);
+    }
+    return Math.round(samples.sort((a, b) => a - b)[1]!);
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Vérifie la configuration, la base, le stockage objet et la configuration du LLM. Seuls les noms des variables
  * d'environnement en défaut sont exposés, jamais leurs valeurs.
@@ -31,5 +46,13 @@ export async function GET() {
   const invalidLlm = invalidLlmKeys(process.env);
   const llm = invalidLlm.length > 0 ? invalidLlm : llmConfig().provider === "none" ? "disabled" : "ok";
   const ok = config === "ok" && database === "ok" && storage === "ok";
-  return Response.json({ status: ok ? "ok" : "degraded", config, database, storage, llm }, { status: ok ? 200 : 503 });
+  // Diagnostic de lenteur : région des fonctions et latence vers la base (quelques ms si elles sont voisines).
+  const timing = {
+    region: process.env.VERCEL_REGION ?? "local",
+    databaseMs: database === "ok" ? await databaseRoundTripMs() : null,
+  };
+  return Response.json(
+    { status: ok ? "ok" : "degraded", config, database, storage, llm, timing },
+    { status: ok ? 200 : 503 },
+  );
 }
