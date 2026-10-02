@@ -15,6 +15,7 @@ import { toLocale } from "@/i18n/routing";
 import { ensureWeeklyCheck, weekBudget } from "@/server/adaptive";
 import { suggestedDish } from "@/server/coach";
 import { pendingShares } from "@/server/family";
+import { currentFast } from "@/server/fasting";
 import { checkinOn, dayQualityFor } from "@/server/quality";
 import { daySummary, streakFor } from "@/server/journal";
 import { getProfile } from "@/server/profile";
@@ -31,13 +32,14 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const today = todayIso();
   // Bilan hebdomadaire de l'objectif adaptatif (une fois par semaine) avant d'afficher l'objectif.
   await ensureWeeklyCheck(user.id, today);
-  const [summary, streak, shares, week, quality, checkin] = await Promise.all([
+  const [summary, streak, shares, week, quality, checkin, fast] = await Promise.all([
     daySummary(user.id, today),
     streakFor(user.id, today),
     pendingShares(user.id),
     profile.budgetMode === "weekly" ? weekBudget(user.id, today) : null,
     dayQualityFor(user.id, today),
     checkinOn(user.id, today),
+    currentFast(user.id),
   ]);
   const slot = slotAt(new Date(), APP_TIMEZONE);
   const dish = summary.goal ? await suggestedDish(user.id, summary.goal.kcal - summary.totals.kcal, today) : null;
@@ -53,6 +55,25 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             {t("family.pendingTitle")}
           </h2>
           <PendingShares shares={shares} />
+        </Card>
+      )}
+
+      {fast && (
+        <Card aria-labelledby="fast-title">
+          <h2 id="fast-title" className="flex items-center gap-2 text-lg font-semibold">
+            <span className="text-primary">
+              <Icon name="timer" />
+            </span>
+            {t("home.fastRunning")}
+          </h2>
+          <p>
+            {t("home.fastUntil", {
+              end: new Date(new Date(fast.startedAt).getTime() + fast.targetMinutes * 60_000),
+            })}
+          </p>
+          <Link href="/fasting" className="font-semibold text-primary underline-offset-4 hover:underline">
+            {t("home.fastOpen")}
+          </Link>
         </Card>
       )}
 
@@ -156,6 +177,8 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             ["/week", "calendar", t("week.title")],
             ["/activity", "run", t("activity.title")],
             ["/body", "ruler", t("body.title")],
+            ["/fasting", "timer", t("fasting.title")],
+            ["/treatment", "pill", t("treatment.title")],
             ["/metabolism", "pulse", t("metabolism.title")],
             ["/quality", "sprout", t("quality.title")],
           ] as const

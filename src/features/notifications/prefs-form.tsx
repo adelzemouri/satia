@@ -15,6 +15,8 @@ const TYPES = [
   ["meals", "mealsHint"],
   ["water", "waterHint"],
   ["weeklyReview", "weeklyReviewHint"],
+  ["fasting", "fastingHint"],
+  ["treatment", "treatmentHint"],
 ] as const;
 
 /** Types de rappels et plage silencieuse (communs à tous les appareils). */
@@ -33,6 +35,8 @@ export function NotificationPrefsForm({ prefs }: { prefs: NotificationPrefs }) {
               meals: formData.get("meals") === "on",
               water: formData.get("water") === "on",
               weeklyReview: formData.get("weeklyReview") === "on",
+              fasting: formData.get("fasting") === "on",
+              treatment: formData.get("treatment") === "on",
               quietStart: String(formData.get("quietStart")),
               quietEnd: String(formData.get("quietEnd")),
             }),

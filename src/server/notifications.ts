@@ -8,19 +8,30 @@ import { APP_TIMEZONE } from "@/config/app";
 import { db } from "@/db/client";
 import { mealEntries, notificationLog, profiles, pushSubscriptions, user, waterLogs } from "@/db/schema";
 import { addDays } from "@/domain/energy";
-import { dueReminders, localClock, type NotificationPrefs, type Reminder } from "@/domain/notifications";
+import { fastEventsOn } from "@/domain/fasting";
+import {
+  dueReminders,
+  localClock,
+  type NotificationPrefs,
+  type Reminder,
+  withDefaultPrefs,
+} from "@/domain/notifications";
 import { isoWeekStart } from "@/domain/streak";
 import en from "@/i18n/messages/en.json";
 import fr from "@/i18n/messages/fr.json";
 
 import { env } from "./env";
 import { DomainError } from "./errors";
+import { fastingAllowed, getFastingPlan } from "./fasting";
+import { treatmentRemindersOn } from "./treatment";
 
 const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 export const notificationPrefsSchema = z.object({
   meals: z.boolean(),
   water: z.boolean(),
   weeklyReview: z.boolean(),
+  fasting: z.boolean(),
+  treatment: z.boolean(),
   quietStart: time,
   quietEnd: time,
 });
@@ -41,7 +52,7 @@ export async function getNotificationPrefs(userId: string): Promise<Notification
     .select({ prefs: profiles.notificationPrefs })
     .from(profiles)
     .where(eq(profiles.userId, userId));
-  return row?.prefs ?? null;
+  return row ? withDefaultPrefs(row.prefs) : null;
 }
 
 export async function setNotificationPrefs(userId: string, prefs: NotificationPrefs): Promise<void> {
@@ -159,6 +170,17 @@ export function reminderPayload(reminder: Reminder, locale: Locale): PushPayload
       };
     case "weekly_review":
       return { title: m.weeklyReview.title, body: m.weeklyReview.body, url: "/coach", tag: "weekly-review" };
+    case "fast_start":
+      return { title: m.fastStart.title, body: m.fastStart.body, url: "/fasting", tag: "fasting" };
+    case "fast_end":
+      return { title: m.fastEnd.title, body: m.fastEnd.body, url: "/fasting", tag: "fasting" };
+    case "treatment":
+      return {
+        title: m.treatment.title,
+        body: format(m.treatment.body, { name: reminder.name }),
+        url: "/treatment",
+        tag: `treatment-${reminder.key}`,
+      };
   }
 }
 
@@ -203,7 +225,8 @@ export async function runNotifications(now: Date, origin: string): Promise<{ sen
 
   let sent = 0;
   for (const person of people) {
-    const [slots, water, reviewDays] = await Promise.all([
+    const prefs = withDefaultPrefs(person.prefs);
+    const [slots, water, reviewDays, fastEvents, treatments] = await Promise.all([
       db()
         .selectDistinct({ slot: mealEntries.slot })
         .from(mealEntries)
@@ -212,7 +235,7 @@ export async function runNotifications(now: Date, origin: string): Promise<{ sen
         .select({ glasses: waterLogs.glasses })
         .from(waterLogs)
         .where(and(eq(waterLogs.userId, person.userId), eq(waterLogs.date, date))),
-      weekday === 1 && person.prefs.weeklyReview
+      weekday === 1 && prefs.weeklyReview
         ? db()
             .select({ count: sql<number>`count(distinct ${mealEntries.date})::int` })
             .from(mealEntries)
@@ -223,18 +246,26 @@ export async function runNotifications(now: Date, origin: string): Promise<{ sen
               ),
             )
         : [{ count: 0 }],
+      prefs.fasting
+        ? Promise.all([getFastingPlan(person.userId), fastingAllowed(person.userId)]).then(([plan, allowed]) =>
+            allowed ? fastEventsOn(plan, date) : [],
+          )
+        : [],
+      prefs.treatment ? treatmentRemindersOn(person.userId, date, weekday - 1) : [],
     ]);
     const due = dueReminders({
       date,
       time,
       weekday,
       weekStart,
-      prefs: person.prefs,
+      prefs,
       mealTimes: person.mealTimes,
       loggedSlots: new Set(slots.map((row) => row.slot)),
       waterGlasses: water[0]?.glasses ?? 0,
       waterGoal: person.waterGoal,
       reviewReady: (reviewDays[0]?.count ?? 0) >= REVIEW_MIN_DAYS,
+      fastEvents,
+      treatments,
     });
     for (const reminder of due) {
       // Le journal est écrit avant l'envoi : deux passages simultanés n'envoient qu'une fois.

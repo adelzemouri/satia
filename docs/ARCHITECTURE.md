@@ -512,6 +512,31 @@ Téléphone                                     Serveur (Vercel fra1)           
   glucides et lipides (protéines relevées seulement les jours d'entraînement).
   L'accueil affiche « Dont N kcal dépensées en activité ».
 
+## Jeûne et traitement (phase 14)
+
+- **Planning de jeûne** (`fasting_plans`, JSON validé par Zod) : pour chaque jour
+  (0 = lundi), un protocole (12:12, 14:10, 16:8, 18:6 ou perso de 12 à 20 h) et l'heure de
+  début, ou pas de jeûne. Le calcul pur (`src/domain/fasting.ts`) place les fenêtres dans
+  le fuseau de l'app (`zonedInstant`, heure d'été comprise), trouve la fenêtre en cours
+  (commencée le jour même ou la veille) et la suivante.
+- **Jeûnes** (`fasts`, fin vide = en cours) : démarrés à la main (protocole du jour,
+  16:8 sinon) ou automatiquement. Sans cron : à la lecture (page Jeûne, accueil), `settle`
+  referme les jeûnes automatiques arrivés à leur fin prévue et les jeûnes manuels oubliés
+  plus de 48 h, puis, en démarrage automatique, ouvre la fenêtre en cours si aucun jeûne
+  ne la chevauche (un jeûne arrêté plus tôt n'est donc pas relancé).
+- **Minuteur** : composant client mis à jour chaque seconde (anneau SVG, `role=progressbar`),
+  premier rendu à l'heure du serveur. `next-intl` reçoit `timeZone: Europe/Paris` pour que
+  les heures affichées soient les mêmes côté serveur et navigateur.
+- **Garde-fous** : jeûne non proposé avant 18 ans (contrôle serveur), mention « pas d'avis
+  médical » avec les situations où demander conseil.
+- **Traitement** (`treatments`, `treatment_logs`) : traitements suivis (nom libre, rappel
+  facultatif à des jours et une heure) et journal des prises (date, heure, nom, note).
+  Aucun champ de dose, aucun calcul. Arrêter un suivi conserve l'historique des prises.
+- **Rappels** : `dueReminders` gère `fast_start`, `fast_end` (dans l'heure qui suit l'heure
+  prévue) et `treatment` (si la prise du jour n'est pas notée), avec deux nouvelles
+  préférences `fasting` et `treatment`. Les préférences enregistrées avant cette phase
+  sont complétées par `withDefaultPrefs`.
+
 ## 6. Sécurité (rappel des points structurants)
 
 HTTPS imposé par l'hébergeur, en-têtes CSP/HSTS via le middleware Next.js, jeton

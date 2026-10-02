@@ -99,6 +99,13 @@
       "when": 1790975579795,
       "tag": "0013_body_activity",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1790977528199,
+      "tag": "0014_fasting_treatment",
+      "breakpoints": true
     }
   ]
 }

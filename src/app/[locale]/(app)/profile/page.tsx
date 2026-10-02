@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { APP_NAME } from "@/config/app";
+import { withDefaultPrefs } from "@/domain/notifications";
 import { LanguageSwitcher } from "@/features/preferences/language-switcher";
 import { parseTheme, THEME_COOKIE } from "@/features/preferences/theme";
 import { ThemeSwitcher } from "@/features/preferences/theme-switcher";
@@ -49,7 +50,7 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
           </h2>
           <p className="text-text-muted">{tn("hint")}</p>
           <DeviceSubscription publicKey={vapidPublicKey()} devices={devices} />
-          <NotificationPrefsForm prefs={profile.notificationPrefs} />
+          <NotificationPrefsForm prefs={withDefaultPrefs(profile.notificationPrefs)} />
         </Card>
       )}
 

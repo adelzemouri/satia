@@ -6,11 +6,13 @@ export function SelectField({
   name,
   options,
   defaultValue,
+  onChange,
 }: {
   label: string;
   name: string;
   options: { value: string; label: string }[];
   defaultValue?: string;
+  onChange?: (value: string) => void;
 }) {
   const id = useId();
   return (
@@ -22,6 +24,7 @@ export function SelectField({
         id={id}
         name={name}
         defaultValue={defaultValue}
+        onChange={onChange && ((event) => onChange(event.target.value))}
         className="min-h-12 rounded-2xl border border-border bg-surface px-3 text-base"
       >
         {options.map((option) => (

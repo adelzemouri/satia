@@ -748,6 +748,64 @@ test("corps et activité : mensuration, photos de progression, activité, pas et
   await expect(page.getByText(/^Dont \d+ kcal dépensées en activité\.$/)).toBeVisible();
 });
 
+test("jeûne : planning, minuteur et historique ; traitement : rappel et journal des prises", async ({ page }) => {
+  await signInWithTotp(page);
+  await page.getByRole("navigation", { name: "Raccourcis" }).getByRole("link", { name: "Jeûne", exact: true }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Jeûne");
+  await expect(page.getByText(/Satia ne donne pas d'avis médical/)).toBeVisible();
+  await expectNoA11yViolations(page);
+
+  await page.getByLabel("Suivre un planning de jeûne").check();
+  await page.getByLabel("Protocole du Dimanche").selectOption("");
+  await page.getByLabel("Protocole du Samedi").selectOption("custom");
+  await page.getByLabel("Durée du jeûne perso (heures)").fill("13");
+  await page.getByLabel("Début du jeûne le Lundi").fill("19:30");
+  await page.getByRole("button", { name: "Enregistrer le planning" }).click();
+  await expect(page.getByText("Planning enregistré.")).toBeVisible();
+
+  // Selon l'heure, le planning a pu démarrer un jeûne tout seul : on le termine d'abord.
+  const endFast = page.getByRole("button", { name: "Terminer le jeûne" });
+  if (await endFast.isVisible()) await endFast.click();
+  await page.getByRole("button", { name: "Commencer un jeûne maintenant" }).click();
+  await expect(page.getByRole("progressbar", { name: "Progression du jeûne" })).toBeVisible();
+  await expect(page.getByText(/^Encore \d+ h \d+ min avant ta fenêtre de repas\.$/)).toBeVisible();
+  await expectNoA11yViolations(page);
+
+  await page.goto("/");
+  await expect(page.getByRole("region", { name: "Jeûne en cours" })).toBeVisible();
+  await page.getByRole("link", { name: "Voir le minuteur" }).click();
+  await page.getByRole("button", { name: "Terminer le jeûne" }).click();
+  await expect(page.getByRole("button", { name: "Commencer un jeûne maintenant" })).toBeVisible();
+  const history = page.getByRole("region", { name: "Historique" });
+  await expect(history.getByRole("button", { name: /^Supprimer le jeûne du / }).first()).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel("Durée du jeûne perso (heures)")).toHaveValue("13");
+  await expect(page.getByLabel("Début du jeûne le Lundi")).toHaveValue("19:30");
+
+  await page.goto("/treatment");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Traitement");
+  await expect(page.getByText(/ne calcule ni ne conseille aucune dose/)).toBeVisible();
+  const list = page.getByRole("region", { name: "Mes traitements" });
+  await list.getByLabel("Nom").fill("Injection hebdo");
+  await list.getByText("Mercredi", { exact: true }).click();
+  await list.getByLabel("Heure du rappel").fill("09:00");
+  await list.getByRole("button", { name: "Ajouter" }).click();
+  await expect(list.getByText("Rappel : Mercredi à 09:00")).toBeVisible();
+
+  const log = page.getByRole("region", { name: "Noter une prise" });
+  await expect(log.getByLabel("Traitement")).toHaveValue(/.+/);
+  await log.getByLabel("Note").fill("cuisse gauche");
+  await log.getByRole("button", { name: "Enregistrer la prise" }).click();
+  const logs = page.getByRole("region", { name: "Dernières prises" });
+  await expect(logs.getByText("Injection hebdo")).toBeVisible();
+  await expect(logs.getByText(/cuisse gauche/)).toBeVisible();
+  await expectNoA11yViolations(page);
+
+  await page.goto("/profile");
+  await expect(page.getByLabel("Jeûne")).toBeChecked();
+  await expect(page.getByLabel("Traitement")).toBeChecked();
+});
+
 test("mon métabolisme et budget hebdomadaire avec un jour plus large", async ({ page }) => {
   await signInWithTotp(page);
   await page.getByRole("link", { name: "Mon métabolisme" }).click();

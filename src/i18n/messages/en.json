@@ -48,7 +48,10 @@
     "streak": "{days, plural, =0 {No streak yet: logging a meal today starts one.} one {# day in a row} other {# days in a row}}",
     "streakFrozen": "A rest day was covered this week, your streak goes on.",
     "more": "Shortcuts",
-    "activityBurned": "Including {kcal} kcal burned through activity."
+    "activityBurned": "Including {kcal} kcal burned through activity.",
+    "fastRunning": "Fast in progress",
+    "fastUntil": "Planned end at {end, time, short}.",
+    "fastOpen": "See the timer"
   },
   "theme": {
     "label": "Theme",
@@ -350,7 +353,12 @@
     "steps_range": "Enter a step count between 0 and 100,000.",
     "import_invalid": "This file couldn't be read: it needs to be a CSV with a date column and a steps or duration column.",
     "import_too_large": "This file is too large (1.5 MB and 5,000 rows at most). Try exporting a shorter period.",
-    "import_empty": "No usable rows in this file."
+    "import_empty": "No usable rows in this file.",
+    "fasting_minor": "Intermittent fasting isn't offered under 18.",
+    "fasting_hours": "Enter a length between 12 and 20 hours.",
+    "fast_running": "A fast is already in progress.",
+    "treatment_days_required": "Choose at least one day for the reminder.",
+    "treatment_name_required": "Enter the treatment's name."
   },
   "slots": {
     "breakfast": "Breakfast",
@@ -898,8 +906,24 @@
       "test": {
         "title": "Satia",
         "body": "Notifications work on this device."
+      },
+      "fastStart": {
+        "title": "Your fasting window starts",
+        "body": "It's the planned time. The timer is running if automatic start is on."
+      },
+      "fastEnd": {
+        "title": "Your eating window is open",
+        "body": "Your planned fast is over. Enjoy your meal!"
+      },
+      "treatment": {
+        "title": "Your treatment",
+        "body": "A gentle reminder for {name}. Remember to log your intake in Satia."
       }
-    }
+    },
+    "fasting": "Fasting",
+    "fastingHint": "At the start and end of each window in your schedule.",
+    "treatment": "Treatment",
+    "treatmentHint": "On the chosen days and time, if the intake isn't logged yet."
   },
   "plan": {
     "title": "Weekly menu",
@@ -1293,6 +1317,88 @@
       "file": "CSV file",
       "submit": "Import",
       "done": "Import complete: {days, plural, =0 {no step days} one {# step day} other {# step days}}, {activities, plural, =0 {no activities} one {# activity} other {# activities}}, {skipped, plural, =0 {no rows skipped} one {# row skipped} other {# rows skipped}}."
+    }
+  },
+  "fasting": {
+    "title": "Fasting",
+    "intro": "A window to eat, a window to pause. You choose your rhythm day by day, and you can stop whenever you like.",
+    "minor": "Intermittent fasting isn't offered under 18. Your body needs regular meals while growing: keep logging your meals as usual.",
+    "disclaimer": "Satia doesn't give medical advice. If you have diabetes, are pregnant or breastfeeding, have a history of eating disorders or take medication, talk to a health professional before fasting.",
+    "timer": {
+      "title": "Timer",
+      "running": "Fast in progress",
+      "idle": "No fast planned for now.",
+      "next": "Next window: {date}, for {hours} h.",
+      "start": "Start a fast now",
+      "end": "End the fast",
+      "progress": "Fast progress",
+      "clock": "{h} h {mm}",
+      "elapsed": "{h} h {m} min elapsed",
+      "of": "of {hours} h",
+      "remaining": "{h} h {m} min left before your eating window.",
+      "reached": "Goal reached, well done! Your eating window is open whenever you like.",
+      "window": "Started at {start}, goal {end}."
+    },
+    "plan": {
+      "title": "My schedule",
+      "enabled": "Follow a fasting schedule",
+      "autoStart": "Automatic start",
+      "autoStartHint": "The fast starts on its own at the planned time and stops on its own at the end of the window. You can always stop it earlier.",
+      "days": "Day by day",
+      "daysHint": "Choose a protocol (fasting hours : eating hours) and the time your fast starts.",
+      "none": "No fast",
+      "custom": "Custom",
+      "protocolFor": "Protocol on {day}",
+      "startFor": "Fast start on {day}",
+      "customHours": "Custom fast length (hours)",
+      "customHint": "Between {min} and {max} hours.",
+      "save": "Save the schedule",
+      "saved": "Schedule saved."
+    },
+    "history": {
+      "title": "History",
+      "empty": "No completed fast yet.",
+      "stats": "{completed, plural, =0 {No goal reached} one {# goal reached} other {# goals reached}} in the last 7 days · average length {h} h {m} min.",
+      "line": "{h} h {m} min of {target} h",
+      "reached": "goal reached",
+      "delete": "Delete the fast from {day}"
+    }
+  },
+  "treatment": {
+    "title": "Treatment",
+    "intro": "A simple log of when you take your treatment, with reminders if you like.",
+    "disclaimer": "Satia never calculates or recommends any dose. Follow your doctor's prescription and ask them your questions about your treatment.",
+    "log": {
+      "title": "Log an intake",
+      "which": "Treatment",
+      "other": "Other (free name)",
+      "name": "Name",
+      "date": "Date",
+      "time": "Time",
+      "note": "Note",
+      "noteHint": "Optional: how you feel, injection site, missed intake…",
+      "save": "Save the intake"
+    },
+    "logs": {
+      "title": "Latest intakes",
+      "empty": "No intake logged yet.",
+      "when": "{date} at {time}",
+      "delete": "Delete the {name} intake from {date}"
+    },
+    "list": {
+      "title": "My treatments",
+      "reminder": "Reminder: {days} at {time}",
+      "noReminder": "No reminder",
+      "delete": "Stop tracking {name}"
+    },
+    "add": {
+      "title": "Add a treatment",
+      "name": "Name",
+      "nameHint": "Any name you like, for example your medication's name.",
+      "reminder": "Reminder (optional)",
+      "reminderHint": "Choose days and a time; no reminder is sent if the intake is already logged.",
+      "time": "Reminder time",
+      "save": "Add"
     }
   }
 }
