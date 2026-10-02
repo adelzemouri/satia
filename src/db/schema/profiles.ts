@@ -13,7 +13,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import type { ACTIVITY_LEVELS } from "@/domain/profile";
-import { BUDGET_MODES, DIETS, GOALS, PACES, SEXES } from "@/domain/profile";
+import { BUDGET_MODES, COACH_STYLES, DIETS, GOALS, PACES, SEXES } from "@/domain/profile";
 
 import { user } from "./auth";
 
@@ -42,6 +42,7 @@ export const profiles = pgTable("profiles", {
   budgetMode: text({ enum: BUDGET_MODES }).notNull().default("daily"),
   /** L'utilisateur a figé son objectif : le bilan hebdomadaire ne le modifie plus. */
   goalLocked: boolean().notNull().default(false),
+  coachStyle: text({ enum: COACH_STYLES }).notNull().default("teacher"),
   disclaimerAcceptedAt: timestamp({ withTimezone: true }).notNull(),
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),

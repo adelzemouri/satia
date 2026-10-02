@@ -2,7 +2,14 @@ import { index, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-c
 
 import { user } from "./auth";
 
-export const LLM_FEATURES = ["connection_test", "meal_photo", "meal_text", "estimate"] as const;
+export const LLM_FEATURES = [
+  "connection_test",
+  "meal_photo",
+  "meal_text",
+  "estimate",
+  "coach",
+  "weekly_review",
+] as const;
 export type LlmFeature = (typeof LLM_FEATURES)[number];
 
 export const LLM_CALL_STATUSES = ["ok", "invalid_output", "error", "timeout"] as const;

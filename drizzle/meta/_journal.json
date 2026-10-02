@@ -64,6 +64,13 @@
       "when": 1790959133573,
       "tag": "0008_quality",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790960916068,
+      "tag": "0009_coach",
+      "breakpoints": true
     }
   ]
 }

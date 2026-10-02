@@ -1,8 +1,9 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { APP_NAME } from "@/config/app";
+import { APP_NAME, APP_TIMEZONE } from "@/config/app";
 import { MEAL_SLOTS } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
+import { slotAt } from "@/domain/meals";
 import { CalorieRing, MacroBars } from "@/features/journal/day-overview";
 import { WaterTracker } from "@/features/journal/water-tracker";
 import { WeekGauge } from "@/features/adaptive/week-gauge";
@@ -12,6 +13,7 @@ import { PendingShares } from "@/features/family/pending-shares";
 import { Link, redirect } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { ensureWeeklyCheck, weekBudget } from "@/server/adaptive";
+import { suggestedDish } from "@/server/coach";
 import { pendingShares } from "@/server/family";
 import { checkinOn, dayQualityFor } from "@/server/quality";
 import { daySummary, streakFor } from "@/server/journal";
@@ -37,6 +39,8 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     dayQualityFor(user.id, today),
     checkinOn(user.id, today),
   ]);
+  const slot = slotAt(new Date(), APP_TIMEZONE);
+  const dish = summary.goal ? await suggestedDish(user.id, summary.goal.kcal - summary.totals.kcal, today) : null;
   const t = await getTranslations();
 
   return (
@@ -69,6 +73,21 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           </>
         )}
       </Card>
+
+      {dish && (
+        <Card aria-labelledby="dish-title">
+          <h2 id="dish-title" className="text-xl font-semibold">
+            {t("coach.suggestionTitle", { slot })}
+          </h2>
+          <p>{t("coach.suggestionHint", { name: dish.name, kcal: dish.portionKcal })}</p>
+          <Link
+            href={{ pathname: "/add", query: { food: dish.id, slot, date: today } }}
+            className="font-semibold text-primary underline-offset-4 hover:underline"
+          >
+            {t("coach.suggestionAdd", { name: dish.name })}
+          </Link>
+        </Card>
+      )}
 
       <Card aria-labelledby="streak-title">
         <h2 id="streak-title" className="flex items-center gap-2 text-lg font-semibold">
@@ -126,6 +145,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       <nav aria-label={t("home.more")} className="flex flex-col gap-3">
         {(
           [
+            ["/coach", "chat", t("coach.title")],
             ["/family", "family", t("family.title")],
             ["/week", "calendar", t("week.title")],
             ["/metabolism", "pulse", t("metabolism.title")],

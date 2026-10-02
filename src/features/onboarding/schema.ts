@@ -6,6 +6,7 @@ import {
   ACTIVITY_LEVELS,
   allowedGoals,
   BUDGET_MODES,
+  COACH_STYLES,
   DIETS,
   goalChangesWeight,
   GOALS,
@@ -34,6 +35,7 @@ export const onboardingSchema = z
     foodsToAvoid: z.string().trim().max(500),
     mealTimes: z.object({ breakfast: time, lunch: time, dinner: time }),
     budgetMode: z.enum(BUDGET_MODES),
+    coachStyle: z.enum(COACH_STYLES).default("teacher"),
     disclaimerAccepted: z.literal(true, "disclaimer_required"),
   })
   .superRefine((value, ctx) => {

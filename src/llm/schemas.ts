@@ -31,3 +31,13 @@ export const foodEstimatesSchema = z.object({
     )
     .max(15),
 });
+
+/** Réponse du coach dans le chat. */
+export const coachReplySchema = z.object({ reply: z.string().trim().min(1).max(1500) });
+
+/** Bilan hebdomadaire du coach. */
+export const weeklyReviewSchema = z.object({
+  summary: z.string().trim().min(1).max(800),
+  highlights: z.array(z.string().trim().min(1).max(240)).max(3),
+  ideas: z.array(z.string().trim().min(1).max(240)).max(2),
+});
