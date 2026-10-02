@@ -27,6 +27,7 @@ import { adaptiveExport } from "./adaptive";
 import { coachExport } from "./coach";
 import { notificationExport } from "./notifications";
 import { checkinExport } from "./quality";
+import { trainingExport } from "./training";
 
 /** Toutes les données personnelles d'un utilisateur, sans aucun secret (mots de passe, TOTP, sessions). */
 export async function collectUserData(userId: string) {
@@ -133,6 +134,7 @@ export async function collectUserData(userId: string) {
     .orderBy(asc(sharedMeals.date));
   const adaptive = await adaptiveExport(userId);
   const coach = await coachExport(userId);
+  const training = await trainingExport(userId);
   return {
     exportedAt: new Date().toISOString(),
     account: account ?? null,
@@ -156,6 +158,10 @@ export async function collectUserData(userId: string) {
     coachMessages: coach.messages,
     coachReviews: coach.reviews,
     pushDevices: await notificationExport(userId),
+    trainingProfile: training.profile,
+    trainingPrograms: training.programs,
+    trainingSessions: training.sessions,
+    customExercises: training.custom,
   };
 }
 
@@ -200,5 +206,8 @@ export function toCsvZip(data: UserData): Uint8Array {
     "corrections.csv": strToU8(toCsv(data.corrections)),
     "meal-photos.csv": strToU8(toCsv(data.mealPhotos)),
     "shared-meals.csv": strToU8(toCsv(data.sharedMeals)),
+    "training-profile.csv": strToU8(toCsv(data.trainingProfile ? [data.trainingProfile] : [])),
+    "training-sessions.csv": strToU8(toCsv(data.trainingSessions)),
+    "custom-exercises.csv": strToU8(toCsv(data.customExercises)),
   });
 }

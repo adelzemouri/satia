@@ -27,6 +27,8 @@ export const ICONS = {
   book: "M5 4h9a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4Zm0 13a3 3 0 0 1 3-3h9",
   fridge: "M7 3h10v18H7V3Zm0 7h10M10 6v2M10 13v3",
   chat: "M5 5h14v10H10l-5 4V5Zm4 4h6M9 12h4",
+  dumbbell: "M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10",
+  timer: "M12 21a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm0-7V11M10 3h4",
 } as const;
 
 export function Icon({

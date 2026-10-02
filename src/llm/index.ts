@@ -20,6 +20,7 @@ import {
 import { providerFor } from "./providers";
 import { coachSystem, weeklyReviewSystem } from "./prompts/coach";
 import { FRIDGE_SYSTEM, MENU_PLAN_SYSTEM } from "./prompts/planning";
+import { trainingPlanSystem } from "./prompts/training";
 import {
   coachReplySchema,
   connectionTestSchema,
@@ -27,6 +28,7 @@ import {
   fridgeSchema,
   mealItemsSchema,
   menuPlanSchema,
+  trainingPlanSchema,
   weeklyReviewSchema,
 } from "./schemas";
 import { AiUnavailableError, type LlmImage, LlmProviderError, type LlmUsage } from "./types";
@@ -252,6 +254,27 @@ export async function scanFridge(userId: string, image: LlmImage, user: string):
     images: [image],
     schemaName: "fridge",
     schema: fridgeSchema,
+    maxOutputTokens: 2048,
+  });
+  return result.data;
+}
+
+export type TrainingPlanText = z.infer<typeof trainingPlanSchema>;
+
+/** Titres, conseils et ordre des exercices du programme de la semaine (un appel, modèle texte). */
+export async function personalizeTrainingPlan(
+  userId: string,
+  style: CoachStyle,
+  user: string,
+): Promise<TrainingPlanText> {
+  const result = await callLlm({
+    userId,
+    feature: "training_plan",
+    kind: "text",
+    system: trainingPlanSystem(style),
+    user,
+    schemaName: "training_plan",
+    schema: trainingPlanSchema,
     maxOutputTokens: 2048,
   });
   return result.data;

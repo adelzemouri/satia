@@ -439,6 +439,50 @@ Téléphone                                     Serveur (Vercel fra1)           
   individuel et disparaissent avec le foyer. Les recettes créées par le coach suivent les
   règles des recettes du foyer.
 
+## Espace Training (phase 12)
+
+- **Bibliothèque** (`src/domain/training/exercises.ts`) : 113 exercices rédigés pour l'app
+  (échauffement, exercices, retour au calme), chacun avec groupe, matériel, niveau,
+  3 à 5 consignes, erreurs fréquentes, variante plus douce (toujours) et plus difficile,
+  valeur MET et zones sollicitées (genoux, dos, épaules, poignets, hanches). Données en
+  code, pas en base : elles évoluent avec l'app. Textes en français seulement, comme les
+  noms d'aliments Ciqual. Pictogramme SVG simple par groupe musculaire. Les exercices
+  personnels (`custom_exercises`) servent de mémo et n'entrent pas dans les séances.
+- **Profil sportif** (`training_profiles`) : niveau, objectif, lieu, matériel, jours, durée,
+  zones à ménager, exercices signalés douloureux (`excluded`) et facteur de progression.
+- **Moteur de règles** (`src/domain/training/program.ts`, calcul pur et reproductible par
+  graine) : filtre les exercices (matériel, niveau, zones, signalements), répartit les
+  séances sur les jours choisis (corps entier, haut, bas, cardio, mobilité selon l'objectif
+  et le nombre de jours), puis remplit chaque séance dans la durée demandée : échauffement
+  et retour au calme systématiques, exercices en alternant les groupes, séries,
+  répétitions ou durée et repos selon l'objectif et le niveau.
+- **Programme de la semaine** (`training_programs`) : construit à la première visite de la
+  semaine, recalculé si le profil change ou si un exercice est signalé. Le coach (feature
+  LLM `training_plan`, modèle texte) ne fait qu'un passage par semaine, déclenché après
+  l'affichage : ordre des exercices (permutation validée), titre et conseil par séance,
+  phrase d'introduction. Sans IA, le programme des règles reste complet.
+- **Séances** : « Remplacer » reconstruit une séance de même type et durée avec d'autres
+  exercices ; « Séance express » fait un circuit de 10 minutes ; « Séance à la demande »
+  choisit durée, type et « sans matériel ». Dans le chat, une demande de séance
+  (« 20 minutes, pas de matériel ») est construite par les mêmes règles et passée au
+  coach dans le contexte : il la présente sans inventer d'exercice.
+- **Mode séance** (`src/features/training/session-player.tsx`) : déroulé guidé, minuteurs
+  de travail et de repos calés sur l'horloge, bip (Web Audio) et vibration, écran
+  maintenu allumé (Wake Lock, repris au retour sur l'onglet), saisie des répétitions et
+  charges, bouton « Douleur ou zone à ménager » qui écarte l'exercice, ressenti final.
+- **Progression** : le ressenti ajuste un facteur (trop facile +0,10, bien +0,03,
+  trop dur −0,10, borné entre 0,7 et 1,5) appliqué au programme de la semaine suivante
+  (répétitions ou durée, et une série de plus à partir de 1,3).
+- **Lien nutrition** : calories = MET moyen des exercices réalisés × poids × durée,
+  calculées côté serveur (`training_sessions.kcal`). Elles s'ajoutent à l'objectif du jour
+  dans `daySummary`. Un jour avec séance faite ou prévue, les protéines sont relevées de
+  10 % et glucides et lipides se partagent le reste dans les mêmes proportions. Le budget
+  hebdomadaire n'est pas modifié. Collation avant ou après la séance : texte fixe (variante
+  végétale), sans LLM.
+- **Suivi** (`/training/history`) : calendrier de 8 semaines, séries par groupe sur
+  4 semaines, records (charge, répétitions, durée) et streak en semaines actives,
+  séparé du streak nutrition. Tout est dans l'export et supprimé avec le compte.
+
 ## 6. Sécurité (rappel des points structurants)
 
 HTTPS imposé par l'hébergeur, en-têtes CSP/HSTS via le middleware Next.js, jeton

@@ -615,6 +615,77 @@ test("menu de la semaine, liste de courses commune, recettes et scanner de frigo
   await expect(page.getByText("Omelette à la tomate").first()).toBeVisible();
 });
 
+test("espace Training : profil sportif, séance express guidée, suivi et bibliothèque", async ({ page }) => {
+  test.slow(); // parcours complet d'une séance
+  await signInWithTotp(page);
+  await page.getByRole("link", { name: "Training", exact: true }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mon profil sportif");
+  // Tous les jours, pour avoir une séance aujourd'hui quel que soit le jour du test.
+  for (const day of ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]) {
+    await page.getByRole("checkbox", { name: day }).check({ force: true });
+  }
+  await page.getByRole("checkbox", { name: "Genoux" }).check({ force: true });
+  await expectNoA11yViolations(page);
+  await page.getByRole("button", { name: "Enregistrer mon profil" }).click();
+
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Entraînement");
+  const today = page.getByRole("region", { name: "Séance du jour" });
+  await expect(today.getByRole("link", { name: "Démarrer la séance" })).toBeVisible();
+  await expectNoA11yViolations(page);
+  await today.getByRole("link", { name: "Remplacer" }).click();
+  await expect(page.getByRole("heading", { name: "Séance de remplacement" })).toBeVisible();
+  await page.getByRole("link", { name: "Revenir à la séance prévue" }).click();
+  await expect(page.getByRole("heading", { name: "Séance du jour" })).toBeVisible();
+
+  await page.getByRole("link", { name: "Séance express (10 min)" }).click();
+  await expect(page.getByRole("heading", { name: "Au programme" })).toBeVisible();
+  await expectNoA11yViolations(page);
+  await page.getByRole("button", { name: "C'est parti" }).click();
+  const stepLabel = (n: number) => page.getByText(new RegExp(`^Étape ${n} sur 7`));
+  const setDone = page.getByRole("button", { name: "Série faite" });
+  await expect(stepLabel(1)).toBeVisible();
+  await expectNoA11yViolations(page);
+  await setDone.click();
+  await expect(stepLabel(2)).toBeVisible();
+  await setDone.click();
+  await expect(stepLabel(3)).toBeVisible();
+  await page.getByRole("button", { name: "Douleur ou zone à ménager" }).click();
+  await expect(page.getByText(/Exercice mis de côté/)).toBeVisible();
+  for (const step of [4, 5]) {
+    await expect(stepLabel(step)).toBeVisible();
+    await setDone.click();
+    await page.getByRole("button", { name: "Passer le repos" }).click();
+    await setDone.click();
+  }
+  await expect(stepLabel(6)).toBeVisible();
+  await setDone.click();
+  await expect(stepLabel(7)).toBeVisible();
+  await setDone.click();
+  await expect(page.getByRole("heading", { name: "Séance terminée, bravo !" })).toBeVisible();
+  await page.getByText("Bien", { exact: true }).click();
+  await expectNoA11yViolations(page);
+  await page.getByRole("button", { name: "Enregistrer la séance" }).click();
+
+  await expect(page).toHaveURL(/\/training\/history$/);
+  await expect(page.getByText("1 semaine active d'affilée")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Séances" }).getByText("Séance express (10 min)")).toBeVisible();
+  await expectNoA11yViolations(page);
+
+  await page.goto("/");
+  await expect(page.getByText(/^Dont \d+ kcal dépensées à l'entraînement\.$/)).toBeVisible();
+
+  await page.goto("/training/library?muscle=core");
+  await expect(page.getByRole("link", { name: /Planche sur les avant-bras/ })).toBeVisible();
+  await expectNoA11yViolations(page);
+  const excluded = page.getByRole("region", { name: "Exercices mis de côté" });
+  await expect(excluded).toBeVisible();
+  await excluded.getByRole("button", { name: /^Réintégrer / }).click();
+  await expect(page.getByRole("region", { name: "Exercices mis de côté" })).toHaveCount(0);
+  await page.getByRole("link", { name: /Planche sur les avant-bras/ }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Planche sur les avant-bras");
+  await expect(page.getByText(/^Plus doux : /)).toBeVisible();
+});
+
 test("mon métabolisme et budget hebdomadaire avec un jour plus large", async ({ page }) => {
   await signInWithTotp(page);
   await page.getByRole("link", { name: "Mon métabolisme" }).click();
