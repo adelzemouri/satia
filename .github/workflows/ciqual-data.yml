@@ -1,0 +1,34 @@
+name: Données Ciqual
+
+# Régénère data/ciqual-2020.csv depuis la table officielle de l'Anses (licence ouverte
+# Etalab 2.0) et le commite sur la branche, quand le script de conversion change.
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore: [main]
+    paths: [scripts/ciqual/**]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - name: Télécharger la table Ciqual 2020 (XML)
+        run: |
+          curl -sSfL -o ciqual.zip "https://ciqual.anses.fr/cms/sites/default/files/inline-files/XML_2020_07_07.zip"
+          unzip -o -q ciqual.zip -d ciqual-xml
+      - run: mkdir -p data && pnpm exec tsx scripts/ciqual/build-dataset.ts ciqual-xml data/ciqual-2020.csv
+      - name: Commiter le jeu de données s'il a changé
+        run: |
+          git add data/ciqual-2020.csv
+          if git diff --cached --quiet; then echo "Aucun changement."; exit 0; fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "chore: regenerate Ciqual dataset"
+          git push
