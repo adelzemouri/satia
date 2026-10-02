@@ -20,6 +20,12 @@ cp .env.example .env.local
 pnpm dev
 ```
 
+## Premier démarrage
+
+Ouvrir `/setup` et saisir le jeton `SETUP_TOKEN` pour créer le foyer et le compte
+admin. Les autres membres reçoivent ensuite un lien d'invitation généré dans
+`/admin` (pas d'inscription publique).
+
 ## Vérifications
 
 | Commande                                             | Rôle                                                          |
@@ -35,6 +41,9 @@ pnpm dev
   les migrations Drizzle sont appliquées avant le build (`pnpm vercel-build`).
 - Chaque pull request reçoit une preview Vercel avec sa propre branche de base Neon.
 - `GET /api/health` vérifie la base et le stockage objet.
+- Variables requises sur Vercel en plus de la base et du stockage :
+  `BETTER_AUTH_SECRET` (`openssl rand -base64 32`) et `SETUP_TOKEN`. `APP_HOSTS`
+  (facultatif) liste les domaines personnalisés, séparés par des virgules.
 
 ## Sauvegardes
 

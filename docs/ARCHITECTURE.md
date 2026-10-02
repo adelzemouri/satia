@@ -96,14 +96,14 @@ satia/
 
 ## 3. Modèle de données (v1)
 
-Conventions : identifiants UUID v7, `created_at`/`updated_at` partout, valeurs
+Conventions : identifiants UUID (générés par Postgres, `gen_random_uuid()`), `created_at`/`updated_at` partout, valeurs
 nutritionnelles en grammes et kcal pour 100 g, poids en kg, tailles en cm. Toute
 requête sur une donnée personnelle filtre sur `user_id` de la session côté serveur.
 
 ```
 households ──< users ──< sessions, accounts, two_factors   (tables Better Auth)
     │            │
-    └──< invitations
+    └──< access_links           invitations et liens de nouveau mot de passe
                  ├── profiles (1–1)
                  ├──< goals                 historique des objectifs
                  ├──< meal_entries >── foods / recipes
@@ -123,7 +123,7 @@ app_settings, rate_limits
 |---|---|---|
 | `households` | name | Un seul foyer en pratique ; prépare la v2. |
 | `users` | household_id, email, name, role (`admin`/`member`), locale, theme, energy_unit (`kcal`/`kj`), deleted_at | Plus les tables Better Auth (`sessions`, `accounts` avec hash argon2, `two_factors`). |
-| `invitations` | household_id, email, token_hash, expires_at, used_at, invited_by | Lien à usage unique, seul le hash du jeton est stocké. |
+| `access_links` | household_id, kind (`invite`/`password_reset`), token_hash, role, label, user_id, created_by, expires_at, used_at | Lien à usage unique (invitation 7 j, nouveau mot de passe 24 h), seul le hash SHA-256 du jeton est stocké. |
 | `profiles` | first_name, sex (`female`/`male`, obligatoire), birth_date, height_cm, activity_level (1–5), goal, pace (`gentle`/`moderate`), target_weight_kg, diet, foods_to_avoid, meal_times (jsonb), disclaimer_accepted_at | Si âge < 18 ans, `goal` limité à maintien/équilibre (contrainte applicative). |
 | `goals` | user_id, effective_from, kcal, protein_g, carbs_g, fat_g, water_ml, source (`formula`/`manual`) | Historisé pour que les jours passés gardent leur objectif. |
 | `foods` | source (`ciqual`/`off`/`custom`/`estimated`), source_ref (code Ciqual ou EAN), owner_user_id (null si public), name_fr, name_en, brand, kcal, protein, carbs, fat, fiber, sugars, salt (pour 100 g), density_g_ml, unit_weights (jsonb : pièce, tranche…), fetched_at | Index trigram sur `unaccent(name)`. Les produits OFF scannés sont mis en cache ici (phase 3). |
@@ -150,6 +150,27 @@ appliqué automatiquement par semaine civile.
 - Le sexe est obligatoire (femme ou homme) : il fixe la formule Mifflin-St Jeor
   et le plancher calorique.
 - Le jour de gel du streak est appliqué automatiquement, une fois par semaine.
+
+## Décisions de la phase 1 (comptes et onboarding)
+
+- **Installation** : tant qu'aucun compte n'existe, `/setup` crée le foyer et le
+  compte admin, protégé par la variable `SETUP_TOKEN`. La page se ferme ensuite.
+- **Pas d'e-mail en v1** : l'admin génère les liens d'invitation et de nouveau
+  mot de passe dans `/admin` et les transmet lui-même (aucun service d'envoi tiers).
+  Un lien de nouveau mot de passe ferme toutes les sessions du membre.
+- **Mots de passe** : argon2id (19 Mio, 2 itérations), 10 caractères minimum.
+- **Limitation de débit** : 5 échecs de connexion par adresse et par 15 min, 30
+  tentatives par IP et par minute, échecs 2FA comptés par IP. Seuls les échecs
+  comptent, pour ne pas bloquer un usage normal.
+- **Calcul de l'objectif** : Mifflin-St Jeor × facteur d'activité (1,2 à 1,9).
+  Perte : 0,25 kg/sem (doux) ou 0,5 kg/sem (modéré), plafonnée à 1 % du poids par
+  semaine ; prise : +150 ou +300 kcal. Planchers 1200/1500 kcal réglables par l'admin.
+  Protéines 1,6 g/kg en perte, 1,8 en prise, 1,2 sinon (poids de référence à IMC 25
+  si IMC > 30) ; lipides 30 % des kcal ; glucides le reste. Arrondi à 10 kcal.
+- **Poids cible** : refusé s'il va dans le mauvais sens ou sous un IMC de 18,5.
+- **Ton** : tutoiement en français.
+- **Formulaires** : le hook `useFormAction` évite que React 19 vide les champs
+  après une erreur, tout en gardant la soumission sans JavaScript.
 
 ## 4. Couche d'abstraction LLM (`src/llm/`)
 

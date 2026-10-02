@@ -10,6 +10,7 @@ const valid = {
   S3_BUCKET: "photos",
   S3_ACCESS_KEY_ID: "key",
   S3_SECRET_ACCESS_KEY: "secret",
+  BETTER_AUTH_SECRET: "x".repeat(32),
 };
 
 describe("parseEnv", () => {
@@ -25,5 +26,15 @@ describe("parseEnv", () => {
 
   it("liste les variables manquantes sans divulguer de valeur", () => {
     expect(() => parseEnv({ ...valid, DATABASE_URL: undefined, S3_BUCKET: "" })).toThrow(/DATABASE_URL, S3_BUCKET/);
+  });
+});
+
+describe("APP_HOSTS", () => {
+  it("découpe la liste de domaines", () => {
+    expect(parseEnv({ ...valid, APP_HOSTS: "satia.fr, www.satia.fr" }).APP_HOSTS).toEqual(["satia.fr", "www.satia.fr"]);
+  });
+
+  it("exige un secret d'authentification assez long", () => {
+    expect(() => parseEnv({ ...valid, BETTER_AUTH_SECRET: "court" })).toThrow(/BETTER_AUTH_SECRET/);
   });
 });

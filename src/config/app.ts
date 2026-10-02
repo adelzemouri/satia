@@ -8,3 +8,10 @@ export const BRAND_COLORS = {
   cream: "#F7F2E8",
   oliveDark: "#1C1F16",
 } as const;
+
+/** Fuseau horaire de référence pour « aujourd'hui » (usage familial en France). */
+export const APP_TIMEZONE = "Europe/Paris";
+
+/** Durées de validité des liens à usage unique. */
+export const INVITE_TTL_DAYS = 7;
+export const PASSWORD_RESET_TTL_HOURS = 24;

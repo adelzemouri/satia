@@ -5,7 +5,10 @@ const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${port}`;
 
 export default defineConfig({
   testDir: "tests/e2e",
-  fullyParallel: true,
+  // Les parcours partagent une même base : exécution en série, dans l'ordre des fichiers.
+  fullyParallel: false,
+  workers: 1,
+  globalSetup: "./tests/e2e/global-setup.ts",
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
