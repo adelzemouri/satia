@@ -221,6 +221,7 @@ test("ajout d'un produit par code-barres (Open Food Facts simulé)", async ({ pa
   await page.getByRole("link", { name: "Ajouter au journal" }).click();
   await expect(page.getByLabel("Unité")).toHaveValue("portion");
   await expect(page.getByText("Ça fait 81 kcal")).toBeVisible();
+  await expect(page.locator('img[src$="/images/front.png"]')).toBeVisible();
   await page.getByRole("button", { name: "Ajouter au journal" }).click();
   await expect(page.getByRole("region", { name: "Collations" }).getByText(/^Pâte à tartiner noisettes/)).toBeVisible();
 });
