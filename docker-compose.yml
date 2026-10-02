@@ -38,7 +38,7 @@ services:
       S3_ACCESS_KEY_ID: satia
       S3_SECRET_ACCESS_KEY: satia-secret
       S3_FORCE_PATH_STYLE: "true"
-    command: sh -c "pnpm db:migrate && node scripts/ensure-bucket.mjs"
+    command: sh -c "pnpm db:migrate && pnpm foods:import && node scripts/ensure-bucket.mjs"
 
   app:
     build: .

@@ -5,9 +5,11 @@ import { APP_NAME } from "@/config/app";
 import { LanguageSwitcher } from "@/features/preferences/language-switcher";
 import { parseTheme, THEME_COOKIE } from "@/features/preferences/theme";
 import { ThemeSwitcher } from "@/features/preferences/theme-switcher";
+import { WaterGoalForm } from "@/features/journal/water-goal-form";
 import { DeleteAccountForm } from "@/features/profile/delete-account-form";
 import { TwoFactorSection } from "@/features/profile/two-factor-section";
 import { toLocale } from "@/i18n/routing";
+import { getProfile } from "@/server/profile";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
 import { Card } from "@/ui/card";
@@ -16,6 +18,7 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
   const locale = toLocale((await params).locale);
   setRequestLocale(locale);
   const user = await requireUser(locale);
+  const profile = await getProfile(user.id);
   const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
   const t = await getTranslations("profile");
 
@@ -30,6 +33,7 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
         </h2>
         <ThemeSwitcher initialTheme={theme} />
         <LanguageSwitcher />
+        <WaterGoalForm goal={profile?.waterGoalGlasses ?? 8} />
       </Card>
 
       <Card aria-labelledby="security">
