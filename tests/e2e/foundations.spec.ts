@@ -67,7 +67,11 @@ test("la page hors-ligne est servie par le service worker", async ({ page, conte
     return navigator.serviceWorker.controller !== null && (await caches.match("/~offline")) !== undefined;
   });
   await context.setOffline(true);
-  await page.goto("/une-page-jamais-visitee").catch(() => undefined);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Hors ligne");
+  // La première navigation hors ligne peut échouer le temps que le worker bascule
+  // (préchargement de navigation) : on la retente plutôt que de conclure trop tôt.
+  await expect(async () => {
+    await page.goto("/une-page-jamais-visitee").catch(() => undefined);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Hors ligne", { timeout: 2000 });
+  }).toPass({ timeout: 20_000 });
   await context.setOffline(false);
 });
