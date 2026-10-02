@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-const { parseEnv } = await import("@/server/env");
+const { invalidEnvKeys, parseEnv } = await import("@/server/env");
 
 const valid = {
   DATABASE_URL: "postgres://u:p@localhost:5432/db",
@@ -36,5 +36,13 @@ describe("APP_HOSTS", () => {
 
   it("exige un secret d'authentification assez long", () => {
     expect(() => parseEnv({ ...valid, BETTER_AUTH_SECRET: "court" })).toThrow(/BETTER_AUTH_SECRET/);
+  });
+});
+
+describe("invalidEnvKeys", () => {
+  it("nomme les variables en défaut sans leurs valeurs", () => {
+    expect(invalidEnvKeys(valid)).toEqual([]);
+    const keys = invalidEnvKeys({ ...valid, BETTER_AUTH_SECRET: undefined, SETUP_TOKEN: "court-123" });
+    expect(keys).toEqual(["BETTER_AUTH_SECRET", "SETUP_TOKEN"]);
   });
 });
