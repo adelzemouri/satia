@@ -13,6 +13,7 @@ import { Alert } from "@/ui/alert";
 import { Button } from "@/ui/button";
 
 import { defaultUnit, type FoodItem } from "./food-types";
+import { ProductThumb } from "./product-thumb";
 
 const inputClass = "min-h-12 rounded-2xl border border-border bg-surface px-3 text-base";
 
@@ -63,10 +64,13 @@ export function QuantityForm({
         <h2 id="quantity-title" className="text-xl font-semibold">
           {t("add.quantityTitle")}
         </h2>
-        <p className="font-semibold">
-          {food.nameFr}
-          {food.brand && <span className="font-normal text-text-muted"> · {food.brand}</span>}
-        </p>
+        <div className="flex items-center gap-3">
+          {food.imageUrl && <ProductThumb src={food.imageUrl} size={64} />}
+          <p className="font-semibold">
+            {food.nameFr}
+            {food.brand && <span className="font-normal text-text-muted"> · {food.brand}</span>}
+          </p>
+        </div>
       </div>
       {error && <Alert>{errorText(error)}</Alert>}
       <div className="grid grid-cols-2 gap-3">
