@@ -282,7 +282,13 @@
     "floorMale": "Male (kcal)",
     "ai": "Artificial intelligence",
     "aiHint": "Provider, monthly spending cap and costs per member.",
-    "aiOpen": "Manage AI"
+    "aiOpen": "Manage AI",
+    "push": "Notifications",
+    "pushReady": "Notifications are set up.",
+    "pushMissing": "To turn on notifications, add these two variables in Vercel (Production), then redeploy:",
+    "pushGenerate": "Generate a key pair",
+    "pushPrivateWarning": "Keep the private key secret: paste it only into Vercel.",
+    "pushSchedule": "Reminders are sent by the “Notifications” scheduled task in GitHub Actions (every 15 minutes)."
   },
   "errors": {
     "generic": "Something went wrong. Please try again in a moment.",
@@ -332,7 +338,8 @@
     "dish_not_shared": "This recipe is personal: make it a household recipe to share it.",
     "share_nobody": "Choose at least one person, or enter your own portion.",
     "portion_required": "Enter your portion.",
-    "larger_day_range": "You can mark today or a day within the next 8 weeks."
+    "larger_day_range": "You can mark today or a day within the next 8 weeks.",
+    "push_not_configured": "Notifications aren't set up yet."
   },
   "slots": {
     "breakfast": "Breakfast",
@@ -826,5 +833,59 @@
     "suggestionHint": "A serving of {name} ({kcal} kcal) fits in what you have left today.",
     "suggestionAdd": "Add {name}",
     "disclaimer": "The {appName} coach is not medical advice. It can make mistakes: for any health question, talk to a professional."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "hint": "Gentle reminders, never pushy: each one is sent at most once.",
+    "device": "On this device",
+    "enable": "Turn on notifications",
+    "disable": "Turn off on this device",
+    "enabled": "Notifications are on for this device.",
+    "devices": "{count, plural, =0 {No subscribed device.} one {# subscribed device.} other {# subscribed devices.}}",
+    "denied": "Notifications are blocked for this site. You can allow them in your browser settings.",
+    "unsupported": "This browser can't receive notifications. On iPhone, add Satia to your home screen first, then open it from the icon.",
+    "notConfigured": "Notifications haven't been set up by the admin yet.",
+    "test": "Send me a test notification",
+    "testSent": "Notification sent.",
+    "types": "Reminders",
+    "meals": "Unlogged meals",
+    "mealsHint": "30 minutes after your usual time, if nothing is logged.",
+    "water": "Hydration",
+    "waterHint": "Late morning, afternoon and at 6 pm, if you're behind your goal.",
+    "weeklyReview": "Weekly review",
+    "weeklyReviewHint": "On Monday morning, when your review is ready.",
+    "quiet": "Quiet hours",
+    "quietStart": "From",
+    "quietEnd": "To",
+    "save": "Save",
+    "saved": "Preferences saved.",
+    "push": {
+      "meal": {
+        "breakfast": {
+          "title": "Your breakfast",
+          "body": "Want to log your breakfast? It only takes a few seconds."
+        },
+        "lunch": {
+          "title": "Your lunch",
+          "body": "Remember to log your lunch when you have a moment."
+        },
+        "dinner": {
+          "title": "Your dinner",
+          "body": "Feel like logging your dinner? Your day will be complete."
+        }
+      },
+      "water": {
+        "title": "A glass of water?",
+        "body": "{glasses} of {goal} glasses so far. A small glass now?"
+      },
+      "weeklyReview": {
+        "title": "Your weekly review",
+        "body": "Your coach has prepared last week's review."
+      },
+      "test": {
+        "title": "Satia",
+        "body": "Notifications work on this device."
+      }
+    }
   }
 }

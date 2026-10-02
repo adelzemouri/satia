@@ -25,6 +25,7 @@ import {
 
 import { adaptiveExport } from "./adaptive";
 import { coachExport } from "./coach";
+import { notificationExport } from "./notifications";
 import { checkinExport } from "./quality";
 
 /** Toutes les données personnelles d'un utilisateur, sans aucun secret (mots de passe, TOTP, sessions). */
@@ -154,6 +155,7 @@ export async function collectUserData(userId: string) {
     checkins: await checkinExport(userId),
     coachMessages: coach.messages,
     coachReviews: coach.reviews,
+    pushDevices: await notificationExport(userId),
   };
 }
 
@@ -185,6 +187,7 @@ export function toCsvZip(data: UserData): Uint8Array {
     "checkins.csv": strToU8(toCsv(data.checkins)),
     "coach-messages.csv": strToU8(toCsv(data.coachMessages)),
     "coach-reviews.csv": strToU8(toCsv(data.coachReviews)),
+    "push-devices.csv": strToU8(toCsv(data.pushDevices)),
     "meals.csv": strToU8(toCsv(data.meals)),
     "water.csv": strToU8(toCsv(data.water)),
     "weights.csv": strToU8(toCsv(data.weights)),

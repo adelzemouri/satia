@@ -383,6 +383,32 @@ Téléphone                                     Serveur (Vercel fra1)           
 - Conversation et bilans sont inclus dans l'export (`coach-messages.csv`,
   `coach-reviews.csv`) et supprimés avec le compte.
 
+## Notifications (phase 10)
+
+- **Web Push standard** (bibliothèque `web-push`, clés VAPID) : pas de service tiers. Les
+  clés se génèrent dans le navigateur depuis Admin > Notifications et se collent dans
+  `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` (Vercel) ; sans elles, la fonction reste
+  masquée. `VAPID_SUBJECT` est facultatif (par défaut, l'adresse de l'app).
+- **Abonnements** (`push_subscriptions`) : un par appareil, créé depuis Profil >
+  Notifications. Un abonnement refusé par le service de push (404/410) est supprimé.
+  Sur iPhone, il faut d'abord installer la PWA sur l'écran d'accueil.
+- **Préférences** (`profiles.notification_prefs`) : repas, hydratation, bilan, chacun
+  activable, et une plage silencieuse (22:00 → 07:30 par défaut, peut passer minuit).
+- **Rappels** (`src/domain/notifications.ts`, calcul pur) :
+  - repas : 30 min après l'horaire habituel, jusqu'à 3 h après, si rien n'est noté ;
+  - eau : à 11 h, 15 h et 18 h, si on est sous 30, 60 ou 80 % de l'objectif (2 h de
+    fenêtre, sans rattrapage des points précédents) ;
+  - bilan : le lundi de 9 h à 13 h, si la semaine écoulée a au moins 3 jours saisis.
+- **Envoi une seule fois** : `notification_log` (clé unique utilisateur, type, clé du
+  rappel) est écrit avant l'envoi ; purge après 30 jours.
+- **Déclenchement** : le cron de Vercel Hobby ne passe qu'une fois par jour, donc le
+  workflow GitHub Actions `notify.yml` appelle `/api/cron/notify` toutes les 15 minutes
+  (gratuit, le dépôt est public) avec `Authorization: Bearer $CRON_SECRET`. Secrets du
+  dépôt nécessaires : `APP_URL` et `CRON_SECRET` (le même que dans Vercel). GitHub peut
+  retarder un passage ; les fenêtres de plusieurs heures l'absorbent. GitHub suspend les
+  workflows planifiés après 60 jours sans activité sur le dépôt : il suffit alors de les
+  réactiver dans l'onglet Actions.
+
 ## 6. Sécurité (rappel des points structurants)
 
 HTTPS imposé par l'hébergeur, en-têtes CSP/HSTS via le middleware Next.js, jeton

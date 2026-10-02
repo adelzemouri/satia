@@ -9,7 +9,7 @@ export default async function globalSetup() {
   const sql = postgres(process.env.DATABASE_URL ?? "postgres://satia:satia@localhost:5432/satia", { max: 1 });
   await sql`truncate table access_links, accounts, sessions, two_factors, verifications, goals, profiles,
     meal_entries, water_logs, weight_entries, favorites, recipe_items, rate_limits, llm_calls, photos, food_corrections, containers,
-    personal_expressions, shared_meals, shared_meal_shares, metabolism_checks, larger_days, daily_checkins, coach_messages, coach_reviews restart identity`;
+    personal_expressions, shared_meals, shared_meal_shares, metabolism_checks, larger_days, daily_checkins, coach_messages, coach_reviews, push_subscriptions, notification_log restart identity`;
   // Pas de TRUNCATE ... CASCADE sur users : il viderait aussi la table des aliments.
   await sql`delete from foods where source <> 'ciqual'`;
   await sql`delete from users`;

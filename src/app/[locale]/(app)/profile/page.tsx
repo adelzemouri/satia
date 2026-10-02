@@ -6,10 +6,13 @@ import { LanguageSwitcher } from "@/features/preferences/language-switcher";
 import { parseTheme, THEME_COOKIE } from "@/features/preferences/theme";
 import { ThemeSwitcher } from "@/features/preferences/theme-switcher";
 import { WaterGoalForm } from "@/features/journal/water-goal-form";
+import { DeviceSubscription } from "@/features/notifications/device-subscription";
+import { NotificationPrefsForm } from "@/features/notifications/prefs-form";
 import { DeleteAccountForm } from "@/features/profile/delete-account-form";
 import { TwoFactorSection } from "@/features/profile/two-factor-section";
 import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
+import { subscriptionCount, vapidPublicKey } from "@/server/notifications";
 import { getProfile } from "@/server/profile";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
@@ -21,7 +24,9 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
   const user = await requireUser(locale);
   const profile = await getProfile(user.id);
   const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
+  const devices = await subscriptionCount(user.id);
   const t = await getTranslations("profile");
+  const tn = await getTranslations("notifications");
 
   return (
     <>
@@ -36,6 +41,17 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
         <LanguageSwitcher />
         <WaterGoalForm goal={profile?.waterGoalGlasses ?? 8} />
       </Card>
+
+      {profile && (
+        <Card aria-labelledby="notifications">
+          <h2 id="notifications" className="text-xl font-semibold">
+            {tn("title")}
+          </h2>
+          <p className="text-text-muted">{tn("hint")}</p>
+          <DeviceSubscription publicKey={vapidPublicKey()} devices={devices} />
+          <NotificationPrefsForm prefs={profile.notificationPrefs} />
+        </Card>
+      )}
 
       <Card aria-labelledby="ai-entry">
         <h2 id="ai-entry" className="text-xl font-semibold">

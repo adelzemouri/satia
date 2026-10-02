@@ -4,9 +4,11 @@ import { revokeInviteAction } from "@/features/admin/actions";
 import { FloorsForm } from "@/features/admin/floors-form";
 import { InviteForm } from "@/features/admin/invite-form";
 import { MemberActions } from "@/features/admin/member-actions";
+import { VapidKeys } from "@/features/admin/vapid-keys";
 import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { listMembers, listPendingInvites } from "@/server/accounts";
+import { vapidPublicKey } from "@/server/notifications";
 import { requireAdmin } from "@/server/session";
 import { getCalorieFloors } from "@/server/settings";
 import { buttonClass } from "@/ui/button";
@@ -92,6 +94,14 @@ export default async function AdminPage({ params }: PageProps<"/[locale]/admin">
         <Link href="/admin/ai" className={buttonClass("secondary")}>
           {t("aiOpen")}
         </Link>
+      </Card>
+
+      <Card aria-labelledby="push">
+        <h2 id="push" className="text-xl font-semibold">
+          {t("push")}
+        </h2>
+        {vapidPublicKey() ? <p>{t("pushReady")}</p> : <VapidKeys />}
+        <p className="text-sm text-text-muted">{t("pushSchedule")}</p>
       </Card>
 
       <Card aria-labelledby="floors">

@@ -107,6 +107,7 @@ describe("onboarding et données", () => {
       "meals.csv",
       "metabolism-checks.csv",
       "profile.csv",
+      "push-devices.csv",
       "recipe-items.csv",
       "shared-meals.csv",
       "water.csv",

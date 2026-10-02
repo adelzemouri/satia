@@ -10,3 +10,4 @@ export * from "./llm";
 export * from "./meal-ai";
 export * from "./profiles";
 export * from "./settings";
+export * from "./notifications";
