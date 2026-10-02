@@ -6,8 +6,15 @@ const PRODUCT = {
   product_name_fr: "Pâte à tartiner noisettes",
   brands: "Marque Test",
   serving_quantity: 15,
+  image_front_small_url: `http://localhost:${Number(process.env.OFF_MOCK_PORT ?? 3199)}/images/front.png`,
   nutriments: { "energy-kcal_100g": 540, proteins_100g: 6, carbohydrates_100g: 57, fat_100g: 31, sugars_100g: 56 },
 };
+
+// Image 1×1 px servie comme photo du produit.
+const PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+  "base64",
+);
 
 const port = Number(process.env.OFF_MOCK_PORT ?? 3199);
 
@@ -18,6 +25,10 @@ createServer((request, response) => {
     response.end(JSON.stringify(body));
   };
   if (url.pathname === "/health") return json(200, { ok: true });
+  if (url.pathname === "/images/front.png") {
+    response.writeHead(200, { "Content-Type": "image/png" });
+    return response.end(PNG);
+  }
   if (url.pathname === `/api/v2/product/${PRODUCT.code}.json`)
     return json(200, { code: PRODUCT.code, product: PRODUCT });
   if (url.pathname.startsWith("/api/v2/product/")) return json(404, { status: 0, status_verbose: "product not found" });

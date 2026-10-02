@@ -52,6 +52,8 @@ export const foods = pgTable(
     unitWeights: jsonb().$type<Partial<Record<CountUnit, number>>>(),
     /** Nombre de portions d'une recette. */
     servings: smallint(),
+    /** Photo du produit hébergée par Open Food Facts (CC BY-SA), affichée telle quelle. */
+    imageUrl: text(),
     fetchedAt: timestamp({ withTimezone: true }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),

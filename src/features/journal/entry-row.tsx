@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
 import { useErrorText } from "@/features/auth/use-error-text";
+import { ProductThumb } from "@/features/foods/product-thumb";
 import { MEAL_SLOTS, type MealSlot } from "@/domain/meals";
 import type { Unit } from "@/domain/units";
 import { Alert } from "@/ui/alert";
@@ -21,6 +22,7 @@ export type EntryView = {
   kcal: number;
   slot: MealSlot;
   isEstimated: boolean;
+  imageUrl: string | null;
 };
 
 const selectClass = "min-h-12 rounded-2xl border border-border bg-surface px-3 text-base";
@@ -34,13 +36,16 @@ export function EntryRow({ entry, units, readOnly = false }: { entry: EntryView;
   const [pending, startTransition] = useTransition();
 
   const summary = (
-    <span className="flex min-w-0 flex-1 flex-col">
-      <span className="truncate font-semibold">{entry.label}</span>
-      <span className="text-sm text-text-muted">
-        {entry.unit === "g"
-          ? t("journal.entryValues", { grams: entry.grams, kcal: Math.round(entry.kcal) })
-          : `${entry.quantity} ${t(`units.${entry.unit}`)} · ${t("journal.entryValues", { grams: entry.grams, kcal: Math.round(entry.kcal) })}`}
-        {entry.isEstimated && ` · ${t("journal.estimated")}`}
+    <span className="flex min-w-0 flex-1 items-center gap-3">
+      {entry.imageUrl && <ProductThumb src={entry.imageUrl} size={40} />}
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate font-semibold">{entry.label}</span>
+        <span className="text-sm text-text-muted">
+          {entry.unit === "g"
+            ? t("journal.entryValues", { grams: entry.grams, kcal: Math.round(entry.kcal) })
+            : `${entry.quantity} ${t(`units.${entry.unit}`)} · ${t("journal.entryValues", { grams: entry.grams, kcal: Math.round(entry.kcal) })}`}
+          {entry.isEstimated && ` · ${t("journal.estimated")}`}
+        </span>
       </span>
     </span>
   );

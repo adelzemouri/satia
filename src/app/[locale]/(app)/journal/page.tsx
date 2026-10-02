@@ -113,6 +113,7 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
                         kcal: entry.kcal,
                         slot: entry.slot,
                         isEstimated: entry.isEstimated,
+                        imageUrl: (entry.foodId && foods.get(entry.foodId)?.imageUrl) || null,
                       }}
                       units={unitsFor(entry.foodId, entry.unit)}
                     />

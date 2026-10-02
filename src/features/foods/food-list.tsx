@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Icon } from "@/ui/icon";
 
 import type { FoodItem } from "./food-types";
+import { ProductThumb } from "./product-thumb";
 
 /** Liste d'aliments : toucher le nom le choisit, l'étoile le met en favori. */
 export function FoodList({
@@ -28,13 +29,16 @@ export function FoodList({
             <button
               type="button"
               onClick={() => onSelect(food)}
-              className="flex min-h-14 min-w-0 flex-1 flex-col items-start justify-center py-2 text-left"
+              className="flex min-h-14 min-w-0 flex-1 items-center gap-3 py-2 text-left"
             >
-              <span className="w-full truncate font-semibold">{food.nameFr}</span>
-              <span className="text-sm text-text-muted">
-                {[food.brand, t(`sources.${food.source}`), t("per100", { kcal: Math.round(food.kcal) })]
-                  .filter(Boolean)
-                  .join(" · ")}
+              {food.imageUrl && <ProductThumb src={food.imageUrl} />}
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="w-full truncate font-semibold">{food.nameFr}</span>
+                <span className="text-sm text-text-muted">
+                  {[food.brand, t(`sources.${food.source}`), t("per100", { kcal: Math.round(food.kcal) })]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
               </span>
             </button>
             {onToggleFavorite && (

@@ -13,6 +13,7 @@ import { Icon } from "@/ui/icon";
 
 import { FoodList } from "./food-list";
 import type { FoodItem, OffItem } from "./food-types";
+import { ProductThumb } from "./product-thumb";
 import { QuantityForm } from "./quantity-form";
 import { useFoodSearch } from "./use-food-search";
 
@@ -81,6 +82,7 @@ export function FoodPicker({
         fatG: item.fatG,
         densityGPerMl: null,
         unitWeights: item.servingGrams ? { portion: item.servingGrams } : null,
+        imageUrl: item.imageUrl,
       });
     });
 
@@ -171,11 +173,14 @@ export function FoodPicker({
                           type="button"
                           onClick={() => chooseOff(item)}
                           disabled={pending}
-                          className="flex min-h-14 w-full flex-col items-start justify-center py-2 text-left"
+                          className="flex min-h-14 w-full items-center gap-3 py-2 text-left"
                         >
-                          <span className="font-semibold">{item.name}</span>
-                          <span className="text-sm text-text-muted">
-                            {[item.brand, t("per100", { kcal: Math.round(item.kcal) })].filter(Boolean).join(" · ")}
+                          <ProductThumb src={item.imageUrl} />
+                          <span className="flex min-w-0 flex-col">
+                            <span className="font-semibold">{item.name}</span>
+                            <span className="text-sm text-text-muted">
+                              {[item.brand, t("per100", { kcal: Math.round(item.kcal) })].filter(Boolean).join(" · ")}
+                            </span>
                           </span>
                         </button>
                       </li>
