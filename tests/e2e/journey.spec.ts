@@ -98,6 +98,9 @@ test("onboarding complet d'un adulte avec plan expliqué", async ({ page }) => {
   await next.click(); // horaires par défaut
   await expect(page.getByLabel("Budget quotidien")).toBeChecked();
   await next.click();
+  await expect(page.getByLabel("Pédagogue")).toBeChecked();
+  await page.getByLabel("Serein").check();
+  await next.click();
   await next.click();
   await expect(alertIn(page)).toHaveText("Merci de confirmer avoir lu ce message.");
   await page.getByLabel("J'ai compris").check();
@@ -481,6 +484,35 @@ test("ressenti du jour et bilan qualité de la semaine", async ({ page }) => {
   // La pâte à tartiner scannée plus tôt est un produit ultra-transformé (NOVA 4).
   await expect(page.getByText(/Ultra-transformés les plus présents : .*Pâte à tartiner noisettes/)).toBeVisible();
   await expectNoA11yViolations(page);
+});
+
+test("coach : bilan, conversation (LLM simulé), garde-fou et personnalité", async ({ page }) => {
+  await signInWithTotp(page);
+  await page.getByRole("link", { name: "Coach", exact: true }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Coach");
+  // Le foyer de test vient d'être créé : pas assez de jours la semaine dernière pour un bilan.
+  await expect(page.getByText(/Pas encore de bilan/)).toBeVisible();
+  await expect(page.getByLabel("Serein")).toBeChecked();
+  await expectNoA11yViolations(page);
+
+  await page.getByLabel("Ton message").fill("Que manger ce soir ?");
+  await page.getByRole("button", { name: "Envoyer" }).click();
+  const conversation = page.getByRole("list", { name: "Conversation avec le coach" });
+  await expect(conversation.getByText(/Tu me demandais : « Que manger ce soir \? »/)).toBeVisible();
+  await expect(page.getByLabel("Ton message")).toHaveValue("");
+
+  await page.getByLabel("Ton message").fill("Un menu à 900 kcal par jour ?");
+  await page.keyboard.press("Enter");
+  await expect(conversation.getByText(/en dessous de ton minimum journalier/)).toBeVisible();
+  await expectNoA11yViolations(page);
+
+  await page.getByLabel("Gourmand").check();
+  await page.reload();
+  await expect(page.getByLabel("Gourmand")).toBeChecked();
+  await expect(conversation.getByText(/Tu me demandais/)).toBeVisible();
+
+  await page.getByRole("button", { name: "Effacer la conversation" }).click();
+  await expect(page.getByText(/Aucun message pour l'instant/)).toBeVisible();
 });
 
 test("mon métabolisme et budget hebdomadaire avec un jour plus large", async ({ page }) => {

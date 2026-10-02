@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db/client";
@@ -401,4 +401,20 @@ export function per100(food: Pick<FoodSummary, "kcal" | "proteinG" | "carbsG" | 
 
 function round2(value: number): number {
   return Math.round(value * 100) / 100;
+}
+
+/** Plats pour la suggestion du coach : recettes de l'utilisateur et de son foyer, et ses favoris. */
+export async function dishPool(userId: string) {
+  return db()
+    .select({
+      id: foods.id,
+      name: foods.nameFr,
+      kcal: foods.kcal,
+      unitWeights: foods.unitWeights,
+      imageUrl: foods.imageUrl,
+    })
+    .from(foods)
+    .leftJoin(favorites, and(eq(favorites.foodId, foods.id), eq(favorites.userId, userId)))
+    .where(and(visibleTo(userId), or(and(eq(foods.source, "recipe"), editableBy(userId)), isNotNull(favorites.userId))))
+    .limit(200);
 }

@@ -358,6 +358,31 @@ Téléphone                                     Serveur (Vercel fra1)           
 - **Ressenti du jour** (`daily_checkins`) : faim, énergie, humeur de 1 à 5, chaque réponse
   enregistrée seule. Privé, inclus dans l'export.
 
+## Coach (phase 9)
+
+- **Personnalités** : `profiles.coach_style` (pédagogue, enthousiaste, serein, gourmand),
+  choisie à l'onboarding et modifiable sur `/coach`. Seul le ton du prompt système change ;
+  les règles (tutoiement, 120 mots, pas d'avis médical, jamais sous le plancher ni plus de
+  1 % du poids par semaine, aucun chiffre inventé) sont communes (`src/llm/prompts/coach.ts`).
+- **Chat** (`coach_messages`, feature LLM `coach`, modèle texte) : chaque message part avec
+  un contexte compact du jour (6 lignes au plus : calories et reste, plancher, macros, fibres
+  et fruits/légumes, semaine en budget hebdo, tendance de poids, régime, ressenti) et les
+  6 derniers messages. Sortie JSON `{reply}` validée par Zod. Le message n'est enregistré
+  qu'avec sa réponse ; on garde les 100 derniers par personne.
+- **Garde-fous locaux, sans appel au LLM** : une demande chiffrée sous le plancher
+  (« 900 kcal par jour ») ou une question de dose ou de médicament reçoit une réponse
+  traduite côté client (`notice` = `floor` ou `medical`).
+- **Bilan hebdomadaire** (`coach_reviews`, feature `weekly_review`) : rédigé une seule fois
+  par semaine écoulée, à la première visite de `/coach` (déclenché après l'affichage), à
+  partir de données agrégées (jours saisis, moyennes, qualité, ajustement de l'objectif,
+  lien énergie et protéines). Il faut au moins 3 jours saisis. Pas de cron : un appel par
+  personne et par semaine au plus, et seulement pour qui ouvre le coach.
+- **Plat suggéré** (accueil) : une recette (perso ou du foyer) ou un favori dont une portion
+  tient dans le reste du jour et en utilise au moins un tiers, choisi par règles avec une
+  graine (utilisateur, jour) : stable dans la journée, sans LLM.
+- Conversation et bilans sont inclus dans l'export (`coach-messages.csv`,
+  `coach-reviews.csv`) et supprimés avec le compte.
+
 ## 6. Sécurité (rappel des points structurants)
 
 HTTPS imposé par l'hébergeur, en-têtes CSP/HSTS via le middleware Next.js, jeton

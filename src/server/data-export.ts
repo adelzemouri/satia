@@ -24,6 +24,7 @@ import {
 } from "@/db/schema";
 
 import { adaptiveExport } from "./adaptive";
+import { coachExport } from "./coach";
 import { checkinExport } from "./quality";
 
 /** Toutes les données personnelles d'un utilisateur, sans aucun secret (mots de passe, TOTP, sessions). */
@@ -130,6 +131,7 @@ export async function collectUserData(userId: string) {
     .where(eq(sharedMealShares.userId, userId))
     .orderBy(asc(sharedMeals.date));
   const adaptive = await adaptiveExport(userId);
+  const coach = await coachExport(userId);
   return {
     exportedAt: new Date().toISOString(),
     account: account ?? null,
@@ -150,6 +152,8 @@ export async function collectUserData(userId: string) {
     metabolismChecks: adaptive.checks,
     largerDays: adaptive.larger,
     checkins: await checkinExport(userId),
+    coachMessages: coach.messages,
+    coachReviews: coach.reviews,
   };
 }
 
@@ -179,6 +183,8 @@ export function toCsvZip(data: UserData): Uint8Array {
     "metabolism-checks.csv": strToU8(toCsv(data.metabolismChecks)),
     "larger-days.csv": strToU8(toCsv(data.largerDays)),
     "checkins.csv": strToU8(toCsv(data.checkins)),
+    "coach-messages.csv": strToU8(toCsv(data.coachMessages)),
+    "coach-reviews.csv": strToU8(toCsv(data.coachReviews)),
     "meals.csv": strToU8(toCsv(data.meals)),
     "water.csv": strToU8(toCsv(data.water)),
     "weights.csv": strToU8(toCsv(data.weights)),

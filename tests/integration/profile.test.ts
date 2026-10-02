@@ -26,6 +26,7 @@ const answers: OnboardingInput = {
   foodsToAvoid: "coriandre",
   mealTimes: { breakfast: "07:30", lunch: "12:30", dinner: "20:00" },
   budgetMode: "daily" as const,
+  coachStyle: "teacher" as const,
   disclaimerAccepted: true,
 };
 
@@ -93,6 +94,8 @@ describe("onboarding et données", () => {
       "account.csv",
       "ai-calls.csv",
       "checkins.csv",
+      "coach-messages.csv",
+      "coach-reviews.csv",
       "containers.csv",
       "corrections.csv",
       "expressions.csv",

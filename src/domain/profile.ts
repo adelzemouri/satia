@@ -22,6 +22,10 @@ export type Diet = (typeof DIETS)[number];
 export const BUDGET_MODES = ["daily", "weekly"] as const;
 export type BudgetMode = (typeof BUDGET_MODES)[number];
 
+/** Personnalités du coach : seul le ton change. */
+export const COACH_STYLES = ["teacher", "cheerleader", "zen", "chef"] as const;
+export type CoachStyle = (typeof COACH_STYLES)[number];
+
 export const ADULT_AGE = 18;
 
 /** Âge révolu à une date donnée (dates ISO « AAAA-MM-JJ »). */

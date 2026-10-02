@@ -12,7 +12,7 @@ import { dayQuality, type DayQuality, type QualityItem, weekQuality, type WeekQu
 import { assertNotFuture } from "./journal";
 
 /** Lignes de journal sur [from, to] avec les valeurs de qualité de leur aliment. */
-async function qualityItems(userId: string, from: string, to: string): Promise<QualityItem[]> {
+export async function qualityItems(userId: string, from: string, to: string): Promise<QualityItem[]> {
   const rows = await db()
     .select({
       date: mealEntries.date,

@@ -3,6 +3,7 @@ import "server-only";
 import type { z } from "zod";
 
 import type { LlmFeature } from "@/db/schema";
+import type { CoachStyle } from "@/domain/profile";
 
 import { llmConfig, type ModelKind } from "./config";
 import { assertAiAvailable } from "./guard";
@@ -17,7 +18,14 @@ import {
   type PromptContext,
 } from "./prompts/meal";
 import { providerFor } from "./providers";
-import { connectionTestSchema, foodEstimatesSchema, mealItemsSchema } from "./schemas";
+import { coachSystem, weeklyReviewSystem } from "./prompts/coach";
+import {
+  coachReplySchema,
+  connectionTestSchema,
+  foodEstimatesSchema,
+  mealItemsSchema,
+  weeklyReviewSchema,
+} from "./schemas";
 import { AiUnavailableError, type LlmImage, LlmProviderError, type LlmUsage } from "./types";
 import { recordCall } from "./usage";
 
@@ -174,4 +182,39 @@ export async function estimateFoods(userId: string, names: readonly string[]): P
     maxOutputTokens: 1024,
   });
   return result.data.items;
+}
+
+/** Marge de sortie du coach : réponse courte, mais les modèles qui réfléchissent comptent cette réflexion. */
+const COACH_OUTPUT_TOKENS = 2048;
+
+/** Réponse du coach : contexte compact, derniers échanges et nouveau message dans `user`. */
+export async function coachReply(userId: string, style: CoachStyle, user: string): Promise<string> {
+  const result = await callLlm({
+    userId,
+    feature: "coach",
+    kind: "text",
+    system: coachSystem(style),
+    user,
+    schemaName: "coach_reply",
+    schema: coachReplySchema,
+    maxOutputTokens: COACH_OUTPUT_TOKENS,
+  });
+  return result.data.reply;
+}
+
+export type WeeklyReview = z.infer<typeof weeklyReviewSchema>;
+
+/** Bilan de la semaine écoulée : un seul appel par utilisateur et par semaine. */
+export async function writeWeeklyReview(userId: string, style: CoachStyle, data: string): Promise<WeeklyReview> {
+  const result = await callLlm({
+    userId,
+    feature: "weekly_review",
+    kind: "text",
+    system: weeklyReviewSystem(style),
+    user: data,
+    schemaName: "weekly_review",
+    schema: weeklyReviewSchema,
+    maxOutputTokens: COACH_OUTPUT_TOKENS,
+  });
+  return result.data;
 }

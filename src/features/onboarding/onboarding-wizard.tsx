@@ -12,6 +12,8 @@ import {
   allowedGoals,
   BUDGET_MODES,
   type BudgetMode,
+  COACH_STYLES,
+  type CoachStyle,
   type Diet,
   DIETS,
   type Goal,
@@ -46,6 +48,7 @@ type Draft = {
   foodsToAvoid: string;
   mealTimes: { breakfast: string; lunch: string; dinner: string };
   budgetMode: BudgetMode;
+  coachStyle: CoachStyle;
   disclaimerAccepted: boolean;
 };
 
@@ -62,6 +65,7 @@ type Step =
   | "diet"
   | "meals"
   | "budget"
+  | "coach"
   | "disclaimer"
   | "summary";
 
@@ -79,6 +83,7 @@ const INITIAL: Draft = {
   foodsToAvoid: "",
   mealTimes: { breakfast: "07:30", lunch: "12:30", dinner: "19:30" },
   budgetMode: "daily",
+  coachStyle: "teacher",
   disclaimerAccepted: false,
 };
 
@@ -102,6 +107,7 @@ function toInput(draft: Draft): OnboardingInput {
     foodsToAvoid: draft.foodsToAvoid,
     mealTimes: draft.mealTimes,
     budgetMode: draft.budgetMode,
+    coachStyle: draft.coachStyle,
     disclaimerAccepted: draft.disclaimerAccepted as true,
   };
 }
@@ -151,6 +157,7 @@ function validateStep(step: Step, draft: Draft, today: string): string | null {
 export function OnboardingWizard({ defaultFirstName }: { defaultFirstName: string }) {
   const t = useTranslations("onboarding");
   const tc = useTranslations("common");
+  const tcoach = useTranslations("coach");
   const format = useFormatter();
   const errorText = useErrorText();
   const today = todayIso();
@@ -168,7 +175,7 @@ export function OnboardingWizard({ defaultFirstName }: { defaultFirstName: strin
     if (changesWeight) list.push("targetWeight");
     list.push("activity");
     if (changesWeight) list.push("pace");
-    list.push("diet", "meals", "budget", "disclaimer", "summary");
+    list.push("diet", "meals", "budget", "coach", "disclaimer", "summary");
     return list;
   }, [draft.goal]);
 
@@ -410,6 +417,24 @@ export function OnboardingWizard({ defaultFirstName }: { defaultFirstName: strin
               hint: t(`budget.${value}.hint`),
             }))}
           />
+        )}
+
+        {step === "coach" && (
+          <>
+            <p className="text-text-muted">{t("coach.hint")}</p>
+            <OptionList
+              legend={t("coach.title")}
+              hideLegend
+              name="coachStyle"
+              value={draft.coachStyle}
+              onChange={(coachStyle) => update({ coachStyle })}
+              options={COACH_STYLES.map((value) => ({
+                value,
+                label: tcoach(`styles.${value}.label`),
+                hint: tcoach(`styles.${value}.hint`),
+              }))}
+            />
+          </>
         )}
 
         {step === "disclaimer" && (

@@ -9,6 +9,20 @@ const RESPONSES: Record<string, unknown | ((request: LlmRequest) => unknown)> = 
       { name: "poulet rôti", grams: 120, confidence: 0.7 },
     ],
   },
+  // Réponse fixe qui cite la dernière ligne (le message de l'utilisateur), pour les tests.
+  coach_reply: (request: LlmRequest) => ({
+    reply: `Bonne idée ! Tu me demandais : « ${
+      request.user
+        .split("\n")
+        .at(-1)
+        ?.replace(/^Moi : /, "") ?? ""
+    } ». Un bol de lentilles et des crudités tiennent bien dans ton budget.`,
+  }),
+  weekly_review: {
+    summary: "Belle régularité cette semaine : tes repas sont bien saisis.",
+    highlights: ["Des petits-déjeuners réguliers", "Une bonne hydratation"],
+    ideas: ["Ajoute une portion de légumes au déjeuner"],
+  },
   // Un aliment par ligne du message : mêmes valeurs moyennes pour chacun.
   food_estimates: (request: LlmRequest) => ({
     items: request.user

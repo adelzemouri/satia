@@ -225,6 +225,10 @@
         "label": "Weekly budget",
         "hint": "One total for the week: each day adjusts to the previous ones, and you can plan bigger days."
       }
+    },
+    "coach": {
+      "title": "Which coach suits you?",
+      "hint": "You can change it at any time."
     }
   },
   "profile": {
@@ -776,5 +780,51 @@
   "habitual": {
     "title": "{slot, select, breakfast {Your usual breakfast?} lunch {Your usual lunch?} dinner {Your usual dinner?} other {Your usual snack?}}",
     "add": "Add it"
+  },
+  "coach": {
+    "title": "Coach",
+    "intro": "Ask about your meals, your goal or your habits. The coach knows your current day, nothing more.",
+    "reviewTitle": "Last week's review",
+    "reviewLoading": "The coach is preparing your weekly review…",
+    "reviewEmpty": "No review yet: it needs at least 3 logged days last week. It will be ready next Monday if you keep going.",
+    "highlights": "What went well",
+    "ideas": "Ideas for this week",
+    "chatTitle": "Chat",
+    "conversation": "Conversation with the coach",
+    "empty": "No messages yet. For example: “What can I eat tonight with what I have left?”",
+    "you": "You",
+    "coach": "Coach",
+    "thinking": "The coach is thinking…",
+    "ask": "Your message",
+    "askHint": "A question about dinner, a craving, a doubt…",
+    "send": "Send",
+    "clear": "Clear the conversation",
+    "styleTitle": "Coach personality",
+    "styles": {
+      "teacher": {
+        "label": "Teacher",
+        "hint": "Explains the why, with simple guidelines."
+      },
+      "cheerleader": {
+        "label": "Cheerleader",
+        "hint": "Celebrates every bit of progress and keeps you going."
+      },
+      "zen": {
+        "label": "Calm",
+        "hint": "Calm and reassuring, no pressure."
+      },
+      "chef": {
+        "label": "Foodie",
+        "hint": "Talks cooking and gives you dish ideas."
+      }
+    },
+    "notices": {
+      "floor": "I'd rather not help you go below your daily minimum: it would be too little for your body. We can look together at making your meals more filling for the same calories.",
+      "medical": "Questions about doses or medication are for your doctor or pharmacist. I can help with your meals and habits."
+    },
+    "suggestionTitle": "{slot, select, breakfast {An idea for breakfast} lunch {An idea for lunch} snack {An idea for your snack} other {An idea for dinner}}",
+    "suggestionHint": "A serving of {name} ({kcal} kcal) fits in what you have left today.",
+    "suggestionAdd": "Add {name}",
+    "disclaimer": "The {appName} coach is not medical advice. It can make mistakes: for any health question, talk to a professional."
   }
 }
