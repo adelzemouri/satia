@@ -6,7 +6,7 @@ import { testConnection } from "@/llm";
 import { type ActionState, toActionState } from "@/server/action-result";
 import { DomainError } from "@/server/errors";
 import { getCurrentUser } from "@/server/session";
-import { aiSettingsSchema, setAiSettings } from "@/server/settings";
+import { aiSettingsSchema, photoSettingsSchema, setAiSettings, setPhotoSettings } from "@/server/settings";
 
 async function requireAdminId(): Promise<string> {
   const user = await getCurrentUser();
@@ -26,6 +26,17 @@ export async function saveAiSettingsAction(_prev: ActionState, formData: FormDat
         monthlyBudgetUsd: budget === "" ? null : Number(budget),
       }),
     );
+    revalidatePath("/[locale]/admin/ai", "page");
+    return { ok: true };
+  } catch (error) {
+    return toActionState(error);
+  }
+}
+
+export async function savePhotoSettingsAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  try {
+    await requireAdminId();
+    await setPhotoSettings(photoSettingsSchema.parse({ retentionDays: Number(formData.get("retentionDays")) }));
     revalidatePath("/[locale]/admin/ai", "page");
     return { ok: true };
   } catch (error) {

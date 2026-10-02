@@ -233,7 +233,11 @@
     "deleteTitle": "Supprimer mon compte",
     "deleteHint": "Toutes tes données seront définitivement effacées. Saisis ton mot de passe pour confirmer.",
     "deleteSubmit": "Supprimer définitivement",
-    "disclaimer": "{appName} ne remplace pas un avis médical. Pour toute question de santé, parles-en à un professionnel."
+    "disclaimer": "{appName} ne remplace pas un avis médical. Pour toute question de santé, parles-en à un professionnel.",
+    "aiEntry": "Saisie par photo, voix ou texte",
+    "aiEntryHint": "Tes contenants et tes expressions aident l'IA à mieux comprendre tes repas.",
+    "containers": "Mes contenants",
+    "dictionary": "Mon dictionnaire"
   },
   "admin": {
     "title": "Administration",
@@ -300,7 +304,13 @@
     "ai_not_configured": "L'IA n'est pas configurée. Tu peux saisir ton repas à la main.",
     "ai_disabled": "L'IA est en pause. Tu peux saisir ton repas à la main.",
     "ai_budget_reached": "L'IA a atteint son plafond du mois. Tu peux saisir ton repas à la main.",
-    "ai_provider_error": "L'IA n'a pas pu répondre. Réessaie dans un moment, ou saisis ton repas à la main."
+    "ai_provider_error": "L'IA n'a pas pu répondre. Réessaie dans un moment, ou saisis ton repas à la main.",
+    "invalid_photo": "Cette image n'est pas lisible. Essaie avec une autre photo.",
+    "photo_unreadable": "Impossible de préparer cette photo. Essaie avec une autre.",
+    "food_required": "Choisis un aliment pour chaque ligne.",
+    "speech_denied": "Le micro n'est pas autorisé. Tu peux écrire ton repas à la place.",
+    "speech_failed": "La dictée n'a pas fonctionné. Réessaie, ou écris ton repas.",
+    "container_size_required": "Indique au moins le volume ou le diamètre."
   },
   "slots": {
     "breakfast": "Petit-déjeuner",
@@ -346,7 +356,8 @@
     "copied": "{count, plural, one {# aliment copié} other {# aliments copiés}}",
     "duplicateYesterday": "Reprendre la journée d'hier",
     "estimated": "estimé",
-    "entryValues": "{grams, number} g · {kcal, number} kcal"
+    "entryValues": "{grams, number} g · {kcal, number} kcal",
+    "mealPhoto": "Photo du {slot}"
   },
   "add": {
     "title": "Ajouter un aliment",
@@ -511,6 +522,81 @@
       "anthropic": "Anthropic",
       "mock": "Simulé (tests)",
       "none": "Aucun"
-    }
+    },
+    "photosTitle": "Photos des repas",
+    "photosHint": "Les photos sont gardées dans un stockage privé, puis supprimées automatiquement chaque nuit après cette durée. Une photo jamais ajoutée au journal est supprimée dès le lendemain.",
+    "retentionDays": "Conservation (jours)",
+    "photosSaved": "Durée de conservation enregistrée."
+  },
+  "aiEntry": {
+    "title": "Photo, voix ou texte",
+    "hint": "Prends ton assiette en photo ou décris ton repas : tu vérifies tout avant l'ajout.",
+    "takePhoto": "Prendre une photo",
+    "choosePhoto": "Choisir une photo",
+    "photoAlt": "Photo de ton repas",
+    "note": "Une précision ? (facultatif)",
+    "noteHint": "Par exemple : sauce à part, demi-portion.",
+    "container": "Dans quel contenant ?",
+    "noContainer": "Je ne précise pas",
+    "analyzePhoto": "Analyser la photo",
+    "otherPhoto": "Choisir une autre photo",
+    "describe": "Ou décris ton repas",
+    "describeHint": "Par exemple : 2 œufs brouillés et une tartine beurrée.",
+    "analyzeText": "Analyser",
+    "dictate": "Dicter",
+    "stopDictation": "Arrêter la dictée",
+    "analyzing": "Analyse en cours…",
+    "containersLink": "Mes contenants",
+    "dictionaryLink": "Mon dictionnaire"
+  },
+  "aiConfirm": {
+    "title": "On vérifie ensemble ?",
+    "hint": "Voici ce que l'IA a reconnu. Ajuste les aliments et les quantités si besoin : tes corrections l'aideront la prochaine fois.",
+    "hintLocal": "Reconnu grâce à ton dictionnaire et à tes habitudes, sans appel à l'IA.",
+    "nothingFound": "Aucun aliment reconnu. Ajoute-les toi-même, ou réessaie avec une autre photo.",
+    "noMatch": "Aliment à choisir",
+    "recognized": "Reconnu : {label}",
+    "estimated": "Valeurs estimées : cet aliment n'est pas dans la base.",
+    "remove": "Retirer {name}",
+    "quantityOf": "Quantité de {name}",
+    "values": "{kcal, number} kcal · P {protein, number} g · G {carbs, number} g · L {fat, number} g",
+    "incomplete": "Choisis un aliment et une quantité.",
+    "changeFood": "Changer d'aliment",
+    "searchFor": "Remplacer « {label} » par",
+    "addFood": "Ajouter un aliment",
+    "addLabel": "Aliment à ajouter",
+    "total": "Total : {kcal, number} kcal",
+    "save": "Ajouter au journal",
+    "restart": "Recommencer"
+  },
+  "personal": {
+    "containersTitle": "Mes contenants",
+    "containersIntro": "Enregistre tes bols, assiettes, verres et mugs : choisis-les en prenant une photo, ou cite-les en décrivant ton repas (« mon grand bol de soupe »), pour des quantités plus justes.",
+    "noContainers": "Aucun contenant pour l'instant.",
+    "addContainer": "Ajouter un contenant",
+    "containerName": "Nom",
+    "containerNameHint": "Grand bol",
+    "containerKind": "Type",
+    "kinds": {
+      "bowl": "Bol",
+      "plate": "Assiette",
+      "glass": "Verre",
+      "mug": "Mug"
+    },
+    "volume": "Volume (ml)",
+    "diameter": "Diamètre (cm)",
+    "sizeHint": "Indique au moins le volume ou le diamètre.",
+    "volumeValue": "{ml, number} ml",
+    "diameterValue": "{cm, number} cm",
+    "dictionaryTitle": "Mon dictionnaire",
+    "dictionaryIntro": "Tes expressions à toi (« ma tartine », « mon café du matin ») associées à un aliment précis. En saisie texte ou vocale, elles sont reconnues tout de suite, sans appel à l'IA.",
+    "noExpressions": "Aucune expression pour l'instant.",
+    "addExpression": "Ajouter une expression",
+    "phrase": "Expression",
+    "phraseHint": "Ma tartine",
+    "food": "Aliment correspondant",
+    "otherFood": "Changer",
+    "save": "Enregistrer",
+    "remove": "Supprimer {name}"
   }
 }

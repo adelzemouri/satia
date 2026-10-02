@@ -9,8 +9,15 @@ import { assertAiAvailable } from "./guard";
 import { toJsonSchema } from "./json";
 import { costUsdMicros } from "./pricing";
 import { CONNECTION_TEST_PROMPT } from "./prompts/connection-test";
+import {
+  FOOD_ESTIMATE_SYSTEM,
+  MEAL_PHOTO_SYSTEM,
+  MEAL_TEXT_SYSTEM,
+  mealUserPrompt,
+  type PromptContext,
+} from "./prompts/meal";
 import { providerFor } from "./providers";
-import { connectionTestSchema } from "./schemas";
+import { connectionTestSchema, foodEstimatesSchema, mealItemsSchema } from "./schemas";
 import { AiUnavailableError, type LlmImage, LlmProviderError, type LlmUsage } from "./types";
 import { recordCall } from "./usage";
 
@@ -112,4 +119,59 @@ export async function testConnection(userId: string) {
   const config = llmConfig();
   const vision = config.models.vision === config.models.text ? text : await call("vision");
   return { text, vision };
+}
+
+/** Marge de sortie des appels de saisie : les modèles qui réfléchissent comptent cette réflexion en sortie. */
+const MEAL_OUTPUT_TOKENS = 2048;
+
+export type MealItem = z.infer<typeof mealItemsSchema>["items"][number];
+export type FoodEstimate = z.infer<typeof foodEstimatesSchema>["items"][number];
+
+/** Aliments et quantités visibles sur une photo (modèle vision, image en basse résolution). */
+export async function analyzeMealPhoto(userId: string, image: LlmImage, context: PromptContext): Promise<MealItem[]> {
+  const result = await callLlm({
+    userId,
+    feature: "meal_photo",
+    kind: "vision",
+    system: MEAL_PHOTO_SYSTEM,
+    user: mealUserPrompt("Analyse cette photo.", context),
+    images: [image],
+    schemaName: "meal_items",
+    schema: mealItemsSchema,
+    maxOutputTokens: MEAL_OUTPUT_TOKENS,
+  });
+  return result.data.items;
+}
+
+/** Aliments et quantités d'une description dictée ou écrite (modèle texte). */
+export async function parseMealText(userId: string, text: string, context: PromptContext): Promise<MealItem[]> {
+  const result = await callLlm({
+    userId,
+    feature: "meal_text",
+    kind: "text",
+    system: MEAL_TEXT_SYSTEM,
+    user: mealUserPrompt(text, context),
+    schemaName: "meal_items",
+    schema: mealItemsSchema,
+    maxOutputTokens: MEAL_OUTPUT_TOKENS,
+  });
+  return result.data.items;
+}
+
+/**
+ * Valeurs pour 100 g des aliments absents de la base, en un seul appel. C'est le seul cas où
+ * l'IA fournit des valeurs nutritionnelles ; elles sont alors marquées « estimé ».
+ */
+export async function estimateFoods(userId: string, names: readonly string[]): Promise<FoodEstimate[]> {
+  const result = await callLlm({
+    userId,
+    feature: "estimate",
+    kind: "text",
+    system: FOOD_ESTIMATE_SYSTEM,
+    user: names.join("\n"),
+    schemaName: "food_estimates",
+    schema: foodEstimatesSchema,
+    maxOutputTokens: 1024,
+  });
+  return result.data.items;
 }

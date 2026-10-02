@@ -8,7 +8,7 @@ import { Button } from "@/ui/button";
 import { Field } from "@/ui/field";
 import { useFormAction } from "@/ui/use-form-action";
 
-import { saveAiSettingsAction } from "./ai-actions";
+import { saveAiSettingsAction, savePhotoSettingsAction } from "./ai-actions";
 
 export function AiSettingsForm({
   enabled,
@@ -37,6 +37,31 @@ export function AiSettingsForm({
         inputMode="decimal"
         defaultValue={budgetUsd ?? ""}
         placeholder={String(defaultBudgetUsd)}
+      />
+      <Button type="submit" disabled={pending}>
+        {t("common.save")}
+      </Button>
+    </form>
+  );
+}
+
+/** Durée de conservation des photos de repas avant la purge automatique. */
+export function PhotoSettingsForm({ retentionDays }: { retentionDays: number }) {
+  const t = useTranslations();
+  const errorText = useErrorText();
+  const [state, action, pending] = useFormAction(savePhotoSettingsAction, null);
+  return (
+    <form {...action} className="flex flex-col gap-3">
+      {state?.error && <Alert>{errorText(state.error === "invalid_form" ? "generic" : state.error)}</Alert>}
+      {state?.ok && <Alert tone="success">{t("aiAdmin.photosSaved")}</Alert>}
+      <Field
+        label={t("aiAdmin.retentionDays")}
+        name="retentionDays"
+        type="number"
+        min={1}
+        max={3650}
+        required
+        defaultValue={retentionDays}
       />
       <Button type="submit" disabled={pending}>
         {t("common.save")}

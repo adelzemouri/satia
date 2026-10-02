@@ -5,11 +5,15 @@ import { strToU8, zipSync } from "fflate";
 
 import { db } from "@/db/client";
 import {
+  containers,
   favorites,
+  foodCorrections,
   foods,
   goals,
   llmCalls,
   mealEntries,
+  personalExpressions,
+  photos,
   profiles,
   recipeItems,
   user,
@@ -69,6 +73,43 @@ export async function collectUserData(userId: string) {
     .from(llmCalls)
     .where(eq(llmCalls.userId, userId))
     .orderBy(asc(llmCalls.createdAt));
+  const [containerRows, expressionRows, correctionRows, photoRows] = await Promise.all([
+    db()
+      .select({
+        name: containers.name,
+        kind: containers.kind,
+        volumeMl: containers.volumeMl,
+        diameterCm: containers.diameterCm,
+      })
+      .from(containers)
+      .where(eq(containers.userId, userId)),
+    db()
+      .select({
+        phrase: personalExpressions.phrase,
+        foodId: personalExpressions.foodId,
+        quantity: personalExpressions.quantity,
+        unit: personalExpressions.unit,
+      })
+      .from(personalExpressions)
+      .where(eq(personalExpressions.userId, userId)),
+    db()
+      .select({
+        aiLabel: foodCorrections.aiLabel,
+        aiGrams: foodCorrections.aiGrams,
+        foodId: foodCorrections.foodId,
+        grams: foodCorrections.grams,
+        createdAt: foodCorrections.createdAt,
+      })
+      .from(foodCorrections)
+      .where(eq(foodCorrections.userId, userId))
+      .orderBy(asc(foodCorrections.createdAt)),
+    // Les fichiers restent dans le stockage privé ; on liste les photos encore conservées.
+    db()
+      .select({ id: photos.id, createdAt: photos.createdAt })
+      .from(photos)
+      .where(eq(photos.userId, userId))
+      .orderBy(asc(photos.createdAt)),
+  ]);
   return {
     exportedAt: new Date().toISOString(),
     account: account ?? null,
@@ -81,6 +122,10 @@ export async function collectUserData(userId: string) {
     recipeItems: ingredients,
     favorites: favoriteRows,
     aiCalls,
+    containers: containerRows,
+    expressions: expressionRows,
+    corrections: correctionRows,
+    mealPhotos: photoRows,
   };
 }
 
@@ -114,5 +159,9 @@ export function toCsvZip(data: UserData): Uint8Array {
     "recipe-items.csv": strToU8(toCsv(data.recipeItems)),
     "favorites.csv": strToU8(toCsv(data.favorites)),
     "ai-calls.csv": strToU8(toCsv(data.aiCalls)),
+    "containers.csv": strToU8(toCsv(data.containers)),
+    "expressions.csv": strToU8(toCsv(data.expressions)),
+    "corrections.csv": strToU8(toCsv(data.corrections)),
+    "meal-photos.csv": strToU8(toCsv(data.mealPhotos)),
   });
 }

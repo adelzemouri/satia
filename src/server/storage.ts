@@ -1,6 +1,12 @@
 import "server-only";
 
-import { GetObjectCommand, HeadBucketCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectsCommand,
+  GetObjectCommand,
+  HeadBucketCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { env } from "./env";
@@ -26,6 +32,18 @@ function s3(): S3Client {
 
 export async function putObject(key: string, body: Uint8Array, contentType: string): Promise<void> {
   await s3().send(new PutObjectCommand({ Bucket: env().S3_BUCKET, Key: key, Body: body, ContentType: contentType }));
+}
+
+/** Supprime des objets par lots de 1000 (limite de l'API S3). */
+export async function deleteObjects(keys: readonly string[]): Promise<void> {
+  for (let start = 0; start < keys.length; start += 1000) {
+    await s3().send(
+      new DeleteObjectsCommand({
+        Bucket: env().S3_BUCKET,
+        Delete: { Objects: keys.slice(start, start + 1000).map((Key) => ({ Key })), Quiet: true },
+      }),
+    );
+  }
 }
 
 export function signedGetUrl(key: string): Promise<string> {

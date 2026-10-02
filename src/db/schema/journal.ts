@@ -16,10 +16,11 @@ import { UNITS } from "@/domain/units";
 
 import { user } from "./auth";
 import { foods } from "./foods";
+import { photos } from "./meal-ai";
 
 export { MEAL_SLOTS, type MealSlot };
 
-export const INPUT_METHODS = ["manual", "barcode", "copy"] as const;
+export const INPUT_METHODS = ["manual", "barcode", "copy", "photo", "voice", "text"] as const;
 
 const value = () => numeric({ precision: 7, scale: 1, mode: "number" });
 
@@ -47,6 +48,8 @@ export const mealEntries = pgTable(
     fatG: value().notNull(),
     isEstimated: boolean().notNull().default(false),
     inputMethod: text({ enum: INPUT_METHODS }).notNull(),
+    /** Photo du repas analysée par l'IA ; null une fois purgée. */
+    photoId: uuid().references(() => photos.id, { onDelete: "set null" }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index().on(t.userId, t.date), index().on(t.userId, t.foodId)],

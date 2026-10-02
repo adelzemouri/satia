@@ -16,3 +16,18 @@ export const mealItemsSchema = z.object({
     )
     .max(15),
 });
+
+/** Valeurs moyennes pour 100 g, demandées seulement quand aucun aliment de la base ne correspond. */
+export const foodEstimatesSchema = z.object({
+  items: z
+    .array(
+      z.object({
+        name: z.string().trim().min(1).max(80),
+        kcal: z.number().min(0).max(900),
+        proteinG: z.number().min(0).max(100),
+        carbsG: z.number().min(0).max(100),
+        fatG: z.number().min(0).max(100),
+      }),
+    )
+    .max(15),
+});

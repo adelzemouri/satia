@@ -50,3 +50,27 @@ export async function setAiSettings(settings: AiSettings): Promise<void> {
     .values({ key: AI_KEY, value })
     .onConflictDoUpdate({ target: appSettings.key, set: { value, updatedAt: new Date() } });
 }
+
+const PHOTOS_KEY = "photos";
+
+export const DEFAULT_PHOTO_RETENTION_DAYS = 90;
+
+export const photoSettingsSchema = z.object({
+  /** Durée de conservation des photos de repas, en jours. */
+  retentionDays: z.number().int().min(1).max(3650),
+});
+export type PhotoSettings = z.infer<typeof photoSettingsSchema>;
+
+export async function getPhotoSettings(): Promise<PhotoSettings> {
+  const [row] = await db().select().from(appSettings).where(eq(appSettings.key, PHOTOS_KEY));
+  const parsed = photoSettingsSchema.safeParse(row?.value);
+  return parsed.success ? parsed.data : { retentionDays: DEFAULT_PHOTO_RETENTION_DAYS };
+}
+
+export async function setPhotoSettings(settings: PhotoSettings): Promise<void> {
+  const value = photoSettingsSchema.parse(settings);
+  await db()
+    .insert(appSettings)
+    .values({ key: PHOTOS_KEY, value })
+    .onConflictDoUpdate({ target: appSettings.key, set: { value, updatedAt: new Date() } });
+}
