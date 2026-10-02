@@ -2,10 +2,32 @@
   "meta": {
     "description": "Gentle, guilt-free nutrition tracking for the whole family."
   },
+  "common": {
+    "continue": "Continue",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "optional": "optional",
+    "kcal": "{value, number} kcal",
+    "grams": "{value, number} g",
+    "kg": "{value, number} kg"
+  },
+  "nav": {
+    "home": "Home",
+    "profile": "Profile",
+    "admin": "Admin",
+    "logout": "Sign out"
+  },
   "home": {
-    "greeting": "Hello!",
-    "tagline": "The Sunday market, all week long. Your nutrition tracker is coming soon.",
-    "status": "Phase 0: the foundations are in place."
+    "greeting": "Hello {name}!",
+    "todayGoal": "Your goal for today",
+    "macros": "Breakdown",
+    "protein": "Protein",
+    "carbs": "Carbs",
+    "fat": "Fat",
+    "comingSoon": "The food diary arrives in the next step."
   },
   "theme": {
     "label": "Theme",
@@ -20,5 +42,229 @@
     "title": "Offline",
     "body": "No connection right now. Pages you already opened are still available; try again once you are back online."
   },
-  "disclaimer": "{appName} is not medical advice. For any health question, talk to a professional."
+  "disclaimer": "{appName} is not medical advice. For any health question, talk to a professional.",
+  "fields": {
+    "email": "Email address",
+    "password": "Password",
+    "newPassword": "New password",
+    "passwordHint": "At least {min} characters.",
+    "name": "First name or nickname",
+    "householdName": "Household name",
+    "setupToken": "Setup token",
+    "code": "6-digit code",
+    "backupCode": "Backup code"
+  },
+  "login": {
+    "title": "Sign in",
+    "submit": "Sign in",
+    "noAccount": "No account yet? Ask the household admin for an invitation link."
+  },
+  "twoFactor": {
+    "title": "Two-factor authentication",
+    "intro": "Enter the code shown in your authenticator app.",
+    "submit": "Verify",
+    "useBackup": "Use a backup code",
+    "useTotp": "Use the authenticator app",
+    "trustDevice": "Trust this device for 30 days"
+  },
+  "setup": {
+    "title": "Setup",
+    "intro": "Create the household and your admin account. This page only works once.",
+    "tokenHint": "The value of the SETUP_TOKEN variable configured on the host.",
+    "submit": "Create the household"
+  },
+  "invite": {
+    "title": "Join the {household} household",
+    "intro": "You've been invited. Create your account to get started.",
+    "submit": "Create my account",
+    "invalid": "This link is no longer valid. Ask the household admin for a new one.",
+    "expiredTitle": "Link expired"
+  },
+  "reset": {
+    "title": "New password",
+    "submit": "Change password",
+    "done": "Done! You can now sign in with your new password.",
+    "invalid": "This link is no longer valid. Ask the household admin for a new one."
+  },
+  "onboarding": {
+    "progress": "Step {current} of {total}",
+    "firstName": {
+      "title": "What's your name?",
+      "label": "First name"
+    },
+    "sex": {
+      "title": "Your sex",
+      "hint": "It is only used to estimate your energy needs (Mifflin-St Jeor equation).",
+      "female": "Female",
+      "male": "Male"
+    },
+    "birthDate": {
+      "title": "Your date of birth",
+      "label": "Date of birth"
+    },
+    "height": {
+      "title": "Your height",
+      "label": "Height in cm"
+    },
+    "weight": {
+      "title": "Your current weight",
+      "label": "Weight in kg"
+    },
+    "goal": {
+      "title": "What's your goal?",
+      "minorHint": "Under 18, we focus on balance and maintenance: your body is still growing.",
+      "lose_weight": "Lose weight",
+      "maintain": "Maintain my weight",
+      "gain_muscle": "Build muscle",
+      "eat_balanced": "Eat more balanced"
+    },
+    "targetWeight": {
+      "title": "Your target weight",
+      "label": "Target weight in kg",
+      "hint": "Optional. You can change it at any time.",
+      "skip": "I'd rather not set one"
+    },
+    "activity": {
+      "title": "Your everyday activity level",
+      "1": {
+        "label": "Mostly calm",
+        "hint": "Desk job, little walking, no sport."
+      },
+      "2": {
+        "label": "Lightly active",
+        "hint": "Daily walks or light exercise once or twice a week."
+      },
+      "3": {
+        "label": "Active",
+        "hint": "On your feet much of the day or exercise 3 to 4 times a week."
+      },
+      "4": {
+        "label": "Very active",
+        "hint": "Physical job or intense exercise 5 to 6 times a week."
+      },
+      "5": {
+        "label": "Extremely active",
+        "hint": "Very physical job and daily training."
+      }
+    },
+    "pace": {
+      "title": "At what pace?",
+      "gentle": "Gentle",
+      "gentleLoss": "About 0.25 kg per week",
+      "gentleGain": "Small surplus, slow and steady",
+      "moderate": "Moderate",
+      "moderateLoss": "About 0.5 kg per week",
+      "moderateGain": "A slightly larger surplus",
+      "eta": "Estimated goal date: {date}"
+    },
+    "diet": {
+      "title": "Your eating habits",
+      "omnivore": "Omnivore",
+      "flexitarian": "Flexitarian",
+      "pescatarian": "Pescatarian",
+      "vegetarian": "Vegetarian",
+      "vegan": "Vegan",
+      "no_pork": "No pork",
+      "avoidLabel": "Foods you'd rather avoid",
+      "avoidHint": "Optional. By taste or habit, for example: coriander, mushrooms."
+    },
+    "meals": {
+      "title": "Your usual meal times",
+      "hint": "They will be used later for gentle reminders.",
+      "breakfast": "Breakfast",
+      "lunch": "Lunch",
+      "dinner": "Dinner"
+    },
+    "disclaimer": {
+      "title": "Before we start",
+      "body": "{appName} helps you track what you eat, but it does not replace medical advice. For any health question, special diet, pregnancy or treatment, talk to a health professional.",
+      "accept": "I understand"
+    },
+    "summary": {
+      "title": "Your starting plan",
+      "kcal": "Daily goal",
+      "macros": "Macronutrient breakdown",
+      "howTitle": "How we calculated it",
+      "bmr": "At rest, your body burns about {bmr} kcal a day (Mifflin-St Jeor equation, based on your age, height, weight and sex).",
+      "tdee": "With your activity level, your total daily expenditure is about {tdee} kcal.",
+      "lose": "To lose about {kg} kg a week, your goal sits a little below that: {kcal} kcal.",
+      "gain": "To support muscle gain, we add a small surplus: {kcal} kcal.",
+      "maintain": "Your goal matches your expenditure: {kcal} kcal.",
+      "eta": "At this pace, you would reach your target weight around {date}.",
+      "adaptive": "This is a starting point: the goal will fine-tune itself after two weeks of tracking.",
+      "floor": "To keep you well, your goal never goes below {floor} kcal a day, even if that slows things down a little.",
+      "capped": "To keep it sustainable and safe, weight loss is limited to about 1% of your weight per week.",
+      "start": "Let's go!"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "preferences": "Preferences",
+    "security": "Security",
+    "twoFactorOn": "Two-factor authentication is on.",
+    "twoFactorOff": "Add a second layer of protection: a code from your authenticator app at each sign-in.",
+    "enable2fa": "Turn on two-factor authentication",
+    "disable2fa": "Turn off",
+    "scanQr": "Scan this QR code with your authenticator app, then enter the code it shows.",
+    "backupCodesTitle": "Backup codes",
+    "backupCodesHint": "Keep them somewhere safe: each one lets you sign in if you lose your phone.",
+    "confirm2fa": "Confirm",
+    "data": "My data",
+    "exportJson": "Download (JSON)",
+    "exportCsv": "Download (CSV)",
+    "deleteTitle": "Delete my account",
+    "deleteHint": "All your data will be permanently erased. Enter your password to confirm.",
+    "deleteSubmit": "Delete permanently",
+    "disclaimer": "{appName} does not replace medical advice. For any health question, talk to a professional."
+  },
+  "admin": {
+    "title": "Admin",
+    "members": "Household members",
+    "role": {
+      "admin": "Admin",
+      "member": "Member"
+    },
+    "you": "you",
+    "twoFactor": "2FA",
+    "resetLink": "New password link",
+    "remove": "Remove",
+    "removeConfirm": "Remove {name} from the household and erase their data?",
+    "invite": "Invite a member",
+    "inviteLabel": "Who is it for? (e.g. Mum, Leo)",
+    "inviteRole": "Role",
+    "inviteSubmit": "Create link",
+    "linkReady": "Link to share (valid for {days} days, single use):",
+    "resetReady": "Link to share (valid for {hours} h, single use):",
+    "pending": "Pending invitations",
+    "expires": "expires on {date}",
+    "revoke": "Cancel",
+    "floors": "Calorie floors",
+    "floorsHint": "The daily goal never goes below these values.",
+    "floorFemale": "Female (kcal)",
+    "floorMale": "Male (kcal)"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again in a moment.",
+    "required": "This field is required.",
+    "invalid_email": "Invalid email address.",
+    "password_too_short": "The password must be at least {min} characters long.",
+    "invalid_credentials": "Incorrect email or password.",
+    "invalid_code": "Incorrect code.",
+    "invalid_setup_token": "Incorrect setup token.",
+    "already_installed": "The household is already set up. Please sign in.",
+    "email_taken": "An account already exists with this email.",
+    "link_invalid": "This link is no longer valid.",
+    "rate_limited": "Too many attempts. Please wait a minute and try again.",
+    "last_admin": "The household's last admin cannot be deleted.",
+    "wrong_password": "Incorrect password.",
+    "invalid_date": "Invalid date.",
+    "height_range": "Enter a height between 120 and 230 cm.",
+    "weight_range": "Enter a weight between 30 and 300 kg.",
+    "goal_not_allowed": "This goal isn't offered under 18.",
+    "wrong_direction": "The target weight should match the direction of your goal.",
+    "below_healthy_bmi": "We'd rather not aim below {min} kg for your height: that's the threshold of a healthy weight.",
+    "disclaimer_required": "Please confirm you have read this message.",
+    "invalid_time": "Invalid time.",
+    "not_found": "Not found."
+  }
 }

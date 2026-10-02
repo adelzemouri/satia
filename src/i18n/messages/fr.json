@@ -2,10 +2,32 @@
   "meta": {
     "description": "Suivi nutritionnel doux et sans culpabilité, pour toute la famille."
   },
+  "common": {
+    "continue": "Continuer",
+    "back": "Retour",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "copy": "Copier",
+    "copied": "Copié !",
+    "optional": "facultatif",
+    "kcal": "{value, number} kcal",
+    "grams": "{value, number} g",
+    "kg": "{value, number} kg"
+  },
+  "nav": {
+    "home": "Accueil",
+    "profile": "Profil",
+    "admin": "Administration",
+    "logout": "Se déconnecter"
+  },
   "home": {
-    "greeting": "Bonjour !",
-    "tagline": "Le marché du dimanche, toute la semaine. Votre suivi nutritionnel arrive bientôt.",
-    "status": "Phase 0 : les fondations sont en place."
+    "greeting": "Bonjour {name} !",
+    "todayGoal": "Ton objectif du jour",
+    "macros": "Répartition",
+    "protein": "Protéines",
+    "carbs": "Glucides",
+    "fat": "Lipides",
+    "comingSoon": "Le journal des repas arrive à la prochaine étape."
   },
   "theme": {
     "label": "Thème",
@@ -20,5 +42,229 @@
     "title": "Hors ligne",
     "body": "Pas de connexion pour le moment. Les pages déjà consultées restent disponibles, réessayez dès que le réseau revient."
   },
-  "disclaimer": "{appName} n'est pas un avis médical. Pour toute question de santé, parlez-en à un professionnel."
+  "disclaimer": "{appName} n'est pas un avis médical. Pour toute question de santé, parles-en à un professionnel.",
+  "fields": {
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "newPassword": "Nouveau mot de passe",
+    "passwordHint": "Au moins {min} caractères.",
+    "name": "Prénom ou surnom",
+    "householdName": "Nom du foyer",
+    "setupToken": "Jeton d'installation",
+    "code": "Code à 6 chiffres",
+    "backupCode": "Code de secours"
+  },
+  "login": {
+    "title": "Connexion",
+    "submit": "Se connecter",
+    "noAccount": "Pas encore de compte ? Demande un lien d'invitation à l'administrateur du foyer."
+  },
+  "twoFactor": {
+    "title": "Double authentification",
+    "intro": "Saisis le code affiché par ton application d'authentification.",
+    "submit": "Valider",
+    "useBackup": "Utiliser un code de secours",
+    "useTotp": "Utiliser l'application d'authentification",
+    "trustDevice": "Faire confiance à cet appareil pendant 30 jours"
+  },
+  "setup": {
+    "title": "Installation",
+    "intro": "Crée le foyer et ton compte administrateur. Cette page ne sert qu'une fois.",
+    "tokenHint": "La valeur de la variable SETUP_TOKEN configurée chez l'hébergeur.",
+    "submit": "Créer le foyer"
+  },
+  "invite": {
+    "title": "Rejoindre le foyer {household}",
+    "intro": "Tu as été invité·e. Crée ton compte pour commencer.",
+    "submit": "Créer mon compte",
+    "invalid": "Ce lien n'est plus valable. Demandes-en un nouveau à l'administrateur du foyer.",
+    "expiredTitle": "Lien expiré"
+  },
+  "reset": {
+    "title": "Nouveau mot de passe",
+    "submit": "Changer le mot de passe",
+    "done": "C'est fait ! Tu peux te connecter avec ton nouveau mot de passe.",
+    "invalid": "Ce lien n'est plus valable. Demandes-en un nouveau à l'administrateur du foyer."
+  },
+  "onboarding": {
+    "progress": "Étape {current} sur {total}",
+    "firstName": {
+      "title": "Comment t'appelles-tu ?",
+      "label": "Prénom"
+    },
+    "sex": {
+      "title": "Ton sexe",
+      "hint": "Il sert uniquement au calcul de ta dépense énergétique (formule de Mifflin-St Jeor).",
+      "female": "Femme",
+      "male": "Homme"
+    },
+    "birthDate": {
+      "title": "Ta date de naissance",
+      "label": "Date de naissance"
+    },
+    "height": {
+      "title": "Ta taille",
+      "label": "Taille en cm"
+    },
+    "weight": {
+      "title": "Ton poids actuel",
+      "label": "Poids en kg"
+    },
+    "goal": {
+      "title": "Quel est ton objectif ?",
+      "minorHint": "Avant 18 ans, on se concentre sur l'équilibre et le maintien : ton corps grandit encore.",
+      "lose_weight": "Perdre du poids",
+      "maintain": "Maintenir mon poids",
+      "gain_muscle": "Prendre du muscle",
+      "eat_balanced": "Manger plus équilibré"
+    },
+    "targetWeight": {
+      "title": "Ton poids cible",
+      "label": "Poids cible en kg",
+      "hint": "Facultatif. Tu pourras le changer à tout moment.",
+      "skip": "Je préfère ne pas en fixer"
+    },
+    "activity": {
+      "title": "Ton niveau d'activité au quotidien",
+      "1": {
+        "label": "Plutôt calme",
+        "hint": "Travail assis, peu de marche, pas de sport."
+      },
+      "2": {
+        "label": "Un peu actif",
+        "hint": "Marche quotidienne ou sport léger 1 à 2 fois par semaine."
+      },
+      "3": {
+        "label": "Actif",
+        "hint": "Debout une bonne partie de la journée ou sport 3 à 4 fois par semaine."
+      },
+      "4": {
+        "label": "Très actif",
+        "hint": "Métier physique ou sport intense 5 à 6 fois par semaine."
+      },
+      "5": {
+        "label": "Extrêmement actif",
+        "hint": "Métier très physique et entraînement quotidien."
+      }
+    },
+    "pace": {
+      "title": "À quel rythme ?",
+      "gentle": "Doux",
+      "gentleLoss": "Environ 0,25 kg par semaine",
+      "gentleGain": "Petit surplus, prise lente et régulière",
+      "moderate": "Modéré",
+      "moderateLoss": "Environ 0,5 kg par semaine",
+      "moderateGain": "Surplus un peu plus marqué",
+      "eta": "Objectif estimé vers le {date}"
+    },
+    "diet": {
+      "title": "Tes habitudes alimentaires",
+      "omnivore": "Omnivore",
+      "flexitarian": "Flexitarien",
+      "pescatarian": "Pescétarien",
+      "vegetarian": "Végétarien",
+      "vegan": "Végan",
+      "no_pork": "Sans porc",
+      "avoidLabel": "Aliments que tu préfères éviter",
+      "avoidHint": "Facultatif. Par goût ou par habitude, par exemple : coriandre, champignons."
+    },
+    "meals": {
+      "title": "Tes horaires de repas habituels",
+      "hint": "Ils serviront plus tard pour des rappels discrets.",
+      "breakfast": "Petit-déjeuner",
+      "lunch": "Déjeuner",
+      "dinner": "Dîner"
+    },
+    "disclaimer": {
+      "title": "Avant de commencer",
+      "body": "{appName} t'aide à suivre ton alimentation, mais ne remplace pas un avis médical. Pour toute question de santé, un régime particulier, une grossesse ou un traitement, parles-en à un professionnel de santé.",
+      "accept": "J'ai compris"
+    },
+    "summary": {
+      "title": "Ton plan de départ",
+      "kcal": "Objectif quotidien",
+      "macros": "Répartition des macronutriments",
+      "howTitle": "Comment on a calculé",
+      "bmr": "Au repos, ton corps dépense environ {bmr} kcal par jour (formule de Mifflin-St Jeor, à partir de ton âge, ta taille, ton poids et ton sexe).",
+      "tdee": "Avec ton niveau d'activité, ta dépense totale est estimée à {tdee} kcal par jour.",
+      "lose": "Pour perdre environ {kg} kg par semaine, ton objectif est un peu en dessous : {kcal} kcal.",
+      "gain": "Pour accompagner la prise de muscle, on ajoute un léger surplus : {kcal} kcal.",
+      "maintain": "Ton objectif correspond à ta dépense : {kcal} kcal.",
+      "eta": "À ce rythme, ton poids cible serait atteint vers le {date}.",
+      "adaptive": "C'est un point de départ : l'objectif s'affinera automatiquement après deux semaines de suivi.",
+      "floor": "Pour te garder en forme, ton objectif ne descend pas sous {floor} kcal par jour, même si cela ralentit un peu le rythme.",
+      "capped": "Pour que ce soit tenable et sans risque, on limite la perte à environ 1 % de ton poids par semaine.",
+      "start": "C'est parti !"
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "preferences": "Préférences",
+    "security": "Sécurité",
+    "twoFactorOn": "La double authentification est activée.",
+    "twoFactorOff": "Ajoute une deuxième protection : un code de ton application d'authentification à chaque connexion.",
+    "enable2fa": "Activer la double authentification",
+    "disable2fa": "Désactiver",
+    "scanQr": "Scanne ce QR code avec ton application d'authentification, puis saisis le code affiché.",
+    "backupCodesTitle": "Codes de secours",
+    "backupCodesHint": "Garde-les en lieu sûr : chacun permet une connexion si tu perds ton téléphone.",
+    "confirm2fa": "Confirmer",
+    "data": "Mes données",
+    "exportJson": "Télécharger (JSON)",
+    "exportCsv": "Télécharger (CSV)",
+    "deleteTitle": "Supprimer mon compte",
+    "deleteHint": "Toutes tes données seront définitivement effacées. Saisis ton mot de passe pour confirmer.",
+    "deleteSubmit": "Supprimer définitivement",
+    "disclaimer": "{appName} ne remplace pas un avis médical. Pour toute question de santé, parles-en à un professionnel."
+  },
+  "admin": {
+    "title": "Administration",
+    "members": "Membres du foyer",
+    "role": {
+      "admin": "Admin",
+      "member": "Membre"
+    },
+    "you": "toi",
+    "twoFactor": "2FA",
+    "resetLink": "Lien de nouveau mot de passe",
+    "remove": "Retirer",
+    "removeConfirm": "Retirer {name} du foyer et effacer ses données ?",
+    "invite": "Inviter un membre",
+    "inviteLabel": "Pour qui ? (ex. : Maman, Léo)",
+    "inviteRole": "Rôle",
+    "inviteSubmit": "Créer le lien",
+    "linkReady": "Lien à transmettre (valable {days} jours, utilisable une seule fois) :",
+    "resetReady": "Lien à transmettre (valable {hours} h, utilisable une seule fois) :",
+    "pending": "Invitations en attente",
+    "expires": "expire le {date}",
+    "revoke": "Annuler",
+    "floors": "Planchers caloriques",
+    "floorsHint": "L'objectif quotidien ne descend jamais sous ces valeurs.",
+    "floorFemale": "Femme (kcal)",
+    "floorMale": "Homme (kcal)"
+  },
+  "errors": {
+    "generic": "Une erreur est survenue. Réessaie dans un instant.",
+    "required": "Ce champ est obligatoire.",
+    "invalid_email": "Adresse e-mail invalide.",
+    "password_too_short": "Le mot de passe doit contenir au moins {min} caractères.",
+    "invalid_credentials": "E-mail ou mot de passe incorrect.",
+    "invalid_code": "Code incorrect.",
+    "invalid_setup_token": "Jeton d'installation incorrect.",
+    "already_installed": "Le foyer est déjà installé. Connecte-toi.",
+    "email_taken": "Un compte existe déjà avec cette adresse.",
+    "link_invalid": "Ce lien n'est plus valable.",
+    "rate_limited": "Trop de tentatives. Patiente une minute avant de réessayer.",
+    "last_admin": "Le dernier administrateur du foyer ne peut pas être supprimé.",
+    "wrong_password": "Mot de passe incorrect.",
+    "invalid_date": "Date invalide.",
+    "height_range": "Indique une taille entre 120 et 230 cm.",
+    "weight_range": "Indique un poids entre 30 et 300 kg.",
+    "goal_not_allowed": "Cet objectif n'est pas proposé avant 18 ans.",
+    "wrong_direction": "Le poids cible doit aller dans le sens de ton objectif.",
+    "below_healthy_bmi": "On préfère ne pas viser en dessous de {min} kg pour ta taille : c'est le seuil d'un poids santé.",
+    "disclaimer_required": "Merci de confirmer avoir lu ce message.",
+    "invalid_time": "Heure invalide.",
+    "not_found": "Introuvable."
+  }
 }

@@ -1,2 +1,5 @@
-// Les tables arrivent en phase 1 (foyers, comptes, profils). Voir docs/ARCHITECTURE.md §3.
-export {};
+export * from "./access-links";
+export * from "./auth";
+export * from "./households";
+export * from "./profiles";
+export * from "./settings";

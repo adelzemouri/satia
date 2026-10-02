@@ -10,7 +10,7 @@ import * as schema from "./schema";
 function createClient() {
   // `prepare: false` : compatible avec le pooler de Neon (PgBouncer en mode transaction).
   const sql = postgres(env().DATABASE_URL, { max: 5, prepare: false });
-  return drizzle(sql, { schema });
+  return drizzle(sql, { schema, casing: "snake_case" });
 }
 
 type Db = ReturnType<typeof createClient>;

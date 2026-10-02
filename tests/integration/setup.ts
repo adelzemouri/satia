@@ -10,3 +10,5 @@ process.env.S3_BUCKET ??= "satia-photos";
 process.env.S3_ACCESS_KEY_ID ??= "satia";
 process.env.S3_SECRET_ACCESS_KEY ??= "satia-secret";
 process.env.S3_FORCE_PATH_STYLE ??= "true";
+process.env.BETTER_AUTH_SECRET ??= "integration-secret-integration-secret";
+process.env.SETUP_TOKEN ??= "integration-setup-token";

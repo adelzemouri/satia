@@ -1,0 +1,251 @@
+import AxeBuilder from "@axe-core/playwright";
+import { type Browser, expect, type Page, test } from "@playwright/test";
+
+import { totp } from "./totp";
+
+/**
+ * Parcours critiques de la phase 1, dans l'ordre réel d'utilisation :
+ * installation → onboarding → 2FA → invitation d'un membre → réinitialisation → export → suppression.
+ */
+test.describe.configure({ mode: "serial" });
+
+const ADMIN = { email: "adel@example.com", password: "mot-de-passe-admin-1" };
+const TEEN = { email: "lea@example.com", password: "mot-de-passe-lea-1" };
+let totpSecret = "";
+let inviteUrl = "";
+
+/** Message d'alerte de l'application (hors annonceur de navigation de Next.js). */
+function alertIn(page: Page) {
+  return page.locator('[role="alert"]:not(#__next-route-announcer__)');
+}
+
+async function expectNoA11yViolations(page: Page) {
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
+  expect(results.violations).toEqual([]);
+}
+
+async function submitLogin(page: Page, credentials: { email: string; password: string }) {
+  await page.goto("/login");
+  await page.getByLabel("Adresse e-mail").fill(credentials.email);
+  await page.getByLabel("Mot de passe").fill(credentials.password);
+  await page.getByRole("button", { name: "Se connecter" }).click();
+}
+
+async function signIn(page: Page, credentials: { email: string; password: string }) {
+  await submitLogin(page, credentials);
+  await expect(page).not.toHaveURL(/\/login$/);
+}
+
+async function newPage(browser: Browser) {
+  const context = await browser.newContext();
+  return context.newPage();
+}
+
+test("installation du foyer et du compte admin", async ({ page }) => {
+  await page.goto("/setup");
+  await page.getByLabel("Jeton d'installation").fill("mauvais-jeton");
+  await page.getByLabel("Nom du foyer").fill("Famille Z.");
+  await page.getByLabel("Prénom ou surnom").fill("Adel");
+  await page.getByLabel("Adresse e-mail").fill(ADMIN.email);
+  await page.getByLabel("Mot de passe").fill(ADMIN.password);
+  await page.getByRole("button", { name: "Créer le foyer" }).click();
+  await expect(alertIn(page)).toHaveText("Jeton d'installation incorrect.");
+
+  await page.getByLabel("Jeton d'installation").fill(process.env.SETUP_TOKEN!);
+  await page.getByLabel("Mot de passe").fill(ADMIN.password);
+  await page.getByRole("button", { name: "Créer le foyer" }).click();
+  await expect(page).toHaveURL(/\/onboarding$/);
+
+  // Une fois installé, la page d'installation n'est plus accessible.
+  const other = await newPage(page.context().browser()!);
+  await other.goto("/setup");
+  await expect(other).toHaveURL(/\/login$/);
+});
+
+test("onboarding complet d'un adulte avec plan expliqué", async ({ page }) => {
+  await signIn(page, ADMIN);
+  await expect(page).toHaveURL(/\/onboarding$/);
+  const next = page.getByRole("button", { name: "Continuer" });
+
+  await expect(page.getByLabel("Prénom")).toHaveValue("Adel");
+  await next.click();
+  await page.getByLabel("Homme").check();
+  await next.click();
+  await page.getByLabel("Date de naissance").fill("1988-04-12");
+  await next.click();
+  await page.getByLabel("Taille en cm").fill("178");
+  await next.click();
+  await page.getByLabel("Poids en kg").fill("25");
+  await next.click();
+  await expect(page.getByText("Indique un poids entre 30 et 300 kg.")).toBeVisible();
+  await page.getByLabel("Poids en kg").fill("82,5");
+  await next.click();
+  await page.getByLabel("Perdre du poids").check();
+  await next.click();
+  await page.getByLabel("Poids cible en kg").fill("55");
+  await next.click();
+  await expect(page.getByText(/On préfère ne pas viser en dessous de 58,7 kg/)).toBeVisible();
+  await page.getByLabel("Poids cible en kg").fill("77");
+  await next.click();
+  await page.getByLabel("Un peu actif").check();
+  await next.click();
+  await expect(page.getByText(/Environ 0,25 kg par semaine · Objectif estimé vers le/)).toBeVisible();
+  await page.getByLabel("Doux").check();
+  await next.click();
+  await page.getByLabel("Sans porc").check();
+  await page.getByLabel("Aliments que tu préfères éviter").fill("coriandre");
+  await next.click();
+  await next.click(); // horaires par défaut
+  await next.click();
+  await expect(alertIn(page)).toHaveText("Merci de confirmer avoir lu ce message.");
+  await page.getByLabel("J'ai compris").check();
+  await next.click();
+
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Ton plan de départ");
+  await expect(page.getByText(/formule de Mifflin-St Jeor/)).toBeVisible();
+  await expect(page.getByText(/s'affinera automatiquement après deux semaines/)).toBeVisible();
+  await expectNoA11yViolations(page);
+  await page.getByRole("button", { name: "C'est parti !" }).click();
+
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bonjour Adel !");
+  await expect(page.getByText("Ton objectif du jour")).toBeVisible();
+  await expect(page.getByText("Protéines")).toBeVisible();
+  await expectNoA11yViolations(page);
+});
+
+test("le thème choisi dans le profil est appliqué et conservé", async ({ page }) => {
+  await signIn(page, ADMIN);
+  await page.getByRole("link", { name: "Profil" }).click();
+  await page.getByText("Sombre").click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expectNoA11yViolations(page);
+});
+
+test("activation de la double authentification puis connexion avec un code", async ({ page }) => {
+  await signIn(page, ADMIN);
+  await page.goto("/profile");
+  const security = page.getByRole("region", { name: "Sécurité" });
+  await security.getByLabel("Mot de passe").fill(ADMIN.password);
+  await security.getByRole("button", { name: "Activer la double authentification" }).click();
+  await expect(security.getByRole("img", { name: "QR code" })).toBeVisible();
+  totpSecret = (await security.locator("code").textContent())!.trim();
+  await security.getByLabel("Code à 6 chiffres").fill(totp(totpSecret));
+  await security.getByRole("button", { name: "Confirmer" }).click();
+  await expect(page.getByText("La double authentification est activée.")).toBeVisible();
+
+  await page.getByRole("button", { name: "Se déconnecter" }).click();
+  await expect(page).toHaveURL(/\/login$/);
+  await signIn(page, ADMIN);
+  await expect(page).toHaveURL(/\/login\/two-factor$/);
+  await page.getByLabel("Code à 6 chiffres").fill("000000");
+  await page.getByRole("button", { name: "Valider" }).click();
+  await expect(alertIn(page)).toHaveText("Code incorrect.");
+  await page.getByLabel("Code à 6 chiffres").fill(totp(totpSecret));
+  await page.getByRole("button", { name: "Valider" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bonjour Adel !");
+});
+
+async function signInWithTotp(page: Page) {
+  await signIn(page, ADMIN);
+  await page.getByLabel("Code à 6 chiffres").fill(totp(totpSecret));
+  await page.getByRole("button", { name: "Valider" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bonjour Adel !");
+}
+
+test("l'admin invite un membre mineur qui n'a pas accès à la perte de poids", async ({ page, browser }) => {
+  await signInWithTotp(page);
+  await page.getByRole("link", { name: "Administration" }).click();
+  await page.getByLabel("Pour qui ? (ex. : Maman, Léo)").fill("Léa");
+  await page.getByRole("button", { name: "Créer le lien" }).click();
+  inviteUrl = (await page.locator("code").first().textContent())!.trim();
+  expect(inviteUrl).toMatch(/\/invite\/[\w-]{40,}$/);
+  await expect(page.getByText("Invitations en attente")).toBeVisible();
+  await expectNoA11yViolations(page);
+
+  const teen = await newPage(browser);
+  await teen.goto(inviteUrl);
+  await expect(teen.getByRole("heading", { level: 1 })).toHaveText("Rejoindre le foyer Famille Z.");
+  await expect(teen.getByLabel("Prénom ou surnom")).toHaveValue("Léa");
+  await teen.getByLabel("Adresse e-mail").fill(TEEN.email);
+  await teen.getByLabel("Mot de passe").fill(TEEN.password);
+  await teen.getByRole("button", { name: "Créer mon compte" }).click();
+  await expect(teen).toHaveURL(/\/onboarding$/);
+
+  const next = teen.getByRole("button", { name: "Continuer" });
+  await next.click();
+  await teen.getByLabel("Femme").check();
+  await next.click();
+  const fifteenYearsAgo = new Date();
+  fifteenYearsAgo.setFullYear(fifteenYearsAgo.getFullYear() - 15);
+  await teen.getByLabel("Date de naissance").fill(fifteenYearsAgo.toISOString().slice(0, 10));
+  await next.click();
+  await teen.getByLabel("Taille en cm").fill("160");
+  await next.click();
+  await teen.getByLabel("Poids en kg").fill("50");
+  await next.click();
+  await expect(teen.getByText(/Avant 18 ans, on se concentre sur l'équilibre/)).toBeVisible();
+  await expect(teen.getByRole("radio")).toHaveCount(2);
+  await expect(teen.getByLabel("Perdre du poids")).toHaveCount(0);
+  await expect(teen.getByLabel("Prendre du muscle")).toHaveCount(0);
+
+  // Le lien d'invitation ne sert qu'une fois.
+  const intruder = await newPage(browser);
+  await intruder.goto(inviteUrl);
+  await expect(intruder.getByRole("heading", { level: 1 })).toHaveText("Lien expiré");
+});
+
+test("l'admin génère un lien de nouveau mot de passe pour un membre", async ({ page, browser }) => {
+  await signInWithTotp(page);
+  await page.goto("/admin");
+  const lea = page.getByRole("listitem").filter({ hasText: TEEN.email });
+  await lea.getByRole("button", { name: "Lien de nouveau mot de passe" }).click();
+  const resetUrl = (await lea.locator("code").textContent())!.trim();
+
+  const teen = await newPage(browser);
+  await teen.goto(resetUrl);
+  await teen.getByLabel("Nouveau mot de passe").fill("nouveau-mot-de-passe-lea");
+  await teen.getByRole("button", { name: "Changer le mot de passe" }).click();
+  await expect(teen.getByText(/C'est fait !/)).toBeVisible();
+  await signIn(teen, { email: TEEN.email, password: "nouveau-mot-de-passe-lea" });
+  await expect(teen).toHaveURL(/\/onboarding$/);
+});
+
+test("export des données en JSON et CSV", async ({ page }) => {
+  await signInWithTotp(page);
+  await page.goto("/profile");
+  const [json] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("link", { name: "Télécharger (JSON)" }).click(),
+  ]);
+  const content = JSON.parse(await (await json.createReadStream()).toArray().then((c) => Buffer.concat(c).toString()));
+  expect(content.account.email).toBe(ADMIN.email);
+  expect(content.profile.foodsToAvoid).toBe("coriandre");
+  expect(JSON.stringify(content)).not.toMatch(/argon2|backupCodes/);
+
+  const [csv] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("link", { name: "Télécharger (CSV)" }).click(),
+  ]);
+  expect(csv.suggestedFilename()).toMatch(/^satia-export-.*\.zip$/);
+});
+
+test("un membre supprime son compte ; le dernier admin ne peut pas", async ({ page, browser }) => {
+  const teen = await newPage(browser);
+  await signIn(teen, { email: TEEN.email, password: "nouveau-mot-de-passe-lea" });
+  await teen.goto("/profile");
+  const danger = teen.getByRole("region", { name: "Supprimer mon compte" });
+  await danger.getByLabel("Mot de passe").fill("nouveau-mot-de-passe-lea");
+  await danger.getByRole("button", { name: "Supprimer définitivement" }).click();
+  await expect(teen).toHaveURL(/\/login$/);
+  await submitLogin(teen, { email: TEEN.email, password: "nouveau-mot-de-passe-lea" });
+  await expect(alertIn(teen)).toHaveText("E-mail ou mot de passe incorrect.");
+
+  await signInWithTotp(page);
+  await page.goto("/profile");
+  const own = page.getByRole("region", { name: "Supprimer mon compte" });
+  await own.getByLabel("Mot de passe").fill(ADMIN.password);
+  await own.getByRole("button", { name: "Supprimer définitivement" }).click();
+  await expect(own.getByRole("alert")).toHaveText("Le dernier administrateur du foyer ne peut pas être supprimé.");
+});

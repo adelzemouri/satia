@@ -30,6 +30,8 @@ services:
       storage: { condition: service_started }
     environment: &app-env
       DATABASE_URL: postgres://satia:satia@db:5432/satia
+      BETTER_AUTH_SECRET: local-secret-local-secret-local-secret
+      SETUP_TOKEN: local-setup-token-1234
       S3_ENDPOINT: http://storage:9000
       S3_REGION: auto
       S3_BUCKET: satia-photos
