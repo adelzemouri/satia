@@ -21,11 +21,13 @@ export function QuantityForm({
   food,
   date,
   slot: initialSlot,
+  inputMethod = "manual",
   onCancel,
 }: {
   food: FoodItem;
   date: string;
   slot: MealSlot;
+  inputMethod?: "manual" | "barcode";
   onCancel: () => void;
 }) {
   const t = useTranslations();
@@ -50,7 +52,7 @@ export function QuantityForm({
 
   const submit = () =>
     startTransition(async () => {
-      const result = await addEntryAction({ date, slot, foodId: food.id, quantity: amount, unit });
+      const result = await addEntryAction({ date, slot, foodId: food.id, quantity: amount, unit, inputMethod });
       if (result?.error) setError(result.error);
       else router.push({ pathname: "/journal", query: { date } });
     });

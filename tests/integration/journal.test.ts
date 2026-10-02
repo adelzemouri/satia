@@ -31,7 +31,7 @@ import {
   updateEntry,
   weightOverview,
 } from "@/server/journal";
-import { importOpenFoodFactsProduct, searchOpenFoodFacts } from "@/server/open-food-facts";
+import { findByBarcode, importOpenFoodFactsProduct, searchOpenFoodFacts } from "@/server/open-food-facts";
 import { saveOnboarding } from "@/server/profile";
 
 import { resetDatabase } from "./helpers";
@@ -300,5 +300,57 @@ describe("Open Food Facts", () => {
       vi.fn(async () => new Response("", { status: 503 })),
     );
     expect(await domainCode(searchOpenFoodFacts(userId, "biscuit"))).toBe("off_unavailable");
+  });
+
+  describe("code-barres", () => {
+    it("lit le cache tant qu'il est récent, sinon relit OFF", async () => {
+      const userId = await setupUser();
+      const fetchMock = vi.fn(async () => Response.json({ product }));
+      vi.stubGlobal("fetch", fetchMock);
+
+      const id = await findByBarcode(userId, product.code);
+      expect(await findByBarcode(userId, ` ${product.code} `)).toBe(id);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+
+      // Cache vieux de 40 jours : relu sur OFF ; si OFF ne répond pas, le cache sert de secours.
+      await db()
+        .update(foods)
+        .set({ fetchedAt: new Date(Date.now() - 40 * 86_400_000) })
+        .where(eq(foods.id, id));
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async () => new Response("", { status: 503 })),
+      );
+      expect(await findByBarcode(userId, product.code)).toBe(id);
+    });
+
+    it("signale un code invalide ou un produit inconnu", async () => {
+      const userId = await setupUser();
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async () => Response.json({ status: 0 }, { status: 404 })),
+      );
+      expect(await domainCode(findByBarcode(userId, "3017620422004"))).toBe("invalid_barcode");
+      expect(await domainCode(findByBarcode(userId, "4006381333931"))).toBe("barcode_not_found");
+    });
+
+    it("note la saisie par code-barres dans le journal", async () => {
+      const userId = await setupUser();
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async () => Response.json({ product })),
+      );
+      const id = await findByBarcode(userId, product.code);
+      await addEntry(userId, {
+        date: todayIso(),
+        slot: "snack",
+        foodId: id,
+        quantity: 1,
+        unit: "portion",
+        inputMethod: "barcode",
+      });
+      const [entry] = await entriesOn(userId, todayIso());
+      expect(entry).toMatchObject({ inputMethod: "barcode", grams: 15, label: "Pâte à tartiner test (Marque A)" });
+    });
   });
 });

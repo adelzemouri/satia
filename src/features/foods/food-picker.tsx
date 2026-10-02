@@ -9,6 +9,7 @@ import type { MealSlot } from "@/domain/meals";
 import { Link } from "@/i18n/navigation";
 import { Alert } from "@/ui/alert";
 import { Button, buttonClass } from "@/ui/button";
+import { Icon } from "@/ui/icon";
 
 import { FoodList } from "./food-list";
 import type { FoodItem, OffItem } from "./food-types";
@@ -25,18 +26,22 @@ export function FoodPicker({
   recent,
   favorites: initialFavorites,
   mine,
+  initialFood = null,
+  inputMethod = "manual",
 }: {
   date: string;
   slot: MealSlot;
   recent: FoodItem[];
   favorites: FoodItem[];
   mine: FoodItem[];
+  initialFood?: FoodItem | null;
+  inputMethod?: "manual" | "barcode";
 }) {
   const t = useTranslations("add");
   const errorText = useErrorText();
   const [tab, setTab] = useState<Tab>("search");
   const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState<FoodItem | null>(null);
+  const [selected, setSelected] = useState<FoodItem | null>(initialFood);
   const [favorites, setFavorites] = useState(initialFavorites);
   const [off, setOff] = useState<{ query: string; results: OffItem[] } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -80,7 +85,15 @@ export function FoodPicker({
     });
 
   if (selected) {
-    return <QuantityForm food={selected} date={date} slot={slot} onCancel={() => setSelected(null)} />;
+    return (
+      <QuantityForm
+        food={selected}
+        date={date}
+        slot={slot}
+        inputMethod={selected.id === initialFood?.id ? inputMethod : "manual"}
+        onCancel={() => setSelected(null)}
+      />
+    );
   }
 
   const list = (foods: FoodItem[], empty: string) =>
@@ -112,6 +125,11 @@ export function FoodPicker({
       </div>
 
       {error && <Alert>{errorText(error)}</Alert>}
+
+      <Link href={{ pathname: "/scan", query: { date, slot } }} className={buttonClass("secondary")}>
+        <Icon name="barcode" />
+        {t("scan")}
+      </Link>
 
       <div id="food-panel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="flex flex-col gap-4">
         {tab === "search" && (

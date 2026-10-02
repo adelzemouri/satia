@@ -32,6 +32,8 @@ export const entrySchema = z.object({
   foodId: z.uuid(),
   quantity: z.number().positive().max(100_000),
   unit: z.enum(UNITS),
+  /** Saisie après un scan de code-barres, sinon manuelle. */
+  inputMethod: z.enum(["manual", "barcode"]).default("manual"),
 });
 export type EntryInput = z.input<typeof entrySchema>;
 
@@ -60,7 +62,7 @@ export async function addEntry(userId: string, input: EntryInput): Promise<strin
       unit: data.unit,
       grams,
       ...nutrients,
-      inputMethod: "manual",
+      inputMethod: data.inputMethod,
     })
     .returning({ id: mealEntries.id });
   return row!.id;
