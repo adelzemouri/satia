@@ -32,6 +32,8 @@ async function withServerAction(page: Page, act: () => Promise<unknown>) {
 }
 
 async function expectNoA11yViolations(page: Page) {
+  // Après une action serveur, le titre (métadonnées en streaming) peut arriver un instant plus tard.
+  await expect(page).toHaveTitle(/\S/);
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
   expect(results.violations).toEqual([]);
 }
@@ -672,7 +674,7 @@ test("espace Training : profil sportif, séance express guidée, suivi et biblio
   await expectNoA11yViolations(page);
 
   await page.goto("/");
-  await expect(page.getByText(/^Dont \d+ kcal dépensées à l'entraînement\.$/)).toBeVisible();
+  await expect(page.getByText(/^Dont \d+ kcal dépensées en activité\.$/)).toBeVisible();
 
   await page.goto("/training/library?muscle=core");
   await expect(page.getByRole("link", { name: /Planche sur les avant-bras/ })).toBeVisible();
@@ -684,6 +686,66 @@ test("espace Training : profil sportif, séance express guidée, suivi et biblio
   await page.getByRole("link", { name: /Planche sur les avant-bras/ }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Planche sur les avant-bras");
   await expect(page.getByText(/^Plus doux : /)).toBeVisible();
+});
+
+test("corps et activité : mensuration, photos de progression, activité, pas et import CSV", async ({ page }) => {
+  await signInWithTotp(page);
+  await page.getByRole("navigation", { name: "Raccourcis" }).getByRole("link", { name: "Corps", exact: true }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Corps");
+  await expectNoA11yViolations(page);
+
+  await page.getByLabel("Tour mesuré").selectOption("waist");
+  await page.getByLabel("Valeur (cm)").fill("88,5");
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  const changes = page.getByRole("region", { name: "Évolution" });
+  await expect(changes.getByText("88,5 cm", { exact: true }).first()).toBeVisible();
+  await expect(changes.getByText("stable depuis le début")).toBeVisible();
+
+  const gallery = page.getByRole("region", { name: "Dernières photos" });
+  for (const count of [1, 2]) {
+    await page
+      .getByLabel("Photo", { exact: true })
+      .setInputFiles({ name: "moi.png", mimeType: "image/png", buffer: MEAL_PNG });
+    await page.getByRole("button", { name: "Ajouter la photo" }).click();
+    // Le formulaire se vide une fois la photo affichée : on attend avant la suivante.
+    await expect(gallery.getByRole("img")).toHaveCount(count);
+    await expect(page.getByRole("button", { name: "Ajouter la photo" })).toBeEnabled();
+  }
+  const compare = page.getByRole("region", { name: "Avant / maintenant" });
+  await expect(compare.getByRole("img")).toHaveCount(2);
+  await expectNoA11yViolations(page);
+  await gallery
+    .getByRole("button", { name: /^Supprimer la photo / })
+    .first()
+    .click();
+  await expect(gallery.getByRole("img")).toHaveCount(1);
+  await expect(page.getByRole("region", { name: "Avant / maintenant" })).toHaveCount(0);
+
+  await page.goto("/weight");
+  await page.getByRole("link", { name: "Activité et pas" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Activité");
+  await page.getByLabel("Activité", { exact: true }).selectOption("walking");
+  await page.getByLabel("Durée (min)").fill("30");
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  const recent = page.getByRole("region", { name: "Activités des 14 derniers jours" });
+  await expect(recent.getByText(/30 min, modérée, \d+ kcal/)).toBeVisible();
+
+  await page.getByLabel("Nombre de pas").fill("12000");
+  await withServerAction(page, () => page.getByRole("button", { name: "Enregistrer les pas" }).click());
+  await expect(page.getByRole("region", { name: "Pas", exact: true }).getByText(/^12\s000 pas$/)).toBeVisible();
+
+  const today = new Date().toISOString().slice(0, 10);
+  const csv = `Date,Activity type,Duration (s)\n${today},Cycling,1200\n`;
+  await page
+    .getByLabel("Fichier CSV")
+    .setInputFiles({ name: "export.csv", mimeType: "text/csv", buffer: Buffer.from(csv) });
+  await page.getByRole("button", { name: "Importer" }).click();
+  await expect(page.getByText("Import terminé : aucun jour de pas, 1 activité, aucune ligne ignorée.")).toBeVisible();
+  await expect(recent.getByText("Vélo")).toBeVisible();
+  await expectNoA11yViolations(page);
+
+  await page.goto("/");
+  await expect(page.getByText(/^Dont \d+ kcal dépensées en activité\.$/)).toBeVisible();
 });
 
 test("mon métabolisme et budget hebdomadaire avec un jour plus large", async ({ page }) => {

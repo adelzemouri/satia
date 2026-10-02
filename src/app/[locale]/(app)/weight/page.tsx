@@ -83,6 +83,12 @@ export default async function WeightPage({ params }: PageProps<"/[locale]/weight
         )}
       </Card>
 
+      <Link href="/body" className="font-semibold text-primary underline-offset-4 hover:underline">
+        {t("bodyLink")}
+      </Link>
+      <Link href="/activity" className="font-semibold text-primary underline-offset-4 hover:underline">
+        {t("activityLink")}
+      </Link>
       <Link href="/metabolism" className="font-semibold text-primary underline-offset-4 hover:underline">
         {t("metabolismLink")}
       </Link>

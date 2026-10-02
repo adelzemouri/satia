@@ -23,7 +23,9 @@ import {
   weightEntries,
 } from "@/db/schema";
 
+import { activityExport } from "./activity";
 import { adaptiveExport } from "./adaptive";
+import { bodyExport } from "./body";
 import { coachExport } from "./coach";
 import { notificationExport } from "./notifications";
 import { checkinExport } from "./quality";
@@ -135,6 +137,8 @@ export async function collectUserData(userId: string) {
   const adaptive = await adaptiveExport(userId);
   const coach = await coachExport(userId);
   const training = await trainingExport(userId);
+  const body = await bodyExport(userId);
+  const activity = await activityExport(userId);
   return {
     exportedAt: new Date().toISOString(),
     account: account ?? null,
@@ -162,6 +166,10 @@ export async function collectUserData(userId: string) {
     trainingPrograms: training.programs,
     trainingSessions: training.sessions,
     customExercises: training.custom,
+    measurements: body.measurements,
+    progressPhotos: body.photos,
+    activities: activity.activities,
+    steps: activity.steps,
   };
 }
 
@@ -209,5 +217,9 @@ export function toCsvZip(data: UserData): Uint8Array {
     "training-profile.csv": strToU8(toCsv(data.trainingProfile ? [data.trainingProfile] : [])),
     "training-sessions.csv": strToU8(toCsv(data.trainingSessions)),
     "custom-exercises.csv": strToU8(toCsv(data.customExercises)),
+    "measurements.csv": strToU8(toCsv(data.measurements)),
+    "progress-photos.csv": strToU8(toCsv(data.progressPhotos)),
+    "activities.csv": strToU8(toCsv(data.activities)),
+    "steps.csv": strToU8(toCsv(data.steps)),
   });
 }

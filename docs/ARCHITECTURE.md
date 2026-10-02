@@ -483,6 +483,35 @@ Téléphone                                     Serveur (Vercel fra1)           
   4 semaines, records (charge, répétitions, durée) et streak en semaines actives,
   séparé du streak nutrition. Tout est dans l'export et supprimé avec le compte.
 
+## Corps et activité (phase 13)
+
+- **Mensurations** (`body_measurements`, clé utilisateur + jour + tour) : taille, hanches,
+  poitrine, bras, cuisse, cou, en cm (10–250). La page `/body` affiche la dernière valeur
+  de chaque tour et l'évolution depuis la première (`measurementChanges`, pur).
+- **Photos de progression** (`progress_photos`) : réduites dans le navigateur (côté long
+  ≤ 1080 px, WebP/JPEG, métadonnées EXIF retirées), signature vérifiée côté serveur,
+  1,5 Mo au plus, rangées sous `progress/{userId}/` dans le bucket privé et lues par URL
+  signée de 5 min. Elles ne passent jamais par le LLM et ne sont pas purgées par le cron
+  des photos de repas : elles restent jusqu'à suppression par la personne ou du compte
+  (`deleteUser` retire aussi ces objets). L'export ne contient que leurs métadonnées.
+  Comparaison « avant / maintenant » : première et dernière photo de chaque pose.
+- **Activités libres** (`activities`) : type (15 familles), intensité (légère, modérée,
+  soutenue) et durée. Les calories sont calculées côté serveur au moment de la saisie :
+  MET (`ACTIVITY_METS`, `src/domain/activity.ts`) × dernier poids connu × durée.
+- **Pas** (`daily_steps`) : seuls les pas au-delà d'un seuil lié au niveau d'activité du
+  profil (3 000 à 12 500) comptent, à 0,0005 kcal par kg et par pas, pour ne pas
+  compter deux fois la marche déjà incluse dans le facteur d'activité.
+- **Import CSV** (`parseActivityCsv`, pur) : colonnes reconnues par leur en-tête en
+  français ou en anglais (date, pas, type, durée en min, s, ms, h ou h:mm:ss), séparateur
+  détecté, dates ISO ou JJ/MM/AAAA, 5 000 lignes et 1,5 Mo au plus. Les pas d'un même jour
+  s'additionnent et remplacent ceux enregistrés ; les activités importées d'un jour sont
+  remplacées à chaque import (les saisies manuelles ne bougent pas), ce qui rend l'import
+  idempotent. Les « move minutes » de Google Fit sont ignorées (elles recoupent les pas).
+- **Objectif du jour** : `daySummary` ajoute activités + pas aux calories de
+  l'entraînement, puis `trainingDayGoal` augmente l'objectif et répartit le surplus sur
+  glucides et lipides (protéines relevées seulement les jours d'entraînement).
+  L'accueil affiche « Dont N kcal dépensées en activité ».
+
 ## 6. Sécurité (rappel des points structurants)
 
 HTTPS imposé par l'hébergeur, en-têtes CSP/HSTS via le middleware Next.js, jeton

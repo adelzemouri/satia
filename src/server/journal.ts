@@ -6,6 +6,7 @@ import { z } from "zod";
 import { db } from "@/db/client";
 import { MEAL_SLOTS, mealEntries, type MealSlot, profiles, waterLogs, weightEntries } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
+import { stepsKcal } from "@/domain/activity";
 import { addDays, computePlan } from "@/domain/energy";
 import { energyZone, type EnergyZone, type Nutrients, nutrientsFor, sumNutrients } from "@/domain/nutrition";
 import { computeStreak, type Streak } from "@/domain/streak";
@@ -18,6 +19,7 @@ import { getFood, per100 } from "./foods";
 import { dayGoal } from "./adaptive";
 import { getProfile } from "./profile";
 import { getCalorieFloors } from "./settings";
+import { activityOn } from "./activity-day";
 import { trainingOn } from "./training-day";
 
 export type MealEntry = typeof mealEntries.$inferSelect;
@@ -198,21 +200,27 @@ export type DaySummary = {
   zone: EnergyZone | null;
   /** Calories dépensées à l'entraînement (déjà ajoutées à l'objectif) et nombre de séances. */
   training: { burnedKcal: number; sessions: number };
+  /** Activités libres et pas au-delà du niveau d'activité du profil (déjà ajoutés à l'objectif). */
+  activity: { burnedKcal: number; steps: number };
 };
 
 /** Tout ce qu'il faut pour le tableau de bord et le journal d'un jour. */
 export async function daySummary(userId: string, date: string): Promise<DaySummary> {
-  const [entries, glasses, profile, weight, training] = await Promise.all([
+  const [entries, glasses, profile, weight, training, activity] = await Promise.all([
     entriesOn(userId, date),
     waterOn(userId, date),
     getProfile(userId),
     latestWeight(userId, date),
     trainingOn(userId, date),
+    activityOn(userId, date),
   ]);
   const baseGoal = await dayGoal(userId, date, profile?.budgetMode ?? "daily");
-  // Jour d'entraînement : dépense ajoutée au budget et protéines un peu relevées.
+  const activityBurned = profile
+    ? activity.activityKcal + stepsKcal(activity.steps, weight ?? profile.startWeightKg, profile.activityLevel)
+    : 0;
+  // Dépense du jour ajoutée au budget ; jour d'entraînement : protéines un peu relevées.
   const goal = baseGoal
-    ? trainingDayGoal(baseGoal, training.burnedKcal, training.sessions > 0 || training.planned)
+    ? trainingDayGoal(baseGoal, training.burnedKcal + activityBurned, training.sessions > 0 || training.planned)
     : null;
   const bySlot = Object.fromEntries(
     MEAL_SLOTS.map((slot) => {
@@ -248,6 +256,7 @@ export async function daySummary(userId: string, date: string): Promise<DaySumma
     water: { glasses, goal: profile?.waterGoalGlasses ?? 8 },
     zone,
     training: { burnedKcal: training.burnedKcal, sessions: training.sessions },
+    activity: { burnedKcal: activityBurned, steps: activity.steps },
   };
 }
 
