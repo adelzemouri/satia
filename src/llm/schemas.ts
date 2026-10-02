@@ -41,3 +41,28 @@ export const weeklyReviewSchema = z.object({
   highlights: z.array(z.string().trim().min(1).max(240)).max(3),
   ideas: z.array(z.string().trim().min(1).max(240)).max(2),
 });
+
+const ingredient = z.object({ name: z.string().trim().min(1).max(80), grams: z.number().positive().max(2000) });
+
+/** Menu proposé par le coach : un repas par créneau, recette existante (par numéro) ou nouveau plat. */
+export const menuPlanSchema = z.object({
+  meals: z
+    .array(
+      z.object({
+        day: z.number().int().min(0).max(6),
+        slot: z.enum(["breakfast", "lunch", "dinner"]),
+        recipe: z.number().int().positive().nullable(),
+        name: z.string().trim().max(80),
+        ingredients: z.array(ingredient).max(12),
+      }),
+    )
+    .max(21),
+});
+
+/** Scanner de frigo : ingrédients reconnus et 3 idées de plats (ingrédients d'une portion). */
+export const fridgeSchema = z.object({
+  ingredients: z.array(z.string().trim().min(1).max(80)).max(30),
+  ideas: z
+    .array(z.object({ name: z.string().trim().min(1).max(80), ingredients: z.array(ingredient).min(1).max(12) }))
+    .max(3),
+});

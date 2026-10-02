@@ -147,6 +147,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           [
             ["/coach", "chat", t("coach.title")],
             ["/family", "family", t("family.title")],
+            ["/plan", "book", t("plan.title")],
             ["/week", "calendar", t("week.title")],
             ["/metabolism", "pulse", t("metabolism.title")],
             ["/quality", "sprout", t("quality.title")],

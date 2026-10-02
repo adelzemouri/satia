@@ -409,6 +409,36 @@ Téléphone                                     Serveur (Vercel fra1)           
   workflows planifiés après 60 jours sans activité sur le dépôt : il suffit alors de les
   réactiver dans l'onglet Actions.
 
+## Planification (phase 11)
+
+- **Menu de la semaine** (`meal_plan_items`, par foyer) : des plats par jour et par repas,
+  soit une recette du foyer ou un aliment public (une recette personnelle est refusée,
+  `dish_not_shared`, car tout le foyer voit le menu), soit un simple libellé (« Restes »),
+  avec un nombre de parts. Le glisser-déposer est remplacé par un formulaire (jour, repas,
+  plat), plus fiable au doigt. « Servir » ouvre le partage de repas existant (phase 6) pour
+  le plat du jour : le menu ne remplit jamais le journal tout seul.
+- **Menu proposé par le coach** (feature LLM `menu_plan`, modèle texte, un appel) : il ne
+  remplit que les créneaux vides à partir d'aujourd'hui. Le prompt donne le régime, la cible
+  par repas (25 / 35 / 30 % de l'objectif) et les 30 premières recettes du foyer, que le
+  modèle reprend par numéro. Un nouveau plat arrive avec ses ingrédients et grammes ; ils
+  sont associés à la base locale et le plat est enregistré comme recette du foyer
+  (1 part). Les calories viennent donc toujours de Ciqual/OFF.
+- **Liste de courses** (`shopping_items`, par foyer) : articles par rayon (déduit du groupe
+  Ciqual, `src/domain/planning.ts`), cochables par tous. « Remplir avec le menu » additionne
+  les ingrédients des recettes de la semaine (à partir d'aujourd'hui) multipliés par les
+  parts, arrondis à un pas lisible (5 g, 10 g, 50 g) ; elle remplace les articles du menu non
+  cochés et garde les ajouts à la main et les articles cochés. « Temps réel » sans serveur
+  persistant : la page se rafraîchit toutes les 10 s tant qu'elle est visible.
+- **Scanner de frigo** (feature `fridge`, modèle vision, image réduite côté client) : la
+  photo n'est ni stockée ni journalisée. Le modèle renvoie les ingrédients vus et 3 idées
+  avec leurs grammes pour une portion ; les calories sont calculées depuis la base et
+  comparées au reste du jour. Une idée peut être enregistrée comme recette personnelle puis
+  ajoutée au journal.
+- **Bibliothèque** (`/recipes`) : recettes personnelles et du foyer, avec calories par part.
+- Menu et liste appartiennent au foyer, pas à une personne : ils ne sont pas dans l'export
+  individuel et disparaissent avec le foyer. Les recettes créées par le coach suivent les
+  règles des recettes du foyer.
+
 ## 6. Sécurité (rappel des points structurants)
 
 HTTPS imposé par l'hébergeur, en-têtes CSP/HSTS via le middleware Next.js, jeton

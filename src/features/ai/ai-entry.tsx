@@ -10,22 +10,13 @@ import { Button, buttonClass } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 
 import { analyzePhotoAction, analyzeTextAction, type DraftState } from "./actions";
-import { compressImage } from "./compress-image";
+import { compressImage, toBase64 } from "./compress-image";
 import type { MealDraft } from "./draft";
 import { useSpeech } from "./use-speech";
 
 const inputClass = "min-h-12 rounded-2xl border border-border bg-surface px-3 text-base";
 
 export type AiAvailability = { available: true } | { available: false; reason: string };
-
-function toBase64(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result).split(",")[1] ?? "");
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(blob);
-  });
-}
 
 /**
  * Saisie IA : photo (caméra ou galerie) avec une précision facultative et un contenant,

@@ -31,3 +31,13 @@ export async function compressImage(
   if (!jpeg) throw new Error("encode_failed");
   return { blob: jpeg, mime: "image/jpeg", width, height };
 }
+
+/** Contenu d'un fichier en base64 (sans l'en-tête « data: »), pour l'envoi à une action serveur. */
+export function toBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",")[1] ?? "");
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
