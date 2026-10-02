@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { asksBelowFloor, coachContext, mentionsMedicalTopic, suggestDish, weekStats } from "@/domain/coach";
+import {
+  asksBelowFloor,
+  coachContext,
+  type DishCandidate,
+  mentionsMedicalTopic,
+  suggestDish,
+  weekStats,
+} from "@/domain/coach";
 
 describe("garde-fous du coach", () => {
   it("repère une demande sous le plancher", () => {
@@ -87,21 +94,29 @@ describe("statistiques de la semaine", () => {
 
 describe("plat suggéré", () => {
   const dishes = [
-    { id: "a", name: "Dahl", portionKcal: 450 },
-    { id: "b", name: "Salade", portionKcal: 250 },
-    { id: "c", name: "Gratin", portionKcal: 700 },
-    { id: "d", name: "Pomme", portionKcal: 80 },
-  ];
+    { id: "a", name: "Dahl", portionKcal: 450, slots: [] },
+    { id: "b", name: "Salade", portionKcal: 250, slots: ["lunch"] },
+    { id: "c", name: "Cabillaud quinoa", portionKcal: 790, slots: [] },
+    { id: "d", name: "Pomme", portionKcal: 80, slots: ["snack"] },
+    { id: "e", name: "Porridge", portionKcal: 380, slots: ["breakfast"] },
+  ] as const satisfies readonly DishCandidate[];
+  const day = { goalKcal: 2000, remainingKcal: 2000 };
 
-  it("garde un plat qui tient dans le reste et en utilise au moins un tiers", () => {
-    expect(suggestDish(dishes, 500, "x")?.id).toMatch(/^[ab]$/);
-    expect(suggestDish(dishes, 200, "x")?.id).toBe("d");
-    expect(suggestDish(dishes, 60, "x")).toBeNull();
-    expect(suggestDish(dishes, 2500, "x")).toBeNull();
+  it("ne propose au petit-déjeuner que ce qui y a déjà été noté", () => {
+    expect(suggestDish(dishes, { ...day, slot: "breakfast" }, "x")?.id).toBe("e");
+    expect(suggestDish(dishes.slice(0, 4), { ...day, slot: "breakfast" }, "x")).toBeNull();
+    expect(suggestDish(dishes, { ...day, slot: "snack" }, "x")?.id).toBe("d");
+  });
+
+  it("garde un plat à la mesure du repas et du reste du jour", () => {
+    expect(suggestDish(dishes, { ...day, slot: "dinner" }, "x")?.id).toBe("a");
+    expect(suggestDish(dishes, { ...day, slot: "lunch" }, "x")?.id).toMatch(/^[ac]$/);
+    expect(suggestDish(dishes, { goalKcal: 2000, remainingKcal: 300, slot: "lunch" }, "x")?.id).toBe("b");
+    expect(suggestDish(dishes, { goalKcal: 2000, remainingKcal: 60, slot: "dinner" }, "x")).toBeNull();
   });
 
   it("est stable pour une même graine et ne dépend pas de l'ordre", () => {
-    const first = suggestDish(dishes, 500, "u:2026-10-29");
-    expect(suggestDish([...dishes].reverse(), 500, "u:2026-10-29")).toEqual(first);
+    const first = suggestDish(dishes, { ...day, slot: "lunch" }, "u:2026-10-29");
+    expect(suggestDish([...dishes].reverse(), { ...day, slot: "lunch" }, "u:2026-10-29")).toEqual(first);
   });
 });

@@ -42,7 +42,13 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     currentFast(user.id),
   ]);
   const slot = slotAt(new Date(), APP_TIMEZONE);
-  const dish = summary.goal ? await suggestedDish(user.id, summary.goal.kcal - summary.totals.kcal, today) : null;
+  const dish = summary.goal
+    ? await suggestedDish(
+        user.id,
+        { slot, goalKcal: summary.goal.kcal, remainingKcal: summary.goal.kcal - summary.totals.kcal },
+        today,
+      )
+    : null;
   const t = await getTranslations();
 
   return (

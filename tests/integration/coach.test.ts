@@ -170,7 +170,7 @@ describe("coach", () => {
     expect(data.coachReviews).toHaveLength(1);
   });
 
-  it("suggère un plat qui tient dans le reste du jour, sans LLM", async () => {
+  it("suggère un plat adapté au repas et au reste du jour, sans LLM", async () => {
     const userId = await setupUser();
     const lentils = await firstFood(userId, "lentille cuite");
     const rice = await firstFood(userId, "riz blanc cuit");
@@ -183,10 +183,13 @@ describe("coach", () => {
         { foodId: rice.id, grams: 200 },
       ],
     });
-    const dish = await suggestedDish(userId, 1000, today);
+    const dinner = { slot: "dinner", goalKcal: 2000, remainingKcal: 1000 } as const;
+    const dish = await suggestedDish(userId, dinner, today);
     expect(dish).toMatchObject({ id, name: "Dahl maison" });
-    expect(dish!.portionKcal).toBeGreaterThan(333);
-    expect(await suggestedDish(userId, 100, today)).toBeNull();
+    expect(dish!.portionKcal).toBeGreaterThan(240);
+    expect(await suggestedDish(userId, { ...dinner, remainingKcal: 100 }, today)).toBeNull();
+    // Jamais noté au petit-déjeuner : pas proposé à ce repas.
+    expect(await suggestedDish(userId, { ...dinner, slot: "breakfast" }, today)).toBeNull();
     expect(await db().select().from(llmCalls)).toEqual([]);
   });
 
