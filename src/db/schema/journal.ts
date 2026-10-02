@@ -20,7 +20,7 @@ import { photos } from "./meal-ai";
 
 export { MEAL_SLOTS, type MealSlot };
 
-export const INPUT_METHODS = ["manual", "barcode", "copy", "photo", "voice", "text"] as const;
+export const INPUT_METHODS = ["manual", "barcode", "copy", "photo", "voice", "text", "shared"] as const;
 
 const value = () => numeric({ precision: 7, scale: 1, mode: "number" });
 

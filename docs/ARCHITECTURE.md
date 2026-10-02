@@ -299,6 +299,22 @@ Téléphone                                     Serveur (Vercel fra1)           
   JSON imposé ; 2 048 tokens de sortie maximum pour laisser la place à la réflexion des
   modèles qui en ont une.
 
+## Espace famille (phase 6)
+
+- **Recettes du foyer** : une recette avec `foods.household_id` renseigné et
+  `owner_user_id` nul. Elle est visible et modifiable par tous les membres du foyer
+  (`visibleTo` / `editableBy` dans `src/server/foods.ts`) et le reste une fois commune.
+  Elle ne peut pas contenir d'aliment personnel, qui serait invisible aux autres.
+  Ses ingrédients peuvent être pré-remplis depuis une photo (même analyse que la phase 5).
+- **Repas partagés** (`shared_meals`, `shared_meal_shares`) : l'auteur choisit un plat
+  visible par tous, le nombre de parts et le poids total (celui de la recette par défaut).
+  Sa portion entre tout de suite dans son journal. Les autres membres reçoivent le repas
+  « à valider » : rien n'entre dans leur journal sans leur accord, avec leur portion
+  (½, 1, 1½, 2 parts ou un poids en grammes). Les lignes créées ont `input_method = shared`
+  et des valeurs figées comme toute saisie.
+- **Confidentialité** : un membre ne voit que les partages qui lui sont adressés, jamais
+  le journal des autres. Seuls les noms des membres sont exposés.
+
 ## 6. Sécurité (rappel des points structurants)
 
 HTTPS imposé par l'hébergeur, en-têtes CSP/HSTS via le middleware Next.js, jeton

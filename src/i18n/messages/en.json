@@ -310,7 +310,12 @@
     "food_required": "Choose a food for each line.",
     "speech_denied": "Microphone access is blocked. You can type your meal instead.",
     "speech_failed": "Dictation didn't work. Try again, or type your meal.",
-    "container_size_required": "Enter at least the volume or the diameter."
+    "container_size_required": "Enter at least the volume or the diameter.",
+    "family_recipe_personal_ingredient": "A household recipe can't contain your personal foods: other members can't see them.",
+    "dish_weight_required": "Enter the weight of the whole dish.",
+    "dish_not_shared": "This recipe is personal: make it a household recipe to share it.",
+    "share_nobody": "Choose at least one person, or enter your own portion.",
+    "portion_required": "Enter your portion."
   },
   "slots": {
     "breakfast": "Breakfast",
@@ -392,9 +397,11 @@
       "ciqual": "Ciqual",
       "off": "Open Food Facts",
       "custom": "My food",
-      "recipe": "My recipe"
+      "recipe": "My recipe",
+      "family": "Household recipe"
     },
-    "scan": "Scan a barcode"
+    "scan": "Scan a barcode",
+    "shareWithFamily": "Share a dish with the family"
   },
   "foods": {
     "title": "My foods and recipes",
@@ -422,7 +429,12 @@
     "addIngredient": "Add an ingredient",
     "ingredientGrams": "Amount of {name} in grams",
     "removeIngredient": "Remove {name}",
-    "recipeSummary": "{kcal, number} kcal per serving"
+    "recipeSummary": "{kcal, number} kcal per serving",
+    "familyRecipe": "Household recipe",
+    "familyRecipeHint": "Visible to and editable by every household member.",
+    "fromPhoto": "Fill in from a photo",
+    "photoNotFound": "Not found in the database, add them yourself: {names}.",
+    "editRecipe": "Edit recipe"
   },
   "water": {
     "title": "Water",
@@ -598,5 +610,37 @@
     "otherFood": "Change",
     "save": "Save",
     "remove": "Delete {name}"
+  },
+  "family": {
+    "title": "Family space",
+    "intro": "Recipes and shared meals are common to the household. Your weight, goals and journal stay private.",
+    "pendingTitle": "Shared meals to confirm",
+    "sharedBy": "{name} shared this dish for {slot} on {day}.",
+    "someone": "A household member",
+    "partInfo": "{parts, number} servings · 1 serving ≈ {grams, number} g, {kcal, number} kcal",
+    "myPortion": "My portion",
+    "parts": "{value} {count, plural, one {serving} other {servings}}",
+    "inGrams": "In grams",
+    "gramsLabel": "Weight of my portion (g)",
+    "portionPreview": "That's {grams, number} g, {kcal, number} kcal",
+    "accept": "Add to my journal",
+    "decline": "Not for me",
+    "shareDish": "Share a dish",
+    "newRecipe": "New household recipe",
+    "recipesTitle": "Household recipes",
+    "noRecipes": "No shared recipes yet. Create one, or make one of your recipes shared from its page.",
+    "shareTitle": "Share a dish",
+    "shareIntro": "Cooked for several people? Enter the dish once: everyone picks their portion and confirms before it's added to their journal.",
+    "chooseDish": "Which dish?",
+    "newDish": "New dish (ingredients or photo)",
+    "otherDish": "Change",
+    "totalParts": "Number of servings",
+    "totalGrams": "Weight of the whole dish (g)",
+    "partPreview": "1 serving ≈ {grams, number} g, {kcal, number} kcal",
+    "weightHint": "Enter the number of servings and the weight of the whole dish.",
+    "who": "Who with?",
+    "whoHint": "Each person gets the dish to confirm: nothing is added to their journal without their approval.",
+    "notEating": "I'm not having any",
+    "share": "Share"
   }
 }

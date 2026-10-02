@@ -14,6 +14,8 @@ import {
   mealEntries,
   personalExpressions,
   photos,
+  sharedMealShares,
+  sharedMeals,
   profiles,
   recipeItems,
   user,
@@ -110,6 +112,20 @@ export async function collectUserData(userId: string) {
       .where(eq(photos.userId, userId))
       .orderBy(asc(photos.createdAt)),
   ]);
+  const shareRows = await db()
+    .select({
+      sharedMealId: sharedMealShares.sharedMealId,
+      date: sharedMeals.date,
+      slot: sharedMeals.slot,
+      dishFoodId: sharedMeals.foodId,
+      status: sharedMealShares.status,
+      entryId: sharedMealShares.entryId,
+      respondedAt: sharedMealShares.respondedAt,
+    })
+    .from(sharedMealShares)
+    .innerJoin(sharedMeals, eq(sharedMeals.id, sharedMealShares.sharedMealId))
+    .where(eq(sharedMealShares.userId, userId))
+    .orderBy(asc(sharedMeals.date));
   return {
     exportedAt: new Date().toISOString(),
     account: account ?? null,
@@ -126,6 +142,7 @@ export async function collectUserData(userId: string) {
     expressions: expressionRows,
     corrections: correctionRows,
     mealPhotos: photoRows,
+    sharedMeals: shareRows,
   };
 }
 
@@ -163,5 +180,6 @@ export function toCsvZip(data: UserData): Uint8Array {
     "expressions.csv": strToU8(toCsv(data.expressions)),
     "corrections.csv": strToU8(toCsv(data.corrections)),
     "meal-photos.csv": strToU8(toCsv(data.mealPhotos)),
+    "shared-meals.csv": strToU8(toCsv(data.sharedMeals)),
   });
 }
