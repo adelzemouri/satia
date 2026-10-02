@@ -26,10 +26,12 @@ import {
 import { activityExport } from "./activity";
 import { adaptiveExport } from "./adaptive";
 import { bodyExport } from "./body";
+import { fastingExport } from "./fasting";
 import { coachExport } from "./coach";
 import { notificationExport } from "./notifications";
 import { checkinExport } from "./quality";
 import { trainingExport } from "./training";
+import { treatmentExport } from "./treatment";
 
 /** Toutes les données personnelles d'un utilisateur, sans aucun secret (mots de passe, TOTP, sessions). */
 export async function collectUserData(userId: string) {
@@ -139,6 +141,8 @@ export async function collectUserData(userId: string) {
   const training = await trainingExport(userId);
   const body = await bodyExport(userId);
   const activity = await activityExport(userId);
+  const fasting = await fastingExport(userId);
+  const treatment = await treatmentExport(userId);
   return {
     exportedAt: new Date().toISOString(),
     account: account ?? null,
@@ -170,6 +174,10 @@ export async function collectUserData(userId: string) {
     progressPhotos: body.photos,
     activities: activity.activities,
     steps: activity.steps,
+    fastingPlan: fasting.plan,
+    fasts: fasting.fasts,
+    treatments: treatment.treatments,
+    treatmentLogs: treatment.logs,
   };
 }
 
@@ -221,5 +229,9 @@ export function toCsvZip(data: UserData): Uint8Array {
     "progress-photos.csv": strToU8(toCsv(data.progressPhotos)),
     "activities.csv": strToU8(toCsv(data.activities)),
     "steps.csv": strToU8(toCsv(data.steps)),
+    "fasting-plan.csv": strToU8(toCsv(data.fastingPlan ? [data.fastingPlan] : [])),
+    "fasts.csv": strToU8(toCsv(data.fasts)),
+    "treatments.csv": strToU8(toCsv(data.treatments)),
+    "treatment-logs.csv": strToU8(toCsv(data.treatmentLogs)),
   });
 }

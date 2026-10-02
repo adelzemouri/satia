@@ -1,12 +1,16 @@
 /** Notifications (calcul pur) : préférences, plages silencieuses et rappels dus. */
 
-export const NOTIFICATION_KINDS = ["meal", "water", "weekly_review"] as const;
+export const NOTIFICATION_KINDS = ["meal", "water", "weekly_review", "fast_start", "fast_end", "treatment"] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
 export type NotificationPrefs = {
   meals: boolean;
   water: boolean;
   weeklyReview: boolean;
+  /** Début et fin des fenêtres de jeûne prévues au planning. */
+  fasting: boolean;
+  /** Prises de traitement aux jours et heures choisis. */
+  treatment: boolean;
   /** Plage silencieuse « HH:MM » ; elle peut passer minuit (22:00 → 07:30). */
   quietStart: string;
   quietEnd: string;
@@ -16,9 +20,16 @@ export const DEFAULT_NOTIFICATION_PREFS: NotificationPrefs = {
   meals: true,
   water: true,
   weeklyReview: true,
+  fasting: true,
+  treatment: true,
   quietStart: "22:00",
   quietEnd: "07:30",
 };
+
+/** Préférences enregistrées avant l'ajout d'un type de rappel : les nouveaux types prennent leur défaut. */
+export function withDefaultPrefs(prefs: Partial<NotificationPrefs> | null | undefined): NotificationPrefs {
+  return { ...DEFAULT_NOTIFICATION_PREFS, ...prefs };
+}
 
 export function minutesOf(time: string): number {
   const [hours, minutes] = time.split(":").map(Number);
@@ -66,13 +77,17 @@ const WATER_WINDOW = 120;
 /** Le bilan de la semaine est annoncé le lundi matin. */
 const REVIEW_FROM = "09:00";
 const REVIEW_UNTIL = "13:00";
+/** Un rappel de jeûne ou de traitement reste valable une heure après l'heure prévue. */
+const EVENT_WINDOW = 60;
 
 export type ReminderSlot = "breakfast" | "lunch" | "dinner";
 
 export type Reminder =
   | { kind: "meal"; key: string; slot: ReminderSlot }
   | { kind: "water"; key: string; glasses: number; goal: number }
-  | { kind: "weekly_review"; key: string };
+  | { kind: "weekly_review"; key: string }
+  | { kind: "fast_start" | "fast_end"; key: string }
+  | { kind: "treatment"; key: string; name: string };
 
 export type ReminderInput = {
   date: string;
@@ -87,6 +102,10 @@ export type ReminderInput = {
   /** Le bilan de la semaine écoulée a assez de données pour être rédigé. */
   reviewReady: boolean;
   weekStart: string;
+  /** Débuts et fins de jeûne prévus aujourd'hui (heure locale). */
+  fastEvents?: readonly { kind: "fast_start" | "fast_end"; time: string; key: string }[];
+  /** Traitements à rappeler aujourd'hui, avec leur heure, s'ils n'ont pas encore été notés. */
+  treatments?: readonly { id: string; name: string; time: string; taken: boolean }[];
 };
 
 const within = (time: string, from: number, length: number) => {
@@ -133,6 +152,18 @@ export function dueReminders(input: ReminderInput): Reminder[] {
     within(time, minutesOf(REVIEW_FROM), minutesOf(REVIEW_UNTIL) - minutesOf(REVIEW_FROM))
   ) {
     due.push({ kind: "weekly_review", key: input.weekStart });
+  }
+  if (prefs.fasting) {
+    for (const event of input.fastEvents ?? []) {
+      if (within(time, minutesOf(event.time), EVENT_WINDOW)) due.push({ kind: event.kind, key: event.key });
+    }
+  }
+  if (prefs.treatment) {
+    for (const treatment of input.treatments ?? []) {
+      if (!treatment.taken && within(time, minutesOf(treatment.time), EVENT_WINDOW)) {
+        due.push({ kind: "treatment", key: `${input.date}:${treatment.id}`, name: treatment.name });
+      }
+    }
   }
   return due;
 }

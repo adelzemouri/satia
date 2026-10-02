@@ -101,6 +101,8 @@ describe("onboarding et données", () => {
       "corrections.csv",
       "custom-exercises.csv",
       "expressions.csv",
+      "fasting-plan.csv",
+      "fasts.csv",
       "favorites.csv",
       "foods.csv",
       "goals.csv",
@@ -117,6 +119,8 @@ describe("onboarding et données", () => {
       "steps.csv",
       "training-profile.csv",
       "training-sessions.csv",
+      "treatment-logs.csv",
+      "treatments.csv",
       "water.csv",
       "weights.csv",
     ]);

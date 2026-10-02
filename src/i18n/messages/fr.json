@@ -48,7 +48,10 @@
     "streak": "{days, plural, =0 {Pas encore de série : un repas saisi aujourd'hui la lance.} one {# jour d'affilée} other {# jours d'affilée}}",
     "streakFrozen": "Un jour de repos a été couvert cette semaine, ta série continue.",
     "more": "Raccourcis",
-    "activityBurned": "Dont {kcal} kcal dépensées en activité."
+    "activityBurned": "Dont {kcal} kcal dépensées en activité.",
+    "fastRunning": "Jeûne en cours",
+    "fastUntil": "Fin prévue à {end, time, short}.",
+    "fastOpen": "Voir le minuteur"
   },
   "theme": {
     "label": "Thème",
@@ -350,7 +353,12 @@
     "steps_range": "Indique un nombre de pas entre 0 et 100 000.",
     "import_invalid": "Ce fichier n'a pas pu être lu : il faut un CSV avec une colonne de date et une colonne de pas ou de durée.",
     "import_too_large": "Ce fichier est trop volumineux (1,5 Mo et 5 000 lignes au plus). Essaie d'exporter une période plus courte.",
-    "import_empty": "Aucune ligne exploitable dans ce fichier."
+    "import_empty": "Aucune ligne exploitable dans ce fichier.",
+    "fasting_minor": "Le jeûne intermittent n'est pas proposé avant 18 ans.",
+    "fasting_hours": "Indique une durée entre 12 et 20 heures.",
+    "fast_running": "Un jeûne est déjà en cours.",
+    "treatment_days_required": "Choisis au moins un jour pour le rappel.",
+    "treatment_name_required": "Indique le nom du traitement."
   },
   "slots": {
     "breakfast": "Petit-déjeuner",
@@ -898,8 +906,24 @@
       "test": {
         "title": "Satia",
         "body": "Les notifications fonctionnent sur cet appareil."
+      },
+      "fastStart": {
+        "title": "Ta fenêtre de jeûne commence",
+        "body": "C'est l'heure prévue. Le minuteur est lancé si le démarrage automatique est activé."
+      },
+      "fastEnd": {
+        "title": "Ta fenêtre de repas s'ouvre",
+        "body": "Ton jeûne prévu est terminé. Bon appétit !"
+      },
+      "treatment": {
+        "title": "Ton traitement",
+        "body": "Petit rappel pour {name}. Pense à noter ta prise dans Satia."
       }
-    }
+    },
+    "fasting": "Jeûne",
+    "fastingHint": "Au début et à la fin de chaque fenêtre de ton planning.",
+    "treatment": "Traitement",
+    "treatmentHint": "Aux jours et heures choisis, si la prise n'est pas encore notée."
   },
   "plan": {
     "title": "Menu de la semaine",
@@ -1293,6 +1317,88 @@
       "file": "Fichier CSV",
       "submit": "Importer",
       "done": "Import terminé : {days, plural, =0 {aucun jour de pas} one {# jour de pas} other {# jours de pas}}, {activities, plural, =0 {aucune activité} one {# activité} other {# activités}}, {skipped, plural, =0 {aucune ligne ignorée} one {# ligne ignorée} other {# lignes ignorées}}."
+    }
+  },
+  "fasting": {
+    "title": "Jeûne",
+    "intro": "Une fenêtre pour manger, une fenêtre pour faire une pause. Tu choisis ton rythme jour par jour, et tu peux t'arrêter quand tu veux.",
+    "minor": "Le jeûne intermittent n'est pas proposé avant 18 ans. Ton corps a besoin d'apports réguliers pendant la croissance : continue de suivre tes repas comme d'habitude.",
+    "disclaimer": "Satia ne donne pas d'avis médical. En cas de diabète, de grossesse, d'allaitement, d'antécédents de troubles alimentaires ou de traitement en cours, parles-en à un professionnel de santé avant de jeûner.",
+    "timer": {
+      "title": "Minuteur",
+      "running": "Jeûne en cours",
+      "idle": "Aucun jeûne prévu pour l'instant.",
+      "next": "Prochaine fenêtre : {date}, pour {hours} h.",
+      "start": "Commencer un jeûne maintenant",
+      "end": "Terminer le jeûne",
+      "progress": "Progression du jeûne",
+      "clock": "{h} h {mm}",
+      "elapsed": "{h} h {m} min écoulées",
+      "of": "sur {hours} h",
+      "remaining": "Encore {h} h {m} min avant ta fenêtre de repas.",
+      "reached": "Objectif atteint, bravo ! Ta fenêtre de repas est ouverte quand tu veux.",
+      "window": "Commencé à {start}, objectif {end}."
+    },
+    "plan": {
+      "title": "Mon planning",
+      "enabled": "Suivre un planning de jeûne",
+      "autoStart": "Démarrage automatique",
+      "autoStartHint": "Le jeûne démarre seul à l'heure prévue et s'arrête seul à la fin de la fenêtre. Tu peux toujours l'arrêter plus tôt.",
+      "days": "Jour par jour",
+      "daysHint": "Choisis un protocole (heures de jeûne : heures de repas) et l'heure à laquelle commence le jeûne.",
+      "none": "Pas de jeûne",
+      "custom": "Perso",
+      "protocolFor": "Protocole du {day}",
+      "startFor": "Début du jeûne le {day}",
+      "customHours": "Durée du jeûne perso (heures)",
+      "customHint": "Entre {min} et {max} heures.",
+      "save": "Enregistrer le planning",
+      "saved": "Planning enregistré."
+    },
+    "history": {
+      "title": "Historique",
+      "empty": "Aucun jeûne terminé pour l'instant.",
+      "stats": "{completed, plural, =0 {Aucun objectif atteint} one {# objectif atteint} other {# objectifs atteints}} ces 7 derniers jours · durée moyenne {h} h {m} min.",
+      "line": "{h} h {m} min sur {target} h",
+      "reached": "objectif atteint",
+      "delete": "Supprimer le jeûne du {day}"
+    }
+  },
+  "treatment": {
+    "title": "Traitement",
+    "intro": "Un journal simple de tes prises, avec des rappels si tu le souhaites.",
+    "disclaimer": "Satia ne calcule ni ne conseille aucune dose. Suis la prescription de ton médecin et pose-lui tes questions sur ton traitement.",
+    "log": {
+      "title": "Noter une prise",
+      "which": "Traitement",
+      "other": "Autre (nom libre)",
+      "name": "Nom",
+      "date": "Date",
+      "time": "Heure",
+      "note": "Note",
+      "noteHint": "Facultatif : ressenti, site d'injection, oubli…",
+      "save": "Enregistrer la prise"
+    },
+    "logs": {
+      "title": "Dernières prises",
+      "empty": "Aucune prise notée pour l'instant.",
+      "when": "{date} à {time}",
+      "delete": "Supprimer la prise de {name} du {date}"
+    },
+    "list": {
+      "title": "Mes traitements",
+      "reminder": "Rappel : {days} à {time}",
+      "noReminder": "Sans rappel",
+      "delete": "Arrêter le suivi de {name}"
+    },
+    "add": {
+      "title": "Ajouter un traitement",
+      "name": "Nom",
+      "nameHint": "Le nom que tu veux, par exemple celui de ton médicament.",
+      "reminder": "Rappel (facultatif)",
+      "reminderHint": "Choisis les jours et l'heure ; le rappel ne part pas si la prise est déjà notée.",
+      "time": "Heure du rappel",
+      "save": "Ajouter"
     }
   }
 }
