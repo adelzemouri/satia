@@ -41,7 +41,7 @@ Compensations des limites :
 - **Cron fréquents** (rappels, v2) : un workflow Actions appelle toutes les 15 min
   une route `/api/cron/*` protégée par `CRON_SECRET`.
 - **Portabilité** : le `Dockerfile` (sortie `standalone`) et `docker compose`
-  (app + Postgres + MinIO) restent la référence locale ; changer pour un hébergeur
+  (app + Postgres + RustFS, un S3 local) restent la référence locale ; changer pour un hébergeur
   à conteneurs (Scaleway, Fly, Render…) ne demande que de nouvelles variables d'env.
 - **Si les quotas gratuits sont dépassés** : Vercel Pro (20 $/mois) ou bascule du
   conteneur chez Scaleway (≈ 5 à 10 €/mois). Le code ne change pas.
@@ -58,7 +58,7 @@ satia/
 │   ├── ci.yml              # lint, format, typecheck, tests, build ; déploiement prod sur main
 │   ├── preview.yml         # branche Neon + déploiement Vercel par PR
 │   └── backup.yml          # pg_dump quotidien → R2
-├── docker-compose.yml      # app, postgres, minio
+├── docker-compose.yml      # app, postgres, rustfs (S3 local)
 ├── Dockerfile
 ├── .env.example
 ├── drizzle/                # migrations SQL générées

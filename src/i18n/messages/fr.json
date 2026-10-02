@@ -1,0 +1,24 @@
+{
+  "meta": {
+    "description": "Suivi nutritionnel doux et sans culpabilité, pour toute la famille."
+  },
+  "home": {
+    "greeting": "Bonjour !",
+    "tagline": "Le marché du dimanche, toute la semaine. Votre suivi nutritionnel arrive bientôt.",
+    "status": "Phase 0 : les fondations sont en place."
+  },
+  "theme": {
+    "label": "Thème",
+    "system": "Automatique",
+    "light": "Clair",
+    "dark": "Sombre"
+  },
+  "language": {
+    "label": "Langue"
+  },
+  "offline": {
+    "title": "Hors ligne",
+    "body": "Pas de connexion pour le moment. Les pages déjà consultées restent disponibles, réessayez dès que le réseau revient."
+  },
+  "disclaimer": "{appName} n'est pas un avis médical. Pour toute question de santé, parlez-en à un professionnel."
+}

@@ -1,0 +1,24 @@
+{
+  "meta": {
+    "description": "Gentle, guilt-free nutrition tracking for the whole family."
+  },
+  "home": {
+    "greeting": "Hello!",
+    "tagline": "The Sunday market, all week long. Your nutrition tracker is coming soon.",
+    "status": "Phase 0: the foundations are in place."
+  },
+  "theme": {
+    "label": "Theme",
+    "system": "Automatic",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "language": {
+    "label": "Language"
+  },
+  "offline": {
+    "title": "Offline",
+    "body": "No connection right now. Pages you already opened are still available; try again once you are back online."
+  },
+  "disclaimer": "{appName} is not medical advice. For any health question, talk to a professional."
+}
