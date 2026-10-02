@@ -217,6 +217,30 @@ Chaque fonction publique suit la même chaîne :
 5. **Journalisation** dans `llm_calls` (modèle, tokens, coût estimé, latence, statut),
    y compris en cas d'échec.
 
+Mise en œuvre (phase 4) :
+- **Configuration** : `LLM_PROVIDER` vaut `openai` par défaut dès qu'une clé est fournie,
+  `none` sinon (IA désactivée proprement). Tarifs `LLM_PRICE_{VISION,TEXT}_{INPUT,OUTPUT}`
+  en dollars par million de tokens ; `LLM_JSON_MODE=json_object` pour les fournisseurs
+  sans schéma JSON. `/api/health` renvoie `llm` : `ok`, `disabled` ou les noms des
+  variables en défaut.
+- **Schéma envoyé** : réduit à la structure (types, champs, listes) pour être accepté par
+  tous les fournisseurs ; les bornes sont vérifiées par Zod à la réception.
+- **Plafond** : réglé par l'admin dans `app_settings.ai` (`enabled`, `monthlyBudgetUsd`),
+  `LLM_MONTHLY_BUDGET_USD` servant de valeur par défaut. Le mois suit l'heure de Paris.
+  Débit : 20 appels par 10 minutes et par utilisateur.
+- **Tentatives** : une seule nouvelle tentative, et seulement pour une sortie illisible ou
+  invalide ; une panne ou un délai dépassé (30 s) n'est pas retenté. Chaque tentative est
+  journalisée et comptée dans le plafond.
+- **Page admin** `/admin/ai` : état, test de connexion (appel minimal à chaque modèle),
+  plafond, coûts des 12 derniers mois par membre. Un membre supprimé garde ses lignes
+  `llm_calls` sans `user_id`, pour que le coût du mois reste juste ; ses appels figurent
+  dans son export (`ai-calls.csv`).
+- **Compression** : `features/ai/compress-image.ts` réduit la photo dans le navigateur
+  (côté long ≤ 768 px, WebP qualité 0,7, JPEG si le navigateur n'encode pas le WebP),
+  applique l'orientation EXIF et supprime les métadonnées.
+- **Tests** : `LLM_PROVIDER=mock` en e2e ; en intégration, `setProviderForTests` simule
+  pannes et sorties invalides.
+
 Sorties volontairement minimales, par exemple pour une photo :
 `{"items":[{"name":"riz basmati","grams":180,"confidence":0.7}]}`. Le LLM ne
 renvoie jamais de valeurs nutritionnelles, sauf `estimateFoods` appelée uniquement

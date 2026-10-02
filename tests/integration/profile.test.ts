@@ -90,6 +90,7 @@ describe("onboarding et données", () => {
     const files = unzipSync(toCsvZip(data));
     expect(Object.keys(files).sort()).toEqual([
       "account.csv",
+      "ai-calls.csv",
       "favorites.csv",
       "foods.csv",
       "goals.csv",
