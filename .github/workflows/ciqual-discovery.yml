@@ -1,0 +1,17 @@
+name: Ciqual discovery (temporaire)
+on:
+  push:
+    branches-ignore: [main]
+    paths: [.github/workflows/ciqual-discovery.yml]
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Jeux de données data.gouv.fr
+        run: |
+          curl -s "https://www.data.gouv.fr/api/1/datasets/?q=ciqual&page_size=10" \
+            | jq -r '.data[] | "## \(.slug) | \(.organization.name // "-") | \(.last_update)", (.resources[] | "  \(.title) | \(.format) | \(.filesize) | \(.url)")'
+      - name: Liens du site Ciqual
+        run: |
+          curl -sL https://ciqual.anses.fr/ -o home.html; wc -c home.html
+          grep -oiE 'href="[^"]+"' home.html | grep -iE 'zip|xls|csv|xml|download|telecharg' | sort -u | head -50
