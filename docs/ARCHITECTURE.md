@@ -278,6 +278,14 @@ de session, secrets uniquement en variables d'env (`.env.example` fourni).
 - **Open Food Facts** (ODbL) : recherche à la demande quand la base locale ne suffit pas
   (8 recherches par minute et par utilisateur), produit choisi mis en cache dans `foods`.
   Attributions Ciqual et OFF affichées sur l'écran d'ajout.
+- **Code-barres** (`/scan`) : `BarcodeDetector` natif quand le navigateur l'a (Chrome
+  Android), sinon ZXing chargé à la demande (Safari iOS). Seuls les EAN-13/EAN-8/UPC-A
+  à clé de contrôle valide sont acceptés (UPC-A ramené à 13 chiffres) ; saisie manuelle
+  du code possible. Le produit est lu dans `foods` s'il a moins de 30 jours, sinon
+  redemandé à OFF (`/api/v2/product/{code}.json`) ; si OFF est indisponible, l'ancienne
+  version du cache sert. Fiche produit `/foods/{id}` (valeurs pour 100 g et par portion),
+  puis ajout au journal avec `input_method = barcode`. `OFF_BASE_URL` / `OFF_SEARCH_URL`
+  ne servent qu'aux tests e2e (serveur OFF simulé).
 - **Unités** : g, kg, volumes (ml, cl, l, c. à café 5 ml, c. à soupe 15 ml, tasse 250 ml)
   si la masse volumique est connue, portion / pièce / tranche si le poids unitaire l'est.
 

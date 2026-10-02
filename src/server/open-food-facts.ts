@@ -3,8 +3,11 @@ import "server-only";
 import { z } from "zod";
 
 import { APP_NAME } from "@/config/app";
+import { and, eq } from "drizzle-orm";
+
 import { db } from "@/db/client";
 import { foods } from "@/db/schema";
+import { normalizeBarcode } from "@/domain/barcode";
 import { kcalFromMacros } from "@/domain/nutrition";
 import { normalizeForSearch } from "@/domain/search";
 
@@ -15,9 +18,12 @@ import { enforceRateLimit } from "./rate-limit";
  * Open Food Facts (base ouverte, licence ODbL) : recherche de produits du commerce et
  * mise en cache locale du produit choisi. L'attribution est affichée dans l'interface.
  */
-const OFF_BASE = "https://world.openfoodfacts.org";
+/** Surchargeables pour les tests de bout en bout (serveur OFF simulé), jamais en production. */
+const OFF_BASE = process.env.OFF_BASE_URL ?? "https://world.openfoodfacts.org";
 /** Moteur de recherche dédié d'OFF (« search-a-licious ») : plus rapide et prévu pour les API. */
-const OFF_SEARCH_BASE = "https://search.openfoodfacts.org";
+const OFF_SEARCH_BASE = process.env.OFF_SEARCH_URL ?? "https://search.openfoodfacts.org";
+/** Au-delà, un produit en cache est relu sur OFF (les fiches évoluent, les recettes aussi). */
+const CACHE_MAX_AGE_DAYS = 30;
 const USER_AGENT = `${APP_NAME}/0.1 (application familiale de suivi nutritionnel)`;
 const FIELDS = "code,product_name,product_name_fr,brands,nutriments,serving_quantity";
 const TIMEOUT_MS = 8000;
@@ -152,10 +158,33 @@ export async function importOpenFoodFactsProduct(userId: string, code: string): 
   const body = z
     .object({ product: z.unknown().optional() })
     .parse(await offFetch(`${OFF_BASE}/api/v2/product/${barcode}.json?fields=${FIELDS}`));
+  if (!body.product) throw new DomainError("not_found");
   const parsed = productSchema.safeParse({ ...(body.product as object), code: barcode });
   const candidate = parsed.success ? toCandidate(parsed.data) : null;
   if (!candidate) throw new DomainError("off_incomplete");
   return cacheProduct(candidate);
+}
+
+/**
+ * Produit correspondant à un code-barres : d'abord le cache local, relu sur OFF s'il date
+ * de plus de 30 jours (le cache sert de secours si OFF ne répond pas). Renvoie l'id de l'aliment.
+ */
+export async function findByBarcode(userId: string, raw: string): Promise<string> {
+  const code = normalizeBarcode(raw);
+  if (!code) throw new DomainError("invalid_barcode");
+  const [cached] = await db()
+    .select({ id: foods.id, fetchedAt: foods.fetchedAt })
+    .from(foods)
+    .where(and(eq(foods.source, "off"), eq(foods.sourceRef, code)));
+  const fresh = cached?.fetchedAt && Date.now() - cached.fetchedAt.getTime() < CACHE_MAX_AGE_DAYS * 86_400_000;
+  if (cached && fresh) return cached.id;
+  try {
+    return await importOpenFoodFactsProduct(userId, code);
+  } catch (error) {
+    if (!(error instanceof DomainError)) throw error;
+    if (cached && error.code !== "not_found") return cached.id;
+    throw error.code === "not_found" ? new DomainError("barcode_not_found") : error;
+  }
 }
 
 export async function cacheProduct(candidate: OffCandidate): Promise<string> {

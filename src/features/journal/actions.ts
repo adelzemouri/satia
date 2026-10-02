@@ -22,7 +22,7 @@ import {
   setWeight,
   updateEntry,
 } from "@/server/journal";
-import { importOpenFoodFactsProduct } from "@/server/open-food-facts";
+import { findByBarcode, importOpenFoodFactsProduct } from "@/server/open-food-facts";
 import { getCurrentUser } from "@/server/session";
 
 export type IdState = (ActionState & { id?: string; count?: number }) | null;
@@ -82,6 +82,10 @@ export async function deleteFoodAction(foodId: string): Promise<IdState> {
 
 export async function importOffAction(code: string): Promise<IdState> {
   return run(async (userId) => ({ ok: true, id: await importOpenFoodFactsProduct(userId, code) }));
+}
+
+export async function scanBarcodeAction(code: string): Promise<IdState> {
+  return run(async (userId) => ({ ok: true, id: await findByBarcode(userId, code) }));
 }
 
 export async function setWeightAction(input: { date: string; weightKg: number }): Promise<IdState> {

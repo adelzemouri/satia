@@ -196,6 +196,34 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await expectNoA11yViolations(page);
 });
 
+test("ajout d'un produit par code-barres (Open Food Facts simulé)", async ({ page, context }) => {
+  await context.grantPermissions(["camera"]);
+  await signIn(page, ADMIN);
+  await page.goto("/add?slot=snack");
+  await page.getByRole("link", { name: "Scanner un code-barres" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Scanner un code-barres");
+  await expectNoA11yViolations(page);
+
+  // Code inconnu : on propose de créer l'aliment ou de le chercher par son nom.
+  await page.getByLabel("Saisir le code-barres").fill("4006381333931");
+  await page.getByRole("button", { name: "Chercher ce produit" }).click();
+  await expect(page.getByText("Ce produit n'est pas encore dans Open Food Facts.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Créer cet aliment" })).toBeVisible();
+
+  await page.getByLabel("Saisir le code-barres").fill("3017620422003");
+  await page.getByRole("button", { name: "Chercher ce produit" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pâte à tartiner noisettes");
+  await expect(page.getByText("Code-barres 3017620422003")).toBeVisible();
+  await expect(page.getByRole("columnheader", { name: "Par portion (15 g)" })).toBeVisible();
+  await expectNoA11yViolations(page);
+
+  await page.getByRole("link", { name: "Ajouter au journal" }).click();
+  await expect(page.getByLabel("Unité")).toHaveValue("portion");
+  await expect(page.getByText("Ça fait 81 kcal")).toBeVisible();
+  await page.getByRole("button", { name: "Ajouter au journal" }).click();
+  await expect(page.getByRole("region", { name: "Collations" }).getByText(/^Pâte à tartiner noisettes/)).toBeVisible();
+});
+
 test("activation de la double authentification puis connexion avec un code", async ({ page }) => {
   await signIn(page, ADMIN);
   await page.goto("/profile");

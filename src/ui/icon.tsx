@@ -13,6 +13,7 @@ export const ICONS = {
   trash: "M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13M10 11v5M14 11v5",
   copy: "M8 8h11v11H8zM5 16V5h11",
   drop: "M12 3.5c3 4 6 7.3 6 10.5a6 6 0 0 1-12 0c0-3.2 3-6.5 6-10.5Z",
+  barcode: "M4 6v12M7 6v12M10 6v12M14 6v12M16 6v12M20 6v12M3 4h3M18 4h3M3 20h3M18 20h3",
   sprout: "M12 20v-8m0 0c0-4 3-6 7-6 0 4-3 6-7 6Zm0 0c0-3-2.5-5-6-5 0 3 2.5 5 6 5Z",
 } as const;
 

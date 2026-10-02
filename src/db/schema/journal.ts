@@ -19,7 +19,7 @@ import { foods } from "./foods";
 
 export { MEAL_SLOTS, type MealSlot };
 
-export const INPUT_METHODS = ["manual", "copy"] as const;
+export const INPUT_METHODS = ["manual", "barcode", "copy"] as const;
 
 const value = () => numeric({ precision: 7, scale: 1, mode: "number" });
 

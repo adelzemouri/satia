@@ -291,7 +291,9 @@
     "food_in_recipe": "Cet aliment est utilisé dans une recette : retire-le d'abord de la recette.",
     "recipe_empty": "Ajoute au moins un ingrédient.",
     "off_unavailable": "Open Food Facts ne répond pas pour l'instant. Réessaie plus tard.",
-    "off_incomplete": "Ce produit n'a pas de valeurs nutritionnelles complètes."
+    "off_incomplete": "Ce produit n'a pas de valeurs nutritionnelles complètes.",
+    "invalid_barcode": "Ce code-barres n'est pas valide. Vérifie les chiffres.",
+    "barcode_not_found": "Ce produit n'est pas encore dans Open Food Facts."
   },
   "slots": {
     "breakfast": "Petit-déjeuner",
@@ -373,7 +375,8 @@
       "off": "Open Food Facts",
       "custom": "Mon aliment",
       "recipe": "Ma recette"
-    }
+    },
+    "scan": "Scanner un code-barres"
   },
   "foods": {
     "title": "Mes aliments et recettes",
@@ -426,5 +429,38 @@
     "delete": "Supprimer la pesée du {date}",
     "chart": "Courbe de poids et tendance lissée",
     "empty": "Aucune pesée pour l'instant."
+  },
+  "scan": {
+    "title": "Scanner un code-barres",
+    "open": "Scanner un code-barres",
+    "hint": "Place le code-barres dans le cadre, bien à plat et éclairé.",
+    "starting": "Ouverture de la caméra…",
+    "denied": "La caméra n'est pas accessible. Autorise-la dans les réglages du navigateur, ou saisis le code ci-dessous.",
+    "unsupported": "Ce navigateur ne permet pas de scanner. Saisis le code ci-dessous.",
+    "manualLabel": "Saisir le code-barres",
+    "manualHint": "Les chiffres sous les barres, 8 ou 13 le plus souvent.",
+    "search": "Chercher ce produit",
+    "searching": "Recherche du produit…",
+    "notFoundHelp": "Tu peux le créer toi-même avec les valeurs de l'étiquette, ou le chercher par son nom.",
+    "createFood": "Créer cet aliment",
+    "searchByName": "Chercher par nom",
+    "again": "Scanner un autre produit"
+  },
+  "product": {
+    "title": "Fiche produit",
+    "per100": "Pour 100 g",
+    "perPortion": "Par portion ({grams, number} g)",
+    "energy": "Énergie",
+    "protein": "Protéines",
+    "carbs": "Glucides",
+    "sugars": "dont sucres",
+    "fat": "Lipides",
+    "fiber": "Fibres",
+    "salt": "Sel",
+    "unknown": "non renseigné",
+    "barcode": "Code-barres {code}",
+    "add": "Ajouter au journal",
+    "updated": "Données mises à jour le {date}",
+    "nutrients": "Valeurs nutritionnelles"
   }
 }

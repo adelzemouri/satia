@@ -30,6 +30,8 @@
     "@aws-sdk/s3-request-presigner": "^3.1145.0",
     "@node-rs/argon2": "^2.2.1",
     "@serwist/turbopack": "^9.5.12",
+    "@zxing/browser": "^0.2.1",
+    "@zxing/library": "^0.23.0",
     "better-auth": "^1.7.7",
     "drizzle-orm": "^0.45.3",
     "fflate": "^0.8.3",

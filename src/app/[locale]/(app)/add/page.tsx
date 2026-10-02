@@ -3,23 +3,12 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { APP_TIMEZONE } from "@/config/app";
 import { todayIso } from "@/domain/dates";
 import { parseDayParam } from "@/domain/day-param";
-import { MEAL_SLOTS, type MealSlot } from "@/domain/meals";
+import { MEAL_SLOTS, slotAt } from "@/domain/meals";
 import { FoodPicker } from "@/features/foods/food-picker";
 import type { FoodItem } from "@/features/foods/food-types";
 import { toLocale } from "@/i18n/routing";
-import { favoriteFoods, type FoodSummary, ownFoods, recentFoods } from "@/server/foods";
+import { favoriteFoods, type FoodSummary, getFood, ownFoods, recentFoods } from "@/server/foods";
 import { requireUser } from "@/server/session";
-
-/** Repas probable selon l'heure, quand l'écran est ouvert depuis le bouton central. */
-function slotForNow(now = new Date()): MealSlot {
-  const hour = Number(
-    new Intl.DateTimeFormat("en-GB", { hour: "numeric", hour12: false, timeZone: APP_TIMEZONE }).format(now),
-  );
-  if (hour < 11) return "breakfast";
-  if (hour < 15) return "lunch";
-  if (hour < 18) return "snack";
-  return "dinner";
-}
 
 function toItem(food: FoodSummary): FoodItem {
   return { ...food };
@@ -31,11 +20,14 @@ export default async function AddPage({ params, searchParams }: PageProps<"/[loc
   const user = await requireUser(locale);
   const query = await searchParams;
   const date = parseDayParam(query.date, todayIso());
-  const slot = MEAL_SLOTS.find((value) => value === query.slot) ?? slotForNow();
-  const [recent, favorites, mine] = await Promise.all([
+  const slot = MEAL_SLOTS.find((value) => value === query.slot) ?? slotAt(new Date(), APP_TIMEZONE);
+  const foodId = typeof query.food === "string" ? query.food : null;
+  const [recent, favorites, mine, preselected] = await Promise.all([
     recentFoods(user.id),
     favoriteFoods(user.id),
     ownFoods(user.id),
+    // Aliment choisi depuis une fiche produit : on passe directement à la quantité.
+    foodId && /^[0-9a-f-]{36}$/.test(foodId) ? getFood(user.id, foodId).catch(() => null) : null,
   ]);
   const t = await getTranslations("add");
 
@@ -48,6 +40,8 @@ export default async function AddPage({ params, searchParams }: PageProps<"/[loc
         recent={recent.map(toItem)}
         favorites={favorites.map(toItem)}
         mine={mine.map(toItem)}
+        initialFood={preselected && toItem(preselected)}
+        inputMethod={query.via === "barcode" ? "barcode" : "manual"}
       />
     </>
   );

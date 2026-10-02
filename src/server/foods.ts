@@ -103,6 +103,16 @@ export async function getFoods(userId: string, foodIds: readonly string[]): Prom
     .where(and(inArray(foods.id, [...new Set(foodIds)]), visibleTo(userId)));
 }
 
+/** Fiche complète d'un aliment visible par l'utilisateur. */
+export async function getFoodDetails(userId: string, foodId: string): Promise<Food> {
+  const [food] = await db()
+    .select()
+    .from(foods)
+    .where(and(eq(foods.id, z.uuid().parse(foodId)), visibleTo(userId)));
+  if (!food) throw new DomainError("not_found");
+  return food;
+}
+
 /** Derniers aliments saisis, du plus récent au plus ancien, sans doublon. */
 export async function recentFoods(userId: string, limit = 15): Promise<FoodSummary[]> {
   const recent = db()

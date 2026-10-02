@@ -291,7 +291,9 @@
     "food_in_recipe": "This food is used in a recipe: remove it from the recipe first.",
     "recipe_empty": "Add at least one ingredient.",
     "off_unavailable": "Open Food Facts isn't responding right now. Try again later.",
-    "off_incomplete": "This product doesn't have complete nutrition values."
+    "off_incomplete": "This product doesn't have complete nutrition values.",
+    "invalid_barcode": "This barcode isn't valid. Check the digits.",
+    "barcode_not_found": "This product isn't in Open Food Facts yet."
   },
   "slots": {
     "breakfast": "Breakfast",
@@ -373,7 +375,8 @@
       "off": "Open Food Facts",
       "custom": "My food",
       "recipe": "My recipe"
-    }
+    },
+    "scan": "Scan a barcode"
   },
   "foods": {
     "title": "My foods and recipes",
@@ -426,5 +429,38 @@
     "delete": "Delete the weigh-in of {date}",
     "chart": "Weight chart and smoothed trend",
     "empty": "No weigh-in yet."
+  },
+  "scan": {
+    "title": "Scan a barcode",
+    "open": "Scan a barcode",
+    "hint": "Hold the barcode inside the frame, flat and well lit.",
+    "starting": "Opening the camera…",
+    "denied": "The camera isn't available. Allow it in your browser settings, or type the code below.",
+    "unsupported": "This browser can't scan. Type the code below.",
+    "manualLabel": "Type the barcode",
+    "manualHint": "The digits under the bars, usually 8 or 13.",
+    "search": "Look up this product",
+    "searching": "Looking up the product…",
+    "notFoundHelp": "You can create it yourself from the label, or search for it by name.",
+    "createFood": "Create this food",
+    "searchByName": "Search by name",
+    "again": "Scan another product"
+  },
+  "product": {
+    "title": "Product details",
+    "per100": "Per 100 g",
+    "perPortion": "Per serving ({grams, number} g)",
+    "energy": "Energy",
+    "protein": "Protein",
+    "carbs": "Carbohydrates",
+    "sugars": "of which sugars",
+    "fat": "Fat",
+    "fiber": "Fibre",
+    "salt": "Salt",
+    "unknown": "not provided",
+    "barcode": "Barcode {code}",
+    "add": "Add to diary",
+    "updated": "Data updated on {date}",
+    "nutrients": "Nutrition facts"
   }
 }
