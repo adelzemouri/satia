@@ -17,7 +17,7 @@ repas et son poids.
 
 **Phase 0 — Fondations.** Stack et hébergeur validés, `docs/ARCHITECTURE.md`,
 squelette du projet, Docker Compose pour le local, base et stockage objet en UE,
-CI/CD GitLab avec déploiement automatique, lint/format/typecheck, i18n, thème
+CI/CD GitHub Actions avec déploiement automatique, lint/format/typecheck, i18n, thème
 clair/sombre, design tokens de la DA, PWA de base. Une page "Hello" en production
 avant de passer à la suite.
 
