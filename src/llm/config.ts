@@ -12,6 +12,8 @@ const schema = z
     LLM_MODEL_TEXT: z.string().min(1).optional(),
     /** `json_object` pour les fournisseurs qui ne gèrent pas les schémas JSON (DeepSeek…). */
     LLM_JSON_MODE: z.enum(["json_schema", "json_object"]).default("json_schema"),
+    /** Effort de réflexion des modèles qui « pensent » avant de répondre (tokens facturés en sortie). */
+    LLM_REASONING_EFFORT: z.enum(["none", "minimal", "low", "medium", "high"]).optional(),
     /** Tarifs en dollars par million de tokens, pour estimer le coût de chaque appel. */
     LLM_PRICE_VISION_INPUT: price,
     LLM_PRICE_VISION_OUTPUT: price,
@@ -39,6 +41,7 @@ export type LlmConfig = {
   baseUrl: string;
   apiKey: string;
   jsonMode: "json_schema" | "json_object";
+  reasoningEffort: "none" | "minimal" | "low" | "medium" | "high" | undefined;
   models: Record<ModelKind, string>;
   /** Dollars par million de tokens. */
   prices: Record<ModelKind, { input: number; output: number }>;
@@ -65,6 +68,7 @@ export function parseLlmConfig(source: Record<string, string | undefined>): LlmC
     ).replace(/\/+$/, ""),
     apiKey: env.LLM_API_KEY ?? "",
     jsonMode: env.LLM_JSON_MODE,
+    reasoningEffort: env.LLM_REASONING_EFFORT,
     models: {
       vision: env.LLM_MODEL_VISION ?? (provider === "mock" ? "mock-vision" : ""),
       text: env.LLM_MODEL_TEXT ?? (provider === "mock" ? "mock-text" : ""),

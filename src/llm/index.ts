@@ -105,7 +105,8 @@ export async function testConnection(userId: string) {
       ...CONNECTION_TEST_PROMPT,
       schemaName: "connection_test",
       schema: connectionTestSchema,
-      maxOutputTokens: 20,
+      // Marge pour les modèles qui réfléchissent avant de répondre (réflexion comptée en sortie).
+      maxOutputTokens: 1024,
     });
   const text = await call("text");
   const config = llmConfig();
