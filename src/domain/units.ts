@@ -60,3 +60,12 @@ export function countUnitsFromServing(
   }
   return {};
 }
+
+/** Pas des boutons − et + : 10 g ou 10 ml, une demi-unité pour les tranches, pièces et portions. */
+export function stepQuantity(current: number, unit: Unit, direction: 1 | -1): string {
+  const step = unit === "g" || unit === "ml" ? 10 : 0.5;
+  const base = Number.isFinite(current) && current > 0 ? current : 0;
+  // On se cale sur le pas (95 g → 100 g ou 90 g), sans descendre sous un pas.
+  const snapped = direction > 0 ? Math.floor(base / step) * step + step : Math.ceil(base / step) * step - step;
+  return String(Math.max(step, Math.round(snapped * 10) / 10));
+}

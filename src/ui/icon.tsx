@@ -3,6 +3,7 @@ export const ICONS = {
   home: "M4 11 12 4l8 7M6 9.5V20h12V9.5M10 20v-5h4v5",
   journal: "M6 4h11a1 1 0 0 1 1 1v15H7a1 1 0 0 1-1-1V4Zm0 13h12M9 8h6M9 11h4",
   plus: "M12 5v14M5 12h14",
+  minus: "M5 12h14",
   weight: "M5 8h14l-1.5 12h-11L5 8Zm4 0a3 3 0 0 1 6 0M12 12v3",
   profile: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0",
   admin: "M12 3 5 6v5c0 4.4 3 8.3 7 9.5 4-1.2 7-5.1 7-9.5V6l-7-3Zm-3 9 2 2 4-4",

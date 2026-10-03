@@ -15,6 +15,7 @@ import {
   setShoppingCheckedAction,
   shoppingFromMenuAction,
 } from "./actions";
+import { EmptyState } from "@/ui/empty-state";
 
 export type ShoppingRow = {
   id: string;
@@ -90,7 +91,7 @@ export function ShoppingList({ items, weekStart }: { items: ShoppingRow[]; weekS
       {message && <Alert tone={message.tone}>{message.text}</Alert>}
 
       {rows.length === 0 ? (
-        <p>{t("empty")}</p>
+        <EmptyState scene="basket">{t("empty")}</EmptyState>
       ) : (
         <>
           {AISLES.map((aisle) => {

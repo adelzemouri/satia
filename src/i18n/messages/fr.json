@@ -13,7 +13,8 @@
     "kcal": "{value, number} kcal",
     "grams": "{value, number} g",
     "kg": "{value, number} kg",
-    "loading": "Chargement…"
+    "loading": "Chargement…",
+    "undo": "Annuler"
   },
   "nav": {
     "home": "Aujourd'hui",
@@ -62,7 +63,29 @@
     "consumedOf": "{value, number} kcal sur {goal, number}",
     "slotSummary": "{kcal, number} kcal · {labels}",
     "slotEmpty": "Rien pour l'instant",
-    "openProfile": "Mon profil et mes réglages"
+    "openProfile": "Mon profil et mes réglages",
+    "daily": {
+      "streak": "{days} jours d'affilée : ta régularité fait toute la différence.",
+      "dayComplete": "Les trois repas sont notés : ta journée est complète, bravo.",
+      "waterDone": "Objectif d'eau atteint, ton corps te dit merci.",
+      "morning": "Belle journée qui commence ! Un petit-déjeuner noté et c'est parti.",
+      "lunch": "C'est l'heure du déjeuner : une assiette colorée et le tour est joué.",
+      "afternoon": "Petit creux ? Un fruit ou un yaourt tient bien jusqu'au dîner.",
+      "eveningRoom": "Il te reste environ {kcal, number} kcal pour ce soir, de quoi te faire plaisir.",
+      "eveningFull": "Journée bien remplie. Demain, on repart tranquillement.",
+      "tips": {
+        "0": "Un verre d'eau avant le repas aide à écouter sa faim.",
+        "1": "Des légumes dans la moitié de l'assiette : simple et efficace.",
+        "2": "Manger lentement laisse le temps de sentir qu'on n'a plus faim.",
+        "3": "Des protéines à chaque repas aident à tenir jusqu'au suivant.",
+        "4": "Prévoir ses repas à l'avance évite les choix de dernière minute.",
+        "5": "Une petite marche après le repas fait toujours du bien."
+      }
+    },
+    "goalLabel": "Objectif",
+    "eatenLabel": "Consommé",
+    "ringLeft": "kcal restantes",
+    "ringOver": "kcal en plus"
   },
   "theme": {
     "label": "Thème",
@@ -428,7 +451,10 @@
     "mealPhoto": "Photo du {slot}",
     "days": "Changer de jour",
     "week": "Semaine",
-    "hasEntries": "repas saisis"
+    "hasEntries": "repas saisis",
+    "deleted": "Supprimé : {label}",
+    "firstMeal": "Ajouter un repas",
+    "emptyDay": "Rien de noté ce jour-là pour l'instant. Un premier repas suffit pour voir ton bilan."
   },
   "add": {
     "title": "Ajouter",
@@ -479,7 +505,10 @@
     "unitWeightHint": "Le poids est souvent écrit sur l'emballage, près des valeurs nutritionnelles (par exemple « 1 tranche = 27 g »). Il sera retenu pour toute la famille.",
     "unitWeightUnit": "Compter en",
     "unitWeightGrams": "Poids en g",
-    "unitWeightSave": "Enregistrer ce poids"
+    "unitWeightSave": "Enregistrer ce poids",
+    "addedTo": "Ajouté : {name}, {slot}",
+    "less": "Moins",
+    "more": "Plus"
   },
   "foods": {
     "title": "Mes aliments et recettes",
@@ -519,7 +548,8 @@
     "count": "{glasses, number} / {goal, number} verres",
     "glass": "Verre {n}",
     "goalLabel": "Objectif d'eau (verres de 250 ml par jour)",
-    "addGlass": "Ajouter un verre d'eau"
+    "addGlass": "Ajouter un verre d'eau",
+    "goalReached": "Objectif d'eau atteint, bravo !"
   },
   "weight": {
     "title": "Mon poids",
@@ -1255,7 +1285,8 @@
       "none": "Aucune séance pour l'instant.",
       "summary": "{minutes} min · {kcal} kcal",
       "delete": "Supprimer",
-      "deleteLabel": "Supprimer la séance du {date}"
+      "deleteLabel": "Supprimer la séance du {date}",
+      "start": "Commencer une séance"
     },
     "library": {
       "title": "Bibliothèque d'exercices",

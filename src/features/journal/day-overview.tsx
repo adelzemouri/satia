@@ -1,4 +1,5 @@
-import { getTranslations } from "next-intl/server";
+import type { CSSProperties } from "react";
+import { getFormatter, getTranslations } from "next-intl/server";
 
 import type { Nutrients } from "@/domain/nutrition";
 
@@ -18,6 +19,7 @@ export async function CalorieSummary({
   compact?: boolean;
 }) {
   const t = await getTranslations("home");
+  const format = await getFormatter();
   const consumed = Math.round(totals.kcal);
   const target = goal?.kcal ?? 0;
   const percent = target > 0 ? Math.min(100, (consumed / target) * 100) : 0;
@@ -32,7 +34,7 @@ export async function CalorieSummary({
       className="block h-3 overflow-hidden rounded-full bg-surface-muted"
     >
       <span
-        className={`block h-full rounded-full ${over ? "bg-accent" : "bg-primary"}`}
+        className={`bar-grow block h-full rounded-full ${over ? "bg-accent" : "bg-primary"}`}
         style={{ width: `${percent}%` }}
       />
     </span>
@@ -47,16 +49,52 @@ export async function CalorieSummary({
       </div>
     );
   }
+  // Anneau de l'accueil : la part consommée en arc, ce qu'il reste au centre.
+  const radius = 54;
+  const length = 2 * Math.PI * radius;
+  const offset = length * (1 - percent / 100);
   return (
-    <div className="flex flex-col gap-3">
-      <p className="flex flex-col">
-        <span className="font-semibold text-text-muted">{over ? t("overLabel") : t("remainingLabel")}</span>
-        <span className="font-display text-4xl font-extrabold tracking-tight">
-          {t("kcalValue", { value: Math.abs(target - consumed) })}
+    <div className="flex items-center gap-5">
+      <div
+        role="progressbar"
+        aria-label={t("consumed", { value: consumed })}
+        aria-valuemin={0}
+        aria-valuemax={target}
+        aria-valuenow={consumed}
+        className="relative size-36 shrink-0"
+      >
+        <svg viewBox="0 0 128 128" className="size-full -rotate-90" aria-hidden="true">
+          <circle cx="64" cy="64" r={radius} fill="none" strokeWidth="12" className="stroke-surface-muted" />
+          <circle
+            cx="64"
+            cy="64"
+            r={radius}
+            fill="none"
+            strokeWidth="12"
+            strokeLinecap="round"
+            strokeDasharray={length}
+            strokeDashoffset={offset}
+            className={`ring-fill ${over ? "stroke-accent" : "stroke-primary"}`}
+            style={{ "--ring-length": length } as CSSProperties}
+          />
+        </svg>
+        <span className="absolute inset-0 flex flex-col items-center justify-center leading-tight">
+          <span className="font-display text-3xl font-extrabold tracking-tight">
+            {format.number(Math.abs(target - consumed))}
+          </span>
+          <span className="text-sm font-semibold text-text-muted">{over ? t("ringOver") : t("ringLeft")}</span>
         </span>
-      </p>
-      {bar}
-      <p className="text-sm text-text-muted">{t("consumedOf", { value: consumed, goal: target })}</p>
+      </div>
+      <dl className="flex min-w-0 flex-col gap-2">
+        <div className="flex flex-col">
+          <dt className="text-sm font-semibold text-text-muted">{t("goalLabel")}</dt>
+          <dd className="text-lg font-bold">{t("kcalValue", { value: target })}</dd>
+        </div>
+        <div className="flex flex-col">
+          <dt className="text-sm font-semibold text-text-muted">{t("eatenLabel")}</dt>
+          <dd className="text-lg font-bold">{t("kcalValue", { value: consumed })}</dd>
+        </div>
+      </dl>
     </div>
   );
 }
@@ -84,7 +122,7 @@ export async function MacroBars({ totals, goal }: { totals: Nutrients; goal: Goa
               aria-valuenow={Math.round(macro.value)}
               className="h-2 overflow-hidden rounded-full bg-surface-muted"
             >
-              <span className={`block h-full rounded-full ${macro.color}`} style={{ width: `${percent}%` }} />
+              <span className={`bar-grow block h-full rounded-full ${macro.color}`} style={{ width: `${percent}%` }} />
             </span>
             <span className="text-sm text-text-muted">
               {t("macroValue", { value: Math.round(macro.value), goal: Math.round(macro.goal) })}

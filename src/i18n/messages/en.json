@@ -13,7 +13,8 @@
     "kcal": "{value, number} kcal",
     "grams": "{value, number} g",
     "kg": "{value, number} kg",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "undo": "Undo"
   },
   "nav": {
     "home": "Today",
@@ -62,7 +63,29 @@
     "consumedOf": "{value, number} kcal of {goal, number}",
     "slotSummary": "{kcal, number} kcal · {labels}",
     "slotEmpty": "Nothing yet",
-    "openProfile": "My profile and settings"
+    "openProfile": "My profile and settings",
+    "daily": {
+      "streak": "{days} days in a row: your consistency makes all the difference.",
+      "dayComplete": "All three meals are logged: your day is complete, well done.",
+      "waterDone": "Water goal reached, your body says thanks.",
+      "morning": "A new day begins! Log a breakfast and off you go.",
+      "lunch": "Lunchtime: a colourful plate and you're all set.",
+      "afternoon": "Feeling peckish? A piece of fruit or a yoghurt keeps you going until dinner.",
+      "eveningRoom": "About {kcal, number} kcal left for tonight, room for something you enjoy.",
+      "eveningFull": "A full day. Tomorrow, we start again gently.",
+      "tips": {
+        "0": "A glass of water before a meal helps you listen to your hunger.",
+        "1": "Vegetables on half the plate: simple and effective.",
+        "2": "Eating slowly gives you time to notice when you're full.",
+        "3": "Some protein at every meal helps you last until the next one.",
+        "4": "Planning meals ahead avoids last-minute choices.",
+        "5": "A short walk after a meal always feels good."
+      }
+    },
+    "goalLabel": "Goal",
+    "eatenLabel": "Eaten",
+    "ringLeft": "kcal left",
+    "ringOver": "kcal over"
   },
   "theme": {
     "label": "Theme",
@@ -428,7 +451,10 @@
     "mealPhoto": "Photo of {slot}",
     "days": "Change day",
     "week": "Week",
-    "hasEntries": "meals logged"
+    "hasEntries": "meals logged",
+    "deleted": "Deleted: {label}",
+    "firstMeal": "Add a meal",
+    "emptyDay": "Nothing logged that day yet. One meal is enough to see your summary."
   },
   "add": {
     "title": "Add",
@@ -479,7 +505,10 @@
     "unitWeightHint": "The weight is often printed on the packaging, near the nutrition facts (for example \"1 slice = 27 g\"). It will be kept for the whole family.",
     "unitWeightUnit": "Count in",
     "unitWeightGrams": "Weight in g",
-    "unitWeightSave": "Save this weight"
+    "unitWeightSave": "Save this weight",
+    "addedTo": "Added: {name}, {slot}",
+    "less": "Less",
+    "more": "More"
   },
   "foods": {
     "title": "My foods and recipes",
@@ -519,7 +548,8 @@
     "count": "{glasses, number} / {goal, number} glasses",
     "glass": "Glass {n}",
     "goalLabel": "Water goal (250 ml glasses per day)",
-    "addGlass": "Add a glass of water"
+    "addGlass": "Add a glass of water",
+    "goalReached": "Water goal reached, well done!"
   },
   "weight": {
     "title": "My weight",
@@ -1255,7 +1285,8 @@
       "none": "No workout yet.",
       "summary": "{minutes} min · {kcal} kcal",
       "delete": "Delete",
-      "deleteLabel": "Delete the workout of {date}"
+      "deleteLabel": "Delete the workout of {date}",
+      "start": "Start a session"
     },
     "library": {
       "title": "Exercise library",

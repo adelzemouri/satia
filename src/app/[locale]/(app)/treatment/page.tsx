@@ -11,6 +11,7 @@ import { requireUser } from "@/server/session";
 import { treatmentOverview } from "@/server/treatment";
 import { Card } from "@/ui/card";
 import { formatDay } from "@/ui/format-date";
+import { EmptyState } from "@/ui/empty-state";
 
 export default async function TreatmentPage({ params }: PageProps<"/[locale]/treatment">) {
   const locale = toLocale((await params).locale);
@@ -44,7 +45,7 @@ export default async function TreatmentPage({ params }: PageProps<"/[locale]/tre
           {t("logs.title")}
         </h2>
         {overview.logs.length === 0 ? (
-          <p className="text-text-muted">{t("logs.empty")}</p>
+          <EmptyState scene="pill">{t("logs.empty")}</EmptyState>
         ) : (
           <ul className="flex flex-col divide-y divide-border">
             {overview.logs.map((log) => (

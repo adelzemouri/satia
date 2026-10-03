@@ -10,6 +10,7 @@ import type { Unit } from "@/domain/units";
 import { Alert } from "@/ui/alert";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
+import { useToast } from "@/ui/toast";
 
 import { deleteEntryAction, updateEntryAction } from "./actions";
 
@@ -31,7 +32,9 @@ const selectClass = "min-h-12 rounded-2xl border border-border bg-surface px-3 t
 export function EntryRow({ entry, units, readOnly = false }: { entry: EntryView; units: Unit[]; readOnly?: boolean }) {
   const t = useTranslations();
   const errorText = useErrorText();
+  const toast = useToast();
   const [open, setOpen] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -64,11 +67,22 @@ export function EntryRow({ entry, units, readOnly = false }: { entry: EntryView;
       else setOpen(false);
     });
 
-  const remove = () =>
-    startTransition(async () => {
-      const result = await deleteEntryAction(entry.id);
-      if (result?.error) setError(result.error);
+  // La ligne disparaît tout de suite ; la suppression n'est faite qu'à la fin du délai d'annulation.
+  const remove = () => {
+    setHidden(true);
+    toast({
+      message: t("journal.deleted", { label: entry.label }),
+      undo: () => setHidden(false),
+      onExpire: () =>
+        void deleteEntryAction(entry.id).then((result) => {
+          if (!result?.error) return;
+          setHidden(false);
+          setError(result.error);
+        }),
     });
+  };
+
+  if (hidden) return null;
 
   return (
     <div className="flex flex-col gap-3 py-2">

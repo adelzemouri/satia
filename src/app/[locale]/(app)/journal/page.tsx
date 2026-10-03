@@ -20,6 +20,7 @@ import { dayQualityFor } from "@/server/quality";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
 import { Card } from "@/ui/card";
+import { EmptyState } from "@/ui/empty-state";
 import { formatDay, formatWeekday } from "@/ui/format-date";
 import { Icon } from "@/ui/icon";
 
@@ -140,6 +141,18 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
         <MacroBars totals={summary.totals} goal={summary.goal} />
         <QualityBars quality={quality} />
         {summary.zone && <p className="text-sm text-text-muted">{t(`home.zone.${summary.zone}`)}</p>}
+        {summary.entries.length === 0 && (
+          <EmptyState
+            scene="plate"
+            action={
+              <Link href={{ pathname: "/add", query: { date } }} className={buttonClass()}>
+                {t("journal.firstMeal")}
+              </Link>
+            }
+          >
+            {t("journal.emptyDay")}
+          </EmptyState>
+        )}
       </Card>
 
       {MEAL_SLOTS.map((slot) => {

@@ -4,10 +4,11 @@ import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
 import type { MealSlot } from "@/domain/meals";
-import { addEntryAction } from "@/features/journal/actions";
+import { addEntryAction, deleteEntryAction } from "@/features/journal/actions";
 import { useOfflineQueue } from "@/features/offline/offline-provider";
 import { isNetworkFailure } from "@/features/offline/pending-queue";
 import { Icon } from "@/ui/icon";
+import { useToast } from "@/ui/toast";
 
 import type { RecentItem } from "./food-types";
 
@@ -27,6 +28,8 @@ export function QuickAddButton({
   onError: (error: string) => void;
 }) {
   const t = useTranslations("add");
+  const tSlots = useTranslations("slotsLower");
+  const toast = useToast();
   const offline = useOfflineQueue();
   const [added, setAdded] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -41,8 +44,18 @@ export function QuickAddButton({
       if (offline && !navigator.onLine) return queue();
       try {
         const result = await addEntryAction(input);
-        if (result?.error) onError(result.error);
-        else setAdded(true);
+        if (result?.error) return onError(result.error);
+        setAdded(true);
+        const id = result?.id;
+        toast({
+          message: t("addedTo", { name: food.nameFr, slot: tSlots(slot) }),
+          undo: id
+            ? () => {
+                setAdded(false);
+                void deleteEntryAction(id);
+              }
+            : undefined,
+        });
       } catch (failure) {
         if (offline && isNetworkFailure(failure)) queue();
         else onError("generic");

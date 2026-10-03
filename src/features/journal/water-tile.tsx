@@ -1,9 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useOptimistic, useTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 
 import { Icon } from "@/ui/icon";
+import { useToast } from "@/ui/toast";
 
 import { setWaterAction } from "./actions";
 
@@ -12,15 +13,25 @@ export function WaterTile({ date, glasses, goal }: { date: string; glasses: numb
   const t = useTranslations("water");
   const [optimistic, setOptimistic] = useOptimistic(glasses);
   const [, startTransition] = useTransition();
+  const toast = useToast();
+  const [celebrating, setCelebrating] = useState(false);
 
   const add = () =>
     startTransition(async () => {
       setOptimistic(optimistic + 1);
+      if (goal > 0 && optimistic + 1 === goal) {
+        setCelebrating(true);
+        toast({ message: t("goalReached") });
+      }
       await setWaterAction(date, optimistic + 1);
     });
 
   return (
-    <section aria-labelledby="water-title" className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-surface p-4">
+    <section
+      aria-labelledby="water-title"
+      className={`flex flex-col gap-2 rounded-[var(--radius-card)] p-4 ${celebrating ? "celebrate bg-primary-soft" : "bg-surface"}`}
+      onAnimationEnd={() => setCelebrating(false)}
+    >
       <div className="flex items-start justify-between gap-2">
         <span className="text-fat">
           <Icon name="drop" />

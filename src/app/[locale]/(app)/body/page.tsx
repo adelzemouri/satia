@@ -10,6 +10,7 @@ import { measurementOverview, progressPhotoOverview } from "@/server/body";
 import { requireUser } from "@/server/session";
 import { Card } from "@/ui/card";
 import { formatDay } from "@/ui/format-date";
+import { EmptyState } from "@/ui/empty-state";
 
 export default async function BodyPage({ params }: PageProps<"/[locale]/body">) {
   const locale = toLocale((await params).locale);
@@ -37,7 +38,7 @@ export default async function BodyPage({ params }: PageProps<"/[locale]/body">) 
           {t("changesTitle")}
         </h2>
         {measurements.changes.length === 0 ? (
-          <p className="text-text-muted">{t("empty")}</p>
+          <EmptyState scene="tape">{t("empty")}</EmptyState>
         ) : (
           <ul className="flex flex-col divide-y divide-border">
             {measurements.changes.map((row) => (

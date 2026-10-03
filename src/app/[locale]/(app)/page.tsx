@@ -4,6 +4,7 @@ import { after } from "next/server";
 import { APP_TIMEZONE } from "@/config/app";
 import { MEAL_SLOTS } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
+import { dailyMessage, STREAK_MILESTONES } from "@/domain/daily-message";
 import { slotAt } from "@/domain/meals";
 import { ideasForSlot } from "@/domain/recipes/catalog";
 import { CalorieSummary, MacroBars } from "@/features/journal/day-overview";
@@ -48,6 +49,22 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const current = slotAt(new Date(), APP_TIMEZONE);
   const ideas = ideasForSlot(catalog, current, `${user.id}:${today}`, 4);
   const t = await getTranslations();
+  const hour = Number(
+    new Intl.DateTimeFormat("en-GB", { hour: "numeric", hour12: false, timeZone: APP_TIMEZONE }).format(new Date()),
+  );
+  const message = dailyMessage({
+    hour,
+    mainMealsLogged: (["breakfast", "lunch", "dinner"] as const).filter(
+      (slot) => summary.bySlot[slot].entries.length > 0,
+    ).length,
+    loggedToday: summary.entries.length > 0,
+    remainingKcal: summary.goal ? summary.goal.kcal - summary.totals.kcal : null,
+    waterGlasses: summary.water.glasses,
+    waterGoal: summary.water.goal,
+    streakDays: streak.days,
+    seed: `${user.id}:${today}`,
+  });
+  const milestone = summary.entries.length > 0 && (STREAK_MILESTONES as readonly number[]).includes(streak.days);
 
   return (
     <>
@@ -66,6 +83,12 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           {profile.firstName.slice(0, 1).toUpperCase()}
         </Link>
       </header>
+
+      <p className="-mt-3 text-text-muted">
+        {message.key === "tip"
+          ? t(`home.daily.tips.${String(message.index) as "0"}`)
+          : t(`home.daily.${message.key}`, message)}
+      </p>
 
       {shares.length > 0 && (
         <Card aria-labelledby="pending-title">
@@ -183,7 +206,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         <WaterTile date={today} glasses={summary.water.glasses} goal={summary.water.goal} />
         <section
           aria-labelledby="streak-title"
-          className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-surface p-4"
+          className={`flex flex-col gap-2 rounded-[var(--radius-card)] p-4 ${milestone ? "celebrate bg-primary-soft" : "bg-surface"}`}
         >
           <span className="text-primary">
             <Icon name="sprout" />

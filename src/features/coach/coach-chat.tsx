@@ -8,6 +8,7 @@ import { Alert } from "@/ui/alert";
 import { Button } from "@/ui/button";
 
 import { clearCoachMessagesAction, sendCoachMessageAction } from "./actions";
+import { EmptyState } from "@/ui/empty-state";
 
 export type ChatMessage = {
   id: string;
@@ -57,7 +58,7 @@ export function CoachChat({ messages }: { messages: ChatMessage[] }) {
   return (
     <div className="flex flex-col gap-3">
       {messages.length === 0 && !sent ? (
-        <p className="text-text-muted">{t("empty")}</p>
+        <EmptyState scene="chat">{t("empty")}</EmptyState>
       ) : (
         <ol aria-label={t("conversation")} className="flex flex-col gap-2">
           {messages.map((message) => (

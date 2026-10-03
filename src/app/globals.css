@@ -41,6 +41,66 @@ body {
   outline-offset: 2px;
 }
 
+/* Message en bas d'écran : il monte doucement. */
+.toast-in {
+  animation: toast-in 180ms ease-out;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+}
+
+/* Jauges : elles se remplissent à l'affichage. */
+.bar-grow {
+  transform-origin: left;
+  animation: bar-grow 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes bar-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.ring-fill {
+  animation: ring-fill 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes ring-fill {
+  from {
+    stroke-dashoffset: var(--ring-length);
+  }
+}
+
+/* Chaque page arrive en fondu léger. */
+.page-in {
+  animation: page-in 220ms ease-out;
+}
+
+/* Opacité seule : une transformation décalerait les éléments fixes de la page pendant l'animation. */
+@keyframes page-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Petit rebond pour fêter un objectif atteint. */
+.celebrate {
+  animation: celebrate 600ms ease-out;
+}
+
+@keyframes celebrate {
+  30% {
+    transform: scale(1.06);
+  }
+  60% {
+    transform: scale(0.98);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
