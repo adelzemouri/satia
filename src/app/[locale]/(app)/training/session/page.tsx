@@ -43,6 +43,7 @@ function toSteps(session: PlannedSession): PlayerStep[] {
           phase,
           exerciseId: exercise.id,
           name: exercise.name,
+          muscle: exercise.muscle,
           steps: exercise.steps,
           mistakes: exercise.mistakes,
           easier: exercise.easier,

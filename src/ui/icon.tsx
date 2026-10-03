@@ -35,6 +35,8 @@ export const ICONS = {
   search: "M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm9 2-4-4",
   chart: "M4 20V11M10 20V5M16 20v-6M3 20h18",
   timer: "M12 21a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm0-7V11M10 3h4",
+  pause: "M9 6v12M15 6v12",
+  play: "M8 5.5v13l10.5-6.5L8 5.5Z",
 } as const;
 
 export function Icon({

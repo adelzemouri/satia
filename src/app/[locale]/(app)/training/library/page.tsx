@@ -4,7 +4,7 @@ import { EXERCISES, exerciseById } from "@/domain/training/exercises";
 import { EQUIPMENT, type Equipment, type Muscle, MUSCLES } from "@/domain/training/types";
 import { CustomExercises } from "@/features/training/custom-exercises";
 import { RestoreExerciseButton } from "@/features/training/exclusion-button";
-import { ExerciseFigure } from "@/features/training/exercise-figure";
+import { ExerciseArt } from "@/features/training/exercise-art";
 import { getPathname, Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { requireUser } from "@/server/session";
@@ -91,7 +91,7 @@ export default async function TrainingLibraryPage({ params, searchParams }: Page
               href={`/training/library/${exercise.id}`}
               className="flex items-center gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-3 hover:bg-surface-muted"
             >
-              <ExerciseFigure muscle={exercise.muscle} size={48} />
+              <ExerciseArt exerciseId={exercise.id} muscle={exercise.muscle} size={64} />
               <span className="flex min-w-0 flex-col">
                 <span className="font-semibold">{exercise.name}</span>
                 <span className="text-sm text-text-muted">

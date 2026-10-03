@@ -1285,6 +1285,11 @@
       "deleteLabel": "Supprimer {name}",
       "noCustom": "Aucun exercice personnel.",
       "stress": "Zones sollicitées : {list}"
+    },
+    "art": {
+      "label": "Illustration du mouvement : {name}",
+      "pause": "Mettre l'animation en pause",
+      "play": "Relancer l'animation"
     }
   },
   "body": {
