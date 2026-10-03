@@ -1474,6 +1474,20 @@
   },
   "progress": {
     "title": "Progrès",
-    "lastWeight": "Dernière pesée : {value, number} kg"
+    "lastWeight": "Dernière pesée : {value, number} kg",
+    "history": {
+      "title": "Mes 4 dernières semaines",
+      "intro": "Ton ressenti, jour par jour, à côté des calories saisies.",
+      "average": "moyenne {value, number} sur 5",
+      "kcal": "Calories",
+      "kcalAverage": "moyenne {value, number} kcal les jours saisis",
+      "empty": "Ton historique apparaîtra ici dès que tu auras noté ton ressenti quelques jours.",
+      "table": "Voir le détail jour par jour",
+      "day": "Jour",
+      "today": "aujourd'hui",
+      "point": "{date} : {value} sur 5",
+      "bar": "{date} : {value, number} kcal",
+      "none": "non noté"
+    }
   }
 }

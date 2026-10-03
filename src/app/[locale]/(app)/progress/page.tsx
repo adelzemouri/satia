@@ -3,9 +3,10 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { todayIso } from "@/domain/dates";
 import { HubLinks } from "@/features/navigation/hub-links";
 import { CheckinCard } from "@/features/quality/checkin-card";
+import { FeelingHistory } from "@/features/quality/feeling-history";
 import { toLocale } from "@/i18n/routing";
 import { latestWeight } from "@/server/journal";
-import { checkinOn } from "@/server/quality";
+import { checkinOn, feelingHistory } from "@/server/quality";
 import { requireUser } from "@/server/session";
 import { Card } from "@/ui/card";
 
@@ -15,7 +16,11 @@ export default async function ProgressPage({ params }: PageProps<"/[locale]/prog
   setRequestLocale(locale);
   const user = await requireUser(locale);
   const today = todayIso();
-  const [checkin, weight] = await Promise.all([checkinOn(user.id, today), latestWeight(user.id, today)]);
+  const [checkin, weight, history] = await Promise.all([
+    checkinOn(user.id, today),
+    latestWeight(user.id, today),
+    feelingHistory(user.id, today),
+  ]);
   const t = await getTranslations();
 
   return (
@@ -28,6 +33,16 @@ export default async function ProgressPage({ params }: PageProps<"/[locale]/prog
         </h2>
         <p className="text-sm text-text-muted">{t("checkin.hint")}</p>
         <CheckinCard date={today} initial={checkin} />
+      </Card>
+
+      <Card aria-labelledby="history-title">
+        <div className="flex flex-col">
+          <h2 id="history-title" className="text-xl font-bold">
+            {t("progress.history.title")}
+          </h2>
+          <p className="text-sm text-text-muted">{t("progress.history.intro")}</p>
+        </div>
+        <FeelingHistory days={history} />
       </Card>
 
       <HubLinks
