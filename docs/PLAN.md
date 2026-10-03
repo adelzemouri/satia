@@ -1,4 +1,4 @@
-# Plan de développement — Satia
+# Plan de développement — Pommelia
 
 Le développement est découpé en trois versions. Chaque phase se termine par :
 tests verts, déploiement en production réussi, récapitulatif, commit

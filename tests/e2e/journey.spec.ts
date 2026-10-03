@@ -170,7 +170,7 @@ test("ajout manuel d'un repas depuis la base Ciqual", async ({ page }) => {
   await signIn(page, ADMIN);
   await page.getByRole("link", { name: "Ajouter au déjeuner" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Ajouter");
-  await expect(page.getByLabel("Repas", { exact: true })).toHaveValue("lunch");
+  await expect(page.getByLabel("Pour quel repas ?")).toHaveValue("lunch");
   await page.getByLabel("Rechercher un aliment").fill("pomme crue");
   const result = page.getByRole("button", { name: /^Pomme, pulpe et peau, crue/ }).first();
   await expect(result).toBeVisible();
@@ -223,7 +223,7 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await expect(page.getByLabel("Unité")).toHaveValue("portion");
   // Valeurs saisies pour une portion, énergie calculée depuis les macros : 5 × 4 + 30 × 4 + 8 × 9.
   await expect(page.getByText("Ça fait 212 kcal")).toBeVisible();
-  await page.getByLabel("Repas", { exact: true }).last().selectOption("breakfast");
+  await page.locator('select[name="slot"]').selectOption("breakfast");
   await page.getByRole("button", { name: "Ajouter au journal" }).click();
   await expect(page.getByRole("region", { name: "Petit-déjeuner" }).getByText("Granola maison")).toBeVisible();
 
@@ -281,7 +281,7 @@ test("hors ligne : journal du jour consultable, aliment noté puis envoyé au re
   await page.goto("/add");
   await page.getByRole("tab", { name: "Favoris" }).click();
   await page.getByRole("button", { name: /^Granola maison/ }).click();
-  await page.getByLabel("Repas", { exact: true }).last().selectOption("dinner");
+  await page.locator('select[name="slot"]').selectOption("dinner");
   await page.getByRole("button", { name: "Ajouter au journal" }).click();
   await expect(page.getByText(/^Granola maison est noté sur ce téléphone/)).toBeVisible();
   const waiting = page.getByRole("region", { name: "1 aliment en attente d'envoi" });
@@ -666,11 +666,14 @@ test("menu de la semaine, liste de courses commune, recettes et scanner de frigo
   await expectNoA11yViolations(page);
 
   await page.goto("/fridge");
-  await page
-    .getByLabel("Choisir une photo")
-    .setInputFiles({ name: "frigo.png", mimeType: "image/png", buffer: MEAL_PNG });
   const omelette = page.getByRole("listitem", { name: "Omelette à la tomate" });
-  await expect(omelette.getByText(/^\d+ kcal la portion · /)).toBeVisible();
+  // Un fichier choisi avant l'hydratation de la page n'est pas vu : on le redonne si besoin.
+  await expect(async () => {
+    await page
+      .getByLabel("Choisir une photo")
+      .setInputFiles({ name: "frigo.png", mimeType: "image/png", buffer: MEAL_PNG });
+    await expect(omelette.getByText(/^\d+ kcal la portion · /)).toBeVisible({ timeout: 5000 });
+  }).toPass({ timeout: 30_000 });
   await expect(page.getByText(/^Repéré : œuf, tomate/)).toBeVisible();
   await expectNoA11yViolations(page);
   await omelette.getByRole("button", { name: "Enregistrer et ajouter au journal" }).click();
@@ -816,7 +819,7 @@ test("jeûne : planning, minuteur et historique ; traitement : rappel et journal
   await page.getByRole("link", { name: "Moi", exact: true }).click();
   await page.getByRole("navigation", { name: "Raccourcis" }).getByRole("link", { name: "Jeûne", exact: true }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Jeûne");
-  await expect(page.getByText(/Satia ne donne pas d'avis médical/)).toBeVisible();
+  await expect(page.getByText(/Pommelia ne donne pas d'avis médical/)).toBeVisible();
   await expectNoA11yViolations(page);
 
   await page.getByLabel("Suivre un planning de jeûne").check();
@@ -980,7 +983,7 @@ test("export des données en JSON et CSV", async ({ page }) => {
     page.waitForEvent("download"),
     page.getByRole("link", { name: "Télécharger (CSV)" }).click(),
   ]);
-  expect(csv.suggestedFilename()).toMatch(/^satia-export-.*\.zip$/);
+  expect(csv.suggestedFilename()).toMatch(/^pommelia-export-.*\.zip$/);
 });
 
 test("un membre supprime son compte ; le dernier admin ne peut pas", async ({ page, browser }) => {

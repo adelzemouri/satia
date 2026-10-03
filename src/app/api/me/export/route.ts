@@ -17,7 +17,7 @@ export async function GET(request: Request) {
     return new Response(Buffer.from(toCsvZip(data)), {
       headers: {
         "Content-Type": "application/zip",
-        "Content-Disposition": `attachment; filename="satia-export-${stamp}.zip"`,
+        "Content-Disposition": `attachment; filename="pommelia-export-${stamp}.zip"`,
         "Cache-Control": "no-store",
       },
     });
@@ -25,7 +25,7 @@ export async function GET(request: Request) {
   return new Response(JSON.stringify(data, null, 2), {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      "Content-Disposition": `attachment; filename="satia-export-${stamp}.json"`,
+      "Content-Disposition": `attachment; filename="pommelia-export-${stamp}.json"`,
       "Cache-Control": "no-store",
     },
   });

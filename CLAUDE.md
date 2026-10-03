@@ -1,4 +1,4 @@
-# CLAUDE.md — Satia
+# CLAUDE.md — Pommelia
 
 Application web de suivi nutritionnel (calories, macros, jeûne, poids, activité,
 entraînement) pour un usage familial (2 à 6 comptes), hébergée sur un service cloud managé.

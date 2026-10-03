@@ -17,11 +17,11 @@ export type PendingEntry = {
   error?: string;
 };
 
-const CHANGE_EVENT = "satia:pending-entries";
+const CHANGE_EVENT = "pommelia:pending-entries";
 const EMPTY: readonly PendingEntry[] = [];
 
 /** Une file par compte : un autre membre connecté sur le même téléphone ne l'envoie jamais. */
-const keyFor = (userId: string) => `satia.pending-entries.${userId}`;
+const keyFor = (userId: string) => `pommelia.pending-entries.${userId}`;
 
 let cache: { raw: string | null; entries: readonly PendingEntry[] } = { raw: null, entries: EMPTY };
 

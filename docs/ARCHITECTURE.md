@@ -1,4 +1,4 @@
-# Architecture — Satia
+# Architecture — Pommelia
 
 Ce document couvre la **v1** (phases 0 à 5 de `docs/PLAN.md`). Les versions
 suivantes viendront compléter le modèle de données à leur phase ; seule la notion

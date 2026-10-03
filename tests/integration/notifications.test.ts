@@ -104,8 +104,8 @@ describe("notifications", () => {
     await saveSubscription(userId, subscription("b"), null);
     await db().insert(waterLogs).values({ userId, date: "2026-09-28", glasses: 8 });
 
-    expect(await runNotifications(monday("12:45"), "https://satia.example")).toEqual({ sent: 0 });
-    expect(await runNotifications(monday("13:05"), "https://satia.example")).toEqual({ sent: 2 });
+    expect(await runNotifications(monday("12:45"), "https://pommelia.example")).toEqual({ sent: 0 });
+    expect(await runNotifications(monday("13:05"), "https://pommelia.example")).toEqual({ sent: 2 });
     expect(sent.map((entry) => entry.payload)).toEqual([
       {
         title: "Ton déjeuner",
@@ -115,10 +115,10 @@ describe("notifications", () => {
       },
       expect.objectContaining({ tag: "meal-lunch" }),
     ]);
-    expect(await runNotifications(monday("13:20"), "https://satia.example")).toEqual({ sent: 0 });
+    expect(await runNotifications(monday("13:20"), "https://pommelia.example")).toEqual({ sent: 0 });
 
     await db().update(user).set({ locale: "en" }).where(eq(user.id, userId));
-    await runNotifications(monday("20:35"), "https://satia.example");
+    await runNotifications(monday("20:35"), "https://pommelia.example");
     expect(sent.at(-1)!.payload.title).toBe("Your dinner");
   });
 
@@ -128,10 +128,10 @@ describe("notifications", () => {
     await db().insert(waterLogs).values({ userId, date: "2026-09-28", glasses: 8 });
     const [bread] = await searchFoods(userId, "pain baguette");
     await addEntry(userId, { date: "2026-09-28", slot: "lunch", foodId: bread!.id, quantity: 60, unit: "g" });
-    expect(await runNotifications(monday("13:05"), "https://satia.example")).toEqual({ sent: 0 });
+    expect(await runNotifications(monday("13:05"), "https://pommelia.example")).toEqual({ sent: 0 });
 
     await setNotificationPrefs(userId, { ...DEFAULT_NOTIFICATION_PREFS, quietStart: "19:00", quietEnd: "07:00" });
-    expect(await runNotifications(monday("20:35"), "https://satia.example")).toEqual({ sent: 0 });
+    expect(await runNotifications(monday("20:35"), "https://pommelia.example")).toEqual({ sent: 0 });
   });
 
   it("rappelle de boire et annonce le bilan quand la semaine écoulée a assez de jours", async () => {
@@ -141,7 +141,7 @@ describe("notifications", () => {
     for (const date of ["2026-09-21", "2026-09-22", "2026-09-24", "2026-09-28"]) {
       await addEntry(userId, { date, slot: "breakfast", foodId: bread!.id, quantity: 60, unit: "g" });
     }
-    await runNotifications(monday("11:10"), "https://satia.example");
+    await runNotifications(monday("11:10"), "https://pommelia.example");
     expect(sent.map((entry) => entry.payload.tag).sort()).toEqual(["water", "weekly-review"]);
     expect(sent.find((entry) => entry.payload.tag === "water")!.payload.body).toBe(
       "0 verre(s) sur 8 pour l'instant. Un petit verre maintenant ?",
@@ -158,12 +158,12 @@ describe("notifications", () => {
       .insert(notificationLog)
       .values({ userId, kind: "meal", key: "2026-08-01:lunch", sentAt: new Date("2026-08-01T12:00:00Z") });
 
-    expect(await sendTestNotification(userId, "https://satia.example")).toBe(1);
-    expect(sent[0]!.payload).toMatchObject({ title: "Satia", url: "/profile" });
+    expect(await sendTestNotification(userId, "https://pommelia.example")).toBe(1);
+    expect(sent[0]!.payload).toMatchObject({ title: "Pommelia", url: "/profile" });
     const left = await db().select({ endpoint: pushSubscriptions.endpoint }).from(pushSubscriptions);
     expect(left).toEqual([{ endpoint: subscription("ok").endpoint }]);
 
-    await runNotifications(monday("03:00"), "https://satia.example");
+    await runNotifications(monday("03:00"), "https://pommelia.example");
     expect(await db().select().from(notificationLog)).toEqual([]);
   });
 });

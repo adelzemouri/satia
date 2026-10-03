@@ -166,10 +166,10 @@ describe("jeûne et traitement", () => {
     const sent: PushPayload[] = [];
     setPushSenderForTests(async (_target, payload) => (sent.push(payload), 201));
 
-    await runNotifications(friday("09:10"), "https://satia.example");
-    await runNotifications(friday("09:25"), "https://satia.example");
-    await runNotifications(friday("12:10"), "https://satia.example");
-    await runNotifications(friday("20:05"), "https://satia.example");
+    await runNotifications(friday("09:10"), "https://pommelia.example");
+    await runNotifications(friday("09:25"), "https://pommelia.example");
+    await runNotifications(friday("12:10"), "https://pommelia.example");
+    await runNotifications(friday("20:05"), "https://pommelia.example");
     expect(sent.map((payload) => payload.url)).toEqual(["/treatment", "/fasting", "/fasting"]);
     expect(sent[0]!.body).toContain("Injection");
     expect(sent[1]!.title).toBe("Ta fenêtre de repas s'ouvre");
@@ -178,8 +178,8 @@ describe("jeûne et traitement", () => {
     await setNotificationPrefs(userId, { ...DEFAULT_NOTIFICATION_PREFS, fasting: false, treatment: false });
     await db().delete(treatmentLogs);
     sent.length = 0;
-    await runNotifications(new Date("2026-10-09T20:05:00+02:00"), "https://satia.example");
-    await runNotifications(new Date("2026-10-09T09:10:00+02:00"), "https://satia.example");
+    await runNotifications(new Date("2026-10-09T20:05:00+02:00"), "https://pommelia.example");
+    await runNotifications(new Date("2026-10-09T09:10:00+02:00"), "https://pommelia.example");
     expect(sent.filter((payload) => payload.url !== "/add?slot=breakfast")).toEqual([]);
     expect(await db().select().from(pushSubscriptions)).toHaveLength(1);
   });

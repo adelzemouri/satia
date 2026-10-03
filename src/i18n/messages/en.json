@@ -472,7 +472,7 @@
     "quickAdded": "{name} added",
     "quickAddHint": "The + adds your last portion. You can adjust it in the journal afterwards.",
     "lastPortion": "{quantity, number} {unit} · {kcal, number} kcal",
-    "slotLabel": "Meal"
+    "slotLabel": "Which meal?"
   },
   "foods": {
     "title": "My foods and recipes",
@@ -901,7 +901,7 @@
     "enabled": "Notifications are on for this device.",
     "devices": "{count, plural, =0 {No subscribed device.} one {# subscribed device.} other {# subscribed devices.}}",
     "denied": "Notifications are blocked for this site. You can allow them in your browser settings.",
-    "unsupported": "This browser can't receive notifications. On iPhone, add Satia to your home screen first, then open it from the icon.",
+    "unsupported": "This browser can't receive notifications. On iPhone, add Pommelia to your home screen first, then open it from the icon.",
     "notConfigured": "Notifications haven't been set up by the admin yet.",
     "test": "Send me a test notification",
     "testSent": "Notification sent.",
@@ -941,7 +941,7 @@
         "body": "Your coach has prepared last week's review."
       },
       "test": {
-        "title": "Satia",
+        "title": "Pommelia",
         "body": "Notifications work on this device."
       },
       "fastStart": {
@@ -954,7 +954,7 @@
       },
       "treatment": {
         "title": "Your treatment",
-        "body": "A gentle reminder for {name}. Remember to log your intake in Satia."
+        "body": "A gentle reminder for {name}. Remember to log your intake in Pommelia."
       }
     },
     "fasting": "Fasting",
@@ -1350,7 +1350,7 @@
     },
     "import": {
       "title": "Import a file",
-      "hint": "CSV export from Google Fit, Apple Health or a watch: Satia finds the date, steps, activity type and duration columns. Importing the same days again replaces the previous import.",
+      "hint": "CSV export from Google Fit, Apple Health or a watch: Pommelia finds the date, steps, activity type and duration columns. Importing the same days again replaces the previous import.",
       "file": "CSV file",
       "submit": "Import",
       "done": "Import complete: {days, plural, =0 {no step days} one {# step day} other {# step days}}, {activities, plural, =0 {no activities} one {# activity} other {# activities}}, {skipped, plural, =0 {no rows skipped} one {# row skipped} other {# rows skipped}}."
@@ -1360,7 +1360,7 @@
     "title": "Fasting",
     "intro": "A window to eat, a window to pause. You choose your rhythm day by day, and you can stop whenever you like.",
     "minor": "Intermittent fasting isn't offered under 18. Your body needs regular meals while growing: keep logging your meals as usual.",
-    "disclaimer": "Satia doesn't give medical advice. If you have diabetes, are pregnant or breastfeeding, have a history of eating disorders or take medication, talk to a health professional before fasting.",
+    "disclaimer": "Pommelia doesn't give medical advice. If you have diabetes, are pregnant or breastfeeding, have a history of eating disorders or take medication, talk to a health professional before fasting.",
     "timer": {
       "title": "Timer",
       "running": "Fast in progress",
@@ -1404,7 +1404,7 @@
   "treatment": {
     "title": "Treatment",
     "intro": "A simple log of when you take your treatment, with reminders if you like.",
-    "disclaimer": "Satia never calculates or recommends any dose. Follow your doctor's prescription and ask them your questions about your treatment.",
+    "disclaimer": "Pommelia never calculates or recommends any dose. Follow your doctor's prescription and ask them your questions about your treatment.",
     "log": {
       "title": "Log an intake",
       "which": "Treatment",

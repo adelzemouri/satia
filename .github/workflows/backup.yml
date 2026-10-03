@@ -34,7 +34,7 @@ jobs:
       - name: Dump chiffré vers le stockage objet
         if: steps.config.outputs.skip != 'true'
         run: |
-          file="satia-$(date -u +%Y-%m-%dT%H%M%SZ).dump.gpg"
+          file="pommelia-$(date -u +%Y-%m-%dT%H%M%SZ).dump.gpg"
           /usr/lib/postgresql/17/bin/pg_dump --format=custom --no-owner "$DATABASE_URL" \
             | gpg --batch --symmetric --cipher-algo AES256 --passphrase "$PASSPHRASE" -o "$file"
           aws s3 cp "$file" "s3://$S3_BUCKET/backups/$file" --endpoint-url "$S3_ENDPOINT"
