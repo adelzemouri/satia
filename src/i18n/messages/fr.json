@@ -1106,7 +1106,8 @@
     "steps": "Préparation",
     "source": "Recette Pommelia",
     "homeTitle": "{slot, select, breakfast {Une idée pour le petit-déjeuner} lunch {Une idée pour le déjeuner} dinner {Une idée pour le dîner} other {Une idée de collation}}",
-    "homeMore": "Voir toutes les recettes"
+    "homeMore": "Voir toutes les recettes",
+    "photoCaption": "Photo d'illustration générée par IA."
   },
   "training": {
     "title": "Entraînement",

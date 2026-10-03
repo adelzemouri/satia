@@ -9,7 +9,8 @@ import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { DomainError } from "@/server/errors";
 import { ProductThumb } from "@/features/foods/product-thumb";
-import { DishArt } from "@/features/recipes/dish-art";
+import { RecipeVisual } from "@/features/recipes/recipe-visual";
+import { RECIPE_PHOTOS } from "@/features/recipes/recipe-photos";
 import { type Food, getFoodDetails } from "@/server/foods";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
@@ -55,9 +56,14 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
   return (
     <>
       {catalog && (
-        <div className="-mx-4 overflow-hidden sm:mx-0 sm:rounded-[var(--radius-card)]">
-          <DishArt spec={catalog.art} seed={catalog.slug} />
-        </div>
+        <figure className="-mx-4 flex flex-col gap-1 sm:mx-0">
+          <div className="overflow-hidden sm:rounded-[var(--radius-card)]">
+            <RecipeVisual recipe={catalog} sizes="(min-width: 640px) 640px, 100vw" priority />
+          </div>
+          {RECIPE_PHOTOS.has(catalog.slug) && (
+            <figcaption className="px-4 text-xs text-text-muted sm:px-0">{t("recipes.photoCaption")}</figcaption>
+          )}
+        </figure>
       )}
       <div className="flex items-start gap-4">
         <div className="flex min-w-0 flex-1 flex-col gap-1">

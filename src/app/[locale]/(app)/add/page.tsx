@@ -13,7 +13,7 @@ import { toLocale } from "@/i18n/routing";
 import { aiAvailability } from "@/server/ai-availability";
 import { suggestedDish } from "@/server/coach";
 import { catalogRecipe } from "@/domain/recipes/catalog";
-import { DishArt } from "@/features/recipes/dish-art";
+import { RecipeVisual } from "@/features/recipes/recipe-visual";
 import { daySummary } from "@/server/journal";
 import { familyRecipes, favoriteFoods, type FoodSummary, getFood, ownFoods, recentFoods } from "@/server/foods";
 import { listContainers } from "@/server/personal";
@@ -84,7 +84,7 @@ export default async function AddPage({ params, searchParams }: PageProps<"/[loc
               >
                 {catalogDish && (
                   <span className="w-20 shrink-0 overflow-hidden rounded-xl">
-                    <DishArt spec={catalogDish.art} seed={catalogDish.slug} />
+                    <RecipeVisual recipe={catalogDish} sizes="80px" />
                   </span>
                 )}
                 <span className="flex min-w-0 flex-1 flex-col">
