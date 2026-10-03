@@ -100,7 +100,7 @@ export function FastTimer({
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <span className="font-display text-3xl font-semibold tabular-nums">
+          <span className="font-display text-3xl font-extrabold tracking-tight tabular-nums">
             {t("clock", { h: elapsed.h, mm: String(elapsed.m).padStart(2, "0") })}
           </span>
           <span className="text-sm text-text-muted">{t("of", { hours: Math.round(current.targetMinutes / 60) })}</span>

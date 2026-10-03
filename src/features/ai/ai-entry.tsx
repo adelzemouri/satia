@@ -1,12 +1,12 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { type ChangeEvent, useEffect, useState, useTransition } from "react";
+import { type ChangeEvent, type ComponentProps, useEffect, useState, useTransition } from "react";
 
 import { useErrorText } from "@/features/auth/use-error-text";
 import { Link } from "@/i18n/navigation";
 import { Alert } from "@/ui/alert";
-import { Button, buttonClass } from "@/ui/button";
+import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 
 import { analyzePhotoAction, analyzeTextAction, type DraftState } from "./actions";
@@ -15,6 +15,13 @@ import type { MealDraft } from "./draft";
 import { useSpeech } from "./use-speech";
 
 const inputClass = "min-h-12 rounded-2xl border border-border bg-surface px-3 text-base";
+
+/** Grande tuile d'entrée (photo, voix, code-barres) ; la photo, la plus rapide, est mise en avant. */
+function tileClass(main: boolean, extra = ""): string {
+  return `flex min-h-24 flex-col items-center justify-center gap-2 rounded-2xl px-2 text-center font-bold ${
+    main ? "bg-primary text-on-primary" : "bg-surface text-text hover:bg-surface-muted"
+  } ${extra}`;
+}
 
 export type AiAvailability = { available: true } | { available: false; reason: string };
 
@@ -25,10 +32,13 @@ export type AiAvailability = { available: true } | { available: false; reason: s
 export function AiEntry({
   availability,
   containers,
+  barcodeHref,
   onDraft,
 }: {
   availability: AiAvailability;
   containers: { id: string; name: string }[];
+  /** Le scan de code-barres complète les trois grandes entrées de l'écran d'ajout. */
+  barcodeHref: ComponentProps<typeof Link>["href"];
   onDraft: (draft: MealDraft, photoPreview: string | null) => void;
 }) {
   const t = useTranslations("aiEntry");
@@ -39,6 +49,7 @@ export function AiEntry({
   const [containerId, setContainerId] = useState("");
   const [text, setText] = useState("");
   const [dictated, setDictated] = useState(false);
+  const [describing, setDescribing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const speech = useSpeech(locale, (spoken) => {
@@ -49,16 +60,29 @@ export function AiEntry({
   // L'aperçu local est libéré quand on change de photo ou qu'on quitte l'écran.
   useEffect(() => () => (photo ? URL.revokeObjectURL(photo.preview) : undefined), [photo]);
 
+  const barcodeTile = (
+    <Link href={barcodeHref} className={tileClass(false)}>
+      <Icon name="barcode" size={28} />
+      {t("barcode")}
+    </Link>
+  );
+
   if (!availability.available) {
     return (
-      <section className="flex flex-col gap-2 rounded-2xl bg-surface-muted p-4" aria-labelledby="ai-title">
-        <h2 id="ai-title" className="font-semibold">
+      <section className="flex flex-col gap-3" aria-labelledby="ai-title">
+        <h2 id="ai-title" className="sr-only">
           {t("title")}
         </h2>
-        <p className="text-text-muted">{errorText(availability.reason)}</p>
+        <div className="grid grid-cols-3 gap-3">{barcodeTile}</div>
+        <p className="text-sm text-text-muted">{errorText(availability.reason)}</p>
       </section>
     );
   }
+
+  const speak = () => {
+    setDescribing(true);
+    if (speech.supported && !speech.listening) speech.start();
+  };
 
   const choosePhoto = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -99,13 +123,10 @@ export function AiEntry({
     });
 
   return (
-    <section className="flex flex-col gap-4 rounded-2xl bg-surface-muted p-4" aria-labelledby="ai-title">
-      <div className="flex flex-col gap-1">
-        <h2 id="ai-title" className="font-semibold">
-          {t("title")}
-        </h2>
-        <p className="text-sm text-text-muted">{t("hint")}</p>
-      </div>
+    <section className="flex flex-col gap-4" aria-labelledby="ai-title">
+      <h2 id="ai-title" className="sr-only">
+        {t("title")}
+      </h2>
       {error && <Alert>{errorText(error)}</Alert>}
 
       {photo ? (
@@ -149,22 +170,39 @@ export function AiEntry({
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-2">
-          <label className={buttonClass("secondary", "cursor-pointer px-3 focus-within:outline-2")}>
-            <Icon name="camera" />
-            {t("takePhoto")}
-            <input type="file" accept="image/*" capture="environment" onChange={choosePhoto} className="sr-only" />
-          </label>
-          <label className={buttonClass("secondary", "cursor-pointer px-3 focus-within:outline-2")}>
-            <Icon name="image" />
-            {t("choosePhoto")}
-            <input type="file" accept="image/*" onChange={choosePhoto} className="sr-only" />
-          </label>
-        </div>
+        !describing && (
+          <>
+            <div className="grid grid-cols-3 gap-3">
+              <label className={tileClass(true, "cursor-pointer focus-within:outline-2")}>
+                <Icon name="camera" size={28} />
+                {t("takePhoto")}
+                <input type="file" accept="image/*" capture="environment" onChange={choosePhoto} className="sr-only" />
+              </label>
+              <button type="button" onClick={speak} className={tileClass(false)}>
+                <Icon name="mic" size={28} />
+                {t("voice")}
+              </button>
+              {barcodeTile}
+            </div>
+            <p className="flex flex-wrap gap-x-5 gap-y-1 text-sm font-semibold text-primary">
+              <label className="flex min-h-11 cursor-pointer items-center underline-offset-4 focus-within:outline-2 hover:underline">
+                {t("choosePhoto")}
+                <input type="file" accept="image/*" onChange={choosePhoto} className="sr-only" />
+              </label>
+              <button
+                type="button"
+                onClick={() => setDescribing(true)}
+                className="min-h-11 underline-offset-4 hover:underline"
+              >
+                {t("write")}
+              </button>
+            </p>
+          </>
+        )
       )}
 
-      {!photo && (
-        <form action={analyzeText} className="flex flex-col gap-3">
+      {!photo && describing && (
+        <form action={analyzeText} className="flex flex-col gap-3 rounded-[var(--radius-card)] bg-surface p-4">
           <label className="flex flex-col gap-1.5">
             <span className="font-semibold">{t("describe")}</span>
             <textarea
@@ -195,17 +233,29 @@ export function AiEntry({
                 {speech.listening ? t("stopDictation") : t("dictate")}
               </Button>
             )}
+            <Button
+              variant="ghost"
+              onClick={() => {
+                speech.stop();
+                setDescribing(false);
+              }}
+              disabled={pending}
+            >
+              {t("cancel")}
+            </Button>
           </div>
         </form>
       )}
-      <p className="flex flex-wrap gap-x-4 text-sm">
-        <Link href="/containers" className="underline">
-          {t("containersLink")}
-        </Link>
-        <Link href="/dictionary" className="underline">
-          {t("dictionaryLink")}
-        </Link>
-      </p>
+      {(photo || describing) && (
+        <p className="flex flex-wrap gap-x-4 text-sm">
+          <Link href="/containers" className="underline">
+            {t("containersLink")}
+          </Link>
+          <Link href="/dictionary" className="underline">
+            {t("dictionaryLink")}
+          </Link>
+        </p>
+      )}
       <p className="sr-only" aria-live="polite">
         {pending ? t("analyzing") : ""}
       </p>

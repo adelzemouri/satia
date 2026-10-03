@@ -44,7 +44,7 @@ export default async function PlanPage({ params, searchParams }: PageProps<"/[lo
   return (
     <>
       <AutoRefresh />
-      <h1 className="font-display text-3xl font-semibold">{t("plan.title")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("plan.title")}</h1>
       <p className="text-text-muted">{t("plan.intro")}</p>
       <nav aria-label={t("plan.title")} className="flex flex-wrap gap-3">
         {(

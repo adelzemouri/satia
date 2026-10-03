@@ -9,10 +9,10 @@ export function AuthShell({ title, intro, children }: { title: string; intro?: s
       <div className="flex items-center gap-3">
         {/* eslint-disable-next-line @next/next/no-img-element -- icône SVG statique */}
         <img src="/icons/icon.svg" alt="" width={40} height={40} />
-        <span className="font-display text-xl font-semibold">{APP_NAME}</span>
+        <span className="font-display text-xl font-extrabold tracking-tight">{APP_NAME}</span>
       </div>
       <header className="flex flex-col gap-2">
-        <h1 className="font-display text-3xl font-semibold">{title}</h1>
+        <h1 className="font-display text-3xl font-extrabold tracking-tight">{title}</h1>
         {intro && <p className="text-text-muted">{intro}</p>}
       </header>
       {children}

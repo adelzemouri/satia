@@ -58,7 +58,7 @@ export default async function TrainingPage({ params, searchParams }: PageProps<"
 
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("title")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
       <nav aria-label={t("title")} className="flex flex-wrap gap-3">
         {(
           [

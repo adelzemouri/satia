@@ -20,7 +20,7 @@ export default async function RecipesPage({ params }: PageProps<"/[locale]/recip
 
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("title")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
       <p className="text-text-muted">{t("intro")}</p>
       <div className="flex flex-wrap gap-3">
         <Link href="/foods/new-recipe" className={buttonClass("secondary", "px-4")}>

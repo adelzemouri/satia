@@ -15,7 +15,7 @@ export default async function DictionaryPage({ params }: PageProps<"/[locale]/di
 
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("personal.dictionaryTitle")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("personal.dictionaryTitle")}</h1>
       <p className="text-text-muted">{t("personal.dictionaryIntro")}</p>
       <Card>
         {expressions.length === 0 ? (

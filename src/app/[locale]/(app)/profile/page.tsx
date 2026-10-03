@@ -9,6 +9,8 @@ import { ThemeSwitcher } from "@/features/preferences/theme-switcher";
 import { WaterGoalForm } from "@/features/journal/water-goal-form";
 import { DeviceSubscription } from "@/features/notifications/device-subscription";
 import { NotificationPrefsForm } from "@/features/notifications/prefs-form";
+import { HubLinks } from "@/features/navigation/hub-links";
+import { LogoutForm } from "@/features/offline/logout-form";
 import { DeleteAccountForm } from "@/features/profile/delete-account-form";
 import { TwoFactorSection } from "@/features/profile/two-factor-section";
 import { Link } from "@/i18n/navigation";
@@ -18,6 +20,7 @@ import { getProfile } from "@/server/profile";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
 import { Card } from "@/ui/card";
+import { Icon } from "@/ui/icon";
 
 export default async function ProfilePage({ params }: PageProps<"/[locale]/profile">) {
   const locale = toLocale((await params).locale);
@@ -28,11 +31,37 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
   const devices = await subscriptionCount(user.id);
   const t = await getTranslations("profile");
   const tn = await getTranslations("notifications");
+  const tAll = await getTranslations();
 
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("title")}</h1>
-      <p className="text-text-muted">{user.email}</p>
+      <header className="flex items-center gap-4">
+        <span
+          aria-hidden="true"
+          className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary-soft text-xl font-extrabold text-primary"
+        >
+          {(profile?.firstName ?? user.email).slice(0, 1).toUpperCase()}
+        </span>
+        <div className="flex min-w-0 flex-col">
+          <h1 className="font-display text-3xl font-extrabold tracking-tight">{profile?.firstName ?? t("title")}</h1>
+          <p className="truncate text-text-muted">{user.email}</p>
+        </div>
+      </header>
+
+      <HubLinks
+        label={tAll("home.more")}
+        links={[
+          { href: "/coach", icon: "chat", label: tAll("coach.title") },
+          { href: "/family", icon: "family", label: tAll("family.title") },
+          { href: "/plan", icon: "book", label: tAll("plan.title") },
+          { href: "/fasting", icon: "timer", label: tAll("fasting.title") },
+          { href: "/treatment", icon: "pill", label: tAll("treatment.title") },
+          { href: "/foods", icon: "star", label: tAll("add.manageFoods") },
+          ...(user.role === "admin" ? [{ href: "/admin", icon: "admin", label: tAll("nav.admin") } as const] : []),
+        ]}
+      />
+
+      <h2 className="mt-2 text-xl font-bold">{t("settings")}</h2>
 
       <Card aria-labelledby="prefs">
         <h2 id="prefs" className="text-xl font-semibold">
@@ -96,6 +125,13 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
         </h2>
         <DeleteAccountForm />
       </Card>
+
+      <LogoutForm>
+        <button type="submit" className={buttonClass("secondary", "w-full")}>
+          <Icon name="logout" />
+          {tAll("nav.logout")}
+        </button>
+      </LogoutForm>
 
       <p className="text-sm text-text-muted">{t("disclaimer", { appName: APP_NAME })}</p>
     </>

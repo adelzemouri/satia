@@ -6,15 +6,20 @@ import { parseDayParam } from "@/domain/day-param";
 import { MEAL_SLOTS, slotAt } from "@/domain/meals";
 import { FoodPicker } from "@/features/foods/food-picker";
 import type { FoodItem } from "@/features/foods/food-types";
+import { SlotSelect } from "@/features/foods/slot-select";
 import { HabitualMealCard } from "@/features/quality/habitual-meal-card";
+import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { aiAvailability } from "@/server/ai-availability";
+import { suggestedDish } from "@/server/coach";
+import { daySummary } from "@/server/journal";
 import { familyRecipes, favoriteFoods, type FoodSummary, getFood, ownFoods, recentFoods } from "@/server/foods";
 import { listContainers } from "@/server/personal";
 import { habitualMeal } from "@/server/quality";
 import { requireUser } from "@/server/session";
+import { Icon } from "@/ui/icon";
 
-function toItem(food: FoodSummary): FoodItem {
+function toItem<T extends FoodSummary>(food: T): T & FoodItem {
   return { ...food };
 }
 
@@ -26,7 +31,7 @@ export default async function AddPage({ params, searchParams }: PageProps<"/[loc
   const date = parseDayParam(query.date, todayIso());
   const slot = MEAL_SLOTS.find((value) => value === query.slot) ?? slotAt(new Date(), APP_TIMEZONE);
   const foodId = typeof query.food === "string" ? query.food : null;
-  const [recent, favorites, mine, family, preselected, availability, containers, habit] = await Promise.all([
+  const [recent, favorites, mine, family, preselected, availability, containers, habit, summary] = await Promise.all([
     recentFoods(user.id),
     favoriteFoods(user.id),
     ownFoods(user.id),
@@ -36,14 +41,28 @@ export default async function AddPage({ params, searchParams }: PageProps<"/[loc
     aiAvailability(),
     listContainers(user.id),
     foodId ? null : habitualMeal(user.id, slot, date),
+    date === todayIso() && !foodId ? daySummary(user.id, date) : null,
   ]);
+  // Une idée de plat qui tient dans ce qu'il reste aujourd'hui, si aucun repas habituel ne se présente.
+  const dish =
+    !habit && summary?.goal
+      ? await suggestedDish(
+          user.id,
+          { slot, goalKcal: summary.goal.kcal, remainingKcal: summary.goal.kcal - summary.totals.kcal },
+          date,
+        )
+      : null;
   const t = await getTranslations("add");
+  const tAll = await getTranslations();
 
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("title")}</h1>
-      {habit && <HabitualMealCard meal={habit} date={date} />}
+      <header className="flex items-center justify-between gap-3">
+        <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
+        <SlotSelect date={date} slot={slot} />
+      </header>
       <FoodPicker
+        key={slot}
         date={date}
         slot={slot}
         recent={recent.map(toItem)}
@@ -52,6 +71,28 @@ export default async function AddPage({ params, searchParams }: PageProps<"/[loc
         initialFood={preselected && toItem(preselected)}
         inputMethod={query.via === "barcode" ? "barcode" : "manual"}
         ai={availability ? { availability, containers: containers.map(({ id, name }) => ({ id, name })) } : undefined}
+        suggestions={
+          habit ? (
+            <HabitualMealCard meal={habit} date={date} />
+          ) : (
+            dish && (
+              <Link
+                href={{ pathname: "/add", query: { food: dish.id, slot, date } }}
+                className="flex min-h-16 items-center gap-3 rounded-[var(--radius-card)] bg-primary-soft px-4 py-3"
+              >
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="text-sm font-bold text-primary">{tAll("coach.suggestionTitle", { slot })}</span>
+                  <span className="font-bold">{dish.name}</span>
+                  <span className="text-sm">{tAll("common.kcal", { value: dish.portionKcal })}</span>
+                </span>
+                <span className="text-primary">
+                  <Icon name="right" />
+                </span>
+                <span className="sr-only">{tAll("coach.suggestionAdd", { name: dish.name })}</span>
+              </Link>
+            )
+          )
+        }
       />
     </>
   );

@@ -19,7 +19,7 @@ export default async function ShoppingPage({ params }: PageProps<"/[locale]/shop
   return (
     <>
       <AutoRefresh />
-      <h1 className="font-display text-3xl font-semibold">{t("title")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
       <p className="text-text-muted">{t("intro")}</p>
       <Card aria-label={t("title")}>
         <ShoppingList

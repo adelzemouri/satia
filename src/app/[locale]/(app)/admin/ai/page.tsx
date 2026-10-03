@@ -46,7 +46,7 @@ export default async function AiAdminPage({ params }: PageProps<"/[locale]/admin
         <Link href="/admin" className="text-sm font-semibold text-text-muted underline">
           {t("back")}
         </Link>
-        <h1 className="font-display text-3xl font-semibold">{t("title")}</h1>
+        <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
       </div>
 
       <Card aria-labelledby="ai-state">

@@ -130,6 +130,21 @@ export async function entriesOn(userId: string, date: string): Promise<MealEntry
     .orderBy(asc(mealEntries.createdAt));
 }
 
+/** Jours de l'intervalle (bornes incluses) où au moins un aliment a été saisi. */
+export async function loggedDays(userId: string, from: string, to: string): Promise<Set<string>> {
+  const rows = await db()
+    .selectDistinct({ date: mealEntries.date })
+    .from(mealEntries)
+    .where(
+      and(
+        eq(mealEntries.userId, userId),
+        gte(mealEntries.date, isoDate.parse(from)),
+        lte(mealEntries.date, isoDate.parse(to)),
+      ),
+    );
+  return new Set(rows.map((row) => row.date));
+}
+
 export const copySchema = z.object({
   fromDate: isoDate,
   /** Un repas précis, ou toute la journée si absent. */

@@ -1,23 +1,31 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import type { ReactNode } from "react";
 
 import { Icon } from "@/ui/icon";
 
 import type { FoodItem } from "./food-types";
 import { ProductThumb } from "./product-thumb";
 
-/** Liste d'aliments : toucher le nom le choisit, l'étoile le met en favori. */
+/**
+ * Liste d'aliments : toucher le nom le choisit, l'étoile le met en favori. `trailing` remplace
+ * l'étoile (ajout en un geste des récents) et `describe` la ligne de détail.
+ */
 export function FoodList({
   foods,
   favoriteIds,
   onSelect,
   onToggleFavorite,
+  trailing,
+  describe,
 }: {
   foods: FoodItem[];
   favoriteIds: ReadonlySet<string>;
   onSelect: (food: FoodItem) => void;
   onToggleFavorite?: (food: FoodItem, favorite: boolean) => void;
+  trailing?: (food: FoodItem) => ReactNode;
+  describe?: (food: FoodItem) => string;
 }) {
   const t = useTranslations("add");
   return (
@@ -35,17 +43,19 @@ export function FoodList({
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="w-full truncate font-semibold">{food.nameFr}</span>
                 <span className="text-sm text-text-muted">
-                  {[
-                    food.brand,
-                    t(food.householdId ? "sources.family" : `sources.${food.source}`),
-                    t("per100", { kcal: Math.round(food.kcal) }),
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
+                  {describe?.(food) ??
+                    [
+                      food.brand,
+                      t(food.householdId ? "sources.family" : `sources.${food.source}`),
+                      t("per100", { kcal: Math.round(food.kcal) }),
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
                 </span>
               </span>
             </button>
-            {onToggleFavorite && (
+            {trailing?.(food)}
+            {!trailing && onToggleFavorite && (
               <button
                 type="button"
                 aria-pressed={favorite}

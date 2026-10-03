@@ -1,6 +1,5 @@
 import { getTranslations } from "next-intl/server";
 
-import { AppHeader } from "@/features/navigation/app-header";
 import { BottomNav } from "@/features/navigation/bottom-nav";
 import { OfflineProvider, OfflineStatus } from "@/features/offline/offline-provider";
 import { toLocale } from "@/i18n/routing";
@@ -18,11 +17,10 @@ export default async function AppLayout({ children, params }: LayoutProps<"/[loc
       >
         {t("skipToContent")}
       </a>
-      <AppHeader user={user} />
       <main
         id="contenu"
         tabIndex={-1}
-        className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 pt-6 pb-[calc(6rem+env(safe-area-inset-bottom))]"
+        className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(7rem+env(safe-area-inset-bottom))]"
       >
         <OfflineStatus userId={user.id} />
         {children}

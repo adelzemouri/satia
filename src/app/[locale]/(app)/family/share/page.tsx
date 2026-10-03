@@ -30,7 +30,7 @@ export default async function ShareMealPage({ params, searchParams }: PageProps<
 
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("shareTitle")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("shareTitle")}</h1>
       <p className="text-text-muted">{t("shareIntro")}</p>
       <Card>
         <ShareMealForm

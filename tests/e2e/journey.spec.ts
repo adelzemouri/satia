@@ -126,15 +126,15 @@ test("onboarding complet d'un adulte avec plan expliqué", async ({ page }) => {
   await expectNoA11yViolations(page);
   await page.getByRole("button", { name: "C'est parti !" }).click();
 
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bonjour Adel !");
-  await expect(page.getByText("Ton objectif du jour")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bonjour Adel");
+  await expect(page.getByText("Il te reste")).toBeVisible();
   await expect(page.getByText("Protéines")).toBeVisible();
   await expectNoA11yViolations(page);
 });
 
 test("le thème choisi dans le profil est appliqué et conservé", async ({ page }) => {
   await signIn(page, ADMIN);
-  await page.getByRole("link", { name: "Profil" }).click();
+  await page.getByRole("link", { name: "Moi", exact: true }).click();
   await page.getByText("Sombre").click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.reload();
@@ -169,7 +169,8 @@ test("réglages des notifications et génération des clés côté admin", async
 test("ajout manuel d'un repas depuis la base Ciqual", async ({ page }) => {
   await signIn(page, ADMIN);
   await page.getByRole("link", { name: "Ajouter au déjeuner" }).click();
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Ajouter un aliment");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Ajouter");
+  await expect(page.getByLabel("Repas", { exact: true })).toHaveValue("lunch");
   await page.getByLabel("Rechercher un aliment").fill("pomme crue");
   const result = page.getByRole("button", { name: /^Pomme, pulpe et peau, crue/ }).first();
   await expect(result).toBeVisible();
@@ -194,8 +195,9 @@ test("ajout manuel d'un repas depuis la base Ciqual", async ({ page }) => {
   await lunch.getByRole("button", { name: "Enregistrer" }).click();
   await expect(lunch.getByText(/^100 g · 5\d kcal/)).toBeVisible();
 
-  await page.getByRole("link", { name: "Accueil" }).click();
-  await expect(page.getByText(/^\d+ kcal consommées$/)).not.toHaveText("0 kcal consommées");
+  await page.getByRole("link", { name: "Aujourd'hui" }).click();
+  await expect(page.getByText(/^\d+ kcal sur /)).not.toHaveText(/^0 kcal/);
+  await expect(page.getByText(/^5\d kcal · Pomme, pulpe et peau, crue/)).toBeVisible();
   await expect(page.getByText(/1 jour d'affilée/)).toBeVisible();
   await expectNoA11yViolations(page);
 });
@@ -221,17 +223,26 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await expect(page.getByLabel("Unité")).toHaveValue("portion");
   // Valeurs saisies pour une portion, énergie calculée depuis les macros : 5 × 4 + 30 × 4 + 8 × 9.
   await expect(page.getByText("Ça fait 212 kcal")).toBeVisible();
-  await page.getByLabel("Repas").selectOption("breakfast");
+  await page.getByLabel("Repas", { exact: true }).last().selectOption("breakfast");
   await page.getByRole("button", { name: "Ajouter au journal" }).click();
   await expect(page.getByRole("region", { name: "Petit-déjeuner" }).getByText("Granola maison")).toBeVisible();
 
-  await page.getByRole("link", { name: "Accueil" }).click();
-  await withServerAction(page, () => page.getByRole("button", { name: "Verre 3" }).click());
+  // Le + des récents rajoute la dernière portion d'un geste.
+  await page.getByRole("link", { name: "Ajouter", exact: true }).click();
+  await expect(page.getByText("1 portion · 212 kcal")).toBeVisible();
+  await withServerAction(page, () => page.getByRole("button", { name: "Ajouter Granola maison" }).click());
+  await expect(page.getByRole("button", { name: "Granola maison ajouté" })).toBeVisible();
+
+  await page.getByRole("link", { name: "Aujourd'hui" }).click();
+  for (let glass = 0; glass < 3; glass++) {
+    await withServerAction(page, () => page.getByRole("button", { name: "Ajouter un verre d'eau" }).click());
+  }
   await expect(page.getByText("3 / 8 verres")).toBeVisible();
   await page.reload();
   await expect(page.getByText("3 / 8 verres")).toBeVisible();
 
-  await page.getByRole("link", { name: "Poids" }).click();
+  await page.getByRole("link", { name: "Progrès" }).click();
+  await page.getByRole("link", { name: /^Mon poids/ }).click();
   await page.getByLabel("Poids en kg").fill("82");
   await page.getByRole("button", { name: "Enregistrer" }).click();
   await expect(page.getByText("Tendance actuelle : 82 kg")).toBeVisible();
@@ -270,7 +281,7 @@ test("hors ligne : journal du jour consultable, aliment noté puis envoyé au re
   await page.goto("/add");
   await page.getByRole("tab", { name: "Favoris" }).click();
   await page.getByRole("button", { name: /^Granola maison/ }).click();
-  await page.getByLabel("Repas").selectOption("dinner");
+  await page.getByLabel("Repas", { exact: true }).last().selectOption("dinner");
   await page.getByRole("button", { name: "Ajouter au journal" }).click();
   await expect(page.getByText(/^Granola maison est noté sur ce téléphone/)).toBeVisible();
   const waiting = page.getByRole("region", { name: "1 aliment en attente d'envoi" });
@@ -288,7 +299,7 @@ test("ajout d'un produit par code-barres (Open Food Facts simulé)", async ({ pa
   await context.grantPermissions(["camera"]);
   await signIn(page, ADMIN);
   await page.goto("/add?slot=snack");
-  await page.getByRole("link", { name: "Scanner un code-barres" }).click();
+  await page.getByRole("link", { name: "Code-barres" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Scanner un code-barres");
   await expectNoA11yViolations(page);
 
@@ -389,7 +400,8 @@ test("saisie d'un repas par photo (LLM simulé), avec contenant et écran de con
 test("saisie en texte libre, puis par le dictionnaire personnel sans appel à l'IA", async ({ page }) => {
   await signIn(page, ADMIN);
   await page.goto("/add?slot=dinner");
-  await page.getByLabel("Ou décris ton repas").fill("riz et poulet");
+  await page.getByRole("button", { name: "Écrire mon repas" }).click();
+  await page.getByLabel("Décris ton repas").fill("riz et poulet");
   await page.getByRole("button", { name: "Analyser", exact: true }).click();
   await expect(page.getByRole("heading", { name: "On vérifie ensemble ?" })).toBeVisible();
   await page.getByRole("button", { name: /^Retirer .*oulet/ }).click();
@@ -411,7 +423,8 @@ test("saisie en texte libre, puis par le dictionnaire personnel sans appel à l'
   await expectNoA11yViolations(page);
 
   await page.goto("/add?slot=breakfast");
-  await page.getByLabel("Ou décris ton repas").fill("2 ma tartine");
+  await page.getByRole("button", { name: "Écrire mon repas" }).click();
+  await page.getByLabel("Décris ton repas").fill("2 ma tartine");
   await page.getByRole("button", { name: "Analyser", exact: true }).click();
   await expect(page.getByText("Reconnu grâce à ton dictionnaire et à tes habitudes, sans appel à l'IA.")).toBeVisible();
   await expect(page.getByLabel(/^Quantité de Pain de mie, courant/)).toHaveValue("60");
@@ -440,18 +453,19 @@ test("activation de la double authentification puis connexion avec un code", asy
   await expect(alertIn(page)).toHaveText("Code incorrect.");
   await page.getByLabel("Code à 6 chiffres").fill(totp(totpSecret));
   await page.getByRole("button", { name: "Valider" }).click();
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bonjour Adel !");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bonjour Adel");
 });
 
 async function signInWithTotp(page: Page) {
   await signIn(page, ADMIN);
   await page.getByLabel("Code à 6 chiffres").fill(totp(totpSecret));
   await page.getByRole("button", { name: "Valider" }).click();
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bonjour Adel !");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bonjour Adel");
 }
 
 test("l'admin invite un membre mineur qui n'a pas accès à la perte de poids", async ({ page, browser }) => {
   await signInWithTotp(page);
+  await page.getByRole("link", { name: "Moi", exact: true }).click();
   await page.getByRole("link", { name: "Administration" }).click();
   await page.getByLabel("Pour qui ? (ex. : Maman, Léo)").fill("Léa");
   await page.getByRole("button", { name: "Créer le lien" }).click();
@@ -553,15 +567,15 @@ test("repas partagé : l'admin partage un plat du foyer, le membre le valide ave
 
 test("ressenti du jour et bilan qualité de la semaine", async ({ page }) => {
   await signInWithTotp(page);
+  await page.getByRole("link", { name: "Progrès" }).click();
   const checkin = page.getByRole("region", { name: "Comment tu te sens ?" });
   await withServerAction(page, () => checkin.getByRole("radio", { name: "Énergie : 4 sur 5" }).check({ force: true }));
   await expect(checkin.getByRole("radio", { name: "Énergie : 4 sur 5" })).toBeChecked();
-  await expect(page.getByRole("progressbar", { name: "Fibres" })).toBeVisible();
   await expectNoA11yViolations(page);
   await page.reload();
   await expect(checkin.getByRole("radio", { name: "Énergie : 4 sur 5" })).toBeChecked();
 
-  await page.getByRole("link", { name: "Bilan qualité" }).click();
+  await page.getByRole("link", { name: /^Bilan qualité/ }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bilan qualité");
   await expect(page.getByRole("heading", { name: "Idées pour la semaine" })).toBeVisible();
   // La pâte à tartiner scannée plus tôt est un produit ultra-transformé (NOVA 4).
@@ -571,6 +585,7 @@ test("ressenti du jour et bilan qualité de la semaine", async ({ page }) => {
 
 test("coach : bilan, conversation (LLM simulé), garde-fou et personnalité", async ({ page }) => {
   await signInWithTotp(page);
+  await page.getByRole("link", { name: "Moi", exact: true }).click();
   await page.getByRole("link", { name: "Coach", exact: true }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Coach");
   // Le foyer de test vient d'être créé : pas assez de jours la semaine dernière pour un bilan.
@@ -601,6 +616,7 @@ test("coach : bilan, conversation (LLM simulé), garde-fou et personnalité", as
 test("menu de la semaine, liste de courses commune, recettes et scanner de frigo (LLM simulé)", async ({ page }) => {
   test.slow(); // parcours sur quatre écrans
   await signInWithTotp(page);
+  await page.getByRole("link", { name: "Moi", exact: true }).click();
   await page.getByRole("link", { name: "Menu de la semaine" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Menu de la semaine");
   const add = page.getByRole("region", { name: "Ajouter un plat" });
@@ -665,6 +681,7 @@ test("menu de la semaine, liste de courses commune, recettes et scanner de frigo
 test("espace Training : profil sportif, séance express guidée, suivi et bibliothèque", async ({ page }) => {
   test.slow(); // parcours complet d'une séance
   await signInWithTotp(page);
+  await page.getByRole("link", { name: "Progrès" }).click();
   await page.getByRole("link", { name: "Training", exact: true }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mon profil sportif");
   // Tous les jours, pour avoir une séance aujourd'hui quel que soit le jour du test.
@@ -735,6 +752,7 @@ test("espace Training : profil sportif, séance express guidée, suivi et biblio
 
 test("corps et activité : mensuration, photos de progression, activité, pas et import CSV", async ({ page }) => {
   await signInWithTotp(page);
+  await page.getByRole("link", { name: "Progrès" }).click();
   await page.getByRole("navigation", { name: "Raccourcis" }).getByRole("link", { name: "Corps", exact: true }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Corps");
   await expectNoA11yViolations(page);
@@ -795,6 +813,7 @@ test("corps et activité : mensuration, photos de progression, activité, pas et
 
 test("jeûne : planning, minuteur et historique ; traitement : rappel et journal des prises", async ({ page }) => {
   await signInWithTotp(page);
+  await page.getByRole("link", { name: "Moi", exact: true }).click();
   await page.getByRole("navigation", { name: "Raccourcis" }).getByRole("link", { name: "Jeûne", exact: true }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Jeûne");
   await expect(page.getByText(/Satia ne donne pas d'avis médical/)).toBeVisible();
@@ -817,8 +836,7 @@ test("jeûne : planning, minuteur et historique ; traitement : rappel et journal
   await expectNoA11yViolations(page);
 
   await page.goto("/");
-  await expect(page.getByRole("region", { name: "Jeûne en cours" })).toBeVisible();
-  await page.getByRole("link", { name: "Voir le minuteur" }).click();
+  await page.getByRole("link", { name: /^Jeûne en cours.*Voir le minuteur$/ }).click();
   await page.getByRole("button", { name: "Terminer le jeûne" }).click();
   await expect(page.getByRole("button", { name: "Commencer un jeûne maintenant" })).toBeVisible();
   const history = page.getByRole("region", { name: "Historique" });
@@ -853,6 +871,7 @@ test("jeûne : planning, minuteur et historique ; traitement : rappel et journal
 
 test("mon métabolisme et budget hebdomadaire avec un jour plus large", async ({ page }) => {
   await signInWithTotp(page);
+  await page.getByRole("link", { name: "Progrès" }).click();
   await page.getByRole("link", { name: "Mon métabolisme" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mon métabolisme");
   await expect(page.getByText(/il faut au moins 14 jours de suivi/)).toBeVisible();
@@ -891,6 +910,7 @@ test("audit d'accessibilité : chaque page de l'app, en thème clair et sombre",
     "/",
     "/journal",
     "/add",
+    "/progress",
     "/week",
     "/quality",
     "/metabolism",

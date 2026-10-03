@@ -5,8 +5,8 @@ export const APP_SHORT_NAME = "Satia";
 
 /** Couleurs utilisées hors CSS (manifest, balise theme-color). */
 export const BRAND_COLORS = {
-  cream: "#F7F2E8",
-  oliveDark: "#1C1F16",
+  light: "#F2F4F3",
+  dark: "#0F1513",
 } as const;
 
 /** Fuseau horaire de référence pour « aujourd'hui » (usage familial en France). */

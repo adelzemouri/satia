@@ -6,18 +6,47 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Icon, type ICONS } from "@/ui/icon";
 
-const TABS: {
-  href: string;
-  key: "home" | "journal" | "add" | "training" | "weight" | "profile";
-  icon: keyof typeof ICONS;
-}[] = [
+type TabKey = "home" | "journal" | "add" | "progress" | "profile";
+
+/**
+ * Quatre onglets et le bouton d'ajout au centre. Les pages secondaires allument l'onglet
+ * dont elles dépendent (le poids sous « Progrès », le coach sous « Moi »…).
+ */
+const TABS: { href: string; key: TabKey; icon: keyof typeof ICONS; sections?: string[] }[] = [
   { href: "/", key: "home", icon: "home" },
   { href: "/journal", key: "journal", icon: "journal" },
-  { href: "/add", key: "add", icon: "plus" },
-  { href: "/training", key: "training", icon: "dumbbell" },
-  { href: "/weight", key: "weight", icon: "weight" },
-  { href: "/profile", key: "profile", icon: "profile" },
+  { href: "/add", key: "add", icon: "plus", sections: ["/scan"] },
+  {
+    href: "/progress",
+    key: "progress",
+    icon: "chart",
+    sections: ["/weight", "/body", "/activity", "/training", "/week", "/quality", "/metabolism"],
+  },
+  {
+    href: "/profile",
+    key: "profile",
+    icon: "profile",
+    sections: [
+      "/coach",
+      "/family",
+      "/plan",
+      "/shopping",
+      "/recipes",
+      "/fridge",
+      "/fasting",
+      "/treatment",
+      "/foods",
+      "/containers",
+      "/dictionary",
+      "/admin",
+    ],
+  },
 ];
+
+function isActive(pathname: string, tab: (typeof TABS)[number]): boolean {
+  if (tab.href === "/") return pathname === "/";
+  return [tab.href, ...(tab.sections ?? [])].some((base) => pathname === base || pathname.startsWith(`${base}/`));
+}
 
 /** Barre de navigation inférieure ; le bouton central ouvre l'ajout d'un aliment. */
 export function BottomNav() {
@@ -26,19 +55,20 @@ export function BottomNav() {
   return (
     <nav
       aria-label={t("main")}
-      className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-bg/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
+      className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
     >
-      <ul className="mx-auto grid max-w-2xl grid-cols-6">
+      <ul className="mx-auto grid max-w-2xl grid-cols-5">
         {TABS.map((tab) => {
-          const active = tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href);
+          const active = isActive(pathname, tab);
           const central = tab.key === "add";
           return (
             <li key={tab.key} className="flex justify-center">
               <Link
                 href={tab.href}
                 aria-current={active ? "page" : undefined}
-                className={`relative flex min-h-16 w-full flex-col items-center justify-center gap-0.5 text-xs font-semibold ${
-                  active ? "text-primary" : "text-text-muted"
+                aria-label={central ? t(tab.key) : undefined}
+                className={`relative flex min-h-16 w-full flex-col items-center justify-center gap-1 text-xs ${
+                  active ? "font-bold text-primary" : "font-semibold text-text-muted"
                 }`}
               >
                 <TabContent icon={tab.icon} label={t(tab.key)} central={central} />
@@ -57,24 +87,26 @@ export function BottomNav() {
  */
 function TabContent({ icon, label, central }: { icon: keyof typeof ICONS; label: string; central: boolean }) {
   const { pending } = useLinkStatus();
+  if (central) {
+    // Bouton surélevé : la saisie d'un repas est l'action principale de l'app.
+    return (
+      <span
+        className={`-mt-7 flex size-15 items-center justify-center rounded-full bg-primary text-on-primary shadow-lg shadow-primary/30 ${pending ? "animate-pulse" : ""}`}
+      >
+        <Icon name={icon} size={28} />
+      </span>
+    );
+  }
   return (
     <>
       <span
         aria-hidden="true"
-        className={`absolute inset-x-3 top-0 h-0.5 rounded-full bg-primary ${pending ? "animate-pulse" : "hidden"}`}
+        className={`absolute inset-x-4 top-0 h-0.5 rounded-full bg-primary ${pending ? "animate-pulse" : "hidden"}`}
       />
-      {central ? (
-        <span
-          className={`flex size-11 items-center justify-center rounded-full bg-primary text-on-primary shadow-sm ${pending ? "animate-pulse" : ""}`}
-        >
-          <Icon name={icon} size={26} />
-        </span>
-      ) : (
-        <span className={pending ? "text-primary" : ""}>
-          <Icon name={icon} />
-        </span>
-      )}
-      <span className={central ? "sr-only" : pending ? "text-primary" : ""}>{label}</span>
+      <span className={pending ? "text-primary" : ""}>
+        <Icon name={icon} size={24} />
+      </span>
+      <span className={pending ? "text-primary" : ""}>{label}</span>
     </>
   );
 }

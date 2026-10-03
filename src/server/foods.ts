@@ -9,6 +9,8 @@ import { kcalFromMacros, type Nutrients, nutrientsFor, recipePer100g } from "@/d
 import { recipeQuality } from "@/domain/quality";
 import { normalizeForSearch } from "@/domain/search";
 
+import type { Unit } from "@/domain/units";
+
 import { DomainError } from "./errors";
 
 export type Food = typeof foods.$inferSelect;
@@ -133,19 +135,34 @@ export async function getFoodDetails(userId: string, foodId: string): Promise<Fo
 }
 
 /** Derniers aliments saisis, du plus récent au plus ancien, sans doublon. */
-export async function recentFoods(userId: string, limit = 15): Promise<FoodSummary[]> {
+/** Aliment récent, avec la dernière portion saisie pour pouvoir le rajouter d'un geste. */
+export type RecentFood = FoodSummary & { lastQuantity: number; lastUnit: Unit; lastKcal: number };
+
+export async function recentFoods(userId: string, limit = 15): Promise<RecentFood[]> {
+  // Dernière saisie de chaque aliment (DISTINCT ON garde la plus récente).
   const recent = db()
-    .select({ foodId: mealEntries.foodId, lastUsed: sql<Date>`max(${mealEntries.createdAt})`.as("last_used") })
+    .selectDistinctOn([mealEntries.foodId], {
+      foodId: mealEntries.foodId,
+      createdAt: mealEntries.createdAt,
+      quantity: mealEntries.quantity,
+      unit: mealEntries.unit,
+      kcal: mealEntries.kcal,
+    })
     .from(mealEntries)
-    .where(and(eq(mealEntries.userId, userId), sql`${mealEntries.foodId} is not null`))
-    .groupBy(mealEntries.foodId)
+    .where(and(eq(mealEntries.userId, userId), isNotNull(mealEntries.foodId)))
+    .orderBy(mealEntries.foodId, desc(mealEntries.createdAt))
     .as("recent");
   return db()
-    .select(foodSummaryColumns)
+    .select({
+      ...foodSummaryColumns,
+      lastQuantity: recent.quantity,
+      lastUnit: recent.unit,
+      lastKcal: recent.kcal,
+    })
     .from(recent)
     .innerJoin(foods, eq(foods.id, recent.foodId))
     .where(visibleTo(userId))
-    .orderBy(desc(recent.lastUsed))
+    .orderBy(desc(recent.createdAt))
     .limit(limit);
 }
 

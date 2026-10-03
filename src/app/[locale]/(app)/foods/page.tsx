@@ -17,7 +17,7 @@ export default async function FoodsPage({ params }: PageProps<"/[locale]/foods">
 
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("foods.title")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("foods.title")}</h1>
       <div className="flex flex-wrap gap-3">
         <Link href="/foods/new" className={buttonClass("primary")}>
           {t("foods.newFood")}

@@ -4,42 +4,59 @@ import type { Nutrients } from "@/domain/nutrition";
 
 type Goal = { kcal: number; proteinG: number; carbsG: number; fatG: number };
 
-/** Anneau des calories du jour : la part consommée de l'objectif. */
-export async function CalorieRing({ totals, goal }: { totals: Nutrients; goal: Goal | null }) {
+/**
+ * Les calories du jour en une phrase : ce qu'il reste à manger (ou le dépassement), puis une
+ * barre de la part consommée. `compact` donne la version d'une ligne du journal.
+ */
+export async function CalorieSummary({
+  totals,
+  goal,
+  compact = false,
+}: {
+  totals: Nutrients;
+  goal: Goal | null;
+  compact?: boolean;
+}) {
   const t = await getTranslations("home");
   const consumed = Math.round(totals.kcal);
   const target = goal?.kcal ?? 0;
-  const ratio = target > 0 ? Math.min(consumed / target, 1) : 0;
+  const percent = target > 0 ? Math.min(100, (consumed / target) * 100) : 0;
   const over = target > 0 && consumed > target;
-  const radius = 52;
-  const circumference = 2 * Math.PI * radius;
-  return (
-    <div className="flex items-center gap-5">
-      <svg viewBox="0 0 120 120" width={112} height={112} aria-hidden="true" className="shrink-0 -rotate-90">
-        <circle cx="60" cy="60" r={radius} fill="none" strokeWidth="12" className="stroke-surface-muted" />
-        <circle
-          cx="60"
-          cy="60"
-          r={radius}
-          fill="none"
-          strokeWidth="12"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={circumference * (1 - ratio)}
-          className={over ? "stroke-accent" : "stroke-primary"}
-        />
-      </svg>
-      <div className="flex min-w-0 flex-col gap-1">
-        <p className="font-display text-2xl font-semibold">{t("consumed", { value: consumed })}</p>
-        {goal && (
-          <>
-            <p className="text-text-muted">{t("ofGoal", { value: goal.kcal })}</p>
-            <p className="font-semibold">
-              {over ? t("over", { value: consumed - goal.kcal }) : t("remaining", { value: goal.kcal - consumed })}
-            </p>
-          </>
-        )}
+  const bar = goal && (
+    <span
+      role="progressbar"
+      aria-label={t("consumed", { value: consumed })}
+      aria-valuemin={0}
+      aria-valuemax={target}
+      aria-valuenow={consumed}
+      className="block h-3 overflow-hidden rounded-full bg-surface-muted"
+    >
+      <span
+        className={`block h-full rounded-full ${over ? "bg-accent" : "bg-primary"}`}
+        style={{ width: `${percent}%` }}
+      />
+    </span>
+  );
+  if (compact || !goal) {
+    return (
+      <div className="flex flex-col gap-2">
+        <p className="font-semibold">
+          {goal ? t("consumedOf", { value: consumed, goal: target }) : t("consumed", { value: consumed })}
+        </p>
+        {bar}
       </div>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="flex flex-col">
+        <span className="font-semibold text-text-muted">{over ? t("overLabel") : t("remainingLabel")}</span>
+        <span className="font-display text-4xl font-extrabold tracking-tight">
+          {t("kcalValue", { value: Math.abs(target - consumed) })}
+        </span>
+      </p>
+      {bar}
+      <p className="text-sm text-text-muted">{t("consumedOf", { value: consumed, goal: target })}</p>
     </div>
   );
 }
