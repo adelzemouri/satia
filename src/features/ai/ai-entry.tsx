@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { type ChangeEvent, type ComponentProps, useEffect, useState, useTransition } from "react";
+import { type ChangeEvent, type ComponentProps, useEffect, useRef, useState, useTransition } from "react";
 
 import { useErrorText } from "@/features/auth/use-error-text";
 import { Link } from "@/i18n/navigation";
@@ -52,10 +52,16 @@ export function AiEntry({
   const [describing, setDescribing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  // Une nouvelle dictée complète le texte déjà là au lieu de l'effacer.
+  const before = useRef("");
   const speech = useSpeech(locale, (spoken) => {
-    setText(spoken);
+    setText(`${before.current}${spoken}`);
     setDictated(true);
   });
+  const dictate = () => {
+    before.current = text.trim() ? `${text.trim()} ` : "";
+    speech.start();
+  };
 
   // L'aperçu local est libéré quand on change de photo ou qu'on quitte l'écran.
   useEffect(() => () => (photo ? URL.revokeObjectURL(photo.preview) : undefined), [photo]);
@@ -81,7 +87,7 @@ export function AiEntry({
 
   const speak = () => {
     setDescribing(true);
-    if (speech.supported && !speech.listening) speech.start();
+    if (speech.supported && !speech.listening) dictate();
   };
 
   const choosePhoto = (event: ChangeEvent<HTMLInputElement>) => {
@@ -225,7 +231,7 @@ export function AiEntry({
             {speech.supported && (
               <Button
                 variant="secondary"
-                onClick={speech.listening ? speech.stop : speech.start}
+                onClick={speech.listening ? speech.stop : dictate}
                 aria-pressed={speech.listening}
                 disabled={pending}
               >

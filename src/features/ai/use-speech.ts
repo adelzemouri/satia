@@ -12,6 +12,7 @@ type Recognition = {
   onend: (() => void) | null;
   start(): void;
   stop(): void;
+  abort(): void;
 };
 type RecognitionConstructor = new () => Recognition;
 
@@ -25,6 +26,30 @@ function recognitionClass(): RecognitionConstructor | null {
 }
 
 const subscribeNothing = () => () => {};
+
+/**
+ * Message pour une erreur de la reconnaissance vocale, ou null quand il n'y a rien à dire
+ * (`aborted` : la dictée a été arrêtée volontairement ou relancée).
+ */
+export function speechErrorKey(error: string): string | null {
+  switch (error) {
+    case "aborted":
+      return null;
+    case "not-allowed":
+      return "speech_denied";
+    // Sur iPhone, la dictée du navigateur dépend de la dictée du système.
+    case "service-not-allowed":
+      return "speech_unavailable";
+    case "no-speech":
+      return "speech_silent";
+    case "audio-capture":
+      return "speech_mic";
+    case "network":
+      return "speech_network";
+    default:
+      return "speech_failed";
+  }
+}
 
 /**
  * Dictée par la reconnaissance vocale du navigateur (gratuite, sans API payante).
@@ -46,11 +71,13 @@ export function useSpeech(locale: string, onText: (text: string) => void) {
   useEffect(() => {
     callback.current = onText;
   });
-  useEffect(() => () => recognition.current?.stop(), []);
+  useEffect(() => () => recognition.current?.abort(), []);
 
   const start = useCallback(() => {
     const Speech = recognitionClass();
     if (!Speech) return;
+    // Une seule dictée à la fois : relancer pendant qu'une autre tourne la ferait échouer.
+    recognition.current?.abort();
     const instance = new Speech();
     instance.lang = locale === "en" ? "en-US" : "fr-FR";
     instance.interimResults = true;
@@ -59,12 +86,18 @@ export function useSpeech(locale: string, onText: (text: string) => void) {
       const text = Array.from(event.results, (result) => result[0]?.transcript ?? "").join(" ");
       callback.current(text.trim());
     };
-    instance.onerror = (event) => setError(event.error === "not-allowed" ? "speech_denied" : "speech_failed");
-    instance.onend = () => setListening(false);
+    instance.onerror = (event) => setError(speechErrorKey(event.error));
+    instance.onend = () => {
+      if (recognition.current === instance) setListening(false);
+    };
     recognition.current = instance;
     setError(null);
-    setListening(true);
-    instance.start();
+    try {
+      instance.start();
+      setListening(true);
+    } catch {
+      setError("speech_failed");
+    }
   }, [locale]);
 
   const stop = useCallback(() => recognition.current?.stop(), []);

@@ -401,7 +401,11 @@
     "fasting_hours": "Indique une durée entre 12 et 20 heures.",
     "fast_running": "Un jeûne est déjà en cours.",
     "treatment_days_required": "Choisis au moins un jour pour le rappel.",
-    "treatment_name_required": "Indique le nom du traitement."
+    "treatment_name_required": "Indique le nom du traitement.",
+    "speech_unavailable": "La dictée est désactivée sur ce téléphone. Sur iPhone : Réglages > Général > Clavier > Activer la dictée. Tu peux aussi écrire ton repas.",
+    "speech_silent": "Je n'ai rien entendu. Touche « Dicter » et parle juste après.",
+    "speech_mic": "Le micro est indisponible (peut-être utilisé par une autre app). Réessaie dans un instant.",
+    "speech_network": "La dictée a besoin d'une connexion internet. Réessaie, ou écris ton repas."
   },
   "slots": {
     "breakfast": "Petit-déjeuner",
