@@ -11,6 +11,7 @@ import { Field } from "@/ui/field";
 import { Icon } from "@/ui/icon";
 
 import { addCustomExerciseAction, deleteCustomExerciseAction } from "./actions";
+import { ExerciseArt } from "./exercise-art";
 
 const selectClass = "min-h-12 rounded-2xl border border-border bg-surface px-3 text-base";
 
@@ -31,7 +32,9 @@ export function CustomExercises({ items }: { items: CustomExercise[] }) {
       ) : (
         <ul className="flex flex-col divide-y divide-border">
           {items.map((item) => (
-            <li key={item.id} className="flex items-center gap-2 py-2">
+            <li key={item.id} className="flex items-center gap-3 py-2">
+              {/* Pas de mouvement propre : une pose type du groupe musculaire. */}
+              <ExerciseArt exerciseId={item.id} muscle={item.muscle} size={56} />
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="font-semibold">{item.name}</span>
                 <span className="text-sm text-text-muted">

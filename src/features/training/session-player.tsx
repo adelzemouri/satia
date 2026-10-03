@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
 import { useErrorText } from "@/features/auth/use-error-text";
-import type { Feeling, Focus, LoggedSet } from "@/domain/training/types";
+import type { Feeling, Focus, LoggedSet, Muscle } from "@/domain/training/types";
 import { FEELINGS } from "@/domain/training/types";
 import { useRouter } from "@/i18n/navigation";
 import { Alert } from "@/ui/alert";
@@ -13,11 +13,13 @@ import { Icon } from "@/ui/icon";
 import { OptionList } from "@/ui/option-list";
 
 import { logSessionAction, setExerciseExcludedAction } from "./actions";
+import { ExerciseAnimation } from "./exercise-animation";
 
 export type PlayerStep = {
   phase: "warmup" | "main" | "cooldown";
   exerciseId: string;
   name: string;
+  muscle: Muscle;
   steps: string[];
   mistakes: string[];
   easier: string;
@@ -323,6 +325,12 @@ export function SessionPlayer({ session }: { session: PlayerSession }) {
       <progress className="h-2 w-full accent-[var(--color-primary)]" max={total} value={index} aria-hidden />
       {notice && <Alert tone="success">{notice}</Alert>}
       <h2 className="font-display text-2xl font-extrabold tracking-tight">{step.name}</h2>
+      <ExerciseAnimation
+        exerciseId={step.exerciseId}
+        muscle={step.muscle}
+        name={step.name}
+        className="w-full max-w-60 self-center"
+      />
       <p className="text-lg">
         {step.sets > 1 && (
           <span className="font-semibold">{t("session.set", { current: setNumber, total: step.sets })} · </span>

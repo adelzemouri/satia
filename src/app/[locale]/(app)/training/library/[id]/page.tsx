@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { exerciseById } from "@/domain/training/exercises";
-import { ExerciseFigure } from "@/features/training/exercise-figure";
+import { ExerciseAnimation } from "@/features/training/exercise-animation";
 import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { requireUser } from "@/server/session";
@@ -22,10 +22,13 @@ export default async function ExercisePage({ params }: PageProps<"/[locale]/trai
       <Link href="/training/library" className="font-semibold text-primary underline-offset-4 hover:underline">
         {t("library.title")}
       </Link>
-      <div className="flex items-center gap-4">
-        <ExerciseFigure muscle={exercise.muscle} size={72} />
-        <h1 className="font-display text-3xl font-extrabold tracking-tight">{exercise.name}</h1>
-      </div>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{exercise.name}</h1>
+      <ExerciseAnimation
+        exerciseId={exercise.id}
+        muscle={exercise.muscle}
+        name={exercise.name}
+        className="w-full max-w-xs self-center"
+      />
       <p className="text-text-muted">
         {t(`muscles.${exercise.muscle}`)} ·{" "}
         {exercise.equipment.length === 0

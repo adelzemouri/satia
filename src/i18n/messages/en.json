@@ -1285,6 +1285,11 @@
       "deleteLabel": "Delete {name}",
       "noCustom": "No personal exercise.",
       "stress": "Areas loaded: {list}"
+    },
+    "art": {
+      "label": "Movement illustration: {name}",
+      "pause": "Pause the animation",
+      "play": "Play the animation"
     }
   },
   "body": {
