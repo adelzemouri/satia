@@ -32,10 +32,13 @@ async function withServerAction(page: Page, act: () => Promise<unknown>) {
 }
 
 async function expectNoA11yViolations(page: Page) {
-  // Après une action serveur, le titre (métadonnées en streaming) peut arriver un instant plus tard.
-  await expect(page).toHaveTitle(/\S/);
-  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
-  expect(results.violations).toEqual([]);
+  // Après une action serveur, le titre (métadonnées en streaming) peut disparaître un instant
+  // pendant le rafraîchissement : on réanalyse jusqu'à une page stable (une vraie erreur reste).
+  await expect(async () => {
+    await expect(page).toHaveTitle(/\S/);
+    const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
+    expect(results.violations).toEqual([]);
+  }).toPass({ timeout: 10_000 });
 }
 
 async function submitLogin(page: Page, credentials: { email: string; password: string }) {
