@@ -32,3 +32,31 @@ export function toGrams(quantity: number, unit: Unit, food: ConversionInfo): num
 export function availableUnits(food: ConversionInfo): Unit[] {
   return UNITS.filter((unit) => toGrams(1, unit, food) !== null);
 }
+
+const COUNT_WORDS: [CountUnit, string][] = [
+  ["slice", "tranches?|slices?"],
+  [
+    "piece",
+    "pi[eè]ces?|pieces?|unit[ée]s?|biscuits?|g[aâ]teaux?|madeleines?|barres?|bars?|cookies?|cr[eê]pes?|galettes?|pots?|sachets?",
+  ],
+];
+
+/**
+ * Poids d'une tranche ou d'une pièce déduit de la portion d'un produit Open Food Facts,
+ * par exemple « 2 tranches (50 g) » → 25 g la tranche. Rien si le texte ne le dit pas.
+ */
+export function countUnitsFromServing(
+  servingSize: string | null | undefined,
+  servingGrams: number | null | undefined,
+): Partial<Record<CountUnit, number>> {
+  if (!servingSize || !servingGrams || servingGrams <= 0) return {};
+  for (const [unit, words] of COUNT_WORDS) {
+    // Le nombre placé juste avant le mot (« 2 tranches »), sinon une seule.
+    const match = new RegExp(`(?:(\\d+(?:[.,]\\d+)?)\\s*)?(?:${words})(?![a-zà-ÿ])`, "i").exec(servingSize);
+    if (!match) continue;
+    const count = Number(match[1]?.replace(",", ".") ?? 1);
+    if (!Number.isFinite(count) || count <= 0 || count > 50) return {};
+    return { [unit]: Math.round((servingGrams / count) * 10) / 10 };
+  }
+  return {};
+}

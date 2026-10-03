@@ -3,7 +3,7 @@ import "server-only";
 import { z } from "zod";
 
 import { APP_NAME } from "@/config/app";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
 import { db } from "@/db/client";
 import { foods } from "@/db/schema";
@@ -11,6 +11,7 @@ import { normalizeBarcode } from "@/domain/barcode";
 import { kcalFromMacros } from "@/domain/nutrition";
 import { fruitVegShareForCategories, type NutriscoreGrade, toNovaGroup, toNutriscore } from "@/domain/quality";
 import { normalizeForSearch } from "@/domain/search";
+import { type CountUnit, countUnitsFromServing } from "@/domain/units";
 
 import { DomainError } from "./errors";
 import { enforceRateLimit } from "./rate-limit";
@@ -27,7 +28,7 @@ const OFF_SEARCH_BASE = process.env.OFF_SEARCH_URL ?? "https://search.openfoodfa
 const CACHE_MAX_AGE_DAYS = 30;
 const USER_AGENT = `${APP_NAME}/0.1 (application familiale de suivi nutritionnel)`;
 const FIELDS =
-  "code,product_name,product_name_fr,brands,nutriments,serving_quantity,image_front_small_url,image_front_url," +
+  "code,product_name,product_name_fr,brands,nutriments,serving_quantity,serving_size,image_front_small_url,image_front_url," +
   "nutriscore_grade,nova_group,categories_tags";
 const TIMEOUT_MS = 8000;
 /** OFF demande de rester sous 10 recherches par minute. */
@@ -54,6 +55,7 @@ const productSchema = z.object({
   brands: z.union([z.string(), z.array(z.string())]).optional(),
   nutriments: nutrimentsSchema.optional(),
   serving_quantity: z.coerce.number().optional(),
+  serving_size: z.string().optional().catch(undefined),
   image_front_small_url: z.string().optional(),
   image_front_url: z.string().optional(),
   nutriscore_grade: z.string().optional().catch(undefined),
@@ -77,6 +79,8 @@ export type OffCandidate = {
   novaGroup: number | null;
   fruitVegShare: number;
   servingGrams: number | null;
+  /** Poids d'une portion et, quand la portion le dit, d'une tranche ou d'une pièce. */
+  unitWeights: Partial<Record<CountUnit, number>> | null;
   imageUrl: string | null;
 };
 
@@ -88,6 +92,10 @@ export function toCandidate(product: OffProduct): OffCandidate | null {
   const carbs = n.carbohydrates_100g;
   const fat = n.fat_100g;
   if (!name || protein === undefined || carbs === undefined || fat === undefined) return null;
+  const servingGrams = product.serving_quantity && product.serving_quantity > 0 ? product.serving_quantity : null;
+  const unitWeights = servingGrams
+    ? { portion: servingGrams, ...countUnitsFromServing(product.serving_size, servingGrams) }
+    : null;
   const kcal =
     n["energy-kcal_100g"] ??
     (n.energy_100g !== undefined ? n.energy_100g / 4.184 : kcalFromMacros(protein, carbs, fat));
@@ -105,7 +113,8 @@ export function toCandidate(product: OffProduct): OffCandidate | null {
     nutriscore: toNutriscore(product.nutriscore_grade),
     novaGroup: toNovaGroup(product.nova_group),
     fruitVegShare: fruitVegShareForCategories(product.categories_tags ?? []),
-    servingGrams: product.serving_quantity && product.serving_quantity > 0 ? product.serving_quantity : null,
+    servingGrams,
+    unitWeights,
     imageUrl: safeImageUrl(product.image_front_small_url ?? product.image_front_url),
   };
 }
@@ -234,15 +243,21 @@ export async function cacheProduct(candidate: OffCandidate): Promise<string> {
     nutriscore: candidate.nutriscore,
     novaGroup: candidate.novaGroup,
     fruitVegShare: candidate.fruitVegShare,
-    unitWeights: candidate.servingGrams ? { portion: candidate.servingGrams } : null,
     imageUrl: candidate.imageUrl,
     fetchedAt: new Date(),
     updatedAt: new Date(),
   };
   const [row] = await db()
     .insert(foods)
-    .values({ source: "off", sourceRef: candidate.code, ...values })
-    .onConflictDoUpdate({ target: [foods.source, foods.sourceRef], set: values })
+    .values({ source: "off", sourceRef: candidate.code, ...values, unitWeights: candidate.unitWeights })
+    // Les poids ajoutés par la famille (une tranche…) restent, complétés par ceux d'OFF.
+    .onConflictDoUpdate({
+      target: [foods.source, foods.sourceRef],
+      set: {
+        ...values,
+        unitWeights: sql`nullif(coalesce(${foods.unitWeights}, '{}'::jsonb) || coalesce(excluded.unit_weights, '{}'::jsonb), '{}'::jsonb)`,
+      },
+    })
     .returning({ id: foods.id });
   return row!.id;
 }

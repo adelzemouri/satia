@@ -4,12 +4,12 @@ import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
 import { useErrorText } from "@/features/auth/use-error-text";
-import { addEntryAction } from "@/features/journal/actions";
+import { addEntryAction, setUnitWeightAction } from "@/features/journal/actions";
 import { isNetworkFailure } from "@/features/offline/pending-queue";
 import { useOfflineQueue } from "@/features/offline/offline-provider";
 import { MEAL_SLOTS, type MealSlot } from "@/domain/meals";
 import { nutrientsFor } from "@/domain/nutrition";
-import { availableUnits, toGrams, type Unit } from "@/domain/units";
+import { availableUnits, type CountUnit, toGrams, type Unit } from "@/domain/units";
 import { useRouter } from "@/i18n/navigation";
 import { Alert } from "@/ui/alert";
 import { Button } from "@/ui/button";
@@ -36,7 +36,9 @@ export function QuantityForm({
   const t = useTranslations();
   const errorText = useErrorText();
   const router = useRouter();
-  const units = availableUnits(food);
+  // Les poids d'unité peuvent être complétés ici (une tranche…), sans recharger l'aliment.
+  const [weights, setWeights] = useState(food.unitWeights);
+  const units = availableUnits({ ...food, unitWeights: weights });
   const [unit, setUnit] = useState<Unit>(defaultUnit(units));
   const [quantity, setQuantity] = useState(unit === "g" ? "100" : "1");
   const [slot, setSlot] = useState<MealSlot>(initialSlot);
@@ -46,7 +48,7 @@ export function QuantityForm({
   const offline = useOfflineQueue();
 
   const amount = Number(quantity.replace(",", "."));
-  const grams = toGrams(amount, unit, food);
+  const grams = toGrams(amount, unit, { ...food, unitWeights: weights });
   const preview = grams === null ? null : nutrientsFor(food, grams);
 
   const changeUnit = (next: Unit) => {
@@ -128,6 +130,16 @@ export function QuantityForm({
           </select>
         </label>
       </div>
+      {food.source !== "recipe" && !weights?.slice && !weights?.piece && (
+        <UnitWeightForm
+          foodId={food.id}
+          onSaved={(countUnit, value) => {
+            setWeights({ ...weights, [countUnit]: value });
+            setUnit(countUnit);
+            setQuantity("1");
+          }}
+        />
+      )}
       <label className="flex flex-col gap-1.5">
         <span className="font-semibold">{t("journal.slot")}</span>
         <select
@@ -155,5 +167,73 @@ export function QuantityForm({
         </Button>
       </div>
     </form>
+  );
+}
+
+/**
+ * Pour un produit sans poids de tranche ou de pièce : on l'indique une fois (il est souvent écrit
+ * sur l'emballage), puis on saisit « 2 tranches » au lieu de peser.
+ */
+function UnitWeightForm({ foodId, onSaved }: { foodId: string; onSaved: (unit: CountUnit, grams: number) => void }) {
+  const t = useTranslations();
+  const errorText = useErrorText();
+  const [open, setOpen] = useState(false);
+  const [unit, setUnit] = useState<CountUnit>("slice");
+  const [grams, setGrams] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+  const value = Number(grams.replace(",", "."));
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="self-start text-left font-semibold text-primary underline-offset-4 hover:underline"
+      >
+        {t("add.unitWeightOpen")}
+      </button>
+    );
+  }
+
+  const save = () =>
+    startTransition(async () => {
+      setError(null);
+      const result = await setUnitWeightAction({ foodId, unit, grams: value });
+      if (result?.error) setError(result.error);
+      else onSaved(unit, Math.round(value * 10) / 10);
+    });
+
+  return (
+    <fieldset className="flex flex-col gap-3 rounded-2xl bg-surface-muted p-4">
+      <legend className="sr-only">{t("add.unitWeightTitle")}</legend>
+      <p className="font-semibold">{t("add.unitWeightTitle")}</p>
+      <p className="text-sm text-text-muted">{t("add.unitWeightHint")}</p>
+      {error && <Alert>{errorText(error)}</Alert>}
+      <div className="grid grid-cols-2 gap-3">
+        <label className="flex flex-col gap-1.5">
+          <span className="font-semibold">{t("add.unitWeightUnit")}</span>
+          <select value={unit} onChange={(event) => setUnit(event.target.value as CountUnit)} className={inputClass}>
+            {(["slice", "piece", "portion"] as const).map((value) => (
+              <option key={value} value={value}>
+                {t(`units.${value}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1.5">
+          <span className="font-semibold">{t("add.unitWeightGrams")}</span>
+          <input
+            inputMode="decimal"
+            value={grams}
+            onChange={(event) => setGrams(event.target.value)}
+            className={inputClass}
+          />
+        </label>
+      </div>
+      <Button variant="secondary" onClick={save} disabled={pending || !(value > 0 && value <= 2000)}>
+        {t("add.unitWeightSave")}
+      </Button>
+    </fieldset>
   );
 }

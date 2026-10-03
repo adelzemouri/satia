@@ -96,7 +96,7 @@ export function FoodPicker({
         carbsG: item.carbsG,
         fatG: item.fatG,
         densityGPerMl: null,
-        unitWeights: item.servingGrams ? { portion: item.servingGrams } : null,
+        unitWeights: item.unitWeights,
         imageUrl: item.imageUrl,
       });
     });
