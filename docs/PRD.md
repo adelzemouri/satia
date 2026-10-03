@@ -1,4 +1,4 @@
-# PRD — Satia (nom provisoire)
+# PRD — Pommelia
 
 ## 1. Vision
 Une app de suivi nutritionnel douce et sans culpabilité, pour la famille. On prend

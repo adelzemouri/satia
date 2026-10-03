@@ -31,7 +31,10 @@ describe("parseEnv", () => {
 
 describe("APP_HOSTS", () => {
   it("découpe la liste de domaines", () => {
-    expect(parseEnv({ ...valid, APP_HOSTS: "satia.fr, www.satia.fr" }).APP_HOSTS).toEqual(["satia.fr", "www.satia.fr"]);
+    expect(parseEnv({ ...valid, APP_HOSTS: "pommelia.fr, www.pommelia.fr" }).APP_HOSTS).toEqual([
+      "pommelia.fr",
+      "www.pommelia.fr",
+    ]);
   });
 
   it("exige un secret d'authentification assez long", () => {

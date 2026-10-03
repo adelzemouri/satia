@@ -472,7 +472,7 @@
     "quickAdded": "{name} ajouté",
     "quickAddHint": "Le + ajoute ta dernière portion. Tu peux la corriger ensuite dans le journal.",
     "lastPortion": "{quantity, number} {unit} · {kcal, number} kcal",
-    "slotLabel": "Repas"
+    "slotLabel": "Pour quel repas ?"
   },
   "foods": {
     "title": "Mes aliments et recettes",
@@ -901,7 +901,7 @@
     "enabled": "Notifications activées sur cet appareil.",
     "devices": "{count, plural, =0 {Aucun appareil abonné.} one {# appareil abonné.} other {# appareils abonnés.}}",
     "denied": "Les notifications sont bloquées pour ce site. Tu peux les autoriser dans les réglages du navigateur.",
-    "unsupported": "Ce navigateur ne reçoit pas de notifications. Sur iPhone, ajoute d'abord Satia à l'écran d'accueil, puis ouvre-la depuis l'icône.",
+    "unsupported": "Ce navigateur ne reçoit pas de notifications. Sur iPhone, ajoute d'abord Pommelia à l'écran d'accueil, puis ouvre-la depuis l'icône.",
     "notConfigured": "Les notifications ne sont pas encore configurées par l'admin.",
     "test": "M'envoyer une notification de test",
     "testSent": "Notification envoyée.",
@@ -941,7 +941,7 @@
         "body": "Ton coach a préparé ton bilan de la semaine dernière."
       },
       "test": {
-        "title": "Satia",
+        "title": "Pommelia",
         "body": "Les notifications fonctionnent sur cet appareil."
       },
       "fastStart": {
@@ -954,7 +954,7 @@
       },
       "treatment": {
         "title": "Ton traitement",
-        "body": "Petit rappel pour {name}. Pense à noter ta prise dans Satia."
+        "body": "Petit rappel pour {name}. Pense à noter ta prise dans Pommelia."
       }
     },
     "fasting": "Jeûne",
@@ -1350,7 +1350,7 @@
     },
     "import": {
       "title": "Importer un fichier",
-      "hint": "Export CSV de Google Fit, Apple Santé ou d'une montre : Satia repère les colonnes date, pas, type d'activité et durée. Un nouvel import des mêmes jours remplace le précédent.",
+      "hint": "Export CSV de Google Fit, Apple Santé ou d'une montre : Pommelia repère les colonnes date, pas, type d'activité et durée. Un nouvel import des mêmes jours remplace le précédent.",
       "file": "Fichier CSV",
       "submit": "Importer",
       "done": "Import terminé : {days, plural, =0 {aucun jour de pas} one {# jour de pas} other {# jours de pas}}, {activities, plural, =0 {aucune activité} one {# activité} other {# activités}}, {skipped, plural, =0 {aucune ligne ignorée} one {# ligne ignorée} other {# lignes ignorées}}."
@@ -1360,7 +1360,7 @@
     "title": "Jeûne",
     "intro": "Une fenêtre pour manger, une fenêtre pour faire une pause. Tu choisis ton rythme jour par jour, et tu peux t'arrêter quand tu veux.",
     "minor": "Le jeûne intermittent n'est pas proposé avant 18 ans. Ton corps a besoin d'apports réguliers pendant la croissance : continue de suivre tes repas comme d'habitude.",
-    "disclaimer": "Satia ne donne pas d'avis médical. En cas de diabète, de grossesse, d'allaitement, d'antécédents de troubles alimentaires ou de traitement en cours, parles-en à un professionnel de santé avant de jeûner.",
+    "disclaimer": "Pommelia ne donne pas d'avis médical. En cas de diabète, de grossesse, d'allaitement, d'antécédents de troubles alimentaires ou de traitement en cours, parles-en à un professionnel de santé avant de jeûner.",
     "timer": {
       "title": "Minuteur",
       "running": "Jeûne en cours",
@@ -1404,7 +1404,7 @@
   "treatment": {
     "title": "Traitement",
     "intro": "Un journal simple de tes prises, avec des rappels si tu le souhaites.",
-    "disclaimer": "Satia ne calcule ni ne conseille aucune dose. Suis la prescription de ton médecin et pose-lui tes questions sur ton traitement.",
+    "disclaimer": "Pommelia ne calcule ni ne conseille aucune dose. Suis la prescription de ton médecin et pose-lui tes questions sur ton traitement.",
     "log": {
       "title": "Noter une prise",
       "which": "Traitement",

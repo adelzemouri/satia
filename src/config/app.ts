@@ -1,7 +1,7 @@
 /** Nom de l'application, centralisé pour pouvoir le changer facilement. */
-export const APP_NAME = "Satia";
+export const APP_NAME = "Pommelia";
 
-export const APP_SHORT_NAME = "Satia";
+export const APP_SHORT_NAME = "Pommelia";
 
 /** Couleurs utilisées hors CSS (manifest, balise theme-color). */
 export const BRAND_COLORS = {

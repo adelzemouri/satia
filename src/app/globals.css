@@ -25,6 +25,8 @@
 }
 
 html {
+  /* La barre du bas (et son bouton « + » en relief) ne doit pas masquer l'élément qu'on fait défiler ou qui reçoit le focus. */
+  scroll-padding-bottom: calc(7rem + env(safe-area-inset-bottom));
   background: var(--color-bg);
   color: var(--color-text);
   -webkit-tap-highlight-color: transparent;

@@ -85,7 +85,7 @@ export async function deleteAccountAction(_prev: ActionState, formData: FormData
     await deleteUser(user.id);
     const jar = await cookies();
     for (const cookie of jar.getAll()) {
-      if (cookie.name.startsWith("satia.") || cookie.name.startsWith("__Secure-satia.")) jar.delete(cookie.name);
+      if (cookie.name.startsWith("pommelia.") || cookie.name.startsWith("__Secure-pommelia.")) jar.delete(cookie.name);
     }
   } catch (error) {
     return toActionState(error);

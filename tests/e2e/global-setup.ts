@@ -6,7 +6,7 @@ import postgres from "postgres";
  */
 export default async function globalSetup() {
   if (process.env.E2E_BASE_URL) return;
-  const sql = postgres(process.env.DATABASE_URL ?? "postgres://satia:satia@localhost:5432/satia", { max: 1 });
+  const sql = postgres(process.env.DATABASE_URL ?? "postgres://pommelia:pommelia@localhost:5432/pommelia", { max: 1 });
   await sql`truncate table access_links, accounts, sessions, two_factors, verifications, goals, profiles,
     meal_entries, water_logs, weight_entries, favorites, recipe_items, rate_limits, llm_calls, photos, food_corrections, containers,
     personal_expressions, shared_meals, shared_meal_shares, metabolism_checks, larger_days, daily_checkins, coach_messages, coach_reviews, push_subscriptions, notification_log, meal_plan_items, shopping_items, training_profiles, training_programs, training_sessions, custom_exercises, body_measurements, progress_photos, activities, daily_steps, fasting_plans, fasts, treatment_logs, treatments restart identity`;

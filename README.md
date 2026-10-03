@@ -1,4 +1,4 @@
-# Satia
+# Pommelia
 
 Application web de suivi nutritionnel familial (PWA). Spécification : `docs/PRD.md`,
 plan : `docs/PLAN.md`, architecture : `docs/ARCHITECTURE.md`.
@@ -125,7 +125,7 @@ partent avec le compte.
 ## Sauvegardes et restauration
 
 Neon Free ne garde que 6 heures d'historique : la vraie sauvegarde est le dump chiffré
-de chaque nuit (`s3://<bucket>/backups/satia-<date>.dump.gpg`, 30 jours). Pour en
+de chaque nuit (`s3://<bucket>/backups/pommelia-<date>.dump.gpg`, 30 jours). Pour en
 faire un tout de suite : Actions > « Sauvegarde de la base » > Run workflow.
 
 Restauration (un terminal avec `aws`, `gpg` et `pg_restore` 17) :
@@ -133,8 +133,8 @@ Restauration (un terminal avec `aws`, `gpg` et `pg_restore` 17) :
 ```bash
 aws s3 ls s3://<bucket>/backups/ --endpoint-url <endpoint>
 aws s3 cp s3://<bucket>/backups/<fichier>.dump.gpg . --endpoint-url <endpoint>
-gpg --decrypt <fichier>.dump.gpg > satia.dump          # demande BACKUP_PASSPHRASE
-pg_restore --no-owner --clean --if-exists -d "<URL directe de la base cible>" satia.dump
+gpg --decrypt <fichier>.dump.gpg > pommelia.dump          # demande BACKUP_PASSPHRASE
+pg_restore --no-owner --clean --if-exists -d "<URL directe de la base cible>" pommelia.dump
 ```
 
 Conseils :

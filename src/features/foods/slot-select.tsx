@@ -10,9 +10,9 @@ export function SlotSelect({ date, slot }: { date: string; slot: MealSlot }) {
   const t = useTranslations();
   const router = useRouter();
   return (
-    <label className="relative flex shrink-0 items-center">
-      <span className="sr-only">{t("add.slotLabel")}</span>
+    <div className="relative flex shrink-0 items-center">
       <select
+        aria-label={t("add.slotLabel")}
         value={slot}
         onChange={(event) => router.replace({ pathname: "/add", query: { date, slot: event.target.value } })}
         className="min-h-12 appearance-none rounded-full border border-border bg-surface py-2 pr-10 pl-4 font-bold"
@@ -37,6 +37,6 @@ export function SlotSelect({ date, slot }: { date: string; slot: MealSlot }) {
       >
         <path d="m6 9 6 6 6-6" />
       </svg>
-    </label>
+    </div>
   );
 }

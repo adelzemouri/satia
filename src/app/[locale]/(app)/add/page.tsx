@@ -62,7 +62,6 @@ export default async function AddPage({ params, searchParams }: PageProps<"/[loc
         <SlotSelect date={date} slot={slot} />
       </header>
       <FoodPicker
-        key={slot}
         date={date}
         slot={slot}
         recent={recent.map(toItem)}

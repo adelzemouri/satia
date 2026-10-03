@@ -36,7 +36,7 @@ function createAuth() {
     advanced: {
       database: { generateId: "uuid" },
       useSecureCookies: config.NODE_ENV === "production",
-      cookiePrefix: "satia",
+      cookiePrefix: "pommelia",
     },
     emailAndPassword: {
       enabled: true,

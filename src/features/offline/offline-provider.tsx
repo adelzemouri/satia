@@ -31,7 +31,7 @@ import { postToWorker } from "./service-worker";
 
 /** Pages gardées pour le hors-ligne dès l'ouverture de l'app : l'accueil, le journal du jour, l'ajout. */
 const WARM_PAGES = ["/", "/journal", "/add"];
-const WARMED_KEY = "satia.pages-warmed";
+const WARMED_KEY = "pommelia.pages-warmed";
 
 const OfflineContext = createContext<{ queue: (entry: Omit<PendingEntry, "id">) => void } | null>(null);
 

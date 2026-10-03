@@ -3,13 +3,13 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: satia
-      POSTGRES_PASSWORD: satia
-      POSTGRES_DB: satia
+      POSTGRES_USER: pommelia
+      POSTGRES_PASSWORD: pommelia
+      POSTGRES_DB: pommelia
     ports: ["5432:5432"]
     volumes: [db-data:/var/lib/postgresql/data]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U satia"]
+      test: ["CMD-SHELL", "pg_isready -U pommelia"]
       interval: 3s
       retries: 20
 
@@ -17,8 +17,8 @@ services:
     # Serveur S3 compatible pour le local (R2 en production).
     image: rustfs/rustfs:latest
     environment:
-      RUSTFS_ACCESS_KEY: satia
-      RUSTFS_SECRET_KEY: satia-secret
+      RUSTFS_ACCESS_KEY: pommelia
+      RUSTFS_SECRET_KEY: pommelia-secret
     ports: ["9000:9000"]
     volumes: [storage-data:/data]
 
@@ -29,14 +29,14 @@ services:
       db: { condition: service_healthy }
       storage: { condition: service_started }
     environment: &app-env
-      DATABASE_URL: postgres://satia:satia@db:5432/satia
+      DATABASE_URL: postgres://pommelia:pommelia@db:5432/pommelia
       BETTER_AUTH_SECRET: local-secret-local-secret-local-secret
       SETUP_TOKEN: local-setup-token-1234
       S3_ENDPOINT: http://storage:9000
       S3_REGION: auto
-      S3_BUCKET: satia-photos
-      S3_ACCESS_KEY_ID: satia
-      S3_SECRET_ACCESS_KEY: satia-secret
+      S3_BUCKET: pommelia-photos
+      S3_ACCESS_KEY_ID: pommelia
+      S3_SECRET_ACCESS_KEY: pommelia-secret
       S3_FORCE_PATH_STYLE: "true"
     command: sh -c "pnpm db:migrate && pnpm foods:import && node scripts/ensure-bucket.mjs"
 
