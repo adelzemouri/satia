@@ -26,7 +26,8 @@
     "main": "Navigation principale",
     "training": "Training",
     "skipToContent": "Aller au contenu",
-    "progress": "Progrès"
+    "progress": "Progrès",
+    "back": "Retour"
   },
   "home": {
     "greeting": "Bonjour {name}",
