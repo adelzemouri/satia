@@ -1,6 +1,7 @@
 import { useFormatter, useTranslations } from "next-intl";
 
 import { type FeelingDay, feelingAverage, FEELINGS_QUESTIONS, type FeelingQuestion } from "@/domain/feelings";
+import { EmptyState } from "@/ui/empty-state";
 
 const WIDTH = 300;
 const PAD = 5;
@@ -139,7 +140,7 @@ export function FeelingHistory({ days }: { days: readonly FeelingDay[] }) {
   const format = useFormatter();
   const dayLabel = (date: string) => format.dateTime(new Date(`${date}T12:00:00`), { day: "numeric", month: "short" });
   const logged = days.filter((day) => day.hunger !== null || day.energy !== null || day.mood !== null);
-  if (logged.length < 2) return <p className="text-text-muted">{t("progress.history.empty")}</p>;
+  if (logged.length < 2) return <EmptyState scene="chart">{t("progress.history.empty")}</EmptyState>;
   const withKcal = days.filter((day) => day.kcal !== null);
   const kcalAverage =
     withKcal.length > 0 ? Math.round(withKcal.reduce((sum, day) => sum + day.kcal!, 0) / withKcal.length) : null;

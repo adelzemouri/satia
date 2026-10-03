@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { availableUnits, countUnitsFromServing } from "@/domain/units";
+import { availableUnits, countUnitsFromServing, stepQuantity } from "@/domain/units";
 
 describe("countUnitsFromServing", () => {
   it("déduit le poids d'une tranche", () => {
@@ -22,5 +22,19 @@ describe("countUnitsFromServing", () => {
 
   it("propose la tranche quand son poids est connu", () => {
     expect(availableUnits({ unitWeights: { slice: 25, portion: 50 } })).toEqual(["g", "kg", "portion", "slice"]);
+  });
+});
+
+describe("stepQuantity", () => {
+  it("avance de 10 g en se calant sur le pas", () => {
+    expect(stepQuantity(100, "g", 1)).toBe("110");
+    expect(stepQuantity(95, "g", 1)).toBe("100");
+    expect(stepQuantity(95, "g", -1)).toBe("90");
+  });
+
+  it("avance d'une demi-unité pour les tranches et ne descend pas sous un pas", () => {
+    expect(stepQuantity(1, "slice", 1)).toBe("1.5");
+    expect(stepQuantity(0.5, "slice", -1)).toBe("0.5");
+    expect(stepQuantity(Number.NaN, "g", 1)).toBe("10");
   });
 });

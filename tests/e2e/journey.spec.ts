@@ -130,7 +130,7 @@ test("onboarding complet d'un adulte avec plan expliqué", async ({ page }) => {
   await page.getByRole("button", { name: "C'est parti !" }).click();
 
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bonjour Adel");
-  await expect(page.getByText("Il te reste")).toBeVisible();
+  await expect(page.getByText("kcal restantes", { exact: true })).toBeVisible();
   await expect(page.getByText("Protéines")).toBeVisible();
   await expectNoA11yViolations(page);
 });
@@ -199,7 +199,7 @@ test("ajout manuel d'un repas depuis la base Ciqual", async ({ page }) => {
   await expect(lunch.getByText(/^100 g · 5\d kcal/)).toBeVisible();
 
   await page.getByRole("link", { name: "Aujourd'hui" }).click();
-  await expect(page.getByText(/^\d+ kcal sur /)).not.toHaveText(/^0 kcal/);
+  await expect(page.getByRole("progressbar", { name: /kcal consommées/ })).not.toHaveAttribute("aria-valuenow", "0");
   await expect(page.getByText(/^5\d kcal · Pomme, pulpe et peau, crue/)).toBeVisible();
   await expect(page.getByText(/1 jour d'affilée/)).toBeVisible();
   await expectNoA11yViolations(page);
@@ -235,6 +235,25 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await expect(page.getByText("1 portion · 212 kcal")).toBeVisible();
   await withServerAction(page, () => page.getByRole("button", { name: "Ajouter Granola maison" }).click());
   await expect(page.getByRole("button", { name: "Granola maison ajouté" })).toBeVisible();
+  // Un message propose d'annuler l'ajout.
+  const added = page.getByRole("status").filter({ hasText: "Ajouté : Granola maison" });
+  await withServerAction(page, () => added.getByRole("button", { name: "Annuler" }).click());
+  await expect(page.getByRole("button", { name: "Ajouter Granola maison" })).toBeVisible();
+
+  // Une suppression dans le journal s'annule aussi : la ligne revient et reste après rechargement.
+  await page.getByRole("link", { name: "Journal" }).click();
+  const breakfast = page.getByRole("region", { name: "Petit-déjeuner" });
+  await breakfast.getByRole("button", { name: "Modifier Granola maison" }).click();
+  await breakfast.getByRole("button", { name: "Supprimer" }).click();
+  await expect(breakfast.getByText("Granola maison")).toHaveCount(0);
+  await page
+    .getByRole("status")
+    .filter({ hasText: "Supprimé : Granola maison" })
+    .getByRole("button", { name: "Annuler" })
+    .click();
+  await expect(breakfast.getByText("Granola maison")).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("region", { name: "Petit-déjeuner" }).getByText("Granola maison")).toBeVisible();
 
   await page.getByRole("link", { name: "Aujourd'hui" }).click();
   for (let glass = 0; glass < 3; glass++) {

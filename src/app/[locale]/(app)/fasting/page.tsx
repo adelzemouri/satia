@@ -9,6 +9,7 @@ import { fastingOverview } from "@/server/fasting";
 import { requireUser } from "@/server/session";
 import { Alert } from "@/ui/alert";
 import { Card } from "@/ui/card";
+import { EmptyState } from "@/ui/empty-state";
 
 function duration(minutes: number) {
   return { h: Math.floor(minutes / 60), m: minutes % 60 };
@@ -52,7 +53,7 @@ export default async function FastingPage({ params }: PageProps<"/[locale]/fasti
               {t("history.title")}
             </h2>
             {overview.history.length === 0 ? (
-              <p className="text-text-muted">{t("history.empty")}</p>
+              <EmptyState scene="timer">{t("history.empty")}</EmptyState>
             ) : (
               <>
                 <p>

@@ -1,18 +1,20 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
 import { useErrorText } from "@/features/auth/use-error-text";
-import { addEntryAction, setUnitWeightAction } from "@/features/journal/actions";
+import { addEntryAction, deleteEntryAction, setUnitWeightAction } from "@/features/journal/actions";
 import { isNetworkFailure } from "@/features/offline/pending-queue";
 import { useOfflineQueue } from "@/features/offline/offline-provider";
 import { MEAL_SLOTS, type MealSlot } from "@/domain/meals";
 import { nutrientsFor } from "@/domain/nutrition";
-import { availableUnits, type CountUnit, toGrams, type Unit } from "@/domain/units";
+import { availableUnits, type CountUnit, stepQuantity, toGrams, type Unit } from "@/domain/units";
 import { useRouter } from "@/i18n/navigation";
 import { Alert } from "@/ui/alert";
 import { Button } from "@/ui/button";
+import { Icon } from "@/ui/icon";
+import { useToast } from "@/ui/toast";
 
 import { defaultUnit, type FoodItem } from "./food-types";
 import { ProductThumb } from "./product-thumb";
@@ -46,6 +48,13 @@ export function QuantityForm({
   const [queued, setQueued] = useState(false);
   const [pending, startTransition] = useTransition();
   const offline = useOfflineQueue();
+  const toast = useToast();
+  const locale = useLocale();
+  // Les boutons − et + écrivent la quantité avec la virgule en français.
+  const step = (direction: 1 | -1) => {
+    const next = stepQuantity(amount, unit, direction);
+    setQuantity(locale === "fr" ? next.replace(".", ",") : next);
+  };
 
   const amount = Number(quantity.replace(",", "."));
   const grams = toGrams(amount, unit, { ...food, unitWeights: weights });
@@ -68,8 +77,13 @@ export function QuantityForm({
       if (offline && !navigator.onLine) return queue();
       try {
         const result = await addEntryAction(input);
-        if (result?.error) setError(result.error);
-        else router.push({ pathname: "/journal", query: { date } });
+        if (result?.error) return setError(result.error);
+        const id = result?.id;
+        toast({
+          message: t("add.addedTo", { name: food.nameFr, slot: t(`slotsLower.${slot}`) }),
+          undo: id ? () => void deleteEntryAction(id) : undefined,
+        });
+        router.push({ pathname: "/journal", query: { date } });
       } catch (failure) {
         if (offline && isNetworkFailure(failure)) queue();
         else setError("generic");
@@ -103,17 +117,24 @@ export function QuantityForm({
       </div>
       {error && <Alert>{errorText(error)}</Alert>}
       <div className="grid grid-cols-2 gap-3">
-        <label className="flex flex-col gap-1.5">
-          <span className="font-semibold">{t("journal.quantity")}</span>
-          <input
-            name="quantity"
-            inputMode="decimal"
-            value={quantity}
-            onChange={(event) => setQuantity(event.target.value)}
-            required
-            className={inputClass}
-          />
-        </label>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="quantity-input" className="font-semibold">
+            {t("journal.quantity")}
+          </label>
+          <span className="flex items-center gap-1">
+            <StepButton label={t("add.less")} icon="minus" onClick={() => step(-1)} />
+            <input
+              id="quantity-input"
+              name="quantity"
+              inputMode="decimal"
+              value={quantity}
+              onChange={(event) => setQuantity(event.target.value)}
+              required
+              className={`${inputClass} w-full min-w-0 text-center`}
+            />
+            <StepButton label={t("add.more")} icon="plus" onClick={() => step(1)} />
+          </span>
+        </div>
         <label className="flex flex-col gap-1.5">
           <span className="font-semibold">{t("journal.unit")}</span>
           <select
@@ -167,6 +188,19 @@ export function QuantityForm({
         </Button>
       </div>
     </form>
+  );
+}
+
+function StepButton({ label, icon, onClick }: { label: string; icon: "minus" | "plus"; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      className="flex size-12 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-text hover:bg-surface-muted"
+    >
+      <Icon name={icon} size={20} />
+    </button>
   );
 }
 

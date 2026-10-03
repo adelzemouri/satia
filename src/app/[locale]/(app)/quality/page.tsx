@@ -6,6 +6,7 @@ import { weekQualityReport } from "@/server/quality";
 import { requireUser } from "@/server/session";
 import { Card } from "@/ui/card";
 import { formatDay } from "@/ui/format-date";
+import { EmptyState } from "@/ui/empty-state";
 
 export default async function QualityPage({ params }: PageProps<"/[locale]/quality">) {
   const locale = toLocale((await params).locale);
@@ -24,7 +25,7 @@ export default async function QualityPage({ params }: PageProps<"/[locale]/quali
       </p>
 
       {!q ? (
-        <p>{t("empty")}</p>
+        <EmptyState scene="chart">{t("empty")}</EmptyState>
       ) : (
         <>
           <Card aria-labelledby="ideas-title">

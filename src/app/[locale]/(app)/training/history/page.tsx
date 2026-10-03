@@ -7,10 +7,13 @@ import { exerciseById } from "@/domain/training/exercises";
 import { personalRecords, trainingStreak, volumeByMuscle } from "@/domain/training/program";
 import { MUSCLES } from "@/domain/training/types";
 import { DeleteSessionButton } from "@/features/training/delete-session-button";
+import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { requireUser } from "@/server/session";
 import { trainingHistory, trainingWeeks } from "@/server/training";
+import { buttonClass } from "@/ui/button";
 import { Card } from "@/ui/card";
+import { EmptyState } from "@/ui/empty-state";
 import { formatDay } from "@/ui/format-date";
 
 export default async function TrainingHistoryPage({ params }: PageProps<"/[locale]/training/history">) {
@@ -122,7 +125,16 @@ export default async function TrainingHistoryPage({ params }: PageProps<"/[local
           {t("history.sessions")}
         </h2>
         {sessions.length === 0 ? (
-          <p className="text-text-muted">{t("history.none")}</p>
+          <EmptyState
+            scene="dumbbell"
+            action={
+              <Link href="/training" className={buttonClass("secondary")}>
+                {t("history.start")}
+              </Link>
+            }
+          >
+            {t("history.none")}
+          </EmptyState>
         ) : (
           <ul className="flex flex-col divide-y divide-border">
             {sessions.map((session) => {

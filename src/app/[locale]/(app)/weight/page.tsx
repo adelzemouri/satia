@@ -10,6 +10,7 @@ import { weightOverview } from "@/server/journal";
 import { requireUser } from "@/server/session";
 import { Card } from "@/ui/card";
 import { formatDay } from "@/ui/format-date";
+import { EmptyState } from "@/ui/empty-state";
 
 /** Nombre de jours affichés sur la courbe. */
 const CHART_DAYS = 90;
@@ -66,7 +67,7 @@ export default async function WeightPage({ params }: PageProps<"/[locale]/weight
           {t("history")}
         </h2>
         {history.length === 0 ? (
-          <p className="text-text-muted">{t("empty")}</p>
+          <EmptyState scene="scale">{t("empty")}</EmptyState>
         ) : (
           <ul className="flex flex-col divide-y divide-border">
             {history.map((entry) => (

@@ -7,6 +7,7 @@ import { ownFoods } from "@/server/foods";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
 import { Card } from "@/ui/card";
+import { EmptyState } from "@/ui/empty-state";
 
 export default async function FoodsPage({ params }: PageProps<"/[locale]/foods">) {
   const locale = toLocale((await params).locale);
@@ -28,7 +29,7 @@ export default async function FoodsPage({ params }: PageProps<"/[locale]/foods">
       </div>
       <Card>
         {foods.length === 0 ? (
-          <p className="text-text-muted">{t("foods.empty")}</p>
+          <EmptyState scene="jar">{t("foods.empty")}</EmptyState>
         ) : (
           <ul className="flex flex-col divide-y divide-border">
             {foods.map((food) => (

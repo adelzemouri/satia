@@ -15,6 +15,7 @@ import { getProfile } from "@/server/profile";
 import { requireUser } from "@/server/session";
 import { Card } from "@/ui/card";
 import { formatDay } from "@/ui/format-date";
+import { EmptyState } from "@/ui/empty-state";
 
 export default async function ActivityPage({ params }: PageProps<"/[locale]/activity">) {
   const locale = toLocale((await params).locale);
@@ -72,7 +73,7 @@ export default async function ActivityPage({ params }: PageProps<"/[locale]/acti
           {t("recent")}
         </h2>
         {overview.activities.length === 0 ? (
-          <p className="text-text-muted">{t("empty")}</p>
+          <EmptyState scene="shoe">{t("empty")}</EmptyState>
         ) : (
           <ul className="flex flex-col divide-y divide-border">
             {overview.activities.map((activity) => {
