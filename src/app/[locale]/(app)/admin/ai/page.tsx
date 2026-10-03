@@ -1,6 +1,6 @@
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 
-import { AiSettingsForm, PhotoSettingsForm } from "@/features/admin/ai-settings-form";
+import { AiSettingsForm, PhotoSettingsForm, PurgeNowButton } from "@/features/admin/ai-settings-form";
 import { ConnectionTest } from "@/features/admin/connection-test";
 import { formatUsd } from "@/features/admin/format-usd";
 import { Link } from "@/i18n/navigation";
@@ -8,6 +8,7 @@ import { toLocale } from "@/i18n/routing";
 import { llmConfig } from "@/llm/config";
 import { aiStatus } from "@/llm/guard";
 import { monthlyCosts } from "@/llm/usage";
+import { lastPhotoPurge } from "@/server/photos";
 import { requireAdmin } from "@/server/session";
 import { getAiSettings, getPhotoSettings } from "@/server/settings";
 import { Card } from "@/ui/card";
@@ -17,11 +18,12 @@ export default async function AiAdminPage({ params }: PageProps<"/[locale]/admin
   setRequestLocale(locale);
   await requireAdmin(locale);
   const config = llmConfig();
-  const [status, settings, costs, photoSettings] = await Promise.all([
+  const [status, settings, costs, photoSettings, lastPurge] = await Promise.all([
     aiStatus(config),
     getAiSettings(),
     monthlyCosts(),
     getPhotoSettings(),
+    lastPhotoPurge(),
   ]);
   const t = await getTranslations("aiAdmin");
   const format = await getFormatter();
@@ -104,6 +106,15 @@ export default async function AiAdminPage({ params }: PageProps<"/[locale]/admin
         </h2>
         <p className="text-text-muted">{t("photosHint")}</p>
         <PhotoSettingsForm retentionDays={photoSettings.retentionDays} />
+        <p className="text-text-muted">
+          {lastPurge
+            ? t("lastPurge", {
+                date: format.dateTime(new Date(lastPurge.lastRunAt), { dateStyle: "medium", timeStyle: "short" }),
+                count: lastPurge.purged,
+              })
+            : t("noPurgeYet")}
+        </p>
+        <PurgeNowButton />
       </Card>
 
       <Card aria-labelledby="ai-costs">

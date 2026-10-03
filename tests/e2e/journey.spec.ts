@@ -239,6 +239,51 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await expectNoA11yViolations(page);
 });
 
+test("hors ligne : journal du jour consultable, aliment noté puis envoyé au retour du réseau", async ({
+  page,
+  context,
+}) => {
+  // Les actions précédentes ont revalidé les pages : le service worker, lui, doit rester servi.
+  expect((await page.request.get("/serwist/sw.js")).status()).toBe(200);
+  await signIn(page, ADMIN);
+  // Dès l'ouverture de l'app, l'accueil, le journal du jour et l'ajout sont gardés en cache.
+  await expect
+    .poll(
+      () =>
+        page.evaluate(async () => {
+          if (!navigator.serviceWorker.controller) return false;
+          const cache = await caches.open("app-pages");
+          return Boolean((await cache.match("/journal")) && (await cache.match("/add")));
+        }),
+      { timeout: 20_000 },
+    )
+    .toBe(true);
+
+  await context.setOffline(true);
+  await expect(async () => {
+    await page.goto("/journal").catch(() => undefined);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Journal", { timeout: 2000 });
+  }).toPass({ timeout: 20_000 });
+  await expect(page.getByText(/^Pas de réseau/)).toBeVisible();
+  await expect(page.getByRole("region", { name: "Petit-déjeuner" }).getByText("Granola maison")).toBeVisible();
+
+  await page.goto("/add");
+  await page.getByRole("tab", { name: "Favoris" }).click();
+  await page.getByRole("button", { name: /^Granola maison/ }).click();
+  await page.getByLabel("Repas").selectOption("dinner");
+  await page.getByRole("button", { name: "Ajouter au journal" }).click();
+  await expect(page.getByText(/^Granola maison est noté sur ce téléphone/)).toBeVisible();
+  const waiting = page.getByRole("region", { name: "1 aliment en attente d'envoi" });
+  await expect(waiting.getByText("Granola maison", { exact: true })).toBeVisible();
+  await expectNoA11yViolations(page);
+
+  await context.setOffline(false);
+  await expect(page.getByText("1 aliment noté hors ligne a été ajouté au journal.")).toBeVisible();
+  await expect(waiting).toBeHidden();
+  await page.goto("/journal");
+  await expect(page.getByRole("region", { name: "Dîner" }).getByText("Granola maison")).toHaveCount(1);
+});
+
 test("ajout d'un produit par code-barres (Open Food Facts simulé)", async ({ page, context }) => {
   await context.grantPermissions(["camera"]);
   await signIn(page, ADMIN);
@@ -837,6 +882,66 @@ test("mon métabolisme et budget hebdomadaire avec un jour plus large", async ({
   await page.goto("/week");
   await page.getByLabel("Budget quotidien").check();
   await expect(page.getByRole("region", { name: "Jour par jour" })).toHaveCount(0);
+});
+
+test("audit d'accessibilité : chaque page de l'app, en thème clair et sombre", async ({ page, context, baseURL }) => {
+  test.setTimeout(120_000);
+  await signInWithTotp(page);
+  const pages = [
+    "/",
+    "/journal",
+    "/add",
+    "/week",
+    "/quality",
+    "/metabolism",
+    "/coach",
+    "/plan",
+    "/shopping",
+    "/recipes",
+    "/fridge",
+    "/foods",
+    "/foods/new",
+    "/foods/new-recipe",
+    "/containers",
+    "/dictionary",
+    "/family",
+    "/family/share",
+    "/training",
+    "/training/history",
+    "/training/library",
+    "/body",
+    "/activity",
+    "/fasting",
+    "/treatment",
+    "/weight",
+    "/profile",
+    "/admin",
+    "/admin/ai",
+  ];
+  const violations: string[] = [];
+  for (const theme of ["light", "dark"]) {
+    await context.addCookies([{ name: "theme", value: theme, url: baseURL! }]);
+    for (const path of pages) {
+      await page.goto(path);
+      await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+      await expect(page.getByRole("heading", { level: 1 }), path).toHaveCount(1);
+      await expect(page).toHaveTitle(/\S/);
+      const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
+      for (const violation of results.violations) {
+        for (const node of violation.nodes) violations.push(`${path} (${theme}) ${violation.id} : ${node.html}`);
+      }
+    }
+  }
+  // Toutes les pages d'abord, pour voir l'ensemble des écarts d'un coup.
+  expect(violations).toEqual([]);
+
+  // Au clavier, le premier arrêt mène directement au contenu.
+  await page.goto("/journal");
+  await page.keyboard.press("Tab");
+  const skip = page.getByRole("link", { name: "Aller au contenu" });
+  await expect(skip).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("main")).toBeFocused();
 });
 
 test("export des données en JSON et CSV", async ({ page }) => {

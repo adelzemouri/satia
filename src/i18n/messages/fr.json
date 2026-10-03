@@ -24,7 +24,8 @@
     "add": "Ajouter",
     "weight": "Poids",
     "main": "Navigation principale",
-    "training": "Training"
+    "training": "Training",
+    "skipToContent": "Aller au contenu"
   },
   "home": {
     "greeting": "Bonjour {name} !",
@@ -65,7 +66,15 @@
   },
   "offline": {
     "title": "Hors ligne",
-    "body": "Pas de connexion pour le moment. Les pages déjà consultées restent disponibles, réessayez dès que le réseau revient."
+    "body": "Pas de connexion pour le moment. Les pages déjà consultées restent disponibles, réessayez dès que le réseau revient.",
+    "banner": "Pas de réseau : tu consultes la dernière version enregistrée. Tu peux quand même noter un aliment récent ou favori, il sera ajouté au journal dès le retour de la connexion.",
+    "pendingTitle": "{count, plural, one {# aliment en attente d'envoi} other {# aliments en attente d'envoi}}",
+    "sending": "Envoi au journal…",
+    "sent": "{count, plural, one {# aliment noté hors ligne a été ajouté au journal.} other {# aliments notés hors ligne ont été ajoutés au journal.}}",
+    "remove": "Retirer",
+    "retry": "Envoyer maintenant",
+    "queued": "{name} est noté sur ce téléphone. Il sera ajouté au journal dès le retour du réseau.",
+    "addAnother": "Ajouter un autre aliment"
   },
   "disclaimer": "{appName} n'est pas un avis médical. Pour toute question de santé, parles-en à un professionnel.",
   "fields": {
@@ -583,9 +592,13 @@
       "none": "Aucun"
     },
     "photosTitle": "Photos des repas",
-    "photosHint": "Les photos sont gardées dans un stockage privé, puis supprimées automatiquement chaque nuit après cette durée. Une photo jamais ajoutée au journal est supprimée dès le lendemain.",
+    "photosHint": "Les photos sont gardées dans un stockage privé, puis supprimées automatiquement chaque jour après cette durée. Une photo jamais ajoutée au journal est supprimée dès le lendemain.",
     "retentionDays": "Conservation (jours)",
-    "photosSaved": "Durée de conservation enregistrée."
+    "photosSaved": "Durée de conservation enregistrée.",
+    "lastPurge": "Dernière purge : {date} ({count, plural, =0 {aucune photo} one {# photo supprimée} other {# photos supprimées}}).",
+    "noPurgeYet": "Aucune purge pour l'instant.",
+    "purgeNow": "Purger maintenant",
+    "purgeDone": "{count, plural, =0 {Aucune photo à supprimer.} one {# photo supprimée.} other {# photos supprimées.}}"
   },
   "aiEntry": {
     "title": "Photo, voix ou texte",

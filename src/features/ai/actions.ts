@@ -33,7 +33,7 @@ export async function analyzeTextAction(input: Parameters<typeof analyzeText>[1]
 export async function saveMealAction(input: SaveMealInput): Promise<ActionState & { count?: number }> {
   return withUser(async (userId) => {
     const count = await saveMeal(userId, input);
-    revalidatePath("/", "layout");
+    revalidatePath("/[locale]", "layout");
     return { ok: true, count };
   });
 }

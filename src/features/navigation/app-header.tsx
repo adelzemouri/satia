@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { APP_NAME } from "@/config/app";
-import { logoutAction } from "@/features/auth/actions";
+import { LogoutForm } from "@/features/offline/logout-form";
 import { Link } from "@/i18n/navigation";
 import type { CurrentUser } from "@/server/session";
 import { Icon } from "@/ui/icon";
@@ -26,12 +26,12 @@ export async function AppHeader({ user }: { user: CurrentUser }) {
             <span className={labelClass}>{t("admin")}</span>
           </Link>
         )}
-        <form action={logoutAction} className="shrink-0">
+        <LogoutForm>
           <button type="submit" className={linkClass}>
             <Icon name="logout" />
             <span className={labelClass}>{t("logout")}</span>
           </button>
-        </form>
+        </LogoutForm>
       </div>
     </header>
   );

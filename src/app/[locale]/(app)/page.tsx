@@ -1,4 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { after } from "next/server";
 
 import { APP_NAME, APP_TIMEZONE } from "@/config/app";
 import { MEAL_SLOTS } from "@/db/schema";
@@ -15,6 +16,7 @@ import { toLocale } from "@/i18n/routing";
 import { ensureWeeklyCheck, weekBudget } from "@/server/adaptive";
 import { suggestedDish } from "@/server/coach";
 import { pendingShares } from "@/server/family";
+import { purgePhotosIfDue } from "@/server/photos";
 import { currentFast } from "@/server/fasting";
 import { checkinOn, dayQualityFor } from "@/server/quality";
 import { daySummary, streakFor } from "@/server/journal";
@@ -30,6 +32,8 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const profile = await getProfile(user.id);
   if (!profile) return redirect({ href: "/onboarding", locale });
   const today = todayIso();
+  // Purge des photos sans attendre le cron (s'il n'est pas configuré), après l'envoi de la page.
+  after(() => purgePhotosIfDue().catch((error: unknown) => console.error("Purge des photos échouée", error)));
   // Bilan hebdomadaire de l'objectif adaptatif (une fois par semaine) avant d'afficher l'objectif.
   await ensureWeeklyCheck(user.id, today);
   const [summary, streak, shares, week, quality, checkin, fast] = await Promise.all([

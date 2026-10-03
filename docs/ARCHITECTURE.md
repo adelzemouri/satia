@@ -537,6 +537,39 @@ Téléphone                                     Serveur (Vercel fra1)           
   préférences `fasting` et `treatment`. Les préférences enregistrées avant cette phase
   sont complétées par `withDefaultPrefs`.
 
+## Finitions (phase 15)
+
+- **Purge des photos** : le cron Vercel (`/api/cron/purge-photos`, `runPhotoPurge`) note
+  chaque passage dans `app_settings` (`photo_purge`). Filet de sécurité sans cron :
+  l'accueil lance `purgePhotosIfDue` après l'envoi de la page (`after`), réservé par un
+  `insert … on conflict do update where updated_at < now - 20 h` atomique, donc au plus
+  une purge par jour même avec des visites simultanées. Administration > IA affiche la
+  dernière purge et propose « Purger maintenant ».
+- **Hors ligne** : le service worker sert les navigations avec `NetworkFirst` (cache
+  `app-pages`, délai réseau 6 s, 48 pages, 7 jours) ; sans réseau, la même page avec
+  d'autres paramètres, sinon `/~offline`. À l'ouverture de l'app (une fois par session),
+  le worker met en cache `/`, `/journal` et `/add` (message `warm-pages`). Les messages
+  sont traités dans l'ordre (`clear-pages` puis `warm-pages`).
+- **Saisie différée** : sans réseau, l'écran de quantité range l'aliment (déjà choisi
+  dans les récents, favoris ou aliments perso, donc valeurs de la base) dans une file
+  `localStorage` propre au compte. `OfflineStatus` (layout de l'app) affiche le bandeau
+  hors ligne et la file, et l'envoie par `addEntryAction` au chargement et au retour du
+  réseau ; une erreur du serveur (aliment supprimé…) reste affichée avec un bouton
+  Retirer. `reloadOnOnline` de Serwist est désactivé (il rechargeait la page pendant
+  l'envoi, d'où des doublons) ; la page est rafraîchie par `router.refresh()`.
+- **Déconnexion** : le formulaire envoie `clear-pages` au worker, et l'écran de connexion
+  aussi, pour qu'aucune page d'un compte ne reste lisible hors ligne sur un téléphone
+  partagé. La file d'attente est gardée, mais n'est envoyée que par son propre compte.
+- **Revalidation** : `revalidatePath("/[locale]", "layout")` remplace
+  `revalidatePath("/", "layout")`, qui invalidait aussi `/serwist/sw.js` ; le script du
+  worker, généré au build, ne peut pas être reconstruit sur le serveur (500 sur la mise
+  à jour ou l'installation du worker).
+- **Accessibilité** : un test e2e passe axe (WCAG 2.1 AA) sur les 29 pages connectées en
+  thème clair et sombre et vérifie le lien « Aller au contenu » (premier arrêt au
+  clavier, focus sur `main`). Écart corrigé : le badge « Faite » du Training.
+- **Exploitation** : `README.md` décrit la mise en place, les variables et secrets, les
+  tâches planifiées, la sauvegarde et sa restauration (d'abord sur une branche Neon).
+
 ## 6. Sécurité (rappel des points structurants)
 
 HTTPS imposé par l'hébergeur, en-têtes CSP/HSTS via le middleware Next.js, jeton

@@ -23,7 +23,7 @@ async function withUser<T>(
 export async function createSharedMealAction(input: SharedMealInput): Promise<ActionState> {
   return withUser(async (user) => {
     await createSharedMeal(user.id, user.householdId, input);
-    revalidatePath("/", "layout");
+    revalidatePath("/[locale]", "layout");
     return { ok: true };
   });
 }
@@ -34,7 +34,7 @@ export async function respondToShareAction(
 ): Promise<ActionState> {
   return withUser(async (user) => {
     await respondToShare(user.id, sharedMealId, input);
-    revalidatePath("/", "layout");
+    revalidatePath("/[locale]", "layout");
     return { ok: true };
   });
 }

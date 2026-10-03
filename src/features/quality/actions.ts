@@ -18,7 +18,7 @@ async function run(fn: (userId: string) => Promise<unknown>): Promise<ActionStat
   } catch (error) {
     return toActionState(error);
   }
-  revalidatePath("/", "layout");
+  revalidatePath("/[locale]", "layout");
   return { ok: true };
 }
 

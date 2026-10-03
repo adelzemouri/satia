@@ -5,6 +5,8 @@ import { useState, useTransition } from "react";
 
 import { useErrorText } from "@/features/auth/use-error-text";
 import { addEntryAction } from "@/features/journal/actions";
+import { isNetworkFailure } from "@/features/offline/pending-queue";
+import { useOfflineQueue } from "@/features/offline/offline-provider";
 import { MEAL_SLOTS, type MealSlot } from "@/domain/meals";
 import { nutrientsFor } from "@/domain/nutrition";
 import { availableUnits, toGrams, type Unit } from "@/domain/units";
@@ -39,7 +41,9 @@ export function QuantityForm({
   const [quantity, setQuantity] = useState(unit === "g" ? "100" : "1");
   const [slot, setSlot] = useState<MealSlot>(initialSlot);
   const [error, setError] = useState<string | null>(null);
+  const [queued, setQueued] = useState(false);
   const [pending, startTransition] = useTransition();
+  const offline = useOfflineQueue();
 
   const amount = Number(quantity.replace(",", "."));
   const grams = toGrams(amount, unit, food);
@@ -53,10 +57,33 @@ export function QuantityForm({
 
   const submit = () =>
     startTransition(async () => {
-      const result = await addEntryAction({ date, slot, foodId: food.id, quantity: amount, unit, inputMethod });
-      if (result?.error) setError(result.error);
-      else router.push({ pathname: "/journal", query: { date } });
+      const input = { date, slot, foodId: food.id, quantity: amount, unit, inputMethod };
+      // Sans réseau, l'aliment attend sur le téléphone et part dès que la connexion revient.
+      const queue = () => {
+        offline!.queue({ ...input, label: food.nameFr, kcal: Math.round(preview?.kcal ?? 0) });
+        setQueued(true);
+      };
+      if (offline && !navigator.onLine) return queue();
+      try {
+        const result = await addEntryAction(input);
+        if (result?.error) setError(result.error);
+        else router.push({ pathname: "/journal", query: { date } });
+      } catch (failure) {
+        if (offline && isNetworkFailure(failure)) queue();
+        else setError("generic");
+      }
     });
+
+  if (queued) {
+    return (
+      <div className="flex flex-col gap-4">
+        <Alert tone="success">{t("offline.queued", { name: food.nameFr })}</Alert>
+        <Button variant="secondary" onClick={onCancel}>
+          {t("offline.addAnother")}
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <form action={submit} className="flex flex-col gap-4" aria-labelledby="quantity-title">
