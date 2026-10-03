@@ -1052,7 +1052,30 @@
     "new": "New recipe",
     "newFamily": "New household recipe",
     "edit": "Edit",
-    "editLabel": "Edit {name}"
+    "editLabel": "Edit {name}",
+    "ideas": "Recipe ideas",
+    "ideasIntro": "Simple recipes for the whole family, with calories worked out from the Ciqual table.",
+    "filterLabel": "Recipe type",
+    "all": "All",
+    "categories": {
+      "breakfast": "Breakfast",
+      "main": "Mains",
+      "soup": "Soups",
+      "salad": "Salads",
+      "dessert": "Desserts",
+      "snack": "Snacks"
+    },
+    "card": "{kcal} kcal per serving · {minutes} min",
+    "minutes": "{minutes} min",
+    "servings": "{count, plural, one {# serving} other {# servings}}",
+    "portionKcal": "{kcal} kcal per serving",
+    "vegetarian": "Vegetarian",
+    "ingredients": "Ingredients",
+    "ingredientsFor": "For {count, plural, one {# serving} other {# servings}}",
+    "steps": "Method",
+    "source": "Pommelia recipe",
+    "homeTitle": "{slot, select, breakfast {An idea for breakfast} lunch {An idea for lunch} dinner {An idea for dinner} other {A snack idea}}",
+    "homeMore": "See all recipes"
   },
   "training": {
     "title": "Training",

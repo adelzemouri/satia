@@ -5,10 +5,12 @@ import { APP_TIMEZONE } from "@/config/app";
 import { MEAL_SLOTS } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { slotAt } from "@/domain/meals";
+import { ideasForSlot } from "@/domain/recipes/catalog";
 import { CalorieSummary, MacroBars } from "@/features/journal/day-overview";
 import { WaterTile } from "@/features/journal/water-tile";
 import { WeekGauge } from "@/features/adaptive/week-gauge";
 import { PendingShares } from "@/features/family/pending-shares";
+import { RecipeCard } from "@/features/recipes/recipe-card";
 import { Link, redirect } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { ensureWeeklyCheck, weekBudget } from "@/server/adaptive";
@@ -17,6 +19,7 @@ import { purgePhotosIfDue } from "@/server/photos";
 import { currentFast } from "@/server/fasting";
 import { daySummary, streakFor } from "@/server/journal";
 import { getProfile } from "@/server/profile";
+import { catalogEntries } from "@/server/recipes";
 import { requireUser } from "@/server/session";
 import { Card } from "@/ui/card";
 import { formatDay } from "@/ui/format-date";
@@ -33,15 +36,17 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   after(() => purgePhotosIfDue().catch((error: unknown) => console.error("Purge des photos échouée", error)));
   // Bilan hebdomadaire de l'objectif adaptatif (une fois par semaine) avant d'afficher l'objectif.
   await ensureWeeklyCheck(user.id, today);
-  const [summary, streak, shares, week, fast] = await Promise.all([
+  const [summary, streak, shares, week, fast, catalog] = await Promise.all([
     daySummary(user.id, today),
     streakFor(user.id, today),
     pendingShares(user.id),
     profile.budgetMode === "weekly" ? weekBudget(user.id, today) : null,
     currentFast(user.id),
+    catalogEntries(),
   ]);
   // Le repas du moment est mis en avant : c'est le plus probable à saisir maintenant.
   const current = slotAt(new Date(), APP_TIMEZONE);
+  const ideas = ideasForSlot(catalog, current, `${user.id}:${today}`, 4);
   const t = await getTranslations();
 
   return (
@@ -148,6 +153,31 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           {t("home.openJournal")}
         </Link>
       </Card>
+
+      {ideas.length > 0 && (
+        <section aria-labelledby="ideas-title" className="flex flex-col gap-3">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 id="ideas-title" className="text-xl font-bold">
+              {t("recipes.homeTitle", { slot: current })}
+            </h2>
+            <Link href="/recipes" className="shrink-0 font-semibold text-primary underline-offset-4 hover:underline">
+              {t("recipes.homeMore")}
+            </Link>
+          </div>
+          <ul className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-1">
+            {ideas.map((entry) => (
+              <li key={entry.id} className="flex w-[44%] shrink-0 snap-start sm:w-[30%]">
+                <RecipeCard
+                  id={entry.id}
+                  recipe={entry.recipe}
+                  portionKcal={entry.portionKcal}
+                  query={{ slot: current, date: today }}
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <WaterTile date={today} glasses={summary.water.glasses} goal={summary.water.goal} />
