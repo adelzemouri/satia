@@ -1,67 +1,67 @@
 /*
- * Design tokens Satia — ambiance « marché du dimanche ».
+ * Design tokens Satia — piste « Net » : fond clair et sobre, vert canard, cartes blanches sans bordure.
  * Les couples texte/fond sont vérifiés WCAG AA par tests/unit/tokens.test.ts.
  */
 :root,
 [data-theme="light"] {
   color-scheme: light;
-  --color-bg: #f7f2e8; /* crème */
-  --color-surface: #fffdf8;
-  --color-surface-muted: #efe7d8;
-  --color-border: #ddd2bf;
-  --color-text: #2b2824; /* anthracite chaud */
-  --color-text-muted: #645d54;
-  --color-primary: #56724f; /* vert sauge */
-  --color-primary-soft: #dfe8da;
+  --color-bg: #f2f4f3; /* gris très clair, légèrement vert */
+  --color-surface: #ffffff;
+  --color-surface-muted: #e8eeec;
+  --color-border: #d6dfdb;
+  --color-text: #111816;
+  --color-text-muted: #56625d;
+  --color-primary: #0b6e66; /* vert canard */
+  --color-primary-soft: #d7ece9;
   --color-on-primary: #ffffff;
-  --color-accent: #a94f35; /* terracotta */
-  --color-accent-soft: #f4dfd5;
+  --color-accent: #b3412c; /* brique, pour les dépassements et les actions destructives */
+  --color-accent-soft: #f7e0da;
   --color-on-accent: #ffffff;
-  --color-focus: #2f5d8a;
-  --color-protein: #a94f35;
+  --color-focus: #1d4ed8;
+  --color-protein: #b3412c;
   --color-carbs: #8a6418;
-  --color-fat: #3f6b78;
+  --color-fat: #1f6a9a;
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --color-bg: #1c1f16; /* olive très foncé */
-  --color-surface: #262a1e;
-  --color-surface-muted: #31362a;
-  --color-border: #474d3c;
-  --color-text: #f1ebdd;
-  --color-text-muted: #bdb5a3;
-  --color-primary: #a3c19a;
-  --color-primary-soft: #33402f;
-  --color-on-primary: #1c1f16;
-  --color-accent: #e59a7e;
-  --color-accent-soft: #4a2f25;
-  --color-on-accent: #1c1f16;
-  --color-focus: #9cc4ec;
-  --color-protein: #e59a7e;
+  --color-bg: #0f1513;
+  --color-surface: #18201d;
+  --color-surface-muted: #222c28;
+  --color-border: #33403b;
+  --color-text: #eef3f1;
+  --color-text-muted: #a9b5b0;
+  --color-primary: #5fc9bc;
+  --color-primary-soft: #173430;
+  --color-on-primary: #0f1513;
+  --color-accent: #f08a70;
+  --color-accent-soft: #45231b;
+  --color-on-accent: #0f1513;
+  --color-focus: #93b4ff;
+  --color-protein: #f08a70;
   --color-carbs: #e0bd6c;
-  --color-fat: #8fc3d1;
+  --color-fat: #7db8e8;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --color-bg: #1c1f16;
-    --color-surface: #262a1e;
-    --color-surface-muted: #31362a;
-    --color-border: #474d3c;
-    --color-text: #f1ebdd;
-    --color-text-muted: #bdb5a3;
-    --color-primary: #a3c19a;
-    --color-primary-soft: #33402f;
-    --color-on-primary: #1c1f16;
-    --color-accent: #e59a7e;
-    --color-accent-soft: #4a2f25;
-    --color-on-accent: #1c1f16;
-    --color-focus: #9cc4ec;
-    --color-protein: #e59a7e;
+    --color-bg: #0f1513;
+    --color-surface: #18201d;
+    --color-surface-muted: #222c28;
+    --color-border: #33403b;
+    --color-text: #eef3f1;
+    --color-text-muted: #a9b5b0;
+    --color-primary: #5fc9bc;
+    --color-primary-soft: #173430;
+    --color-on-primary: #0f1513;
+    --color-accent: #f08a70;
+    --color-accent-soft: #45231b;
+    --color-on-accent: #0f1513;
+    --color-focus: #93b4ff;
+    --color-protein: #f08a70;
     --color-carbs: #e0bd6c;
-    --color-fat: #8fc3d1;
+    --color-fat: #7db8e8;
   }
 }
 

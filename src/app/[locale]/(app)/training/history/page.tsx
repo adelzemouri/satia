@@ -35,7 +35,7 @@ export default async function TrainingHistoryPage({ params }: PageProps<"/[local
 
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("history.title")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("history.title")}</h1>
       <p className="text-lg font-semibold">{t("home.streak", { count: trainingStreak(weeks, isoWeekStart(today)) })}</p>
 
       <Card aria-labelledby="calendar-title">

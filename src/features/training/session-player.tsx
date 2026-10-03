@@ -292,7 +292,7 @@ export function SessionPlayer({ session }: { session: PlayerSession }) {
     return (
       <div className="flex flex-col gap-4">
         {notice && <Alert tone="success">{notice}</Alert>}
-        <h2 className="font-display text-2xl font-semibold">{t("session.finishTitle")}</h2>
+        <h2 className="font-display text-2xl font-extrabold tracking-tight">{t("session.finishTitle")}</h2>
         <p>{t("session.elapsed", { minutes })}</p>
         <OptionList<Feeling>
           legend={t("session.feeling")}
@@ -322,7 +322,7 @@ export function SessionPlayer({ session }: { session: PlayerSession }) {
       </p>
       <progress className="h-2 w-full accent-[var(--color-primary)]" max={total} value={index} aria-hidden />
       {notice && <Alert tone="success">{notice}</Alert>}
-      <h2 className="font-display text-2xl font-semibold">{step.name}</h2>
+      <h2 className="font-display text-2xl font-extrabold tracking-tight">{step.name}</h2>
       <p className="text-lg">
         {step.sets > 1 && (
           <span className="font-semibold">{t("session.set", { current: setNumber, total: step.sets })} · </span>
@@ -337,7 +337,9 @@ export function SessionPlayer({ session }: { session: PlayerSession }) {
           className="flex flex-col items-center gap-3 rounded-2xl bg-primary-soft p-6"
         >
           <span className="font-semibold">{t("session.rest")}</span>
-          <span className="font-display text-5xl font-semibold tabular-nums">{formatClock(rest.left ?? 0)}</span>
+          <span className="font-display text-5xl font-extrabold tracking-tight tabular-nums">
+            {formatClock(rest.left ?? 0)}
+          </span>
           <Button
             variant="secondary"
             onClick={() => {
@@ -352,7 +354,7 @@ export function SessionPlayer({ session }: { session: PlayerSession }) {
         <div className="flex flex-col gap-3">
           {step.seconds !== null && (
             <div className="flex flex-col items-center gap-3 rounded-2xl bg-surface-muted p-6">
-              <span role="timer" className="font-display text-5xl font-semibold tabular-nums">
+              <span role="timer" className="font-display text-5xl font-extrabold tracking-tight tabular-nums">
                 {formatClock(work.left ?? step.seconds)}
               </span>
               {work.running ? (

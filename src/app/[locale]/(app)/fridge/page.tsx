@@ -16,7 +16,7 @@ export default async function FridgePage({ params }: PageProps<"/[locale]/fridge
 
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("fridge.title")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("fridge.title")}</h1>
       <p className="text-text-muted">{t("fridge.intro")}</p>
       <Card>
         {unavailable ? (

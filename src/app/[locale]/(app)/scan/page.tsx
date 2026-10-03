@@ -18,7 +18,7 @@ export default async function ScanPage({ params, searchParams }: PageProps<"/[lo
   const t = await getTranslations("scan");
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("title")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
       <ScanView date={date} slot={slot} />
     </>
   );

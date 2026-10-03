@@ -136,7 +136,11 @@ describe("base d'aliments", () => {
     await setFavorite(userId, id, false);
     expect(await favoriteFoods(userId)).toEqual([]);
     await addEntry(userId, { date: todayIso(), slot: "breakfast", foodId: id, quantity: 50, unit: "g" });
-    expect((await recentFoods(userId)).map((food) => food.id)).toEqual([id]);
+    await addEntry(userId, { date: todayIso(), slot: "snack", foodId: id, quantity: 30, unit: "g" });
+    // Un seul exemplaire par aliment, avec la dernière portion saisie (pour l'ajout en un geste).
+    expect(await recentFoods(userId)).toEqual([
+      expect.objectContaining({ id, lastQuantity: 30, lastUnit: "g", lastKcal: expect.any(Number) }),
+    ]);
   });
 });
 

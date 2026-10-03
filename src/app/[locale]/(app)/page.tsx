@@ -1,28 +1,25 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { after } from "next/server";
 
-import { APP_NAME, APP_TIMEZONE } from "@/config/app";
+import { APP_TIMEZONE } from "@/config/app";
 import { MEAL_SLOTS } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { slotAt } from "@/domain/meals";
-import { CalorieRing, MacroBars } from "@/features/journal/day-overview";
-import { WaterTracker } from "@/features/journal/water-tracker";
+import { CalorieSummary, MacroBars } from "@/features/journal/day-overview";
+import { WaterTile } from "@/features/journal/water-tile";
 import { WeekGauge } from "@/features/adaptive/week-gauge";
-import { CheckinCard } from "@/features/quality/checkin-card";
-import { QualityBars } from "@/features/quality/quality-bars";
 import { PendingShares } from "@/features/family/pending-shares";
 import { Link, redirect } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { ensureWeeklyCheck, weekBudget } from "@/server/adaptive";
-import { suggestedDish } from "@/server/coach";
 import { pendingShares } from "@/server/family";
 import { purgePhotosIfDue } from "@/server/photos";
 import { currentFast } from "@/server/fasting";
-import { checkinOn, dayQualityFor } from "@/server/quality";
 import { daySummary, streakFor } from "@/server/journal";
 import { getProfile } from "@/server/profile";
 import { requireUser } from "@/server/session";
 import { Card } from "@/ui/card";
+import { formatDay } from "@/ui/format-date";
 import { Icon } from "@/ui/icon";
 
 export default async function HomePage({ params }: PageProps<"/[locale]">) {
@@ -36,32 +33,38 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   after(() => purgePhotosIfDue().catch((error: unknown) => console.error("Purge des photos échouée", error)));
   // Bilan hebdomadaire de l'objectif adaptatif (une fois par semaine) avant d'afficher l'objectif.
   await ensureWeeklyCheck(user.id, today);
-  const [summary, streak, shares, week, quality, checkin, fast] = await Promise.all([
+  const [summary, streak, shares, week, fast] = await Promise.all([
     daySummary(user.id, today),
     streakFor(user.id, today),
     pendingShares(user.id),
     profile.budgetMode === "weekly" ? weekBudget(user.id, today) : null,
-    dayQualityFor(user.id, today),
-    checkinOn(user.id, today),
     currentFast(user.id),
   ]);
-  const slot = slotAt(new Date(), APP_TIMEZONE);
-  const dish = summary.goal
-    ? await suggestedDish(
-        user.id,
-        { slot, goalKcal: summary.goal.kcal, remainingKcal: summary.goal.kcal - summary.totals.kcal },
-        today,
-      )
-    : null;
+  // Le repas du moment est mis en avant : c'est le plus probable à saisir maintenant.
+  const current = slotAt(new Date(), APP_TIMEZONE);
   const t = await getTranslations();
 
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("home.greeting", { name: profile.firstName })}</h1>
+      <header className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-col">
+          <p className="font-semibold text-text-muted first-letter:uppercase">{formatDay(today, locale)}</p>
+          <h1 className="font-display text-3xl font-extrabold tracking-tight">
+            {t("home.greeting", { name: profile.firstName })}
+          </h1>
+        </div>
+        <Link
+          href="/profile"
+          aria-label={t("home.openProfile")}
+          className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary-soft text-lg font-extrabold text-primary"
+        >
+          {profile.firstName.slice(0, 1).toUpperCase()}
+        </Link>
+      </header>
 
       {shares.length > 0 && (
         <Card aria-labelledby="pending-title">
-          <h2 id="pending-title" className="text-xl font-semibold">
+          <h2 id="pending-title" className="text-xl font-bold">
             {t("family.pendingTitle")}
           </h2>
           <PendingShares shares={shares} />
@@ -69,144 +72,98 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       )}
 
       {fast && (
-        <Card aria-labelledby="fast-title">
-          <h2 id="fast-title" className="flex items-center gap-2 text-lg font-semibold">
-            <span className="text-primary">
-              <Icon name="timer" />
+        <Link
+          href="/fasting"
+          className="flex min-h-14 items-center gap-3 rounded-[var(--radius-card)] bg-primary-soft px-5 py-3"
+        >
+          <span className="text-primary">
+            <Icon name="timer" />
+          </span>
+          <span className="flex flex-col">
+            <span className="font-bold">{t("home.fastRunning")}</span>
+            <span className="text-sm">
+              {t("home.fastUntil", {
+                end: new Date(new Date(fast.startedAt).getTime() + fast.targetMinutes * 60_000),
+              })}
             </span>
-            {t("home.fastRunning")}
-          </h2>
-          <p>
-            {t("home.fastUntil", {
-              end: new Date(new Date(fast.startedAt).getTime() + fast.targetMinutes * 60_000),
-            })}
-          </p>
-          <Link href="/fasting" className="font-semibold text-primary underline-offset-4 hover:underline">
-            {t("home.fastOpen")}
-          </Link>
-        </Card>
+          </span>
+          <span className="sr-only">{t("home.fastOpen")}</span>
+        </Link>
       )}
 
       <Card aria-labelledby="today-title">
-        <h2 id="today-title" className="font-semibold text-text-muted">
+        <h2 id="today-title" className="sr-only">
           {t("home.todayGoal")}
         </h2>
-        <CalorieRing totals={summary.totals} goal={summary.goal} />
+        <CalorieSummary totals={summary.totals} goal={summary.goal} />
         {summary.training.burnedKcal + summary.activity.burnedKcal > 0 && (
           <p className="text-sm text-text-muted">
             {t("home.activityBurned", { kcal: summary.training.burnedKcal + summary.activity.burnedKcal })}
           </p>
         )}
         <MacroBars totals={summary.totals} goal={summary.goal} />
-        <QualityBars quality={quality} />
-        {summary.zone && <p className="rounded-2xl bg-surface-muted px-4 py-3">{t(`home.zone.${summary.zone}`)}</p>}
         {week && (
-          <>
+          <Link href="/week" className="flex flex-col gap-2 rounded-2xl bg-surface-muted px-4 py-3">
             <WeekGauge consumed={week.consumed} total={week.total} />
-            <Link href="/week" className="font-semibold text-primary underline-offset-4 hover:underline">
-              {t("week.open")}
-            </Link>
-          </>
+            <span className="font-semibold text-primary">{t("week.open")}</span>
+          </Link>
         )}
       </Card>
 
-      {dish && (
-        <Card aria-labelledby="dish-title">
-          <h2 id="dish-title" className="text-xl font-semibold">
-            {t("coach.suggestionTitle", { slot })}
-          </h2>
-          <p>{t("coach.suggestionHint", { name: dish.name, kcal: dish.portionKcal })}</p>
-          <Link
-            href={{ pathname: "/add", query: { food: dish.id, slot, date: today } }}
-            className="font-semibold text-primary underline-offset-4 hover:underline"
-          >
-            {t("coach.suggestionAdd", { name: dish.name })}
-          </Link>
-        </Card>
-      )}
-
-      <Card aria-labelledby="streak-title">
-        <h2 id="streak-title" className="flex items-center gap-2 text-lg font-semibold">
-          <span className="text-primary">
-            <Icon name="sprout" />
-          </span>
-          {t("home.streak", { days: streak.days })}
-        </h2>
-        {streak.frozenDays.length > 0 && <p className="text-text-muted">{t("home.streakFrozen")}</p>}
-      </Card>
-
       <Card aria-labelledby="meals-title">
-        <h2 id="meals-title" className="text-xl font-semibold">
+        <h2 id="meals-title" className="text-xl font-bold">
           {t("home.meals")}
         </h2>
-        <ul className="flex flex-col divide-y divide-border">
-          {MEAL_SLOTS.map((slot) => (
-            <li key={slot} className="flex items-center justify-between gap-3 py-2">
-              <span className="flex flex-col">
-                <span className="font-semibold">{t(`slots.${slot}`)}</span>
-                <span className="text-sm text-text-muted">
-                  {t("common.kcal", { value: Math.round(summary.bySlot[slot].totals.kcal) })}
+        <ul className="-my-1 flex flex-col divide-y divide-border">
+          {MEAL_SLOTS.map((slot) => {
+            const { totals, entries } = summary.bySlot[slot];
+            const highlight = slot === current && entries.length === 0;
+            return (
+              <li key={slot} className="flex min-h-16 items-center justify-between gap-3 py-2">
+                <span className="flex min-w-0 flex-col">
+                  <span className="font-bold">{t(`slots.${slot}`)}</span>
+                  <span className="truncate text-sm text-text-muted">
+                    {entries.length > 0
+                      ? t("home.slotSummary", {
+                          kcal: Math.round(totals.kcal),
+                          labels: entries.map((entry) => entry.label).join(", "),
+                        })
+                      : t("home.slotEmpty")}
+                  </span>
                 </span>
-              </span>
-              <Link
-                href={{ pathname: "/add", query: { slot, date: today } }}
-                aria-label={t("home.addTo", { slot: t(`slotsLower.${slot}`) })}
-                className="flex size-12 items-center justify-center rounded-full bg-primary-soft text-primary"
-              >
-                <Icon name="plus" />
-              </Link>
-            </li>
-          ))}
+                <Link
+                  href={{ pathname: "/add", query: { slot, date: today } }}
+                  aria-label={t("home.addTo", { slot: t(`slotsLower.${slot}`) })}
+                  className={`flex size-12 shrink-0 items-center justify-center rounded-full ${
+                    highlight ? "bg-primary text-on-primary" : "bg-primary-soft text-primary"
+                  }`}
+                >
+                  <Icon name="plus" />
+                </Link>
+              </li>
+            );
+          })}
         </ul>
         <Link href="/journal" className="font-semibold text-primary underline-offset-4 hover:underline">
           {t("home.openJournal")}
         </Link>
       </Card>
 
-      <Card aria-labelledby="checkin-title">
-        <h2 id="checkin-title" className="text-xl font-semibold">
-          {t("checkin.title")}
-        </h2>
-        <p className="text-sm text-text-muted">{t("checkin.hint")}</p>
-        <CheckinCard date={today} initial={checkin} />
-      </Card>
-
-      <Card aria-labelledby="water-title">
-        <h2 id="water-title" className="text-xl font-semibold">
-          {t("water.title")}
-        </h2>
-        <WaterTracker date={today} glasses={summary.water.glasses} goal={summary.water.goal} />
-      </Card>
-
-      <nav aria-label={t("home.more")} className="flex flex-col gap-3">
-        {(
-          [
-            ["/coach", "chat", t("coach.title")],
-            ["/family", "family", t("family.title")],
-            ["/plan", "book", t("plan.title")],
-            ["/week", "calendar", t("week.title")],
-            ["/activity", "run", t("activity.title")],
-            ["/body", "ruler", t("body.title")],
-            ["/fasting", "timer", t("fasting.title")],
-            ["/treatment", "pill", t("treatment.title")],
-            ["/metabolism", "pulse", t("metabolism.title")],
-            ["/quality", "sprout", t("quality.title")],
-          ] as const
-        ).map(([href, icon, label]) => (
-          <Link
-            key={href}
-            href={href}
-            className="flex min-h-14 items-center gap-3 rounded-[var(--radius-card)] border border-border bg-surface px-5 py-3 font-semibold shadow-sm hover:bg-surface-muted"
-          >
-            <span className="text-primary">
-              <Icon name={icon} />
-            </span>
-            {label}
-          </Link>
-        ))}
-      </nav>
-
-      <p className="mt-auto text-sm text-text-muted">{t("disclaimer", { appName: APP_NAME })}</p>
+      <div className="grid grid-cols-2 gap-4">
+        <WaterTile date={today} glasses={summary.water.glasses} goal={summary.water.goal} />
+        <section
+          aria-labelledby="streak-title"
+          className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-surface p-4"
+        >
+          <span className="text-primary">
+            <Icon name="sprout" />
+          </span>
+          <h2 id="streak-title" className="font-bold">
+            {t("home.streak", { days: streak.days })}
+          </h2>
+          {streak.frozenDays.length > 0 && <p className="text-sm text-text-muted">{t("home.streakFrozen")}</p>}
+        </section>
+      </div>
     </>
   );
 }

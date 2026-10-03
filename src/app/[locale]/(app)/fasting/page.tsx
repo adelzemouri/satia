@@ -25,7 +25,7 @@ export default async function FastingPage({ params }: PageProps<"/[locale]/fasti
 
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("title")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
 
       {!overview.allowed ? (
         <Alert tone="info">{t("minor")}</Alert>

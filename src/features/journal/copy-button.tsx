@@ -17,11 +17,14 @@ export function CopyButton({
   fromSlot,
   toDate,
   label,
+  compact = false,
 }: {
   fromDate: string;
   fromSlot: MealSlot | null;
   toDate: string;
   label: string;
+  /** Simple lien d'action, sans bouton encadré. */
+  compact?: boolean;
 }) {
   const t = useTranslations("journal");
   const errorText = useErrorText();
@@ -40,10 +43,21 @@ export function CopyButton({
 
   return (
     <div className="flex flex-col gap-2">
-      <Button variant="secondary" onClick={copy} disabled={pending}>
-        <Icon name="copy" />
-        {label}
-      </Button>
+      {compact ? (
+        <button
+          type="button"
+          onClick={copy}
+          disabled={pending}
+          className="min-h-11 shrink-0 font-semibold text-primary underline-offset-4 hover:underline"
+        >
+          {label}
+        </button>
+      ) : (
+        <Button variant="secondary" onClick={copy} disabled={pending}>
+          <Icon name="copy" />
+          {label}
+        </Button>
+      )}
       {message && <Alert tone={message.ok ? "success" : "error"}>{message.text}</Alert>}
     </div>
   );

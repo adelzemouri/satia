@@ -16,8 +16,8 @@
     "loading": "Chargement…"
   },
   "nav": {
-    "home": "Accueil",
-    "profile": "Profil",
+    "home": "Aujourd'hui",
+    "profile": "Moi",
     "admin": "Administration",
     "logout": "Se déconnecter",
     "journal": "Journal",
@@ -25,10 +25,11 @@
     "weight": "Poids",
     "main": "Navigation principale",
     "training": "Training",
-    "skipToContent": "Aller au contenu"
+    "skipToContent": "Aller au contenu",
+    "progress": "Progrès"
   },
   "home": {
-    "greeting": "Bonjour {name} !",
+    "greeting": "Bonjour {name}",
     "todayGoal": "Ton objectif du jour",
     "macros": "Répartition",
     "protein": "Protéines",
@@ -53,7 +54,14 @@
     "activityBurned": "Dont {kcal} kcal dépensées en activité.",
     "fastRunning": "Jeûne en cours",
     "fastUntil": "Fin prévue à {end, time, short}.",
-    "fastOpen": "Voir le minuteur"
+    "fastOpen": "Voir le minuteur",
+    "remainingLabel": "Il te reste",
+    "overLabel": "Au-delà de ton objectif",
+    "kcalValue": "{value, number} kcal",
+    "consumedOf": "{value, number} kcal sur {goal, number}",
+    "slotSummary": "{kcal, number} kcal · {labels}",
+    "slotEmpty": "Rien pour l'instant",
+    "openProfile": "Mon profil et mes réglages"
   },
   "theme": {
     "label": "Thème",
@@ -159,7 +167,6 @@
       "skip": "Je préfère ne pas en fixer"
     },
     "activity": {
-      "title": "Ton niveau d'activité au quotidien",
       "1": {
         "label": "Plutôt calme",
         "hint": "Travail assis, peu de marche, pas de sport."
@@ -179,7 +186,8 @@
       "5": {
         "label": "Extrêmement actif",
         "hint": "Métier très physique et entraînement quotidien."
-      }
+      },
+      "title": "Ton niveau d'activité au quotidien"
     },
     "pace": {
       "title": "À quel rythme ?",
@@ -268,7 +276,8 @@
     "aiEntry": "Saisie par photo, voix ou texte",
     "aiEntryHint": "Tes contenants et tes expressions aident l'IA à mieux comprendre tes repas.",
     "containers": "Mes contenants",
-    "dictionary": "Mon dictionnaire"
+    "dictionary": "Mon dictionnaire",
+    "settings": "Réglages"
   },
   "admin": {
     "title": "Administration",
@@ -412,15 +421,18 @@
     "slot": "Repas",
     "copyToToday": "Copier ce repas aujourd'hui",
     "copied": "{count, plural, one {# aliment copié} other {# aliments copiés}}",
-    "duplicateYesterday": "Reprendre la journée d'hier",
+    "duplicateYesterday": "Copier hier",
     "estimated": "estimé",
     "entryValues": "{grams, number} g · {kcal, number} kcal",
-    "mealPhoto": "Photo du {slot}"
+    "mealPhoto": "Photo du {slot}",
+    "days": "Changer de jour",
+    "week": "Semaine",
+    "hasEntries": "repas saisis"
   },
   "add": {
-    "title": "Ajouter un aliment",
+    "title": "Ajouter",
     "searchLabel": "Rechercher un aliment",
-    "searchHint": "Par exemple : pomme, riz cuit, yaourt nature.",
+    "searchHint": "Rechercher un aliment",
     "tabs": {
       "search": "Recherche",
       "recent": "Récents",
@@ -454,7 +466,13 @@
       "family": "Recette du foyer"
     },
     "scan": "Scanner un code-barres",
-    "shareWithFamily": "Partager un plat avec la famille"
+    "shareWithFamily": "Partager un plat avec la famille",
+    "listsTitle": "Tes aliments",
+    "quickAdd": "Ajouter {name}",
+    "quickAdded": "{name} ajouté",
+    "quickAddHint": "Le + ajoute ta dernière portion. Tu peux la corriger ensuite dans le journal.",
+    "lastPortion": "{quantity, number} {unit} · {kcal, number} kcal",
+    "slotLabel": "Repas"
   },
   "foods": {
     "title": "Mes aliments et recettes",
@@ -493,7 +511,8 @@
     "title": "Eau",
     "count": "{glasses, number} / {goal, number} verres",
     "glass": "Verre {n}",
-    "goalLabel": "Objectif d'eau (verres de 250 ml par jour)"
+    "goalLabel": "Objectif d'eau (verres de 250 ml par jour)",
+    "addGlass": "Ajouter un verre d'eau"
   },
   "weight": {
     "title": "Mon poids",
@@ -603,7 +622,7 @@
   "aiEntry": {
     "title": "Photo, voix ou texte",
     "hint": "Prends ton assiette en photo ou décris ton repas : tu vérifies tout avant l'ajout.",
-    "takePhoto": "Prendre une photo",
+    "takePhoto": "Photo",
     "choosePhoto": "Choisir une photo",
     "photoAlt": "Photo de ton repas",
     "note": "Une précision ? (facultatif)",
@@ -612,14 +631,18 @@
     "noContainer": "Je ne précise pas",
     "analyzePhoto": "Analyser la photo",
     "otherPhoto": "Choisir une autre photo",
-    "describe": "Ou décris ton repas",
+    "describe": "Décris ton repas",
     "describeHint": "Par exemple : 2 œufs brouillés et une tartine beurrée.",
     "analyzeText": "Analyser",
     "dictate": "Dicter",
     "stopDictation": "Arrêter la dictée",
     "analyzing": "Analyse en cours…",
     "containersLink": "Mes contenants",
-    "dictionaryLink": "Mon dictionnaire"
+    "dictionaryLink": "Mon dictionnaire",
+    "voice": "Voix",
+    "barcode": "Code-barres",
+    "write": "Écrire mon repas",
+    "cancel": "Annuler"
   },
   "aiConfirm": {
     "title": "On vérifie ensemble ?",
@@ -1414,5 +1437,9 @@
       "time": "Heure du rappel",
       "save": "Ajouter"
     }
+  },
+  "progress": {
+    "title": "Progrès",
+    "lastWeight": "Dernière pesée : {value, number} kg"
   }
 }

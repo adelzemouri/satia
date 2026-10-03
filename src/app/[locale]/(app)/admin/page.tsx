@@ -28,7 +28,7 @@ export default async function AdminPage({ params }: PageProps<"/[locale]/admin">
 
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("title")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
 
       <Card aria-labelledby="members">
         <h2 id="members" className="text-xl font-semibold">

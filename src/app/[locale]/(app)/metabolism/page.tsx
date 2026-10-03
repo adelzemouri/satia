@@ -23,7 +23,7 @@ export default async function MetabolismPage({ params }: PageProps<"/[locale]/me
 
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("title")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
       <p className="text-text-muted">{t("intro")}</p>
 
       <Card aria-labelledby="expenditure-title">
@@ -33,11 +33,13 @@ export default async function MetabolismPage({ params }: PageProps<"/[locale]/me
         <dl className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1 rounded-2xl bg-surface-muted p-3">
             <dt className="text-sm font-semibold text-text-muted">{t("startEstimate")}</dt>
-            <dd className="font-display text-2xl font-semibold">{t("kcalPerDay", { value: overview.startTdee })}</dd>
+            <dd className="font-display text-2xl font-extrabold tracking-tight">
+              {t("kcalPerDay", { value: overview.startTdee })}
+            </dd>
           </div>
           <div className="flex flex-col gap-1 rounded-2xl bg-surface-muted p-3">
             <dt className="text-sm font-semibold text-text-muted">{t("measured")}</dt>
-            <dd className="font-display text-2xl font-semibold">
+            <dd className="font-display text-2xl font-extrabold tracking-tight">
               {measurement.status === "measured" ? t("kcalPerDay", { value: measurement.tdee }) : t("notYet")}
             </dd>
           </div>
@@ -73,7 +75,9 @@ export default async function MetabolismPage({ params }: PageProps<"/[locale]/me
         <h2 id="goal-title" className="text-xl font-semibold">
           {t("goal")}
         </h2>
-        <p className="font-display text-3xl font-semibold">{t("kcalPerDay", { value: overview.goalKcal })}</p>
+        <p className="font-display text-3xl font-extrabold tracking-tight">
+          {t("kcalPerDay", { value: overview.goalKcal })}
+        </p>
         <p className="text-text-muted">{t(`source.${overview.goalSource}`)}</p>
         <GoalLockForm locked={overview.goalLocked} />
       </Card>

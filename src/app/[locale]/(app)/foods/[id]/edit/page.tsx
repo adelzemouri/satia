@@ -22,7 +22,7 @@ export default async function EditRecipePage({ params }: PageProps<"/[locale]/fo
   const t = await getTranslations("foods");
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("editRecipe")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("editRecipe")}</h1>
       <Card>
         <RecipeForm
           initial={{

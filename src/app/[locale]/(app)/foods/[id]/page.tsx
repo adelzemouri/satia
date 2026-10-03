@@ -56,7 +56,7 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
           <p className="text-sm font-semibold text-text-muted">
             {t(food.householdId ? "add.sources.family" : `add.sources.${food.source}`)}
           </p>
-          <h1 className="font-display text-3xl font-semibold">{food.nameFr}</h1>
+          <h1 className="font-display text-3xl font-extrabold tracking-tight">{food.nameFr}</h1>
           {food.brand && <p className="text-lg">{food.brand}</p>}
           {food.source === "off" && food.sourceRef && (
             <p className="text-sm text-text-muted">{t("product.barcode", { code: food.sourceRef })}</p>

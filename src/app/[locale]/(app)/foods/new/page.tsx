@@ -12,7 +12,7 @@ export default async function NewFoodPage({ params }: PageProps<"/[locale]/foods
   const t = await getTranslations("foods");
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("newFood")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("newFood")}</h1>
       <Card>
         <CustomFoodForm />
       </Card>

@@ -11,7 +11,7 @@ export default function OfflinePage({ params }: PageProps<"/[locale]/~offline">)
   const t = useTranslations("offline");
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-4 px-5">
-      <h1 className="font-display text-3xl font-semibold">{t("title")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
       <p>{t("body")}</p>
     </main>
   );

@@ -15,7 +15,7 @@ export default async function NewRecipePage({ params, searchParams }: PageProps<
   const t = await getTranslations("foods");
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("newRecipe")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("newRecipe")}</h1>
       <Card>
         <RecipeForm defaultFamily={family} aiAvailable={ai?.available === true} />
       </Card>

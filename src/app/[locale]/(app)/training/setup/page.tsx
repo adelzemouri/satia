@@ -14,7 +14,7 @@ export default async function TrainingSetupPage({ params }: PageProps<"/[locale]
   const t = await getTranslations("training");
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("setup.title")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("setup.title")}</h1>
       <p className="text-text-muted">{t("setup.intro")}</p>
       <p className="rounded-2xl bg-surface-muted px-4 py-3 text-sm">{t("disclaimer")}</p>
       <Card>

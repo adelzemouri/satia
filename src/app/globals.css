@@ -20,7 +20,7 @@
   --color-carbs: var(--color-carbs);
   --color-fat: var(--color-fat);
   --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-heading), ui-serif, Georgia, serif;
+  --font-display: var(--font-body), ui-sans-serif, system-ui, sans-serif;
   --radius-card: var(--radius-card);
 }
 

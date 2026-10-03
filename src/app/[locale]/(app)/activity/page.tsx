@@ -32,13 +32,13 @@ export default async function ActivityPage({ params }: PageProps<"/[locale]/acti
 
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("title")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
 
       <Card aria-labelledby="today-activity">
         <h2 id="today-activity" className="text-xl font-semibold">
           {t("today")}
         </h2>
-        <p className="font-display text-2xl font-semibold">{t("burned", { kcal: burned })}</p>
+        <p className="font-display text-2xl font-extrabold tracking-tight">{t("burned", { kcal: burned })}</p>
         <p className="text-sm text-text-muted">{t("goalHint")}</p>
       </Card>
 

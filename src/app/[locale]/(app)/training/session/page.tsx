@@ -88,7 +88,7 @@ export default async function TrainingSessionPage({ params, searchParams }: Page
   return (
     <>
       <div className="flex items-center justify-between gap-3">
-        <h1 className="font-display text-3xl font-semibold">{title}</h1>
+        <h1 className="font-display text-3xl font-extrabold tracking-tight">{title}</h1>
         <Link href="/training" className="font-semibold text-primary underline-offset-4 hover:underline">
           {t("session.quit")}
         </Link>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState, useTransition } from "react";
+import { type ReactNode, useState, useTransition } from "react";
 
 import { type AiAvailability, AiEntry } from "@/features/ai/ai-entry";
 import type { MealDraft } from "@/features/ai/draft";
@@ -15,15 +15,19 @@ import { Button, buttonClass } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 
 import { FoodList } from "./food-list";
-import type { FoodItem, OffItem } from "./food-types";
+import type { FoodItem, OffItem, RecentItem } from "./food-types";
+import { QuickAddButton } from "./quick-add-button";
 import { ProductThumb } from "./product-thumb";
 import { QuantityForm } from "./quantity-form";
 import { useFoodSearch } from "./use-food-search";
 
-const TABS = ["search", "recent", "favorites", "mine"] as const;
+const TABS = ["recent", "favorites", "mine"] as const;
 type Tab = (typeof TABS)[number];
 
-/** Écran d'ajout : recherche, récents, favoris et aliments personnels, puis la quantité. */
+/**
+ * Écran d'ajout : la recherche en haut, puis photo, voix et code-barres, les suggestions du
+ * moment et les aliments récents (ajoutables d'un geste avec la dernière portion), favoris et personnels.
+ */
 export function FoodPicker({
   date,
   slot,
@@ -33,20 +37,24 @@ export function FoodPicker({
   initialFood = null,
   inputMethod = "manual",
   ai,
+  suggestions,
 }: {
   date: string;
   slot: MealSlot;
-  recent: FoodItem[];
+  recent: RecentItem[];
   favorites: FoodItem[];
   mine: FoodItem[];
   initialFood?: FoodItem | null;
   inputMethod?: "manual" | "barcode";
   /** Saisie par photo, voix ou texte libre ; absente, seul l'ajout manuel est proposé. */
   ai?: { availability: AiAvailability; containers: { id: string; name: string }[] };
+  /** Repas habituel et idée du moment, affichés tant qu'aucune recherche n'est en cours. */
+  suggestions?: ReactNode;
 }) {
   const t = useTranslations("add");
+  const tAll = useTranslations();
   const errorText = useErrorText();
-  const [tab, setTab] = useState<Tab>("search");
+  const [tab, setTab] = useState<Tab>("recent");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<FoodItem | null>(initialFood);
   const [favorites, setFavorites] = useState(initialFavorites);
@@ -119,125 +127,176 @@ export function FoodPicker({
 
   const list = (foods: FoodItem[], empty: string) =>
     foods.length === 0 ? (
-      <p className="text-text-muted">{empty}</p>
+      <p className="py-3 text-text-muted">{empty}</p>
     ) : (
       <FoodList foods={foods} favoriteIds={favoriteIds} onSelect={setSelected} onToggleFavorite={toggleFavorite} />
     );
 
-  return (
-    <div className="flex flex-col gap-4">
-      {ai && (
-        <AiEntry
-          availability={ai.availability}
-          containers={ai.containers}
-          onDraft={(value, preview) => setDraft({ draft: value, preview })}
-        />
-      )}
+  const searching = query.trim().length > 0;
+  const barcodeHref = { pathname: "/scan", query: { date, slot } };
 
-      <div role="tablist" aria-label={t("title")} className="grid grid-cols-4 gap-1 rounded-full bg-surface-muted p-1">
-        {TABS.map((value) => (
-          <button
-            key={value}
-            type="button"
-            role="tab"
-            id={`tab-${value}`}
-            aria-selected={tab === value}
-            aria-controls="food-panel"
-            onClick={() => setTab(value)}
-            className={`min-h-11 rounded-full px-1 text-sm font-semibold ${
-              tab === value ? "bg-surface text-text shadow-sm" : "text-text-muted"
-            }`}
-          >
-            {t(`tabs.${value}`)}
-          </button>
-        ))}
-      </div>
+  return (
+    <div className="flex flex-col gap-5">
+      <label className="focus-within:outline-focus flex min-h-14 items-center gap-3 rounded-2xl border border-border bg-surface px-4 focus-within:outline-3">
+        <span className="text-text-muted">
+          <Icon name="search" />
+        </span>
+        <span className="sr-only">{t("searchLabel")}</span>
+        <input
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={t("searchHint")}
+          autoComplete="off"
+          className="min-w-0 flex-1 bg-transparent text-base outline-none"
+        />
+      </label>
 
       {error && <Alert>{errorText(error)}</Alert>}
 
-      <Link href={{ pathname: "/scan", query: { date, slot } }} className={buttonClass("secondary")}>
-        <Icon name="barcode" />
-        {t("scan")}
-      </Link>
-      <Link href={{ pathname: "/family/share", query: { date, slot } }} className={buttonClass("secondary")}>
-        <Icon name="family" />
-        {t("shareWithFamily")}
-      </Link>
-
-      <div id="food-panel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="flex flex-col gap-4">
-        {tab === "search" && (
-          <>
-            <label className="flex flex-col gap-1.5">
-              <span className="font-semibold">{t("searchLabel")}</span>
-              <input
-                type="search"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder={t("searchHint")}
-                autoComplete="off"
-                className="min-h-12 rounded-2xl border border-border bg-surface px-4 text-base"
-              />
-            </label>
-            {results && !loading && results.length === 0 && <p className="text-text-muted">{t("noResults")}</p>}
-            {results && results.length > 0 && (
+      {searching ? (
+        <section aria-label={t("tabs.search")} className="flex flex-col gap-4">
+          {results && !loading && results.length === 0 && <p className="text-text-muted">{t("noResults")}</p>}
+          {results && results.length > 0 && (
+            <div className="rounded-[var(--radius-card)] bg-surface px-4">
               <FoodList
                 foods={results}
                 favoriteIds={favoriteIds}
                 onSelect={setSelected}
                 onToggleFavorite={toggleFavorite}
               />
-            )}
-            {query.trim().length >= 2 && (
-              <section className="flex flex-col gap-3 rounded-2xl bg-surface-muted p-4" aria-labelledby="off-title">
-                <h2 id="off-title" className="font-semibold">
-                  {t("offTitle")}
-                </h2>
-                <Button variant="secondary" onClick={searchOff} disabled={pending}>
-                  {t("offSearch")}
-                </Button>
-                {off?.query === query && off.results.length === 0 && <p>{t("offNoResults")}</p>}
-                {off?.query === query && off.results.length > 0 && (
-                  <ul className="flex flex-col divide-y divide-border">
-                    {off.results.map((item) => (
-                      <li key={item.code}>
-                        <button
-                          type="button"
-                          onClick={() => chooseOff(item)}
-                          disabled={pending}
-                          className="flex min-h-14 w-full items-center gap-3 py-2 text-left"
-                        >
-                          <ProductThumb src={item.imageUrl} />
-                          <span className="flex min-w-0 flex-col">
-                            <span className="font-semibold">{item.name}</span>
-                            <span className="text-sm text-text-muted">
-                              {[item.brand, t("per100", { kcal: Math.round(item.kcal) })].filter(Boolean).join(" · ")}
-                            </span>
+            </div>
+          )}
+          {query.trim().length >= 2 && (
+            <section
+              className="flex flex-col gap-3 rounded-[var(--radius-card)] bg-surface p-4"
+              aria-labelledby="off-title"
+            >
+              <h2 id="off-title" className="font-bold">
+                {t("offTitle")}
+              </h2>
+              <Button variant="secondary" onClick={searchOff} disabled={pending}>
+                {t("offSearch")}
+              </Button>
+              {off?.query === query && off.results.length === 0 && <p>{t("offNoResults")}</p>}
+              {off?.query === query && off.results.length > 0 && (
+                <ul className="flex flex-col divide-y divide-border">
+                  {off.results.map((item) => (
+                    <li key={item.code}>
+                      <button
+                        type="button"
+                        onClick={() => chooseOff(item)}
+                        disabled={pending}
+                        className="flex min-h-14 w-full items-center gap-3 py-2 text-left"
+                      >
+                        <ProductThumb src={item.imageUrl} />
+                        <span className="flex min-w-0 flex-col">
+                          <span className="font-semibold">{item.name}</span>
+                          <span className="text-sm text-text-muted">
+                            {[item.brand, t("per100", { kcal: Math.round(item.kcal) })].filter(Boolean).join(" · ")}
                           </span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <p className="text-sm text-text-muted">
-                  <a href="https://world.openfoodfacts.org" className="underline" target="_blank" rel="noreferrer">
-                    {t("offAttribution")}
-                  </a>
-                </p>
-              </section>
-            )}
-          </>
-        )}
-        {tab === "recent" && list(recent, t("emptyRecent"))}
-        {tab === "favorites" && list(favorites, t("emptyFavorites"))}
-        {tab === "mine" && (
-          <>
-            {list(mine, t("emptyMine"))}
-            <Link href="/foods" className={buttonClass("secondary")}>
-              {t("manageFoods")}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="text-sm text-text-muted">
+                <a href="https://world.openfoodfacts.org" className="underline" target="_blank" rel="noreferrer">
+                  {t("offAttribution")}
+                </a>
+              </p>
+            </section>
+          )}
+        </section>
+      ) : (
+        <>
+          {ai ? (
+            <AiEntry
+              availability={ai.availability}
+              containers={ai.containers}
+              barcodeHref={barcodeHref}
+              onDraft={(value, preview) => setDraft({ draft: value, preview })}
+            />
+          ) : (
+            <Link href={barcodeHref} className={buttonClass("secondary")}>
+              <Icon name="barcode" />
+              {t("scan")}
             </Link>
-          </>
-        )}
-      </div>
+          )}
+
+          {suggestions}
+
+          <section aria-label={t("listsTitle")} className="flex flex-col gap-3">
+            <div
+              role="tablist"
+              aria-label={t("listsTitle")}
+              className="grid grid-cols-3 gap-1 rounded-full bg-surface-muted p-1"
+            >
+              {TABS.map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  role="tab"
+                  id={`tab-${value}`}
+                  aria-selected={tab === value}
+                  aria-controls="food-panel"
+                  onClick={() => setTab(value)}
+                  className={`min-h-11 rounded-full px-1 text-sm font-semibold ${
+                    tab === value ? "bg-surface text-text" : "text-text-muted"
+                  }`}
+                >
+                  {t(`tabs.${value}`)}
+                </button>
+              ))}
+            </div>
+            <div
+              id="food-panel"
+              role="tabpanel"
+              aria-labelledby={`tab-${tab}`}
+              className="flex flex-col gap-3 rounded-[var(--radius-card)] bg-surface px-4 py-1"
+            >
+              {tab === "recent" &&
+                (recent.length === 0 ? (
+                  <p className="py-3 text-text-muted">{t("emptyRecent")}</p>
+                ) : (
+                  <FoodList
+                    foods={recent}
+                    favoriteIds={favoriteIds}
+                    onSelect={setSelected}
+                    trailing={(food) => {
+                      const item = recent.find((value) => value.id === food.id)!;
+                      return <QuickAddButton food={item} date={date} slot={slot} onError={setError} />;
+                    }}
+                    describe={(food) => {
+                      const item = recent.find((value) => value.id === food.id)!;
+                      return t("lastPortion", {
+                        quantity: item.lastQuantity,
+                        unit: tAll(`units.${item.lastUnit}`),
+                        kcal: Math.round(item.lastKcal),
+                      });
+                    }}
+                  />
+                ))}
+              {tab === "favorites" && list(favorites, t("emptyFavorites"))}
+              {tab === "mine" && (
+                <>
+                  {list(mine, t("emptyMine"))}
+                  <Link href="/foods" className={buttonClass("secondary", "mb-3")}>
+                    {t("manageFoods")}
+                  </Link>
+                </>
+              )}
+            </div>
+            <p className="text-sm text-text-muted">{t("quickAddHint")}</p>
+          </section>
+        </>
+      )}
+
+      <Link href={{ pathname: "/family/share", query: { date, slot } }} className={buttonClass("secondary")}>
+        <Icon name="family" />
+        {t("shareWithFamily")}
+      </Link>
 
       <p className="text-sm text-text-muted">
         <a href="https://ciqual.anses.fr" className="underline" target="_blank" rel="noreferrer">

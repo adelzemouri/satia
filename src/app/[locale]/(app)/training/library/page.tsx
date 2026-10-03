@@ -35,7 +35,7 @@ export default async function TrainingLibraryPage({ params, searchParams }: Page
 
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("library.title")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("library.title")}</h1>
       <p className="text-text-muted">{t("library.intro")}</p>
 
       <Card>

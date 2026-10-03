@@ -19,6 +19,9 @@ export type FoodItem = {
   servings?: number | null;
 };
 
+/** Aliment récent, avec la dernière portion saisie (voir recentFoods). */
+export type RecentItem = FoodItem & { lastQuantity: number; lastUnit: Unit; lastKcal: number };
+
 /** Produit Open Food Facts proposé avant import (voir server/open-food-facts.ts). */
 export type OffItem = {
   code: string;

@@ -260,7 +260,7 @@ export function OnboardingWizard({ defaultFirstName }: { defaultFirstName: strin
           else next();
         }}
       >
-        <h1 ref={headingRef} tabIndex={-1} className="font-display text-3xl font-semibold outline-none">
+        <h1 ref={headingRef} tabIndex={-1} className="font-display text-3xl font-extrabold tracking-tight outline-none">
           {step === "summary" ? t("summary.title") : t(`${step}.title`)}
         </h1>
 
@@ -528,7 +528,7 @@ function Summary({ plan, goal, formatDate }: { plan: Plan; goal: Goal; formatDat
     <div className="flex flex-col gap-4">
       <Card>
         <h2 className="font-semibold text-text-muted">{t("kcal")}</h2>
-        <p className="font-display text-5xl font-semibold">{tc("kcal", { value: plan.kcal })}</p>
+        <p className="font-display text-5xl font-extrabold tracking-tight">{tc("kcal", { value: plan.kcal })}</p>
         <h3 className="font-semibold text-text-muted">{t("macros")}</h3>
         <ul className="grid grid-cols-3 gap-3">
           {(

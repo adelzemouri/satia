@@ -16,8 +16,8 @@
     "loading": "Loading…"
   },
   "nav": {
-    "home": "Home",
-    "profile": "Profile",
+    "home": "Today",
+    "profile": "Me",
     "admin": "Admin",
     "logout": "Sign out",
     "journal": "Diary",
@@ -25,10 +25,11 @@
     "weight": "Weight",
     "main": "Main navigation",
     "training": "Training",
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "progress": "Progress"
   },
   "home": {
-    "greeting": "Hello {name}!",
+    "greeting": "Hello {name}",
     "todayGoal": "Your goal for today",
     "macros": "Breakdown",
     "protein": "Protein",
@@ -53,7 +54,14 @@
     "activityBurned": "Including {kcal} kcal burned through activity.",
     "fastRunning": "Fast in progress",
     "fastUntil": "Planned end at {end, time, short}.",
-    "fastOpen": "See the timer"
+    "fastOpen": "See the timer",
+    "remainingLabel": "You have left",
+    "overLabel": "Above your goal",
+    "kcalValue": "{value, number} kcal",
+    "consumedOf": "{value, number} kcal of {goal, number}",
+    "slotSummary": "{kcal, number} kcal · {labels}",
+    "slotEmpty": "Nothing yet",
+    "openProfile": "My profile and settings"
   },
   "theme": {
     "label": "Theme",
@@ -159,7 +167,6 @@
       "skip": "I'd rather not set one"
     },
     "activity": {
-      "title": "Your everyday activity level",
       "1": {
         "label": "Mostly calm",
         "hint": "Desk job, little walking, no sport."
@@ -179,7 +186,8 @@
       "5": {
         "label": "Extremely active",
         "hint": "Very physical job and daily training."
-      }
+      },
+      "title": "Your everyday activity level"
     },
     "pace": {
       "title": "At what pace?",
@@ -268,7 +276,8 @@
     "aiEntry": "Photo, voice or text entry",
     "aiEntryHint": "Your containers and expressions help the AI understand your meals better.",
     "containers": "My containers",
-    "dictionary": "My dictionary"
+    "dictionary": "My dictionary",
+    "settings": "Settings"
   },
   "admin": {
     "title": "Admin",
@@ -412,15 +421,18 @@
     "slot": "Meal",
     "copyToToday": "Copy this meal to today",
     "copied": "{count, plural, one {# food copied} other {# foods copied}}",
-    "duplicateYesterday": "Repeat yesterday",
+    "duplicateYesterday": "Copy yesterday",
     "estimated": "estimated",
     "entryValues": "{grams, number} g · {kcal, number} kcal",
-    "mealPhoto": "Photo of {slot}"
+    "mealPhoto": "Photo of {slot}",
+    "days": "Change day",
+    "week": "Week",
+    "hasEntries": "meals logged"
   },
   "add": {
-    "title": "Add a food",
+    "title": "Add",
     "searchLabel": "Search for a food",
-    "searchHint": "For example: apple, cooked rice, plain yoghurt.",
+    "searchHint": "Search for a food",
     "tabs": {
       "search": "Search",
       "recent": "Recent",
@@ -454,7 +466,13 @@
       "family": "Household recipe"
     },
     "scan": "Scan a barcode",
-    "shareWithFamily": "Share a dish with the family"
+    "shareWithFamily": "Share a dish with the family",
+    "listsTitle": "Your foods",
+    "quickAdd": "Add {name}",
+    "quickAdded": "{name} added",
+    "quickAddHint": "The + adds your last portion. You can adjust it in the journal afterwards.",
+    "lastPortion": "{quantity, number} {unit} · {kcal, number} kcal",
+    "slotLabel": "Meal"
   },
   "foods": {
     "title": "My foods and recipes",
@@ -493,7 +511,8 @@
     "title": "Water",
     "count": "{glasses, number} / {goal, number} glasses",
     "glass": "Glass {n}",
-    "goalLabel": "Water goal (250 ml glasses per day)"
+    "goalLabel": "Water goal (250 ml glasses per day)",
+    "addGlass": "Add a glass of water"
   },
   "weight": {
     "title": "My weight",
@@ -603,7 +622,7 @@
   "aiEntry": {
     "title": "Photo, voice or text",
     "hint": "Snap your plate or describe your meal: you check everything before it's added.",
-    "takePhoto": "Take a photo",
+    "takePhoto": "Photo",
     "choosePhoto": "Choose a photo",
     "photoAlt": "Photo of your meal",
     "note": "Any detail? (optional)",
@@ -612,14 +631,18 @@
     "noContainer": "Not specified",
     "analyzePhoto": "Analyse the photo",
     "otherPhoto": "Choose another photo",
-    "describe": "Or describe your meal",
+    "describe": "Describe your meal",
     "describeHint": "For example: 2 scrambled eggs and a slice of buttered toast.",
     "analyzeText": "Analyse",
     "dictate": "Dictate",
     "stopDictation": "Stop dictation",
     "analyzing": "Analysing…",
     "containersLink": "My containers",
-    "dictionaryLink": "My dictionary"
+    "dictionaryLink": "My dictionary",
+    "voice": "Voice",
+    "barcode": "Barcode",
+    "write": "Type my meal",
+    "cancel": "Cancel"
   },
   "aiConfirm": {
     "title": "Shall we check together?",
@@ -1414,5 +1437,9 @@
       "time": "Reminder time",
       "save": "Add"
     }
+  },
+  "progress": {
+    "title": "Progress",
+    "lastWeight": "Last weigh-in: {value, number} kg"
   }
 }

@@ -15,7 +15,7 @@ export default async function ContainersPage({ params }: PageProps<"/[locale]/co
 
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("containersTitle")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("containersTitle")}</h1>
       <p className="text-text-muted">{t("containersIntro")}</p>
       <Card>
         {containers.length === 0 ? (

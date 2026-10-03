@@ -1,6 +1,6 @@
 import { SerwistProvider } from "@serwist/turbopack/react";
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Nunito_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
@@ -12,8 +12,8 @@ import { routing } from "@/i18n/routing";
 
 import "../globals.css";
 
-const heading = Fraunces({ subsets: ["latin"], variable: "--font-heading", display: "swap" });
-const body = Nunito_Sans({ subsets: ["latin"], variable: "--font-body", display: "swap" });
+// Une seule famille pour les titres et le texte : nette et lisible sur téléphone.
+const sans = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-body", display: "swap" });
 
 export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Promise<Metadata> {
   const { locale } = await params;
@@ -33,8 +33,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: BRAND_COLORS.cream },
-    { media: "(prefers-color-scheme: dark)", color: BRAND_COLORS.oliveDark },
+    { media: "(prefers-color-scheme: light)", color: BRAND_COLORS.light },
+    { media: "(prefers-color-scheme: dark)", color: BRAND_COLORS.dark },
   ],
 };
 
@@ -49,7 +49,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
     <html
       lang={locale}
       data-theme={theme === "system" ? undefined : theme}
-      className={`${heading.variable} ${body.variable} h-full antialiased`}
+      className={`${sans.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-bg text-text">
         <NextIntlClientProvider>

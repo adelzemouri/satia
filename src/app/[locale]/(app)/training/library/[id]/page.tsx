@@ -24,7 +24,7 @@ export default async function ExercisePage({ params }: PageProps<"/[locale]/trai
       </Link>
       <div className="flex items-center gap-4">
         <ExerciseFigure muscle={exercise.muscle} size={72} />
-        <h1 className="font-display text-3xl font-semibold">{exercise.name}</h1>
+        <h1 className="font-display text-3xl font-extrabold tracking-tight">{exercise.name}</h1>
       </div>
       <p className="text-text-muted">
         {t(`muscles.${exercise.muscle}`)} ·{" "}

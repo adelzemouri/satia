@@ -6,3 +6,10 @@ export function formatDay(isoDate: string, locale: string, style: "long" | "shor
       : { day: "numeric", month: "short", timeZone: "UTC" };
   return new Intl.DateTimeFormat(locale, options).format(new Date(`${isoDate}T00:00:00Z`));
 }
+
+/** Jour de la semaine abrégé (« lun. »), pour le bandeau de semaine du journal. */
+export function formatWeekday(isoDate: string, locale: string): string {
+  return new Intl.DateTimeFormat(locale, { weekday: "short", timeZone: "UTC" }).format(
+    new Date(`${isoDate}T00:00:00Z`),
+  );
+}

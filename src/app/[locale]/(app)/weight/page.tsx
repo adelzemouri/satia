@@ -26,7 +26,7 @@ export default async function WeightPage({ params }: PageProps<"/[locale]/weight
 
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("title")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
 
       <Card aria-labelledby="add-weight">
         <h2 id="add-weight" className="text-xl font-semibold">
@@ -40,7 +40,7 @@ export default async function WeightPage({ params }: PageProps<"/[locale]/weight
           <h2 id="trend-title" className="text-xl font-semibold">
             {t("trend")}
           </h2>
-          <p className="font-display text-2xl font-semibold">{t("current", { value: last.trendKg })}</p>
+          <p className="font-display text-2xl font-extrabold tracking-tight">{t("current", { value: last.trendKg })}</p>
           <WeightChart
             points={overview.trend.slice(-CHART_DAYS)}
             targetKg={overview.targetWeightKg}

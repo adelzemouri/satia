@@ -23,7 +23,7 @@ export default async function WeekPage({ params }: PageProps<"/[locale]/week">) 
 
   return (
     <>
-      <h1 className="font-display text-3xl font-semibold">{t("title")}</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
 
       <Card aria-labelledby="mode-title">
         <h2 id="mode-title" className="text-xl font-semibold">
