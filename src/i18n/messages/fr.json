@@ -472,7 +472,13 @@
     "quickAdded": "{name} ajouté",
     "quickAddHint": "Le + ajoute ta dernière portion. Tu peux la corriger ensuite dans le journal.",
     "lastPortion": "{quantity, number} {unit} · {kcal, number} kcal",
-    "slotLabel": "Pour quel repas ?"
+    "slotLabel": "Pour quel repas ?",
+    "unitWeightOpen": "Compter en tranches ou en pièces",
+    "unitWeightTitle": "Combien pèse une tranche ou une pièce ?",
+    "unitWeightHint": "Le poids est souvent écrit sur l'emballage, près des valeurs nutritionnelles (par exemple « 1 tranche = 27 g »). Il sera retenu pour toute la famille.",
+    "unitWeightUnit": "Compter en",
+    "unitWeightGrams": "Poids en g",
+    "unitWeightSave": "Enregistrer ce poids"
   },
   "foods": {
     "title": "Mes aliments et recettes",

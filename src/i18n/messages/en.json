@@ -472,7 +472,13 @@
     "quickAdded": "{name} added",
     "quickAddHint": "The + adds your last portion. You can adjust it in the journal afterwards.",
     "lastPortion": "{quantity, number} {unit} · {kcal, number} kcal",
-    "slotLabel": "Which meal?"
+    "slotLabel": "Which meal?",
+    "unitWeightOpen": "Count in slices or pieces",
+    "unitWeightTitle": "How much does a slice or a piece weigh?",
+    "unitWeightHint": "The weight is often printed on the packaging, near the nutrition facts (for example \"1 slice = 27 g\"). It will be kept for the whole family.",
+    "unitWeightUnit": "Count in",
+    "unitWeightGrams": "Weight in g",
+    "unitWeightSave": "Save this weight"
   },
   "foods": {
     "title": "My foods and recipes",

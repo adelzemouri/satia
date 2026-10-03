@@ -79,6 +79,7 @@ describe("qualité nutritionnelle", () => {
         novaGroup: 4,
         fruitVegShare: 0,
         servingGrams: 15,
+        unitWeights: { portion: 15 },
         imageUrl: null,
       }),
     );

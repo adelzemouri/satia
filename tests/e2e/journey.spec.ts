@@ -324,6 +324,15 @@ test("ajout d'un produit par code-barres (Open Food Facts simulé)", async ({ pa
   await expect(page.getByLabel("Unité")).toHaveValue("portion");
   await expect(page.getByText("Ça fait 81 kcal")).toBeVisible();
   await expect(page.locator('img[src$="/images/front.png"]')).toBeVisible();
+
+  // Sans tranche ni pièce connue, on peut en donner le poids une fois pour toute la famille.
+  await page.getByRole("button", { name: "Compter en tranches ou en pièces" }).click();
+  await page.getByLabel("Compter en").selectOption("slice");
+  await page.getByLabel("Poids en g").fill("20");
+  await expectNoA11yViolations(page);
+  await page.getByRole("button", { name: "Enregistrer ce poids" }).click();
+  await expect(page.getByLabel("Unité")).toHaveValue("slice");
+  await expect(page.getByText("Ça fait 108 kcal")).toBeVisible();
   await page.getByRole("button", { name: "Ajouter au journal" }).click();
   await expect(page.getByRole("region", { name: "Collations" }).getByText(/^Pâte à tartiner noisettes/)).toBeVisible();
 });
@@ -374,10 +383,13 @@ test("saisie d'un repas par photo (LLM simulé), avec contenant et écran de con
   await expectNoA11yViolations(page);
 
   await page.goto("/add?slot=lunch");
-  await page
-    .getByLabel("Choisir une photo")
-    .setInputFiles({ name: "repas.png", mimeType: "image/png", buffer: MEAL_PNG });
-  await expect(page.getByRole("img", { name: "Photo de ton repas" })).toBeVisible();
+  // Le fichier peut être choisi avant l'hydratation de la page : on le redonne au besoin.
+  await expect(async () => {
+    await page
+      .getByLabel("Choisir une photo")
+      .setInputFiles({ name: "repas.png", mimeType: "image/png", buffer: MEAL_PNG });
+    await expect(page.getByRole("img", { name: "Photo de ton repas" })).toBeVisible({ timeout: 3000 });
+  }).toPass({ timeout: 20_000 });
   await page.getByLabel("Une précision ? (facultatif)").fill("sauce à part");
   await page.getByLabel("Dans quel contenant ?").selectOption({ label: "Grand bol" });
   await page.getByRole("button", { name: "Analyser la photo" }).click();

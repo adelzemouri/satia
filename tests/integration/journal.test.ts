@@ -9,6 +9,7 @@ import type { OnboardingInput } from "@/features/onboarding/schema";
 import { setupFirstAdmin } from "@/server/accounts";
 import { collectUserData } from "@/server/data-export";
 import { DomainError } from "@/server/errors";
+import { cacheProduct } from "@/server/open-food-facts";
 import {
   createCustomFood,
   createRecipe,
@@ -19,6 +20,7 @@ import {
   recentFoods,
   searchFoods,
   setFavorite,
+  setUnitWeight,
 } from "@/server/foods";
 import {
   addEntry,
@@ -141,6 +143,46 @@ describe("base d'aliments", () => {
     expect(await recentFoods(userId)).toEqual([
       expect.objectContaining({ id, lastQuantity: 30, lastUnit: "g", lastKcal: expect.any(Number) }),
     ]);
+  });
+});
+
+describe("poids d'une tranche ou d'une pièce", () => {
+  beforeEach(resetDatabase);
+
+  it("se renseigne pour un produit sans portion et reste après une mise à jour depuis OFF", async () => {
+    const userId = await setupUser();
+    const product = {
+      code: "3228857000166",
+      name: "Brioche tranchée",
+      brand: null,
+      kcal: 332,
+      proteinG: 8,
+      carbsG: 50,
+      fatG: 10,
+      fiberG: null,
+      sugarsG: null,
+      saltG: null,
+      nutriscore: null,
+      novaGroup: null,
+      fruitVegShare: 0,
+      servingGrams: null,
+      unitWeights: null,
+      imageUrl: null,
+    };
+    const id = await cacheProduct(product);
+    await setUnitWeight(userId, { foodId: id, unit: "slice", grams: 27 });
+    await addEntry(userId, { date: todayIso(), slot: "breakfast", foodId: id, quantity: 2, unit: "slice" });
+    expect((await entriesOn(userId, todayIso()))[0]).toMatchObject({ grams: 54 });
+
+    // OFF ajoute plus tard une portion : la tranche saisie par la famille est gardée.
+    await cacheProduct({ ...product, servingGrams: 50, unitWeights: { portion: 50 } });
+    expect((await getFood(userId, id)).unitWeights).toEqual({ slice: 27, portion: 50 });
+  });
+
+  it("refuse un poids absurde", async () => {
+    const userId = await setupUser();
+    const id = await granola(userId);
+    await expect(setUnitWeight(userId, { foodId: id, unit: "piece", grams: 0 })).rejects.toThrow();
   });
 });
 

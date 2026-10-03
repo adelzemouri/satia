@@ -32,10 +32,11 @@ export type OffItem = {
   carbsG: number;
   fatG: number;
   servingGrams: number | null;
+  unitWeights: Partial<Record<"portion" | "piece" | "slice", number>> | null;
   imageUrl: string | null;
 };
 
-/** Unité proposée par défaut : la portion ou la pièce si on la connaît, sinon les grammes. */
+/** Unité proposée par défaut : la tranche ou la pièce si on la connaît, puis la portion, sinon les grammes. */
 export function defaultUnit(units: readonly Unit[]): Unit {
-  return units.find((unit) => unit === "portion" || unit === "piece") ?? "g";
+  return units.find((unit) => unit === "slice" || unit === "piece") ?? units.find((unit) => unit === "portion") ?? "g";
 }

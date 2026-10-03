@@ -10,6 +10,7 @@ import {
   deleteOwnFood,
   type RecipeInput,
   setFavorite,
+  setUnitWeight,
   updateRecipe,
 } from "@/server/foods";
 import {
@@ -67,6 +68,10 @@ export async function setWaterGoalAction(glasses: number): Promise<IdState> {
 
 export async function setFavoriteAction(foodId: string, favorite: boolean): Promise<IdState> {
   return run(async (userId) => (await setFavorite(userId, foodId, favorite), { ok: true }));
+}
+
+export async function setUnitWeightAction(input: Parameters<typeof setUnitWeight>[1]): Promise<IdState> {
+  return run(async (userId) => (await setUnitWeight(userId, input), { ok: true }));
 }
 
 export async function createFoodAction(input: CustomFoodInput): Promise<IdState> {

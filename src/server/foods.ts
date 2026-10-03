@@ -9,7 +9,7 @@ import { kcalFromMacros, type Nutrients, nutrientsFor, recipePer100g } from "@/d
 import { recipeQuality } from "@/domain/quality";
 import { normalizeForSearch } from "@/domain/search";
 
-import type { Unit } from "@/domain/units";
+import { COUNT_UNITS, type Unit } from "@/domain/units";
 
 import { DomainError } from "./errors";
 
@@ -173,6 +173,29 @@ export async function favoriteFoods(userId: string): Promise<FoodSummary[]> {
     .innerJoin(foods, eq(foods.id, favorites.foodId))
     .where(and(eq(favorites.userId, userId), visibleTo(userId)))
     .orderBy(foods.nameFr);
+}
+
+const unitWeightSchema = z.object({
+  foodId: z.uuid(),
+  unit: z.enum(COUNT_UNITS),
+  grams: z.number().positive().max(2000),
+});
+
+/**
+ * Enregistre le poids d'une tranche, d'une pièce ou d'une portion pour un aliment qui ne le
+ * précise pas (produit sans portion, aliment Ciqual). Les recettes gardent leur portion calculée.
+ */
+export async function setUnitWeight(userId: string, input: z.input<typeof unitWeightSchema>): Promise<void> {
+  const data = unitWeightSchema.parse(input);
+  const food = await getFood(userId, data.foodId);
+  if (food.source === "recipe") throw new DomainError("not_found");
+  await db()
+    .update(foods)
+    .set({
+      unitWeights: { ...food.unitWeights, [data.unit]: Math.round(data.grams * 10) / 10 },
+      updatedAt: new Date(),
+    })
+    .where(eq(foods.id, food.id));
 }
 
 export async function favoriteIds(userId: string): Promise<Set<string>> {
