@@ -918,6 +918,23 @@ test("mon métabolisme et budget hebdomadaire avec un jour plus large", async ({
   await expect(page.getByRole("region", { name: "Jour par jour" })).toHaveCount(0);
 });
 
+test("recettes du catalogue : bibliothèque illustrée, fiche et ajout", async ({ page }) => {
+  await signInWithTotp(page);
+  await page.goto("/recipes");
+  await expect(page.getByRole("heading", { name: "Idées de recettes" })).toBeVisible();
+  await page.getByRole("navigation", { name: "Type de recette" }).getByRole("link", { name: "Soupes" }).click();
+  await expect(page.getByRole("link", { name: /^Minestrone/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /^Taboulé aux herbes/ })).toHaveCount(0);
+  await page.getByRole("link", { name: /^Minestrone/ }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Minestrone");
+  await expect(page.getByText("Recette Pommelia")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Ingrédients" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Préparation" })).toBeVisible();
+  await expectNoA11yViolations(page);
+  await page.getByRole("link", { name: "Ajouter au journal" }).click();
+  await expect(page.getByLabel("Unité")).toHaveValue("portion");
+});
+
 test("audit d'accessibilité : chaque page de l'app, en thème clair et sombre", async ({ page, context, baseURL }) => {
   test.setTimeout(120_000);
   await signInWithTotp(page);

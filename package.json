@@ -21,7 +21,7 @@
     "test:e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",
-    "foods:import": "tsx scripts/import-ciqual.ts",
+    "foods:import": "tsx scripts/import-ciqual.ts && tsx scripts/import-recipes.ts",
     "icons": "tsx scripts/generate-icons.ts",
     "start:standalone": "cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && node .next/standalone/server.js"
   },

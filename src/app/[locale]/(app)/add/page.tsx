@@ -12,6 +12,8 @@ import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { aiAvailability } from "@/server/ai-availability";
 import { suggestedDish } from "@/server/coach";
+import { catalogRecipe } from "@/domain/recipes/catalog";
+import { DishArt } from "@/features/recipes/dish-art";
 import { daySummary } from "@/server/journal";
 import { familyRecipes, favoriteFoods, type FoodSummary, getFood, ownFoods, recentFoods } from "@/server/foods";
 import { listContainers } from "@/server/personal";
@@ -52,6 +54,7 @@ export default async function AddPage({ params, searchParams }: PageProps<"/[loc
           date,
         )
       : null;
+  const catalogDish = dish?.catalogSlug ? catalogRecipe(dish.catalogSlug) : undefined;
   const t = await getTranslations("add");
   const tAll = await getTranslations();
 
@@ -79,6 +82,11 @@ export default async function AddPage({ params, searchParams }: PageProps<"/[loc
                 href={{ pathname: "/add", query: { food: dish.id, slot, date } }}
                 className="flex min-h-16 items-center gap-3 rounded-[var(--radius-card)] bg-primary-soft px-4 py-3"
               >
+                {catalogDish && (
+                  <span className="w-20 shrink-0 overflow-hidden rounded-xl">
+                    <DishArt spec={catalogDish.art} seed={catalogDish.slug} />
+                  </span>
+                )}
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="text-sm font-bold text-primary">{tAll("coach.suggestionTitle", { slot })}</span>
                   <span className="font-bold">{dish.name}</span>

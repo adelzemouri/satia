@@ -4,10 +4,12 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { todayIso } from "@/domain/dates";
 import { parseDayParam } from "@/domain/day-param";
 import { MEAL_SLOTS } from "@/domain/meals";
+import { catalogRecipeFor } from "@/domain/recipes/catalog";
 import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { DomainError } from "@/server/errors";
 import { ProductThumb } from "@/features/foods/product-thumb";
+import { DishArt } from "@/features/recipes/dish-art";
 import { type Food, getFoodDetails } from "@/server/foods";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
@@ -36,6 +38,7 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
   const t = await getTranslations();
 
   const portion = food.unitWeights?.portion ?? null;
+  const catalog = food.source === "recipe" ? catalogRecipeFor(food.sourceRef) : undefined;
   const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
   const rows: { label: string; value: number | null; unit: string; indent?: boolean }[] = [
     { label: t("product.energy"), value: food.kcal, unit: "kcal" },
@@ -51,10 +54,15 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
 
   return (
     <>
+      {catalog && (
+        <div className="-mx-4 overflow-hidden sm:mx-0 sm:rounded-[var(--radius-card)]">
+          <DishArt spec={catalog.art} seed={catalog.slug} />
+        </div>
+      )}
       <div className="flex items-start gap-4">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <p className="text-sm font-semibold text-text-muted">
-            {t(food.householdId ? "add.sources.family" : `add.sources.${food.source}`)}
+            {catalog ? t("recipes.source") : t(food.householdId ? "add.sources.family" : `add.sources.${food.source}`)}
           </p>
           <h1 className="font-display text-3xl font-extrabold tracking-tight">{food.nameFr}</h1>
           {food.brand && <p className="text-lg">{food.brand}</p>}
@@ -83,6 +91,59 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
             {t("add.shareWithFamily")}
           </Link>
         </div>
+      )}
+
+      {catalog && (
+        <>
+          <ul className="flex flex-wrap gap-2" aria-label={catalog.name}>
+            {[
+              portion && t("recipes.portionKcal", { kcal: Math.round((food.kcal * portion) / 100) }),
+              t("recipes.minutes", { minutes: catalog.minutes }),
+              t("recipes.servings", { count: catalog.servings }),
+              catalog.vegetarian && t("recipes.vegetarian"),
+            ]
+              .filter(Boolean)
+              .map((label) => (
+                <li key={String(label)} className="rounded-full bg-surface px-4 py-2 text-sm font-semibold">
+                  {label}
+                </li>
+              ))}
+          </ul>
+          <Card aria-labelledby="ingredients-title">
+            <div className="flex flex-col">
+              <h2 id="ingredients-title" className="text-xl font-bold">
+                {t("recipes.ingredients")}
+              </h2>
+              <p className="text-sm text-text-muted">{t("recipes.ingredientsFor", { count: catalog.servings })}</p>
+            </div>
+            <ul className="flex flex-col divide-y divide-border">
+              {catalog.ingredients.map(([code, grams, label], index) => (
+                <li key={`${code}-${index}`} className="flex justify-between gap-3 py-2">
+                  <span className="first-letter:uppercase">{label}</span>
+                  <span className="shrink-0 text-text-muted">{number.format(grams)} g</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+          <Card aria-labelledby="steps-title">
+            <h2 id="steps-title" className="text-xl font-bold">
+              {t("recipes.steps")}
+            </h2>
+            <ol className="flex flex-col gap-3">
+              {catalog.steps.map((step, index) => (
+                <li key={index} className="flex gap-3">
+                  <span
+                    aria-hidden
+                    className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary-soft text-sm font-bold text-primary"
+                  >
+                    {index + 1}
+                  </span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
+          </Card>
+        </>
       )}
 
       {(food.nutriscore || food.novaGroup) && (
@@ -148,7 +209,7 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
             {food.fetchedAt &&
               ` ${t("product.updated", { date: formatDay(food.fetchedAt.toISOString().slice(0, 10), locale, "short") })}`}
           </>
-        ) : food.source === "ciqual" ? (
+        ) : food.source === "ciqual" || catalog ? (
           t("add.ciqualAttribution")
         ) : null}
       </p>

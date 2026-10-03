@@ -1,12 +1,13 @@
 import "server-only";
 
-import { and, desc, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, isNull, like, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db/client";
 import { favorites, foods, mealEntries, recipeItems, user } from "@/db/schema";
 import { kcalFromMacros, type Nutrients, nutrientsFor, recipePer100g } from "@/domain/nutrition";
 import { recipeQuality } from "@/domain/quality";
+import { CATALOG_PREFIX } from "@/domain/recipes/catalog";
 import { normalizeForSearch } from "@/domain/search";
 
 import { COUNT_UNITS, type Unit } from "@/domain/units";
@@ -452,9 +453,18 @@ export async function dishPool(userId: string) {
       kcal: foods.kcal,
       unitWeights: foods.unitWeights,
       imageUrl: foods.imageUrl,
+      sourceRef: foods.sourceRef,
     })
     .from(foods)
     .leftJoin(favorites, and(eq(favorites.foodId, foods.id), eq(favorites.userId, userId)))
-    .where(and(visibleTo(userId), or(and(eq(foods.source, "recipe"), editableBy(userId)), isNotNull(favorites.userId))))
-    .limit(200);
+    .where(
+      and(
+        visibleTo(userId),
+        or(
+          and(eq(foods.source, "recipe"), or(editableBy(userId), like(foods.sourceRef, `${CATALOG_PREFIX}%`))),
+          isNotNull(favorites.userId),
+        ),
+      ),
+    )
+    .limit(300);
 }

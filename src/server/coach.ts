@@ -29,6 +29,7 @@ import { addDays } from "@/domain/energy";
 import { type MealSlot, slotAt } from "@/domain/meals";
 import { COACH_STYLES, type CoachStyle } from "@/domain/profile";
 import { weekQuality } from "@/domain/quality";
+import { CATEGORY_SLOTS, catalogRecipeFor } from "@/domain/recipes/catalog";
 import { isoWeekStart } from "@/domain/streak";
 import { weightTrend } from "@/domain/weight-trend";
 import { AiUnavailableError, coachReply, writeWeeklyReview } from "@/llm";
@@ -285,11 +286,11 @@ export async function ensureWeeklyReview(userId: string, today: string = todayIs
 
 // --- Plat suggéré ---------------------------------------------------------------------
 
-export type SuggestedDish = DishCandidate & { imageUrl: string | null };
+export type SuggestedDish = DishCandidate & { imageUrl: string | null; catalogSlug: string | null };
 
 /**
  * Plat qui convient au repas qui vient et tient dans le budget, choisi parmi les recettes
- * (perso et du foyer) et les favoris, sans appel au LLM.
+ * (perso, du foyer et du catalogue) et les favoris, sans appel au LLM.
  */
 export async function suggestedDish(
   userId: string,
@@ -311,14 +312,33 @@ export async function suggestedDish(
         ),
       ),
     );
-  const candidates = pool.map((row) => ({
-    id: row.id,
-    name: row.name,
-    portionKcal: Math.round((row.kcal * (row.unitWeights?.portion ?? 100)) / 100),
-    imageUrl: row.imageUrl,
-    slots: history.filter((entry) => entry.foodId === row.id).map((entry) => entry.slot),
-  }));
-  const dish = suggestDish(candidates, { slot, goalKcal, remainingKcal }, `${userId}:${date}`);
+  const candidates = pool.map((row) => {
+    const noted = history.filter((entry) => entry.foodId === row.id).map((entry) => entry.slot);
+    const catalog = catalogRecipeFor(row.sourceRef);
+    return {
+      id: row.id,
+      name: row.name,
+      portionKcal: Math.round((row.kcal * (row.unitWeights?.portion ?? 100)) / 100),
+      imageUrl: row.imageUrl,
+      catalogSlug: catalog?.slug ?? null,
+      // Une recette du catalogue jamais notée est proposée aux repas de sa catégorie.
+      slots: noted.length > 0 || !catalog ? noted : CATEGORY_SLOTS[catalog.category],
+    };
+  });
+  // Les plats de la famille passent avant les recettes du catalogue.
+  const day = { slot, goalKcal, remainingKcal };
+  const seed = `${userId}:${date}`;
+  const dish =
+    suggestDish(
+      candidates.filter((candidate) => !candidate.catalogSlug),
+      day,
+      seed,
+    ) ??
+    suggestDish(
+      candidates.filter((candidate) => candidate.catalogSlug),
+      day,
+      seed,
+    );
   return dish ? (candidates.find((candidate) => candidate.id === dish.id) ?? null) : null;
 }
 
