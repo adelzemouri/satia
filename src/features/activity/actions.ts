@@ -25,7 +25,7 @@ async function run<T>(fn: (userId: string) => Promise<T>): Promise<(ActionState 
     return toActionState(error);
   }
   // L'activité modifie l'objectif du jour : accueil et journal sont rafraîchis aussi.
-  revalidatePath("/", "layout");
+  revalidatePath("/[locale]", "layout");
   return { ok: true, result };
 }
 

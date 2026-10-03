@@ -11,7 +11,7 @@ import { collectUserData } from "@/server/data-export";
 import { searchFoods } from "@/server/foods";
 import { analyzePhoto, analyzeText, saveMeal } from "@/server/meal-ai";
 import { createContainer, listContainers, saveExpression } from "@/server/personal";
-import { purgePhotos } from "@/server/photos";
+import { lastPhotoPurge, purgePhotos, purgePhotosIfDue, runPhotoPurge } from "@/server/photos";
 import { setAiSettings, setPhotoSettings } from "@/server/settings";
 
 import { resetDatabase } from "./helpers";
@@ -284,6 +284,25 @@ describe("saisie IA", () => {
     // Le repas reste dans le journal, sans sa photo.
     const entries = await db().select().from(mealEntries);
     expect(entries.map((entry) => entry.photoId).sort()).toEqual([kept.photoId, null].sort());
+  });
+
+  it("sans cron, la purge part au plus une fois toutes les 20 h", async () => {
+    const userId = await setupUser();
+    const unused = await analyzePhoto(userId, { imageBase64: JPEG_BASE64, mime: "image/jpeg" });
+    await db().execute(sql`update photos set created_at = now() - interval '2 days' where id = ${unused.photoId}`);
+    const now = new Date();
+
+    expect(await lastPhotoPurge()).toBeNull();
+    const [first, second] = await Promise.all([purgePhotosIfDue(now), purgePhotosIfDue(now)]);
+    expect([first, second].sort()).toEqual([1, null].sort());
+    expect(await lastPhotoPurge()).toEqual({ lastRunAt: now.toISOString(), purged: 1 });
+    expect(await purgePhotosIfDue(new Date(now.getTime() + 19 * 3_600_000))).toBeNull();
+    expect(await purgePhotosIfDue(new Date(now.getTime() + 21 * 3_600_000))).toBe(0);
+
+    // La purge du cron (ou du bouton de l'admin) note aussi son passage.
+    const later = new Date(now.getTime() + 22 * 3_600_000);
+    expect(await runPhotoPurge(later)).toBe(0);
+    expect(await lastPhotoPurge()).toEqual({ lastRunAt: later.toISOString(), purged: 0 });
   });
 
   it("l'export contient contenants, expressions et corrections", async () => {

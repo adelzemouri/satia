@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { testConnection } from "@/llm";
 import { type ActionState, toActionState } from "@/server/action-result";
 import { DomainError } from "@/server/errors";
+import { runPhotoPurge } from "@/server/photos";
 import { getCurrentUser } from "@/server/session";
 import { aiSettingsSchema, photoSettingsSchema, setAiSettings, setPhotoSettings } from "@/server/settings";
 
@@ -41,6 +42,20 @@ export async function savePhotoSettingsAction(_prev: ActionState, formData: Form
     return { ok: true };
   } catch (error) {
     return toActionState(error);
+  }
+}
+
+export type PurgeState = { error: string } | { purged: number } | null;
+
+/** Purge immédiate des photos expirées, depuis la page d'administration. */
+export async function purgePhotosNowAction(): Promise<PurgeState> {
+  try {
+    await requireAdminId();
+    const purged = await runPhotoPurge();
+    revalidatePath("/[locale]/admin/ai", "page");
+    return { purged };
+  } catch (error) {
+    return { error: toActionState(error)?.error ?? "generic" };
   }
 }
 

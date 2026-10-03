@@ -53,7 +53,9 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
     >
       <body className="min-h-full bg-bg text-text">
         <NextIntlClientProvider>
-          <SerwistProvider swUrl="/serwist/sw.js">{children}</SerwistProvider>
+          <SerwistProvider swUrl="/serwist/sw.js" reloadOnOnline={false}>
+            {children}
+          </SerwistProvider>
         </NextIntlClientProvider>
       </body>
     </html>

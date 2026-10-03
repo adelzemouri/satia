@@ -24,7 +24,8 @@
     "add": "Add",
     "weight": "Weight",
     "main": "Main navigation",
-    "training": "Training"
+    "training": "Training",
+    "skipToContent": "Skip to content"
   },
   "home": {
     "greeting": "Hello {name}!",
@@ -65,7 +66,15 @@
   },
   "offline": {
     "title": "Offline",
-    "body": "No connection right now. Pages you already opened are still available; try again once you are back online."
+    "body": "No connection right now. Pages you already opened are still available; try again once you are back online.",
+    "banner": "No network: you're viewing the last saved version. You can still log a recent or favourite food; it will be added to the journal once you're back online.",
+    "pendingTitle": "{count, plural, one {# food waiting to be sent} other {# foods waiting to be sent}}",
+    "sending": "Sending to the journal…",
+    "sent": "{count, plural, one {# food logged offline was added to the journal.} other {# foods logged offline were added to the journal.}}",
+    "remove": "Remove",
+    "retry": "Send now",
+    "queued": "{name} is saved on this phone. It will be added to the journal once you're back online.",
+    "addAnother": "Add another food"
   },
   "disclaimer": "{appName} is not medical advice. For any health question, talk to a professional.",
   "fields": {
@@ -583,9 +592,13 @@
       "none": "None"
     },
     "photosTitle": "Meal photos",
-    "photosHint": "Photos are kept in private storage, then deleted automatically every night after this period. A photo never added to the journal is deleted the next day.",
+    "photosHint": "Photos are kept in private storage, then deleted automatically every day after this period. A photo never added to the journal is deleted the next day.",
     "retentionDays": "Retention (days)",
-    "photosSaved": "Retention period saved."
+    "photosSaved": "Retention period saved.",
+    "lastPurge": "Last purge: {date} ({count, plural, =0 {no photo} one {# photo deleted} other {# photos deleted}}).",
+    "noPurgeYet": "No purge yet.",
+    "purgeNow": "Purge now",
+    "purgeDone": "{count, plural, =0 {No photo to delete.} one {# photo deleted.} other {# photos deleted.}}"
   },
   "aiEntry": {
     "title": "Photo, voice or text",

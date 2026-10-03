@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 import { and, eq, inArray, lt, or, sql } from "drizzle-orm";
 
 import { db } from "@/db/client";
-import { mealEntries, photos } from "@/db/schema";
+import { appSettings, mealEntries, photos } from "@/db/schema";
 
 import { getPhotoSettings } from "./settings";
 import { deleteObjects, putObject, signedGetUrl } from "./storage";
@@ -72,4 +72,56 @@ async function removePhotos(rows: readonly { id: string; objectKey: string }[]):
       ),
     );
   return rows.length;
+}
+
+const PURGE_KEY = "photo_purge";
+/** Une purge par jour suffit ; un peu moins de 24 h pour ne pas glisser d'un jour à l'autre. */
+const PURGE_INTERVAL_HOURS = 20;
+
+export type PurgeRun = { lastRunAt: string; purged: number };
+
+/** Purge immédiate (cron ou bouton de l'admin), en gardant trace du dernier passage. */
+export async function runPhotoPurge(now: Date = new Date()): Promise<number> {
+  const purged = await purgePhotos(now);
+  await recordPurge({ lastRunAt: now.toISOString(), purged });
+  return purged;
+}
+
+/**
+ * Filet de sécurité sans cron : lancée après l'affichage d'une page, la purge ne part que si la
+ * dernière date de plus de 20 h. La réservation est atomique, donc deux visites simultanées
+ * ne la lancent qu'une fois.
+ */
+export async function purgePhotosIfDue(now: Date = new Date()): Promise<number | null> {
+  const value = { lastRunAt: now.toISOString(), purged: 0 };
+  const dueBefore = new Date(now.getTime() - PURGE_INTERVAL_HOURS * 3_600_000).toISOString();
+  const claimed = await db()
+    .insert(appSettings)
+    .values({ key: PURGE_KEY, value, updatedAt: now })
+    .onConflictDoUpdate({
+      target: appSettings.key,
+      set: { value, updatedAt: now },
+      setWhere: sql`${appSettings.updatedAt} < ${dueBefore}`,
+    })
+    .returning({ key: appSettings.key });
+  if (claimed.length === 0) return null;
+  const purged = await purgePhotos(now);
+  if (purged > 0) await recordPurge({ ...value, purged });
+  return purged;
+}
+
+export async function lastPhotoPurge(): Promise<PurgeRun | null> {
+  const [row] = await db().select().from(appSettings).where(eq(appSettings.key, PURGE_KEY));
+  const value = row?.value as Partial<PurgeRun> | undefined;
+  return typeof value?.lastRunAt === "string" && typeof value.purged === "number"
+    ? { lastRunAt: value.lastRunAt, purged: value.purged }
+    : null;
+}
+
+async function recordPurge(value: PurgeRun): Promise<void> {
+  const updatedAt = new Date(value.lastRunAt);
+  await db()
+    .insert(appSettings)
+    .values({ key: PURGE_KEY, value, updatedAt })
+    .onConflictDoUpdate({ target: appSettings.key, set: { value, updatedAt } });
 }

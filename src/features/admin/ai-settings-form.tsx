@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useState, useTransition } from "react";
 
 import { useErrorText } from "@/features/auth/use-error-text";
 import { Alert } from "@/ui/alert";
@@ -8,7 +9,7 @@ import { Button } from "@/ui/button";
 import { Field } from "@/ui/field";
 import { useFormAction } from "@/ui/use-form-action";
 
-import { saveAiSettingsAction, savePhotoSettingsAction } from "./ai-actions";
+import { purgePhotosNowAction, type PurgeState, saveAiSettingsAction, savePhotoSettingsAction } from "./ai-actions";
 
 export function AiSettingsForm({
   enabled,
@@ -67,5 +68,26 @@ export function PhotoSettingsForm({ retentionDays }: { retentionDays: number }) 
         {t("common.save")}
       </Button>
     </form>
+  );
+}
+
+/** Purge immédiate, utile pour vérifier qu'elle fonctionne sans attendre le lendemain. */
+export function PurgeNowButton() {
+  const t = useTranslations();
+  const errorText = useErrorText();
+  const [state, setState] = useState<PurgeState>(null);
+  const [pending, startTransition] = useTransition();
+  return (
+    <div className="flex flex-col gap-3">
+      {state && "error" in state && <Alert>{errorText(state.error)}</Alert>}
+      {state && "purged" in state && <Alert tone="success">{t("aiAdmin.purgeDone", { count: state.purged })}</Alert>}
+      <Button
+        variant="secondary"
+        disabled={pending}
+        onClick={() => startTransition(async () => setState(await purgePhotosNowAction()))}
+      >
+        {t("aiAdmin.purgeNow")}
+      </Button>
+    </div>
   );
 }

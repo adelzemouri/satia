@@ -34,7 +34,7 @@ async function run<T extends IdState>(fn: (userId: string) => Promise<T>): Promi
   if (!user) return { error: "generic" };
   try {
     const result = await fn(user.id);
-    revalidatePath("/", "layout");
+    revalidatePath("/[locale]", "layout");
     return result;
   } catch (error) {
     return toActionState(error);

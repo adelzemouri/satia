@@ -207,7 +207,7 @@ export default async function TrainingPage({ params, searchParams }: PageProps<"
                   </span>
                 </span>
                 {doneDates.has(date) && (
-                  <span className="rounded-full bg-primary-soft px-3 py-1 text-sm font-semibold text-primary">
+                  <span className="rounded-full bg-primary-soft px-3 py-1 text-sm font-semibold text-text">
                     {t("home.doneDay")}
                   </span>
                 )}
