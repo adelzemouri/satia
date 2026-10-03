@@ -1,12 +1,13 @@
 import "server-only";
 
-import { and, asc, desc, eq, gte, lte } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lte, sum } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db/client";
 import { dailyCheckins, foods, MEAL_SLOTS, type MealSlot, mealEntries } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
+import { type FeelingDay, feelingDays } from "@/domain/feelings";
 import { dayQuality, type DayQuality, type QualityItem, weekQuality, type WeekQuality } from "@/domain/quality";
 
 import { assertNotFuture } from "./journal";
@@ -73,6 +74,29 @@ export async function setCheckin(userId: string, input: z.input<typeof checkinSc
       target: [dailyCheckins.userId, dailyCheckins.date],
       set: { ...values, updatedAt: new Date() },
     });
+}
+
+/** Ressentis et calories des `days` derniers jours (aujourd'hui compris). */
+export async function feelingHistory(userId: string, today: string = todayIso(), days = 28): Promise<FeelingDay[]> {
+  const from = addDays(today, -(days - 1));
+  const [checkins, intakes] = await Promise.all([
+    db()
+      .select({
+        date: dailyCheckins.date,
+        hunger: dailyCheckins.hunger,
+        energy: dailyCheckins.energy,
+        mood: dailyCheckins.mood,
+      })
+      .from(dailyCheckins)
+      .where(and(eq(dailyCheckins.userId, userId), gte(dailyCheckins.date, from), lte(dailyCheckins.date, today))),
+    db()
+      .select({ date: mealEntries.date, kcal: sum(mealEntries.kcal).mapWith(Number) })
+      .from(mealEntries)
+      .where(and(eq(mealEntries.userId, userId), gte(mealEntries.date, from), lte(mealEntries.date, today)))
+      .groupBy(mealEntries.date),
+  ]);
+  const dates = Array.from({ length: days }, (_, i) => addDays(from, i));
+  return feelingDays(dates, checkins, intakes);
 }
 
 // --- Repas habituel ---------------------------------------------------------------

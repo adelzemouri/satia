@@ -1474,6 +1474,20 @@
   },
   "progress": {
     "title": "Progress",
-    "lastWeight": "Last weigh-in: {value, number} kg"
+    "lastWeight": "Last weigh-in: {value, number} kg",
+    "history": {
+      "title": "My last 4 weeks",
+      "intro": "How you felt each day, next to the calories you logged.",
+      "average": "average {value, number} out of 5",
+      "kcal": "Calories",
+      "kcalAverage": "average {value, number} kcal on logged days",
+      "empty": "Your history will show up here once you've noted how you feel for a few days.",
+      "table": "See day-by-day details",
+      "day": "Day",
+      "today": "today",
+      "point": "{date}: {value} out of 5",
+      "bar": "{date}: {value, number} kcal",
+      "none": "not noted"
+    }
   }
 }
