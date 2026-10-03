@@ -401,7 +401,11 @@
     "fasting_hours": "Enter a length between 12 and 20 hours.",
     "fast_running": "A fast is already in progress.",
     "treatment_days_required": "Choose at least one day for the reminder.",
-    "treatment_name_required": "Enter the treatment's name."
+    "treatment_name_required": "Enter the treatment's name.",
+    "speech_unavailable": "Dictation is turned off on this phone. On iPhone: Settings > General > Keyboard > Enable Dictation. You can also type your meal.",
+    "speech_silent": "I didn't hear anything. Tap “Dictate” and speak right away.",
+    "speech_mic": "The microphone is unavailable (maybe used by another app). Try again in a moment.",
+    "speech_network": "Dictation needs an internet connection. Try again, or type your meal."
   },
   "slots": {
     "breakfast": "Breakfast",
