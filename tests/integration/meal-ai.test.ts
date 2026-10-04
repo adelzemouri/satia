@@ -2,13 +2,13 @@ import { eq, sql } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { db } from "@/db/client";
-import { foodCorrections, llmCalls, mealEntries, photos, user } from "@/db/schema";
+import { foodCorrections, foods, llmCalls, mealEntries, photos, user } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { setProviderForTests } from "@/llm/providers";
 import type { LlmProvider } from "@/llm/types";
 import { acceptInvite, createAccessLink, setupFirstAdmin } from "@/server/accounts";
 import { collectUserData } from "@/server/data-export";
-import { searchFoods } from "@/server/foods";
+import { searchFoods, setUnitWeight } from "@/server/foods";
 import { analyzePhoto, analyzeText, saveMeal } from "@/server/meal-ai";
 import { createContainer, listContainers, saveExpression } from "@/server/personal";
 import { lastPhotoPurge, purgePhotos, purgePhotosIfDue, runPhotoPurge } from "@/server/photos";
@@ -136,6 +136,24 @@ describe("saisie IA", () => {
     await expect(analyzeText(userId, { text: "une banane", method: "text" })).rejects.toMatchObject({
       reason: "disabled",
     });
+  });
+
+  it("des pièces comptées par l'IA s'affichent en pièces si l'aliment a un poids à la pièce", async () => {
+    const userId = await setupUser();
+    const [croque] = await searchFoods(userId, "croque-monsieur");
+    // Les aliments Ciqual survivent à la remise à zéro : on repart sans poids à la pièce.
+    await db().update(foods).set({ unitWeights: null }).where(eq(foods.id, croque!.id));
+    const reply = { items: [{ name: "croque-monsieur", grams: 300, count: 2, confidence: 0.8 }] };
+    setProviderForTests(scripted(reply));
+    // Sans poids à la pièce : le poids total en grammes, avec le nombre de pièces pour l'expliquer.
+    const byWeight = (await analyzeText(userId, { text: "deux croque-monsieur", method: "text" })).items[0]!;
+    expect(byWeight).toMatchObject({ quantity: 300, unit: "g", count: 2 });
+
+    await setUnitWeight(userId, { foodId: croque!.id, unit: "piece", grams: 150 });
+    setProviderForTests(scripted(reply));
+    const byPiece = (await analyzeText(userId, { text: "deux croque-monsieur", method: "text" })).items[0]!;
+    expect(byPiece).toMatchObject({ quantity: 2, unit: "piece", proposal: { grams: 300 } });
+    await db().update(foods).set({ unitWeights: croque!.unitWeights }).where(eq(foods.id, croque!.id));
   });
 
   it("estime les valeurs d'un aliment absent de la base et les marque « estimé »", async () => {

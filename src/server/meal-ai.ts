@@ -95,6 +95,9 @@ async function toDraftItems(
       const rule = rules.get(aiLabel);
       const food = (rule && ruledById.get(rule.foodId)) ?? results[0] ?? null;
       const grams = Math.round(item.grams);
+      const count = item.count ?? null;
+      // Des pièces comptées s'affichent en pièces quand l'aliment a un poids à la pièce.
+      const byPiece = count !== null && Boolean(food?.unitWeights?.piece);
       return {
         key: randomUUID(),
         label: item.name,
@@ -102,8 +105,9 @@ async function toDraftItems(
         proposal: { foodId: food?.id ?? null, grams },
         food: food && toFoodItem(food),
         estimate: null,
-        quantity: grams,
-        unit: "g",
+        quantity: byPiece ? count : grams,
+        unit: byPiece ? "piece" : "g",
+        count,
         alternatives: results
           .filter((result) => result.id !== food?.id)
           .slice(0, ALTERNATIVES)

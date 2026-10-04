@@ -21,6 +21,8 @@ export type DraftItem = {
   estimate: FoodEstimateValues | null;
   quantity: number;
   unit: Unit;
+  /** Nombre de pièces vues par l'IA, pour expliquer un poids proposé en grammes. */
+  count?: number | null;
   /** Autres aliments proches dans la base, pour corriger en un tap. */
   alternatives: FoodItem[];
 };

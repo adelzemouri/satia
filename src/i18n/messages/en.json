@@ -700,6 +700,7 @@
     "quantityOf": "Quantity of {name}",
     "values": "{kcal, number} kcal · P {protein, number} g · C {carbs, number} g · F {fat, number} g",
     "incomplete": "Choose a food and a quantity.",
+    "countHint": "That is {count, plural, one {# piece} other {# pieces}} of about {each, number} g: the total weight is already worked out, you can keep it.",
     "changeFood": "Change food",
     "searchFor": "Replace “{label}” with",
     "addFood": "Add a food",
