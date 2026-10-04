@@ -7,6 +7,28 @@ import { postJson } from "./http";
 
 const imageResponseSchema = z.object({ data: z.array(z.object({ b64_json: z.string().min(1) })).min(1) });
 
+const geminiImageSchema = z.object({
+  candidates: z
+    .array(
+      z.object({
+        content: z.object({
+          parts: z.array(z.object({ inlineData: z.object({ data: z.string().min(1) }).optional() }).loose()),
+        }),
+      }),
+    )
+    .min(1),
+});
+
+/**
+ * Adresse de l'API native de Gemini quand le fournisseur est Gemini (point d'accès
+ * `…/v1beta/openai`) et le modèle un modèle d'images Gemini ; sinon null.
+ */
+export function geminiNativeBase(baseUrl: string, model: string): string | null {
+  if (!/^gemini-.*image/.test(model)) return null;
+  const match = /^(https:\/\/generativelanguage\.googleapis\.com\/v1\w*)\/openai$/.exec(baseUrl);
+  return match ? match[1]! : null;
+}
+
 /** Une image se génère en quelques secondes, parfois plus : délai plus large que le texte. */
 const IMAGE_TIMEOUT_MS = 60_000;
 
@@ -69,8 +91,30 @@ export function openAiCompatibleProvider(options: {
         throw new LlmProviderError("invalid JSON", "invalid_json", usage);
       }
     },
-    /** API « images/generations » (DALL·E, gpt-image, Imagen via Gemini…), image renvoyée en base64. */
+    /**
+     * Images : les modèles d'images de Gemini (Nano Banana) passent par l'API native
+     * `generateContent` de Google, les autres par « images/generations » (DALL·E, gpt-image…).
+     */
     async generateImage(request) {
+      const native = geminiNativeBase(options.baseUrl, request.model);
+      if (native) {
+        const body = await postJson(
+          `${native}/models/${encodeURIComponent(request.model)}:generateContent`,
+          { "x-goog-api-key": options.apiKey },
+          {
+            contents: [{ parts: [{ text: request.prompt }] }],
+            generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: "4:3" } },
+          },
+          IMAGE_TIMEOUT_MS,
+        );
+        const parsed = geminiImageSchema.safeParse(body);
+        const data = parsed.success
+          ? parsed.data.candidates.flatMap((candidate) => candidate.content.parts).find((part) => part.inlineData)
+              ?.inlineData?.data
+          : undefined;
+        if (!data) throw new LlmProviderError("unexpected image response", "invalid_json");
+        return { base64: data };
+      }
       const body = await postJson(
         `${options.baseUrl}/images/generations`,
         { Authorization: `Bearer ${options.apiKey}` },

@@ -86,7 +86,7 @@ describe("espace famille", () => {
       expect(isGeneratedRecipePhoto(row!.photoKey!)).toBe(true);
       expect(row!.imageUrl).toMatch(new RegExp(`^/api/foods/${lasagnaId}/photo`));
       const calls = await db().select().from(llmCalls);
-      expect(calls).toMatchObject([{ feature: "recipe_image", status: "ok", costUsdMicros: 40_000 }]);
+      expect(calls).toMatchObject([{ feature: "recipe_image", status: "ok", costUsdMicros: 70_000 }]);
       // Déjà illustrée : aucun nouvel appel.
       expect(await fillRecipePhotos(admin.id)).toBe(0);
 

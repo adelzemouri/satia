@@ -22,7 +22,7 @@ const schema = z
     LLM_PRICE_TEXT_INPUT: price,
     LLM_PRICE_TEXT_OUTPUT: price,
     /** Tarif en dollars par image générée. */
-    LLM_PRICE_IMAGE: z.coerce.number().min(0).max(10).default(0.04),
+    LLM_PRICE_IMAGE: z.coerce.number().min(0).max(10).default(0.07),
     /** Plafond mensuel par défaut, modifiable ensuite par l'admin. */
     LLM_MONTHLY_BUDGET_USD: z.coerce.number().min(0).max(10_000).default(2),
   })
