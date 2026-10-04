@@ -187,7 +187,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
               {t("recipes.homeMore")}
             </Link>
           </div>
-          <ul className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-1">
+          <ul className="-mx-4 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-1">
             {ideas.map((entry) => (
               <li key={entry.id} className="flex w-[44%] shrink-0 snap-start sm:w-[30%]">
                 <RecipeCard
