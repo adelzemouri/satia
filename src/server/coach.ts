@@ -32,6 +32,7 @@ import { weekQuality } from "@/domain/quality";
 import { CATEGORY_SLOTS, catalogRecipeFor } from "@/domain/recipes/catalog";
 import { isoWeekStart } from "@/domain/streak";
 import { weightTrend } from "@/domain/weight-trend";
+import { RECIPE_PHOTOS } from "@/features/recipes/recipe-photos";
 import { AiUnavailableError, coachReply, writeWeeklyReview } from "@/llm";
 
 import { weekBudget } from "./adaptive";
@@ -325,17 +326,20 @@ export async function suggestedDish(
       slots: noted.length > 0 || !catalog ? noted : CATEGORY_SLOTS[catalog.category],
     };
   });
-  // Les plats de la famille passent avant les recettes du catalogue.
+  // Seuls les plats qui ont une photo sont proposés ; ceux de la famille passent avant le catalogue.
+  const pictured = candidates.filter((candidate) =>
+    candidate.catalogSlug ? RECIPE_PHOTOS.has(candidate.catalogSlug) : Boolean(candidate.imageUrl),
+  );
   const day = { slot, goalKcal, remainingKcal };
   const seed = `${userId}:${date}`;
   const dish =
     suggestDish(
-      candidates.filter((candidate) => !candidate.catalogSlug),
+      pictured.filter((candidate) => !candidate.catalogSlug),
       day,
       seed,
     ) ??
     suggestDish(
-      candidates.filter((candidate) => candidate.catalogSlug),
+      pictured.filter((candidate) => candidate.catalogSlug),
       day,
       seed,
     );

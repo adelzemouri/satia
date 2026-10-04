@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { RECIPE_CATEGORIES } from "@/domain/recipes/catalog";
 import { RecipeCard } from "@/features/recipes/recipe-card";
+import { RecipeFilter } from "@/features/recipes/recipe-filter";
 import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { recipeLibrary } from "@/server/planning";
@@ -22,11 +23,6 @@ export default async function RecipesPage({ params, searchParams }: PageProps<"/
     { id: "mine", title: t("mine"), list: recipes.filter((recipe) => recipe.ownerUserId === user.id) },
     { id: "family", title: t("family"), list: recipes.filter((recipe) => recipe.ownerUserId === null) },
   ];
-  const ideas = catalog.filter((entry) => !category || entry.recipe.category === category);
-  const chip = (active: boolean) =>
-    `flex min-h-11 items-center rounded-full px-4 font-semibold ${
-      active ? "bg-primary text-on-primary" : "bg-surface text-text"
-    }`;
 
   return (
     <>
@@ -89,33 +85,17 @@ export default async function RecipesPage({ params, searchParams }: PageProps<"/
             {t("ideas")}
           </h2>
           <p className="text-text-muted">{t("ideasIntro")}</p>
-          <nav aria-label={t("filterLabel")} className="-mx-4 overflow-x-auto px-4">
-            <ul className="flex gap-2">
-              <li>
-                <Link href="/recipes" aria-current={!category ? "page" : undefined} className={chip(!category)}>
-                  {t("all")}
-                </Link>
-              </li>
-              {RECIPE_CATEGORIES.map((value) => (
-                <li key={value}>
-                  <Link
-                    href={{ pathname: "/recipes", query: { cat: value } }}
-                    aria-current={category === value ? "page" : undefined}
-                    className={`${chip(category === value)} whitespace-nowrap`}
-                  >
-                    {t(`categories.${value}`)}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {ideas.map((entry) => (
-              <li key={entry.id} className="flex">
-                <RecipeCard id={entry.id} recipe={entry.recipe} portionKcal={entry.portionKcal} />
-              </li>
-            ))}
-          </ul>
+          <RecipeFilter
+            label={t("filterLabel")}
+            allLabel={t("all")}
+            categories={RECIPE_CATEGORIES.map((value) => ({ value, label: t(`categories.${value}`) }))}
+            initial={category ?? null}
+            items={catalog.map((entry) => ({
+              key: entry.id,
+              category: entry.recipe.category,
+              card: <RecipeCard id={entry.id} recipe={entry.recipe} portionKcal={entry.portionKcal} />,
+            }))}
+          />
         </section>
       )}
     </>

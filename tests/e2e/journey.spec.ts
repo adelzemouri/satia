@@ -981,7 +981,13 @@ test("recettes du catalogue : bibliothèque illustrée, fiche et ajout", async (
   await signInWithTotp(page);
   await page.goto("/recipes");
   await expect(page.getByRole("heading", { name: "Idées de recettes" })).toBeVisible();
-  await page.getByRole("navigation", { name: "Type de recette" }).getByRole("link", { name: "Soupes" }).click();
+  // Le filtre agit sur place : la page garde sa position et l'adresse retient la catégorie.
+  await page.evaluate(() => window.scrollTo(0, 400));
+  const scrolled = await page.evaluate(() => window.scrollY);
+  await page.getByRole("group", { name: "Type de recette" }).getByRole("button", { name: "Soupes" }).click();
+  await expect(page.getByRole("button", { name: "Soupes" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page).toHaveURL(/cat=soup/);
+  expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
   await expect(page.getByRole("link", { name: /^Minestrone/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /^Taboulé aux herbes/ })).toHaveCount(0);
   await page.getByRole("link", { name: /^Minestrone/ }).click();
