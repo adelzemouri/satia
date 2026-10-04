@@ -1,4 +1,4 @@
-/** Petits outils d'animation partagés : courbe, mémoire de la dernière valeur, vibration. */
+/** Petits outils d'animation partagés : courbe, vibration, gestes de glissement. */
 
 /** Décélération douce : rapide au début, lente à l'arrivée. */
 export function easeOutCubic(progress: number): number {
@@ -13,20 +13,6 @@ export function tween(from: number, to: number, progress: number): number {
 
 export function prefersReducedMotion(): boolean {
   return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
-}
-
-const PREFIX = "pommelia:motion:";
-
-/** Dernière valeur affichée pour une clé (sur l'onglet en cours), puis mémorise la nouvelle. */
-export function swapRemembered(key: string, value: number): number | null {
-  try {
-    const stored = sessionStorage.getItem(PREFIX + key);
-    sessionStorage.setItem(PREFIX + key, String(value));
-    const previous = stored === null ? null : Number(stored);
-    return previous !== null && Number.isFinite(previous) ? previous : null;
-  } catch {
-    return null;
-  }
 }
 
 /**

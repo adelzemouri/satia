@@ -123,7 +123,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         <h2 id="today-title" className="sr-only">
           {t("home.todayGoal")}
         </h2>
-        <CalorieSummary totals={summary.totals} goal={summary.goal} day={today} />
+        <CalorieSummary totals={summary.totals} goal={summary.goal} />
         {summary.training.burnedKcal + summary.activity.burnedKcal > 0 && (
           <p className="text-sm text-text-muted">
             {t("home.activityBurned", { kcal: summary.training.burnedKcal + summary.activity.burnedKcal })}

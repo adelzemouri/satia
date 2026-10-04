@@ -2,36 +2,27 @@
 
 import { type CSSProperties, useLayoutEffect, useRef } from "react";
 
-import { swapRemembered } from "@/ui/motion";
-
 /**
- * Arc de l'anneau des calories. Il part de la dernière position affichée sur cet appareil plutôt
- * que de zéro : après un ajout, on voit l'anneau avancer de la part du repas.
+ * Arc de l'anneau des calories. Il se remplit depuis zéro à chaque arrivée sur la page, puis part
+ * de sa position précédente quand la valeur change sur place : on voit l'anneau avancer du repas.
  */
-export function RingArc({
-  radius,
-  offset,
-  over,
-  memoryKey,
-}: {
-  radius: number;
-  offset: number;
-  over: boolean;
-  memoryKey: string;
-}) {
+export function RingArc({ radius, offset, over }: { radius: number; offset: number; over: boolean }) {
   const ref = useRef<SVGCircleElement>(null);
+  const shown = useRef<number | null>(null);
   const length = 2 * Math.PI * radius;
 
   useLayoutEffect(() => {
-    const from = swapRemembered(memoryKey, offset);
+    const from = shown.current;
+    shown.current = offset;
     const circle = ref.current;
-    if (from === null || !circle) return;
+    // Premier affichage : l'animation CSS part déjà de l'anneau vide.
+    if (from === null || from === offset || !circle) return;
     circle.style.setProperty("--ring-from", String(from));
     // Relance l'animation pour qu'elle parte de la nouvelle position.
     circle.style.animation = "none";
     void circle.getBoundingClientRect();
     circle.style.animation = "";
-  }, [memoryKey, offset]);
+  }, [offset]);
 
   return (
     <circle
