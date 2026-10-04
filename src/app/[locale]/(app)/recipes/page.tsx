@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { RECIPE_CATEGORIES } from "@/domain/recipes/catalog";
+import { DishThumb } from "@/features/recipes/dish-thumb";
 import { RecipeCard } from "@/features/recipes/recipe-card";
 import { RecipeFilter } from "@/features/recipes/recipe-filter";
 import { Link } from "@/i18n/navigation";
@@ -57,14 +58,23 @@ export default async function RecipesPage({ params, searchParams }: PageProps<"/
                   {section.list.map((recipe) => {
                     const portion = recipe.unitWeights?.portion ?? 100;
                     return (
-                      <li key={recipe.id} className="flex items-center gap-2 py-2">
-                        <Link href={`/foods/${recipe.id}`} className="flex min-w-0 flex-1 flex-col hover:underline">
-                          <span className="font-semibold">{recipe.name}</span>
-                          <span className="text-sm text-text-muted">
-                            {t("perServing", {
-                              kcal: Math.round((Number(recipe.kcal) * portion) / 100),
-                              count: recipe.servings ?? 1,
-                            })}
+                      <li key={recipe.id} className="flex items-center gap-3 py-2">
+                        <Link
+                          href={`/foods/${recipe.id}`}
+                          className="flex min-w-0 flex-1 items-center gap-3 hover:underline"
+                        >
+                          {/* Photo de la famille ou de l'IA ; sinon une assiette dessinée en attendant. */}
+                          <span className="w-20 shrink-0 overflow-hidden rounded-lg">
+                            <DishThumb imageUrl={recipe.imageUrl} />
+                          </span>
+                          <span className="flex min-w-0 flex-col">
+                            <span className="font-semibold">{recipe.name}</span>
+                            <span className="text-sm text-text-muted">
+                              {t("perServing", {
+                                kcal: Math.round((Number(recipe.kcal) * portion) / 100),
+                                count: recipe.servings ?? 1,
+                              })}
+                            </span>
                           </span>
                         </Link>
                         <Link

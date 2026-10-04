@@ -425,6 +425,7 @@ export async function recipeLibrary(userId: string, householdId: string) {
       unitWeights: foods.unitWeights,
       servings: foods.servings,
       ownerUserId: foods.ownerUserId,
+      imageUrl: foods.imageUrl,
     })
     .from(foods)
     .where(
