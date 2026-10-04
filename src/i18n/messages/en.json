@@ -365,6 +365,8 @@
     "unit_not_available": "This unit isn't available for this food.",
     "quantity_too_large": "This quantity looks too large.",
     "nothing_to_copy": "There's nothing to copy.",
+    "nothing_to_save": "This meal is empty for now.",
+    "too_many_saved_meals": "You already have 40 saved meals. Delete one to keep a new one.",
     "food_in_recipe": "This food is used in a recipe: remove it from the recipe first.",
     "recipe_empty": "Add at least one ingredient.",
     "off_unavailable": "Open Food Facts isn't responding right now. Try again later.",
@@ -887,6 +889,25 @@
   "habitual": {
     "title": "{slot, select, breakfast {Your usual breakfast?} lunch {Your usual lunch?} dinner {Your usual dinner?} other {Your usual snack?}}",
     "add": "Add it"
+  },
+  "savedMeals": {
+    "title": "My meals",
+    "intro": "Your usual meals, ready to add in one tap. Save them from the journal.",
+    "sectionTitle": "My meals",
+    "manage": "Manage",
+    "add": "Add {name}",
+    "added": "Added: {name}, {slot}",
+    "addedButton": "{name} added",
+    "items": "{count, plural, one {# food} other {# foods}}",
+    "save": "Save this meal",
+    "nameLabel": "Meal name",
+    "confirm": "Save",
+    "cancel": "Cancel",
+    "saved": "Meal saved. You'll find it in “Add”.",
+    "delete": "Delete {name}",
+    "deleted": "Deleted: {name}",
+    "empty": "No saved meals yet. In the journal, tap “Save this meal” under a meal you have often.",
+    "hubHint": "Your everyday breakfast, your usual plate…"
   },
   "coach": {
     "title": "Coach",

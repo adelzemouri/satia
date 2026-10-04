@@ -34,6 +34,7 @@ const TABS: { href: string; key: TabKey; icon: keyof typeof ICONS; sections?: st
       "/plan",
       "/shopping",
       "/recipes",
+      "/meals",
       "/fridge",
       "/fasting",
       "/treatment",

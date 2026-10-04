@@ -2,6 +2,7 @@ import {
   boolean,
   date,
   index,
+  jsonb,
   numeric,
   pgTable,
   primaryKey,
@@ -95,4 +96,38 @@ export const dailyCheckins = pgTable(
     updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [primaryKey({ columns: [t.userId, t.date] })],
+);
+
+/** Une ligne d'un repas enregistré, figée comme une ligne du journal. */
+export type SavedMealItem = {
+  foodId: string | null;
+  label: string;
+  quantity: number;
+  unit: (typeof UNITS)[number];
+  grams: number;
+  kcal: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+  isEstimated: boolean;
+};
+
+/**
+ * Repas enregistrés (« Mes repas ») : un petit-déjeuner habituel, une assiette type… ajoutés au
+ * journal en un geste. Les lignes sont copiées telles quelles, comme pour « Copier ».
+ */
+export const savedMeals = pgTable(
+  "saved_meals",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    name: text().notNull(),
+    items: jsonb().$type<SavedMealItem[]>().notNull(),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    /** Dernier ajout au journal : les repas servis souvent remontent en tête. */
+    usedAt: timestamp({ withTimezone: true }),
+  },
+  (t) => [index().on(t.userId)],
 );

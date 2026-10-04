@@ -18,6 +18,7 @@ import {
   sharedMeals,
   profiles,
   recipeItems,
+  savedMeals,
   user,
   waterLogs,
   weightEntries,
@@ -136,6 +137,16 @@ export async function collectUserData(userId: string) {
     .innerJoin(sharedMeals, eq(sharedMeals.id, sharedMealShares.sharedMealId))
     .where(eq(sharedMealShares.userId, userId))
     .orderBy(asc(sharedMeals.date));
+  const savedMealRows = await db()
+    .select({
+      name: savedMeals.name,
+      items: savedMeals.items,
+      createdAt: savedMeals.createdAt,
+      usedAt: savedMeals.usedAt,
+    })
+    .from(savedMeals)
+    .where(eq(savedMeals.userId, userId))
+    .orderBy(asc(savedMeals.createdAt));
   const adaptive = await adaptiveExport(userId);
   const coach = await coachExport(userId);
   const training = await trainingExport(userId);
@@ -154,6 +165,7 @@ export async function collectUserData(userId: string) {
     foods: ownFoods,
     recipeItems: ingredients,
     favorites: favoriteRows,
+    savedMeals: savedMealRows,
     aiCalls,
     containers: containerRows,
     expressions: expressionRows,
@@ -216,6 +228,7 @@ export function toCsvZip(data: UserData): Uint8Array {
     "foods.csv": strToU8(toCsv(data.foods)),
     "recipe-items.csv": strToU8(toCsv(data.recipeItems)),
     "favorites.csv": strToU8(toCsv(data.favorites)),
+    "saved-meals.csv": strToU8(toCsv(data.savedMeals)),
     "ai-calls.csv": strToU8(toCsv(data.aiCalls)),
     "containers.csv": strToU8(toCsv(data.containers)),
     "expressions.csv": strToU8(toCsv(data.expressions)),

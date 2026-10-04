@@ -365,6 +365,8 @@
     "unit_not_available": "Cette unité n'est pas disponible pour cet aliment.",
     "quantity_too_large": "Cette quantité semble trop grande.",
     "nothing_to_copy": "Il n'y a rien à copier.",
+    "nothing_to_save": "Ce repas est vide pour l'instant.",
+    "too_many_saved_meals": "Tu as déjà 40 repas enregistrés. Supprimes-en un pour en garder un nouveau.",
     "food_in_recipe": "Cet aliment est utilisé dans une recette : retire-le d'abord de la recette.",
     "recipe_empty": "Ajoute au moins un ingrédient.",
     "off_unavailable": "Open Food Facts ne répond pas pour l'instant. Réessaie plus tard.",
@@ -887,6 +889,25 @@
   "habitual": {
     "title": "{slot, select, breakfast {Ton petit-déj habituel ?} lunch {Ton déjeuner habituel ?} dinner {Ton dîner habituel ?} other {Ta collation habituelle ?}}",
     "add": "L'ajouter"
+  },
+  "savedMeals": {
+    "title": "Mes repas",
+    "intro": "Tes repas habituels, prêts à ajouter d'un geste. Tu les enregistres depuis le journal.",
+    "sectionTitle": "Mes repas",
+    "manage": "Gérer",
+    "add": "Ajouter {name}",
+    "added": "Ajouté : {name}, {slot}",
+    "addedButton": "{name} ajouté",
+    "items": "{count, plural, one {# aliment} other {# aliments}}",
+    "save": "Enregistrer ce repas",
+    "nameLabel": "Nom du repas",
+    "confirm": "Enregistrer",
+    "cancel": "Annuler",
+    "saved": "Repas enregistré. Tu le retrouves dans « Ajouter ».",
+    "delete": "Supprimer {name}",
+    "deleted": "Supprimé : {name}",
+    "empty": "Aucun repas enregistré pour l'instant. Dans le journal, touche « Enregistrer ce repas » sous un repas que tu prends souvent.",
+    "hubHint": "Ton petit-déj de tous les jours, ton assiette type…"
   },
   "coach": {
     "title": "Coach",
