@@ -1563,5 +1563,12 @@
     "menu": "Menu",
     "recipes": "Recettes",
     "meals": "Mes repas"
+  },
+  "crash": {
+    "title": "Oups, cet écran n'a pas pu s'afficher",
+    "body": "Ce n'est pas de ta faute. Un rechargement règle presque toujours le problème.",
+    "recovering": "Mise à jour de l'app, un instant…",
+    "reload": "Recharger",
+    "retry": "Réessayer"
   }
 }
