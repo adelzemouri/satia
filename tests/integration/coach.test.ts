@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { db } from "@/db/client";
-import { coachMessages, coachReviews, llmCalls, user } from "@/db/schema";
+import { coachMessages, coachReviews, foods, llmCalls, user } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
 import { catalogRecipe } from "@/domain/recipes/catalog";
@@ -185,6 +185,11 @@ describe("coach", () => {
       ],
     });
     const dinner = { slot: "dinner", goalKcal: 2000, remainingKcal: 1000 } as const;
+    // Sans photo, le plat de la famille n'est pas proposé : une recette illustrée du catalogue le remplace.
+    const unpictured = await suggestedDish(userId, dinner, today);
+    expect(unpictured?.id).not.toBe(id);
+    expect(unpictured?.catalogSlug).toBeTruthy();
+    await db().update(foods).set({ imageUrl: "https://example.test/dahl.jpg" }).where(eq(foods.id, id));
     const dish = await suggestedDish(userId, dinner, today);
     expect(dish).toMatchObject({ id, name: "Dahl maison" });
     expect(dish!.portionKcal).toBeGreaterThan(240);
