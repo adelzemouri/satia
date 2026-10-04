@@ -18,7 +18,6 @@ import { haptic } from "@/ui/motion";
 import { useToast } from "@/ui/toast";
 
 import { defaultUnit, type FoodItem } from "./food-types";
-import { ProductThumb } from "./product-thumb";
 
 const inputClass = "min-h-12 rounded-2xl border border-border bg-surface px-3 text-base";
 
@@ -109,8 +108,8 @@ export function QuantityForm({
         <h2 id="quantity-title" className="text-xl font-semibold">
           {t("add.quantityTitle")}
         </h2>
+        {food.imageUrl && <FoodPhoto src={food.imageUrl} />}
         <div className="flex items-center gap-3">
-          {food.imageUrl && <ProductThumb src={food.imageUrl} size={64} />}
           <p className="font-semibold">
             {food.nameFr}
             {food.brand && <span className="font-normal text-text-muted"> · {food.brand}</span>}
@@ -271,5 +270,23 @@ function UnitWeightForm({ foodId, onSaved }: { foodId: string; onSaved: (unit: C
         {t("add.unitWeightSave")}
       </Button>
     </fieldset>
+  );
+}
+
+/** Grande photo de l'aliment : recadrée pour une recette de l'app, entière pour un produit. */
+function FoodPhoto({ src }: { src: string }) {
+  const recipe = src.startsWith("/recipes/") && src.endsWith("-480.webp");
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- photo Open Food Facts ou WebP déjà redimensionné
+    <img
+      src={src}
+      srcSet={recipe ? `${src} 480w, ${src.replace(/-480\.webp$/, "-960.webp")} 960w` : undefined}
+      sizes={recipe ? "(min-width: 640px) 600px, 100vw" : undefined}
+      alt=""
+      referrerPolicy="no-referrer"
+      className={`my-2 aspect-[4/3] w-full rounded-[var(--radius-card)] ${
+        recipe ? "object-cover" : "bg-white object-contain p-2"
+      }`}
+    />
   );
 }
