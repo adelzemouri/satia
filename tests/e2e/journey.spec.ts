@@ -195,7 +195,7 @@ test("ajout manuel d'un repas depuis la base Ciqual", async ({ page }) => {
   // Modifier la quantité met les valeurs à jour.
   await lunch.getByRole("button", { name: /^Modifier Pomme, pulpe et peau, crue/ }).click();
   await lunch.getByLabel("Quantité").fill("100");
-  await lunch.getByRole("button", { name: "Enregistrer" }).click();
+  await lunch.getByRole("button", { name: "Enregistrer", exact: true }).click();
   await expect(lunch.getByText(/^100 g · 5\d kcal/)).toBeVisible();
 
   await page.getByRole("link", { name: "Aujourd'hui" }).click();
@@ -274,6 +274,23 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await expect(swiped).toBeVisible();
   await swiped.getByRole("button", { name: "Annuler" }).click();
   await expect(page.getByRole("region", { name: "Petit-déjeuner" }).getByText("Granola maison")).toBeVisible();
+
+  // « Mes repas » : le petit-déjeuner s'enregistre sous un nom, puis se resert d'un geste.
+  const morning = page.getByRole("region", { name: "Petit-déjeuner" });
+  await morning.getByRole("button", { name: "Enregistrer ce repas" }).click();
+  await expect(morning.getByLabel("Nom du repas")).toHaveValue("Granola maison");
+  await morning.getByLabel("Nom du repas").fill("Petit-déj du matin");
+  await withServerAction(page, () => morning.getByRole("button", { name: "Enregistrer", exact: true }).click());
+  await expect(page.getByRole("status").filter({ hasText: "Repas enregistré" })).toBeVisible();
+  await page.goto("/add?slot=snack");
+  const savedList = page.getByRole("region", { name: "Mes repas" });
+  await expect(savedList.getByText("1 aliment · 212 kcal")).toBeVisible();
+  await withServerAction(page, () => savedList.getByRole("button", { name: "Ajouter Petit-déj du matin" }).click());
+  await expect(savedList.getByRole("button", { name: "Petit-déj du matin ajouté" })).toBeVisible();
+  await page.goto("/journal");
+  await expect(page.getByRole("region", { name: "Collations" }).getByText("Granola maison")).toBeVisible();
+  await page.goto("/meals");
+  await expect(page.getByText("Petit-déj du matin")).toBeVisible();
 
   await page.getByRole("link", { name: "Aujourd'hui" }).click();
   for (let glass = 0; glass < 3; glass++) {
@@ -997,6 +1014,7 @@ test("audit d'accessibilité : chaque page de l'app, en thème clair et sombre",
     "/foods/new",
     "/foods/new-recipe",
     "/containers",
+    "/meals",
     "/dictionary",
     "/family",
     "/family/share",

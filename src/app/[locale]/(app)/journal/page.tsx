@@ -11,6 +11,7 @@ import { CalorieSummary, MacroBars } from "@/features/journal/day-overview";
 import { EntryRow } from "@/features/journal/entry-row";
 import { WaterTracker } from "@/features/journal/water-tracker";
 import { QualityBars } from "@/features/quality/quality-bars";
+import { SaveMealButton } from "@/features/saved-meals/save-meal-button";
 import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { getFoods } from "@/server/foods";
@@ -218,6 +219,9 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
               </Link>
               {date !== today && entries.length > 0 && (
                 <CopyButton fromDate={date} fromSlot={slot} toDate={today} label={t("journal.copyToToday")} />
+              )}
+              {entries.length > 0 && (
+                <SaveMealButton date={date} slot={slot} labels={entries.map((entry) => entry.label)} />
               )}
             </div>
           </Card>
