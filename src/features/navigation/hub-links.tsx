@@ -3,8 +3,6 @@ import type { ComponentProps } from "react";
 import { Link } from "@/i18n/navigation";
 import { Icon, type ICONS } from "@/ui/icon";
 
-import { NAV_FORWARD } from "./transition-types";
-
 export type HubLink = {
   href: ComponentProps<typeof Link>["href"];
   icon: keyof typeof ICONS;
@@ -21,7 +19,6 @@ export function HubLinks({ label, links }: { label: string; links: HubLink[] }) 
           <li key={link.label}>
             <Link
               href={link.href}
-              transitionTypes={NAV_FORWARD}
               className="flex min-h-16 items-center gap-4 rounded-2xl px-3 py-2 hover:bg-surface-muted"
             >
               <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary">
