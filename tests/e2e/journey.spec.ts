@@ -255,6 +255,26 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await page.reload();
   await expect(page.getByRole("region", { name: "Petit-déjeuner" }).getByText("Granola maison")).toBeVisible();
 
+  // Au doigt, glisser la ligne vers la gauche la supprime (toujours annulable).
+  const row = page
+    .getByRole("region", { name: "Petit-déjeuner" })
+    .getByRole("button", { name: "Modifier Granola maison" });
+  await row.evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    const y = box.top + box.height / 2;
+    const fire = (type: string, x: number) =>
+      element.dispatchEvent(
+        new PointerEvent(type, { bubbles: true, pointerId: 7, pointerType: "touch", clientX: x, clientY: y }),
+      );
+    fire("pointerdown", box.right - 20);
+    for (const step of [10, 40, 80, 120, 160]) fire("pointermove", box.right - 20 - step);
+    fire("pointerup", box.right - 180);
+  });
+  const swiped = page.getByRole("status").filter({ hasText: "Supprimé : Granola maison" });
+  await expect(swiped).toBeVisible();
+  await swiped.getByRole("button", { name: "Annuler" }).click();
+  await expect(page.getByRole("region", { name: "Petit-déjeuner" }).getByText("Granola maison")).toBeVisible();
+
   await page.getByRole("link", { name: "Aujourd'hui" }).click();
   for (let glass = 0; glass < 3; glass++) {
     await withServerAction(page, () => page.getByRole("button", { name: "Ajouter un verre d'eau" }).click());

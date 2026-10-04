@@ -10,6 +10,7 @@ import type { Unit } from "@/domain/units";
 import { Alert } from "@/ui/alert";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
+import { SwipeRow } from "@/ui/swipe-row";
 import { useToast } from "@/ui/toast";
 
 import { deleteEntryAction, updateEntryAction } from "./actions";
@@ -86,16 +87,23 @@ export function EntryRow({ entry, units, readOnly = false }: { entry: EntryView;
 
   return (
     <div className="flex flex-col gap-3 py-2">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        aria-expanded={open}
-        aria-label={t("journal.edit", { label: entry.label })}
-        className="flex min-h-12 items-center gap-3 text-left"
+      <SwipeRow
+        onSwipeLeft={remove}
+        onSwipeRight={() => setOpen(true)}
+        leftLabel={t("journal.delete")}
+        rightLabel={t("journal.swipeEdit")}
       >
-        {summary}
-        <span className="font-semibold">{t("common.kcal", { value: Math.round(entry.kcal) })}</span>
-      </button>
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          aria-expanded={open}
+          aria-label={t("journal.edit", { label: entry.label })}
+          className="flex min-h-12 w-full items-center gap-3 text-left"
+        >
+          {summary}
+          <span className="font-semibold">{t("common.kcal", { value: Math.round(entry.kcal) })}</span>
+        </button>
+      </SwipeRow>
       {open && (
         <form action={save} className="flex flex-col gap-3 rounded-2xl bg-surface-muted p-3">
           {error && <Alert>{errorText(error)}</Alert>}

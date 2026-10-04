@@ -1,22 +1,21 @@
-import { getTranslations } from "next-intl/server";
+import { Bone, SkeletonCard, SkeletonPage } from "@/ui/skeleton";
 
 /**
  * Affiché immédiatement pendant le chargement d'une page de l'app : le clic se voit tout de suite,
- * et Next.js peut précharger cette coquille pour les liens visibles.
+ * et Next.js peut précharger cette coquille pour les liens visibles. Les pages les plus visitées
+ * (journal, progrès, recettes) ont leur propre squelette, à leur forme.
  */
-export default async function Loading() {
-  const t = await getTranslations("common");
+export default function Loading() {
   return (
-    <div role="status" aria-busy="true" className="flex flex-col gap-6">
-      <span className="sr-only">{t("loading")}</span>
-      <div className="h-9 w-2/3 animate-pulse rounded-2xl bg-surface-muted" />
+    <SkeletonPage>
+      <Bone className="h-9 w-2/3 rounded-2xl" />
       {[0, 1, 2].map((index) => (
-        <div key={index} className="flex flex-col gap-3 rounded-[var(--radius-card)] bg-surface p-5">
-          <div className="h-6 w-1/2 animate-pulse rounded-xl bg-surface-muted" />
-          <div className="h-4 w-full animate-pulse rounded-xl bg-surface-muted" />
-          <div className="h-4 w-5/6 animate-pulse rounded-xl bg-surface-muted" />
-        </div>
+        <SkeletonCard key={index}>
+          <Bone className="h-6 w-1/2" />
+          <Bone className="h-4 w-full" />
+          <Bone className="h-4 w-5/6" />
+        </SkeletonCard>
       ))}
-    </div>
+    </SkeletonPage>
   );
 }

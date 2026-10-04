@@ -12,6 +12,7 @@ export const ICONS = {
   left: "m15 5-7 7 7 7",
   right: "m9 5 7 7-7 7",
   trash: "M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13M10 11v5M14 11v5",
+  edit: "M4 20h4L19 9l-4-4L4 16v4ZM13.5 6.5l4 4",
   copy: "M8 8h11v11H8zM5 16V5h11",
   drop: "M12 3.5c3 4 6 7.3 6 10.5a6 6 0 0 1-12 0c0-3.2 3-6.5 6-10.5Z",
   barcode: "M4 6v12M7 6v12M10 6v12M14 6v12M16 6v12M20 6v12M3 4h3M18 4h3M3 20h3M18 20h3",

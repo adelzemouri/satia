@@ -8,6 +8,7 @@ import { addEntryAction, deleteEntryAction } from "@/features/journal/actions";
 import { useOfflineQueue } from "@/features/offline/offline-provider";
 import { isNetworkFailure } from "@/features/offline/pending-queue";
 import { Icon } from "@/ui/icon";
+import { haptic } from "@/ui/motion";
 import { useToast } from "@/ui/toast";
 
 import type { RecentItem } from "./food-types";
@@ -46,6 +47,7 @@ export function QuickAddButton({
         const result = await addEntryAction(input);
         if (result?.error) return onError(result.error);
         setAdded(true);
+        haptic();
         const id = result?.id;
         toast({
           message: t("addedTo", { name: food.nameFr, slot: tSlots(slot) }),

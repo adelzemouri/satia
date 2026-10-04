@@ -14,6 +14,7 @@ import { useRouter } from "@/i18n/navigation";
 import { Alert } from "@/ui/alert";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
+import { haptic } from "@/ui/motion";
 import { useToast } from "@/ui/toast";
 
 import { defaultUnit, type FoodItem } from "./food-types";
@@ -78,6 +79,7 @@ export function QuantityForm({
       try {
         const result = await addEntryAction(input);
         if (result?.error) return setError(result.error);
+        haptic();
         const id = result?.id;
         toast({
           message: t("add.addedTo", { name: food.nameFr, slot: t(`slotsLower.${slot}`) }),
