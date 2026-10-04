@@ -42,8 +42,13 @@ export function haptic(pattern: number | number[] = 12): void {
   }
 }
 
-/** Distance (px) à partir de laquelle un glissement horizontal déclenche son action. */
-export const SWIPE_THRESHOLD = 88;
+/** Distance minimale (px) d'un glissement qui déclenche son action. */
+export const SWIPE_THRESHOLD = 110;
+
+/** Seuil pour une ligne donnée : au moins 40 % de sa largeur, pour éviter les déclenchements involontaires. */
+export function swipeThreshold(width: number): number {
+  return Math.max(SWIPE_THRESHOLD, Math.round(width * 0.4));
+}
 
 /** Action d'un glissement terminé : vers la gauche, vers la droite, ou retour en place. */
 export function swipeOutcome(dx: number, threshold = SWIPE_THRESHOLD): "left" | "right" | null {
@@ -52,8 +57,14 @@ export function swipeOutcome(dx: number, threshold = SWIPE_THRESHOLD): "left" | 
   return null;
 }
 
-/** Le geste est-il horizontal ? Décidé une fois le doigt déplacé de quelques pixels. */
-export function swipeAxis(dx: number, dy: number, slop = 8): "x" | "y" | null {
+/**
+ * Le geste est-il horizontal ? Décidé une fois le doigt déplacé d'une dizaine de pixels ; il doit
+ * être nettement plus horizontal que vertical, sinon c'est un défilement de la page.
+ */
+export function swipeAxis(dx: number, dy: number, slop = 10): "x" | "y" | null {
   if (Math.abs(dx) < slop && Math.abs(dy) < slop) return null;
-  return Math.abs(dx) > Math.abs(dy) * 1.2 ? "x" : "y";
+  return Math.abs(dx) > Math.abs(dy) * 2 ? "x" : "y";
 }
+
+/** Bord gauche de l'écran réservé au geste « retour » du téléphone. */
+export const EDGE_GUARD = 24;

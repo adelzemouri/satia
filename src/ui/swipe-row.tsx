@@ -3,12 +3,15 @@
 import { type ReactNode, useRef, useState } from "react";
 
 import { Icon } from "./icon";
-import { haptic, SWIPE_THRESHOLD, swipeAxis, swipeOutcome } from "./motion";
+import { EDGE_GUARD, haptic, swipeAxis, swipeOutcome, swipeThreshold } from "./motion";
+
+type Gesture = { id: number; x: number; y: number; axis: "x" | "y" | null; armed: boolean; threshold: number };
 
 /**
  * Ligne qui se glisse au doigt : vers la gauche pour supprimer, vers la droite pour modifier.
- * Raccourci tactile seulement : les mêmes actions restent accessibles par les boutons de la
- * ligne (clavier, lecteur d'écran), d'où les indications décoratives.
+ * Il faut un geste franc (nettement horizontal, sur 40 % de la ligne) pour déclencher l'action ;
+ * en deçà, la ligne revient en place. Raccourci tactile seulement : les mêmes actions restent
+ * accessibles par les boutons de la ligne (clavier, lecteur d'écran), d'où les indications décoratives.
  */
 export function SwipeRow({
   children,
@@ -26,32 +29,37 @@ export function SwipeRow({
   rightLabel: string;
 }) {
   const [dx, setDx] = useState(0);
+  const [armed, setArmed] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const gesture = useRef<{ id: number; x: number; y: number; axis: "x" | "y" | null; armed: boolean } | null>(null);
+  const gesture = useRef<Gesture | null>(null);
   const moved = useRef(false);
 
   const reset = () => {
     gesture.current = null;
     setDragging(false);
+    setArmed(false);
     setDx(0);
   };
 
+  const left = dx < 0;
   return (
-    <div className="relative overflow-hidden rounded-2xl">
-      {dx !== 0 && (
+    <div className="relative overflow-hidden rounded-xl">
+      {Math.abs(dx) > 16 && (
         <div
           aria-hidden="true"
-          className={`absolute inset-0 flex items-center px-4 font-bold ${
-            dx < 0 ? "justify-end bg-accent text-on-accent" : "justify-start bg-primary text-on-primary"
+          className={`absolute inset-0 flex items-center px-5 font-bold transition-colors duration-150 ${
+            left ? "justify-end" : "justify-start"
+          } ${
+            armed
+              ? left
+                ? "bg-accent text-on-accent"
+                : "bg-primary text-on-primary"
+              : "bg-surface-muted text-text-muted"
           }`}
         >
-          <span
-            className={`flex items-center gap-2 transition-transform duration-150 ${
-              Math.abs(dx) >= SWIPE_THRESHOLD ? "scale-110" : ""
-            }`}
-          >
-            <Icon name={dx < 0 ? "trash" : "edit"} size={20} />
-            {dx < 0 ? leftLabel : rightLabel}
+          <span className={`flex items-center gap-2 transition-transform duration-150 ${armed ? "scale-110" : ""}`}>
+            <Icon name={left ? "trash" : "edit"} size={20} />
+            {armed && (left ? leftLabel : rightLabel)}
           </span>
         </div>
       )}
@@ -59,9 +67,16 @@ export function SwipeRow({
         className={`relative touch-pan-y bg-surface ${dragging ? "" : "transition-transform duration-200 ease-out"}`}
         style={{ transform: dx ? `translateX(${dx}px)` : undefined }}
         onPointerDown={(event) => {
-          if (event.pointerType === "mouse") return;
+          if (event.pointerType === "mouse" || event.clientX < EDGE_GUARD) return;
           moved.current = false;
-          gesture.current = { id: event.pointerId, x: event.clientX, y: event.clientY, axis: null, armed: false };
+          gesture.current = {
+            id: event.pointerId,
+            x: event.clientX,
+            y: event.clientY,
+            axis: null,
+            armed: false,
+            threshold: swipeThreshold(event.currentTarget.getBoundingClientRect().width),
+          };
         }}
         onPointerMove={(event) => {
           const g = gesture.current;
@@ -79,15 +94,16 @@ export function SwipeRow({
           }
           moved.current = true;
           // Petite vibration au passage du seuil, pour sentir que l'action est prête.
-          const armed = swipeOutcome(deltaX) !== null;
-          if (armed && !g.armed) haptic(8);
-          g.armed = armed;
+          const ready = swipeOutcome(deltaX, g.threshold) !== null;
+          if (ready && !g.armed) haptic(8);
+          g.armed = ready;
+          setArmed(ready);
           setDx(deltaX);
         }}
         onPointerUp={(event) => {
           const g = gesture.current;
           if (!g || g.id !== event.pointerId) return;
-          const outcome = g.axis === "x" ? swipeOutcome(event.clientX - g.x) : null;
+          const outcome = g.axis === "x" ? swipeOutcome(event.clientX - g.x, g.threshold) : null;
           reset();
           if (outcome === "left") onSwipeLeft();
           if (outcome === "right") onSwipeRight();

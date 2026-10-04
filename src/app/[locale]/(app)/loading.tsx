@@ -2,8 +2,8 @@ import { Bone, SkeletonCard, SkeletonPage } from "@/ui/skeleton";
 
 /**
  * Affiché immédiatement pendant le chargement d'une page de l'app : le clic se voit tout de suite,
- * et Next.js peut précharger cette coquille pour les liens visibles. Les pages les plus visitées
- * (journal, progrès, recettes) ont leur propre squelette, à leur forme.
+ * et Next.js peut précharger cette coquille pour les liens visibles. Les onglets et les recettes
+ * ont leur propre squelette, à leur forme ; celui-ci sert aux autres pages.
  */
 export default function Loading() {
   return (
