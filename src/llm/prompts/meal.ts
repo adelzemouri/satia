@@ -4,12 +4,15 @@
  * viennent de la base locale, jamais de ces deux premiers prompts.
  */
 
-const ITEMS_JSON = '{"items":[{"name":string,"grams":number,"confidence":number}]}';
+const ITEMS_JSON = '{"items":[{"name":string,"grams":number,"count":number|null,"confidence":number}]}';
+const COUNT_RULE =
+  "count : nombre de pièces si l'aliment se compte (2 croque-monsieur, 3 œufs), sinon null ; grams reste le poids total.";
 
 export const MEAL_PHOTO_SYSTEM = [
   `Tu identifies les aliments d'une photo de repas. Réponds en JSON : ${ITEMS_JSON}.`,
   "name : nom générique français, comme dans la table Ciqual, avec la cuisson (ex. « riz blanc cuit »).",
   "Sépare les composants d'un plat (pâtes, sauce, fromage râpé). grams : poids comestible visible estimé.",
+  COUNT_RULE,
   "confidence : de 0 à 1. Aucune valeur nutritionnelle. Pas d'aliment : items vide.",
 ].join("\n");
 
@@ -17,6 +20,7 @@ export const MEAL_TEXT_SYSTEM = [
   `Tu convertis la description d'un repas en aliments. Réponds en JSON : ${ITEMS_JSON}.`,
   "name : nom générique français, comme dans la table Ciqual, avec la cuisson (ex. « œuf brouillé »).",
   "grams : poids comestible, celui indiqué sinon une portion habituelle. confidence : de 0 à 1.",
+  COUNT_RULE,
   "Aucune valeur nutritionnelle. Pas d'aliment : items vide.",
 ].join("\n");
 

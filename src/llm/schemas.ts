@@ -11,6 +11,8 @@ export const mealItemsSchema = z.object({
       z.object({
         name: z.string().trim().min(1).max(80),
         grams: z.number().positive().max(3000),
+        /** Nombre de pièces quand l'aliment se compte (2 croque-monsieur, 3 œufs). */
+        count: z.number().int().min(1).max(30).nullish(),
         confidence: z.number().min(0).max(1),
       }),
     )

@@ -193,6 +193,11 @@ export function MealConfirmation({
                   </select>
                 </label>
               </div>
+              {line.count && line.unit === "g" && line.quantityText === String(line.quantity) && (
+                <p className="text-sm text-text-muted">
+                  {t("aiConfirm.countHint", { count: line.count, each: Math.round(line.quantity / line.count) })}
+                </p>
+              )}
               <p className="text-sm" aria-live="polite">
                 {values
                   ? t("aiConfirm.values", {
