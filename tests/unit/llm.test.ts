@@ -160,4 +160,38 @@ describe("fournisseurs", () => {
     expect(await mockProvider().complete(request)).toEqual(first);
     expect(mealItemsSchema.safeParse(first.json).success).toBe(true);
   });
+
+  it("images : Nano Banana par l'API native de Gemini, sinon images/generations", async () => {
+    const fetchMock = vi.fn(async (url: string, _init: RequestInit) =>
+      Response.json(
+        url.includes(":generateContent")
+          ? {
+              candidates: [
+                { content: { parts: [{ text: "voilà" }, { inlineData: { mimeType: "image/png", data: "UE5H" } }] } },
+              ],
+            }
+          : { data: [{ b64_json: "SlBH" }] },
+      ),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const gemini = openAiCompatibleProvider({
+      baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
+      apiKey: "cle",
+      jsonMode: "json_schema",
+    });
+    expect(await gemini.generateImage!({ model: "gemini-3.1-flash-image", prompt: "Gratin" })).toEqual({
+      base64: "UE5H",
+    });
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent");
+    expect((init.headers as Record<string, string>)["x-goog-api-key"]).toBe("cle");
+    expect(JSON.parse(String(init.body)).generationConfig).toEqual({
+      responseModalities: ["IMAGE"],
+      imageConfig: { aspectRatio: "4:3" },
+    });
+
+    const other = openAiCompatibleProvider({ baseUrl: "https://llm.test/v1", apiKey: "k", jsonMode: "json_schema" });
+    expect(await other.generateImage!({ model: "gpt-image-1", prompt: "Gratin" })).toEqual({ base64: "SlBH" });
+    expect(fetchMock.mock.calls[1]![0]).toBe("https://llm.test/v1/images/generations");
+  });
 });
