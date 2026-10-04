@@ -3,23 +3,25 @@
 import { useLocale } from "next-intl";
 import { useLayoutEffect, useRef } from "react";
 
-import { prefersReducedMotion, swapRemembered, tween } from "./motion";
+import { prefersReducedMotion, tween } from "./motion";
 
 const DURATION_MS = 700;
 
 /**
- * Nombre qui défile depuis la dernière valeur affichée (après un ajout, les calories restantes
- * descendent jusqu'au nouveau total). Le rendu serveur montre directement la valeur finale ; seul
- * le texte change pendant l'animation, sans nouveau rendu React.
+ * Nombre qui défile : depuis zéro à chaque arrivée sur la page, puis depuis la valeur précédente
+ * quand elle change sur place (après un ajout). Le rendu serveur montre directement la valeur
+ * finale ; seul le texte change pendant l'animation, sans nouveau rendu React.
  */
-export function CountUp({ value, memoryKey }: { value: number; memoryKey: string }) {
+export function CountUp({ value }: { value: number }) {
   const locale = useLocale();
   const ref = useRef<HTMLSpanElement>(null);
+  const shown = useRef(0);
 
   useLayoutEffect(() => {
     const element = ref.current;
-    const from = swapRemembered(memoryKey, value);
-    if (!element || from === null || from === value || prefersReducedMotion()) return;
+    const from = shown.current;
+    shown.current = value;
+    if (!element || from === value || prefersReducedMotion()) return;
     const format = new Intl.NumberFormat(locale);
     let frame = 0;
     const start = performance.now();
@@ -34,7 +36,7 @@ export function CountUp({ value, memoryKey }: { value: number; memoryKey: string
       cancelAnimationFrame(frame);
       element.textContent = format.format(value);
     };
-  }, [locale, memoryKey, value]);
+  }, [locale, value]);
 
   return <span ref={ref}>{new Intl.NumberFormat(locale).format(value)}</span>;
 }

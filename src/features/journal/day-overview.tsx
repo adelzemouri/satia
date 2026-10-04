@@ -15,13 +15,10 @@ export async function CalorieSummary({
   totals,
   goal,
   compact = false,
-  day,
 }: {
   totals: Nutrients;
   goal: Goal | null;
   compact?: boolean;
-  /** Jour affiché (anneau de l'accueil) : l'anneau et le chiffre repartent de la dernière valeur vue. */
-  day?: string;
 }) {
   const t = await getTranslations("home");
   const consumed = Math.round(totals.kcal);
@@ -68,11 +65,11 @@ export async function CalorieSummary({
       >
         <svg viewBox="0 0 128 128" className="size-full -rotate-90" aria-hidden="true">
           <circle cx="64" cy="64" r={radius} fill="none" strokeWidth="12" className="stroke-surface-muted" />
-          <RingArc radius={radius} offset={offset} over={over} memoryKey={`ring:${day ?? "today"}`} />
+          <RingArc radius={radius} offset={offset} over={over} />
         </svg>
         <span className="absolute inset-0 flex flex-col items-center justify-center leading-tight">
           <span className="font-display text-3xl font-extrabold tracking-tight">
-            <CountUp value={Math.abs(target - consumed)} memoryKey={`left:${day ?? "today"}`} />
+            <CountUp value={Math.abs(target - consumed)} />
           </span>
           <span className="text-sm font-semibold text-text-muted">{over ? t("ringOver") : t("ringLeft")}</span>
         </span>
