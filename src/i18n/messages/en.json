@@ -891,6 +891,7 @@
       "high": "Great"
     },
     "scaleValue": "{question}: {value} out of 5",
+    "thanks": "Thanks, today is noted.",
     "scaleHint": "From 1 ({low}) to 5 ({high})."
   },
   "habitual": {

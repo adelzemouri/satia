@@ -652,10 +652,14 @@ test("ressenti du jour et bilan qualité de la semaine", async ({ page }) => {
   await signInWithTotp(page);
   await page.getByRole("link", { name: "Progrès" }).click();
   const checkin = page.getByRole("region", { name: "Comment tu te sens ?" });
+  // Une question à la fois : on passe directement à l'énergie.
+  await checkin.getByRole("button", { name: "Énergie", exact: true }).click();
   await withServerAction(page, () => checkin.getByRole("radio", { name: "Énergie : 4 sur 5" }).check({ force: true }));
   await expect(checkin.getByRole("radio", { name: "Énergie : 4 sur 5" })).toBeChecked();
   await expectNoA11yViolations(page);
   await page.reload();
+  // La réponse reste affichée sur l'onglet, puis dans la question quand on la rouvre.
+  await checkin.getByRole("button", { name: "Énergie : 4 sur 5" }).click();
   await expect(checkin.getByRole("radio", { name: "Énergie : 4 sur 5" })).toBeChecked();
 
   await page.getByRole("link", { name: /^Bilan qualité/ }).click();

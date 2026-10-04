@@ -184,7 +184,8 @@ export function QuantityForm({
         <Button type="submit" disabled={pending || grams === null}>
           {t("add.addButton")}
         </Button>
-        <Button variant="ghost" onClick={onCancel}>
+        <Button variant="secondary" onClick={onCancel}>
+          <Icon name="search" />
           {t("add.changeFood")}
         </Button>
       </div>
