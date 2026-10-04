@@ -998,6 +998,10 @@ test("recettes du catalogue : bibliothèque illustrée, fiche et ajout", async (
   await expectNoA11yViolations(page);
   await page.getByRole("link", { name: "Ajouter au journal" }).click();
   await expect(page.getByLabel("Unité")).toHaveValue("portion");
+  // La photo de la recette accompagne l'écran de quantité.
+  await expect(
+    page.locator('form[aria-labelledby="quantity-title"] img[src*="/recipes/minestrone-480"]'),
+  ).toBeVisible();
 });
 
 test("audit d'accessibilité : chaque page de l'app, en thème clair et sombre", async ({ page, context, baseURL }) => {

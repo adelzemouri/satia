@@ -76,7 +76,7 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
             <p className="text-sm text-text-muted">{t("product.barcode", { code: food.sourceRef })}</p>
           )}
         </div>
-        {food.imageUrl && <ProductThumb src={food.imageUrl} size={112} />}
+        {food.imageUrl && !catalog && <ProductThumb src={food.imageUrl} size={112} />}
       </div>
 
       <Link
