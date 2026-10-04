@@ -10,6 +10,8 @@ const schema = z
     LLM_API_KEY: z.string().min(1).optional(),
     LLM_MODEL_VISION: z.string().min(1).optional(),
     LLM_MODEL_TEXT: z.string().min(1).optional(),
+    /** Modèle d'images (photos des recettes du foyer) ; sans lui, pas de photo générée. */
+    LLM_MODEL_IMAGE: z.string().min(1).optional(),
     /** `json_object` pour les fournisseurs qui ne gèrent pas les schémas JSON (DeepSeek…). */
     LLM_JSON_MODE: z.enum(["json_schema", "json_object"]).default("json_schema"),
     /** Effort de réflexion des modèles qui « pensent » avant de répondre (tokens facturés en sortie). */
@@ -19,6 +21,8 @@ const schema = z
     LLM_PRICE_VISION_OUTPUT: price,
     LLM_PRICE_TEXT_INPUT: price,
     LLM_PRICE_TEXT_OUTPUT: price,
+    /** Tarif en dollars par image générée. */
+    LLM_PRICE_IMAGE: z.coerce.number().min(0).max(10).default(0.04),
     /** Plafond mensuel par défaut, modifiable ensuite par l'admin. */
     LLM_MONTHLY_BUDGET_USD: z.coerce.number().min(0).max(10_000).default(2),
   })
@@ -43,6 +47,10 @@ export type LlmConfig = {
   jsonMode: "json_schema" | "json_object";
   reasoningEffort: "none" | "minimal" | "low" | "medium" | "high" | undefined;
   models: Record<ModelKind, string>;
+  /** Vide quand aucun modèle d'images n'est configuré. */
+  imageModel: string;
+  /** Dollars par image. */
+  imagePrice: number;
   /** Dollars par million de tokens. */
   prices: Record<ModelKind, { input: number; output: number }>;
   defaultMonthlyBudgetUsd: number;
@@ -73,6 +81,8 @@ export function parseLlmConfig(source: Record<string, string | undefined>): LlmC
       vision: env.LLM_MODEL_VISION ?? (provider === "mock" ? "mock-vision" : ""),
       text: env.LLM_MODEL_TEXT ?? (provider === "mock" ? "mock-text" : ""),
     },
+    imageModel: env.LLM_MODEL_IMAGE ?? (provider === "mock" ? "mock-image" : ""),
+    imagePrice: env.LLM_PRICE_IMAGE,
     prices: {
       vision: { input: env.LLM_PRICE_VISION_INPUT, output: env.LLM_PRICE_VISION_OUTPUT },
       text: { input: env.LLM_PRICE_TEXT_INPUT, output: env.LLM_PRICE_TEXT_OUTPUT },

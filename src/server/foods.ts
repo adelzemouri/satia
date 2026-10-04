@@ -1,6 +1,9 @@
 import "server-only";
 
-import { and, desc, eq, inArray, isNotNull, isNull, like, or, sql } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
+
+import { and, desc, eq, inArray, isNotNull, isNull, like, lt, or, sql } from "drizzle-orm";
+import { after } from "next/server";
 import { z } from "zod";
 
 import { db } from "@/db/client";
@@ -11,8 +14,12 @@ import { CATALOG_PREFIX } from "@/domain/recipes/catalog";
 import { normalizeForSearch } from "@/domain/search";
 
 import { COUNT_UNITS, type Unit } from "@/domain/units";
+import { AiUnavailableError, generateRecipeImage } from "@/llm";
+import { llmConfig } from "@/llm/config";
 
 import { DomainError } from "./errors";
+import { imageMime, isImage, PHOTO_MIME_TYPES } from "./photos";
+import { deleteObjects, putObject, signedGetUrl } from "./storage";
 
 export type Food = typeof foods.$inferSelect;
 
@@ -422,6 +429,147 @@ export async function familyRecipes(userId: string): Promise<FoodSummary[]> {
 }
 
 /** Supprime un aliment personnel ou une recette (à soi ou du foyer). Le journal garde ses valeurs figées. */
+/** Photo réduite côté client (côté long ≤ 1080 px) : quelques centaines de Ko au plus. */
+const RECIPE_PHOTO_MAX_BYTES = 1_500_000;
+
+export const recipePhotoSchema = z.object({
+  foodId: z.uuid(),
+  imageBase64: z
+    .string()
+    .min(1)
+    .max(Math.ceil((RECIPE_PHOTO_MAX_BYTES * 4) / 3) + 4),
+  mime: z.enum(PHOTO_MIME_TYPES),
+});
+
+/** Adresse de la photo privée d'une recette ; la version force le rafraîchissement après un changement. */
+export function recipePhotoPath(foodId: string, version: string): string {
+  return `/api/foods/${foodId}/photo?v=${version}`;
+}
+
+/** Recette modifiable par l'utilisateur (la sienne ou celle de son foyer), avec sa photo actuelle. */
+async function editableRecipe(userId: string, foodId: string) {
+  const [food] = await db()
+    .select({ id: foods.id, photoKey: foods.photoKey, householdId: foods.householdId })
+    .from(foods)
+    .where(and(eq(foods.id, foodId), eq(foods.source, "recipe"), editableBy(userId)));
+  if (!food) throw new DomainError("not_found");
+  return food;
+}
+
+/** Pose (ou remplace) la photo d'une recette du foyer ; l'ancienne est retirée du stockage. */
+export async function setRecipePhoto(userId: string, input: z.input<typeof recipePhotoSchema>): Promise<void> {
+  const data = recipePhotoSchema.parse(input);
+  const food = await editableRecipe(userId, data.foodId);
+  const bytes = Uint8Array.from(Buffer.from(data.imageBase64, "base64"));
+  if (bytes.length > RECIPE_PHOTO_MAX_BYTES || !isImage(bytes, data.mime)) throw new DomainError("invalid_photo");
+  const id = randomUUID();
+  const photoKey = `recipes/${food.householdId ?? userId}/${id}.${data.mime === "image/webp" ? "webp" : "jpg"}`;
+  await putObject(photoKey, bytes, data.mime);
+  await db()
+    .update(foods)
+    .set({ photoKey, imageUrl: recipePhotoPath(food.id, id.slice(0, 8)), updatedAt: new Date() })
+    .where(eq(foods.id, food.id));
+  if (food.photoKey) await deleteObjects([food.photoKey]).catch(logPhotoError);
+}
+
+/** URL signée (courte) de la photo d'une recette visible par l'utilisateur, sinon null. */
+export async function recipePhotoUrl(userId: string, foodId: string): Promise<string | null> {
+  const [food] = await db()
+    .select({ photoKey: foods.photoKey })
+    .from(foods)
+    .where(and(eq(foods.id, foodId), visibleTo(userId)));
+  return food?.photoKey ? signedGetUrl(food.photoKey) : null;
+}
+
+/** Début du nom de fichier d'une photo générée par l'IA, pour la légender comme telle. */
+const AI_PHOTO_PREFIX = "ai-";
+
+/** Photo de recette générée par l'IA (et non prise par la famille). */
+export function isGeneratedRecipePhoto(photoKey: string): boolean {
+  return photoKey.split("/").at(-1)!.startsWith(AI_PHOTO_PREFIX);
+}
+
+/** Photos générées à la fois : quelques secondes chacune, dans la limite du budget IA. */
+const GENERATED_PHOTOS_PER_RUN = 2;
+/** Après un échec (IA en pause, budget atteint…), on retente une semaine plus tard. */
+const PHOTO_RETRY_DAYS = 7;
+
+/**
+ * Donne une photo générée par l'IA aux recettes de l'utilisateur et de son foyer qui n'en ont
+ * pas (existantes ou nouvelles). Lancé après l'affichage d'une page (`after`), sans bloquer :
+ * chaque recette est d'abord réservée, pour ne jamais payer deux images pour la même.
+ * Une photo posée par la famille entre-temps n'est jamais remplacée. Renvoie le nombre de photos créées.
+ */
+export async function fillRecipePhotos(userId: string, limit = GENERATED_PHOTOS_PER_RUN): Promise<number> {
+  if (!llmConfig().imageModel) return 0;
+  const retryBefore = new Date(Date.now() - PHOTO_RETRY_DAYS * 86_400_000);
+  const pending = await db()
+    .select({ id: foods.id, name: foods.nameFr, householdId: foods.householdId })
+    .from(foods)
+    .where(
+      and(
+        eq(foods.source, "recipe"),
+        editableBy(userId),
+        isNull(foods.photoKey),
+        isNull(foods.imageUrl),
+        or(isNull(foods.photoAttemptedAt), lt(foods.photoAttemptedAt, retryBefore)),
+      ),
+    )
+    .orderBy(desc(foods.createdAt))
+    .limit(limit);
+  let created = 0;
+  for (const recipe of pending) {
+    const [claimed] = await db()
+      .update(foods)
+      .set({ photoAttemptedAt: new Date() })
+      .where(and(eq(foods.id, recipe.id), or(isNull(foods.photoAttemptedAt), lt(foods.photoAttemptedAt, retryBefore))))
+      .returning({ id: foods.id });
+    if (!claimed) continue;
+    const ingredients = await db()
+      .select({ name: foods.nameFr })
+      .from(recipeItems)
+      .innerJoin(foods, eq(foods.id, recipeItems.foodId))
+      .where(eq(recipeItems.recipeId, recipe.id))
+      .orderBy(desc(recipeItems.grams));
+    let bytes: Uint8Array;
+    try {
+      bytes = await generateRecipeImage(
+        userId,
+        recipe.name,
+        ingredients.map((item) => item.name.split(",")[0]!.toLowerCase()),
+      );
+    } catch (error) {
+      // IA indisponible (pause, budget, panne) : on s'arrête là et on réessaiera plus tard.
+      if (error instanceof AiUnavailableError) break;
+      throw error;
+    }
+    const mime = imageMime(bytes);
+    if (!mime) continue;
+    const id = randomUUID();
+    const photoKey = `recipes/${recipe.householdId ?? userId}/${AI_PHOTO_PREFIX}${id}.${mime.slice("image/".length).replace("jpeg", "jpg")}`;
+    await putObject(photoKey, bytes, mime);
+    const [saved] = await db()
+      .update(foods)
+      .set({ photoKey, imageUrl: recipePhotoPath(recipe.id, id.slice(0, 8)), updatedAt: new Date() })
+      .where(and(eq(foods.id, recipe.id), isNull(foods.photoKey)))
+      .returning({ id: foods.id });
+    if (saved) created++;
+    else await deleteObjects([photoKey]).catch(logPhotoError);
+  }
+  return created;
+}
+
+/** Lance `fillRecipePhotos` une fois la réponse envoyée : la page ne l'attend jamais. */
+export function fillRecipePhotosLater(userId: string, limit?: number): void {
+  after(() =>
+    fillRecipePhotos(userId, limit).catch((error: unknown) => console.error("Photos de recettes non générées", error)),
+  );
+}
+
+function logPhotoError(error: unknown) {
+  console.error("Suppression de la photo de recette échouée", error);
+}
+
 export async function deleteOwnFood(userId: string, foodId: string): Promise<void> {
   const [used] = await db()
     .select({ id: recipeItems.id })
@@ -432,8 +580,10 @@ export async function deleteOwnFood(userId: string, foodId: string): Promise<voi
   const deleted = await db()
     .delete(foods)
     .where(and(eq(foods.id, foodId), editableBy(userId)))
-    .returning({ id: foods.id });
+    .returning({ id: foods.id, photoKey: foods.photoKey });
   if (deleted.length === 0) throw new DomainError("not_found");
+  const keys = deleted.flatMap((row) => row.photoKey ?? []);
+  if (keys.length > 0) await deleteObjects(keys).catch(logPhotoError);
 }
 
 export function per100(food: Pick<FoodSummary, "kcal" | "proteinG" | "carbsG" | "fatG">): Nutrients {

@@ -16,7 +16,7 @@ export function ProductThumb({ src, size = 48 }: { src: string | null; size?: nu
       height={size}
       unoptimized
       referrerPolicy="no-referrer"
-      className={`shrink-0 rounded-lg ${src.startsWith("/recipes/") ? "object-cover" : "bg-white object-contain"}`}
+      className={`shrink-0 rounded-lg ${src.startsWith("/recipes/") || src.startsWith("/api/foods/") ? "object-cover" : "bg-white object-contain"}`}
       style={{ width: size, height: size }}
     />
   );

@@ -2,7 +2,7 @@ import "server-only";
 
 import { timingSafeEqual } from "node:crypto";
 
-import { and, count, eq, gt, isNull, sql } from "drizzle-orm";
+import { and, count, eq, gt, isNotNull, isNull, sql } from "drizzle-orm";
 
 import { INVITE_TTL_DAYS, PASSWORD_RESET_TTL_HOURS } from "@/config/app";
 import { db } from "@/db/client";
@@ -10,6 +10,7 @@ import {
   type AccessLinkKind,
   accessLinks,
   account,
+  foods,
   households,
   photos,
   progressPhotos,
@@ -227,8 +228,12 @@ export async function deleteUser(userId: string): Promise<void> {
       .select({ key: progressPhotos.objectKey })
       .from(progressPhotos)
       .where(eq(progressPhotos.userId, userId));
+    const recipes = await tx
+      .select({ key: foods.photoKey })
+      .from(foods)
+      .where(and(eq(foods.ownerUserId, userId), isNotNull(foods.photoKey)));
     await tx.delete(user).where(eq(user.id, userId));
-    return [...keys, ...progress].map((row) => row.key);
+    return [...keys, ...progress, ...recipes].flatMap((row) => row.key ?? []);
   });
   // Les lignes `photos` et `progress_photos` partent en cascade ; on retire ensuite les fichiers du stockage.
   await deleteObjects(photoKeys).catch((error: unknown) => console.error("Suppression des photos échouée", error));

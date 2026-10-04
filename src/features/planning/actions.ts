@@ -21,6 +21,7 @@ import {
   type shoppingItemSchema,
   shoppingFromMenu,
 } from "@/server/planning";
+import { fillRecipePhotosLater } from "@/server/foods";
 import { getCurrentUser } from "@/server/session";
 
 type User = { id: string; householdId: string };
@@ -52,6 +53,8 @@ export async function generateMenuAction(
   let added = 0;
   const result = await run(async (user) => {
     added = await generateMenu(user.id, user.householdId, input);
+    // Les recettes créées par le menu reçoivent leur photo après la réponse.
+    fillRecipePhotosLater(user.id, 3);
   });
   return result?.ok ? { ok: true, added } : { error: result?.error ?? "generic" };
 }
@@ -95,6 +98,7 @@ export async function saveIdeaAction(input: z.input<typeof saveIdeaSchema>): Pro
   if (!user) return { error: "generic" };
   try {
     const id = await saveIdeaAsRecipe(user.id, input);
+    fillRecipePhotosLater(user.id, 1);
     revalidatePath("/recipes");
     return { id };
   } catch (error) {

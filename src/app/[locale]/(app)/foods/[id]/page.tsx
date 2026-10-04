@@ -9,9 +9,10 @@ import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { DomainError } from "@/server/errors";
 import { ProductThumb } from "@/features/foods/product-thumb";
+import { RecipePhotoForm } from "@/features/foods/recipe-photo-form";
 import { RecipeVisual } from "@/features/recipes/recipe-visual";
 import { RECIPE_PHOTOS } from "@/features/recipes/recipe-photos";
-import { type Food, getFoodDetails } from "@/server/foods";
+import { type Food, getFoodDetails, isGeneratedRecipePhoto } from "@/server/foods";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
 import { Card } from "@/ui/card";
@@ -40,6 +41,8 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
 
   const portion = food.unitWeights?.portion ?? null;
   const catalog = food.source === "recipe" ? catalogRecipeFor(food.sourceRef) : undefined;
+  const editableRecipe =
+    food.source === "recipe" && (food.ownerUserId === user.id || food.householdId === user.householdId);
   const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
   const rows: { label: string; value: number | null; unit: string; indent?: boolean }[] = [
     { label: t("product.energy"), value: food.kcal, unit: "kcal" },
@@ -65,6 +68,19 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
           )}
         </figure>
       )}
+      {!catalog && food.photoKey && food.imageUrl && (
+        <figure className="-mx-4 flex flex-col gap-1 sm:mx-0">
+          {/* eslint-disable-next-line @next/next/no-img-element -- photo privée servie par URL signée */}
+          <img
+            src={food.imageUrl}
+            alt=""
+            className="aspect-[4/3] w-full object-cover sm:rounded-[var(--radius-card)]"
+          />
+          <figcaption className="px-4 text-xs text-text-muted sm:px-0">
+            {t(isGeneratedRecipePhoto(food.photoKey) ? "recipes.photoCaption" : "foods.photo.caption")}
+          </figcaption>
+        </figure>
+      )}
       <div className="flex items-start gap-4">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <p className="text-sm font-semibold text-text-muted">
@@ -76,7 +92,7 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
             <p className="text-sm text-text-muted">{t("product.barcode", { code: food.sourceRef })}</p>
           )}
         </div>
-        {food.imageUrl && !catalog && <ProductThumb src={food.imageUrl} size={112} />}
+        {food.imageUrl && !catalog && !food.photoKey && <ProductThumb src={food.imageUrl} size={112} />}
       </div>
 
       <Link
@@ -85,7 +101,10 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
       >
         {t("product.add")}
       </Link>
-      {food.source === "recipe" && (food.ownerUserId === user.id || food.householdId === user.householdId) && (
+      {editableRecipe && (
+        <RecipePhotoForm foodId={food.id} hasPhoto={Boolean(food.photoKey && !isGeneratedRecipePhoto(food.photoKey))} />
+      )}
+      {editableRecipe && (
         <div className="flex flex-wrap gap-3">
           <Link href={`/foods/${food.id}/edit`} className={buttonClass("secondary")}>
             {t("foods.editRecipe")}

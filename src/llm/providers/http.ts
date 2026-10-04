@@ -3,14 +3,19 @@ import { LlmProviderError } from "../types";
 const TIMEOUT_MS = 30_000;
 
 /** POST JSON vers un fournisseur ; le corps de l'erreur est journalisé, jamais la clé. */
-export async function postJson(url: string, headers: Record<string, string>, body: unknown): Promise<unknown> {
+export async function postJson(
+  url: string,
+  headers: Record<string, string>,
+  body: unknown,
+  timeoutMs: number = TIMEOUT_MS,
+): Promise<unknown> {
   let response: Response;
   try {
     response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...headers },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(TIMEOUT_MS),
+      signal: AbortSignal.timeout(timeoutMs),
     });
   } catch (error) {
     const timeout = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError");

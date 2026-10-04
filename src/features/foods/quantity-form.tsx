@@ -276,6 +276,7 @@ function UnitWeightForm({ foodId, onSaved }: { foodId: string; onSaved: (unit: C
 /** Grande photo de l'aliment : recadrée pour une recette de l'app, entière pour un produit. */
 function FoodPhoto({ src }: { src: string }) {
   const recipe = src.startsWith("/recipes/") && src.endsWith("-480.webp");
+  const cover = recipe || src.startsWith("/api/foods/");
   return (
     // eslint-disable-next-line @next/next/no-img-element -- photo Open Food Facts ou WebP déjà redimensionné
     <img
@@ -285,7 +286,7 @@ function FoodPhoto({ src }: { src: string }) {
       alt=""
       referrerPolicy="no-referrer"
       className={`my-2 aspect-[4/3] w-full rounded-[var(--radius-card)] ${
-        recipe ? "object-cover" : "bg-white object-contain p-2"
+        cover ? "object-cover" : "bg-white object-contain p-2"
       }`}
     />
   );

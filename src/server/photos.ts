@@ -16,6 +16,21 @@ const UNUSED_PHOTO_HOURS = 24;
 export const PHOTO_MIME_TYPES = ["image/webp", "image/jpeg"] as const;
 export type PhotoMime = (typeof PHOTO_MIME_TYPES)[number];
 
+/** Type d'une image d'après sa signature (JPEG, WebP ou PNG), sinon null. */
+export function imageMime(bytes: Uint8Array): "image/jpeg" | "image/webp" | "image/png" | null {
+  if (isImage(bytes, "image/jpeg")) return "image/jpeg";
+  if (bytes.length >= 12 && isImage(bytes, "image/webp")) return "image/webp";
+  const png = [0x89, 0x50, 0x4e, 0x47];
+  return png.every((byte, index) => bytes[index] === byte) ? "image/png" : null;
+}
+
+/** Vérifie la signature du fichier : JPEG (FF D8 FF) ou WebP (RIFF....WEBP). */
+export function isImage(bytes: Uint8Array, mime: PhotoMime): boolean {
+  if (mime === "image/jpeg") return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  const ascii = (start: number, end: number) => String.fromCharCode(...bytes.subarray(start, end));
+  return ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP";
+}
+
 /** Range la photo (déjà réduite côté client) dans le stockage privé. */
 export async function storePhoto(userId: string, bytes: Uint8Array, mime: PhotoMime): Promise<string> {
   const objectKey = `meals/${userId}/${randomUUID()}.${mime === "image/webp" ? "webp" : "jpg"}`;

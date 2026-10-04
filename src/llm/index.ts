@@ -18,6 +18,7 @@ import {
   type PromptContext,
 } from "./prompts/meal";
 import { providerFor } from "./providers";
+import { recipeImagePrompt } from "./prompts/recipe-image";
 import { coachSystem, weeklyReviewSystem } from "./prompts/coach";
 import { FRIDGE_SYSTEM, MENU_PLAN_SYSTEM } from "./prompts/planning";
 import { trainingPlanSystem } from "./prompts/training";
@@ -113,6 +114,46 @@ export async function callLlm<T extends z.ZodType>(options: CallOptions<T>): Pro
     }
   }
   throw new AiUnavailableError("provider_error");
+}
+
+/**
+ * Photo d'illustration d'une recette (modèle d'images), soumise aux mêmes gardes que les
+ * autres appels et journalisée au prix d'une image. Renvoie les octets de l'image.
+ */
+export async function generateRecipeImage(
+  userId: string,
+  name: string,
+  ingredients: readonly string[],
+): Promise<Uint8Array> {
+  const config = llmConfig();
+  await assertAiAvailable(userId, config);
+  const provider = providerFor(config);
+  if (!provider?.generateImage || !config.imageModel) throw new AiUnavailableError("not_configured");
+  const started = performance.now();
+  const log = (status: "ok" | "error" | "timeout" | "invalid_output", cost: number) =>
+    recordCall({
+      userId,
+      feature: "recipe_image",
+      provider: provider.name,
+      model: config.imageModel,
+      tokensIn: 0,
+      tokensOut: 0,
+      costUsdMicros: cost,
+      latencyMs: Math.round(performance.now() - started),
+      status,
+    });
+  try {
+    const image = await provider.generateImage({
+      model: config.imageModel,
+      prompt: recipeImagePrompt(name, ingredients),
+    });
+    await log("ok", Math.round(config.imagePrice * 1_000_000));
+    return Uint8Array.from(Buffer.from(image.base64, "base64"));
+  } catch (error) {
+    if (!(error instanceof LlmProviderError)) throw error;
+    await log(error.kind === "timeout" ? "timeout" : error.kind === "invalid_json" ? "invalid_output" : "error", 0);
+    throw new AiUnavailableError("provider_error");
+  }
 }
 
 /** Vérifie la clé et les deux modèles avec un appel minimal (page admin). */

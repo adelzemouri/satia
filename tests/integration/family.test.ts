@@ -1,8 +1,8 @@
 import { and, eq } from "drizzle-orm";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { db } from "@/db/client";
-import { mealEntries, sharedMealShares, user } from "@/db/schema";
+import { foods, llmCalls, mealEntries, sharedMealShares, user } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
 import { acceptInvite, createAccessLink, setupFirstAdmin } from "@/server/accounts";
@@ -11,11 +11,17 @@ import {
   createCustomFood,
   createRecipe,
   familyRecipes,
+  fillRecipePhotos,
   getFood,
   getRecipeForEdit,
+  recipePhotoUrl,
+  isGeneratedRecipePhoto,
   searchFoods,
+  setRecipePhoto,
   updateRecipe,
 } from "@/server/foods";
+
+import { setAiSettings } from "@/server/settings";
 
 import { resetDatabase } from "./helpers";
 
@@ -62,8 +68,83 @@ async function familyLasagna(userId: string) {
   });
 }
 
+/** Plus petit JPEG accepté par la vérification de signature. */
+const JPEG_BASE64 = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(200, 1)]).toString("base64");
+
 describe("espace famille", () => {
   beforeEach(resetDatabase);
+
+  describe("photos générées par l'IA", () => {
+    beforeEach(() => vi.stubEnv("LLM_PROVIDER", "mock"));
+    afterEach(() => vi.unstubAllEnvs());
+
+    it("une recette du foyer sans photo en reçoit une, une seule fois, sans écraser celle de la famille", async () => {
+      const { admin, member } = await setupFamily();
+      const lasagnaId = await familyLasagna(admin.id);
+      expect(await fillRecipePhotos(member.id)).toBe(1);
+      const [row] = await db().select().from(foods).where(eq(foods.id, lasagnaId));
+      expect(isGeneratedRecipePhoto(row!.photoKey!)).toBe(true);
+      expect(row!.imageUrl).toMatch(new RegExp(`^/api/foods/${lasagnaId}/photo`));
+      const calls = await db().select().from(llmCalls);
+      expect(calls).toMatchObject([{ feature: "recipe_image", status: "ok", costUsdMicros: 40_000 }]);
+      // Déjà illustrée : aucun nouvel appel.
+      expect(await fillRecipePhotos(admin.id)).toBe(0);
+
+      // La photo de la famille remplace celle de l'IA, et n'est jamais remplacée à son tour.
+      await setRecipePhoto(admin.id, { foodId: lasagnaId, imageBase64: JPEG_BASE64, mime: "image/jpeg" });
+      const [mine] = await db().select().from(foods).where(eq(foods.id, lasagnaId));
+      expect(isGeneratedRecipePhoto(mine!.photoKey!)).toBe(false);
+      expect(await fillRecipePhotos(admin.id)).toBe(0);
+    });
+
+    it("IA en pause : pas de photo, nouvel essai plus tard", async () => {
+      const { admin } = await setupFamily();
+      const lasagnaId = await familyLasagna(admin.id);
+      await setAiSettings({ enabled: false, monthlyBudgetUsd: null });
+      expect(await fillRecipePhotos(admin.id)).toBe(0);
+      await setAiSettings({ enabled: true, monthlyBudgetUsd: null });
+      // La tentative est notée : on n'essaie pas à chaque visite.
+      expect(await fillRecipePhotos(admin.id)).toBe(0);
+      await db()
+        .update(foods)
+        .set({ photoAttemptedAt: new Date(Date.now() - 8 * 86_400_000) })
+        .where(eq(foods.id, lasagnaId));
+      expect(await fillRecipePhotos(admin.id)).toBe(1);
+    });
+  });
+
+  it("photo d'une recette du foyer : visible par la famille, privée sinon, remplaçable", async () => {
+    const { admin, member } = await setupFamily();
+    const lasagnaId = await familyLasagna(admin.id);
+    await setRecipePhoto(admin.id, { foodId: lasagnaId, imageBase64: JPEG_BASE64, mime: "image/jpeg" });
+    const seen = await getFood(member.id, lasagnaId);
+    expect(seen.imageUrl).toMatch(new RegExp(`^/api/foods/${lasagnaId}/photo\\?v=`));
+    expect(await recipePhotoUrl(member.id, lasagnaId)).toMatch(/^https?:\/\//);
+
+    // Le membre change la photo : nouvelle adresse, pour que les téléphones ne gardent pas l'ancienne.
+    await setRecipePhoto(member.id, { foodId: lasagnaId, imageBase64: JPEG_BASE64, mime: "image/jpeg" });
+    expect((await getFood(admin.id, lasagnaId)).imageUrl).not.toBe(seen.imageUrl);
+    await expect(
+      setRecipePhoto(member.id, { foodId: lasagnaId, imageBase64: "bm9wZQ==", mime: "image/jpeg" }),
+    ).rejects.toMatchObject({ code: "invalid_photo" });
+
+    const rice = await firstFood(admin.id, "riz basmati cuit");
+    const privateId = await createRecipe(admin.id, {
+      name: "Riz d'Adel",
+      servings: 1,
+      cookedGrams: null,
+      items: [{ foodId: rice.id, grams: 200 }],
+    });
+    await setRecipePhoto(admin.id, { foodId: privateId, imageBase64: JPEG_BASE64, mime: "image/jpeg" });
+    expect(await recipePhotoUrl(member.id, privateId)).toBeNull();
+    await expect(
+      setRecipePhoto(member.id, { foodId: privateId, imageBase64: JPEG_BASE64, mime: "image/jpeg" }),
+    ).rejects.toMatchObject({ code: "not_found" });
+    // Un aliment qui n'est pas une recette n'a pas de photo de famille.
+    await expect(
+      setRecipePhoto(admin.id, { foodId: rice.id, imageBase64: JPEG_BASE64, mime: "image/jpeg" }),
+    ).rejects.toMatchObject({ code: "not_found" });
+  });
 
   it("une recette du foyer est visible et modifiable par chaque membre ; une recette perso reste privée", async () => {
     const { admin, member } = await setupFamily();

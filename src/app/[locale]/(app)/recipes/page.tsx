@@ -7,6 +7,7 @@ import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { recipeLibrary } from "@/server/planning";
 import { catalogEntries } from "@/server/recipes";
+import { fillRecipePhotosLater } from "@/server/foods";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
 import { Card } from "@/ui/card";
@@ -18,6 +19,8 @@ export default async function RecipesPage({ params, searchParams }: PageProps<"/
   const { cat } = await searchParams;
   const category = RECIPE_CATEGORIES.find((value) => value === cat);
   const [recipes, catalog] = await Promise.all([recipeLibrary(user.id, user.householdId), catalogEntries()]);
+  // Recettes du foyer encore sans photo : l'IA en prépare quelques-unes après l'affichage.
+  fillRecipePhotosLater(user.id);
   const t = await getTranslations("recipes");
   const sections = [
     { id: "mine", title: t("mine"), list: recipes.filter((recipe) => recipe.ownerUserId === user.id) },

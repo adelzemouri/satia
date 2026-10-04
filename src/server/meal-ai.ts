@@ -21,7 +21,7 @@ import { DomainError } from "./errors";
 import { type FoodSummary, getFoods, searchFoods } from "./foods";
 import { resolveEntry } from "./journal";
 import { listContainers, listExpressions } from "./personal";
-import { ownsPhoto, PHOTO_MIME_TYPES, storePhoto } from "./photos";
+import { isImage, ownsPhoto, PHOTO_MIME_TYPES, storePhoto } from "./photos";
 
 /** Corrections relues pour en tirer les habitudes : les plus récentes suffisent. */
 const CORRECTIONS_WINDOW = 300;
@@ -145,13 +145,6 @@ export const photoInputSchema = z.object({
   note: z.string().trim().max(200).optional(),
   containerId: z.uuid().nullable().optional(),
 });
-
-/** Vérifie la signature du fichier : JPEG (FF D8 FF) ou WebP (RIFF....WEBP). */
-export function isImage(bytes: Uint8Array, mime: (typeof PHOTO_MIME_TYPES)[number]): boolean {
-  if (mime === "image/jpeg") return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
-  const ascii = (start: number, end: number) => String.fromCharCode(...bytes.subarray(start, end));
-  return ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP";
-}
 
 /** Saisie par photo : analyse par le modèle vision, puis photo rangée pour le journal. */
 export async function analyzePhoto(userId: string, input: z.input<typeof photoInputSchema>): Promise<MealDraft> {
