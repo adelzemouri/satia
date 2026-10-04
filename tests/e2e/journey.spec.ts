@@ -1022,6 +1022,8 @@ test("recettes du catalogue : bibliothèque illustrée, fiche et ajout", async (
 
 test("audit d'accessibilité : chaque page de l'app, en thème clair et sombre", async ({ page, context, baseURL }) => {
   test.setTimeout(120_000);
+  // Sans animation : axe mesurerait sinon des contrastes en plein fondu d'arrivée de la page.
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await signInWithTotp(page);
   const pages = [
     "/",
