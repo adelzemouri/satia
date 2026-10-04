@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { easeOutCubic, SWIPE_THRESHOLD, swipeAxis, swipeOutcome, tween } from "@/ui/motion";
+import { easeOutCubic, SWIPE_THRESHOLD, swipeAxis, swipeOutcome, swipeThreshold, tween } from "@/ui/motion";
 
 describe("easeOutCubic", () => {
   it("part de 0, arrive à 1 et reste dans les bornes", () => {
@@ -35,6 +35,13 @@ describe("swipeOutcome", () => {
   });
 });
 
+describe("swipeThreshold", () => {
+  it("demande au moins 40 % de la largeur de la ligne", () => {
+    expect(swipeThreshold(200)).toBe(SWIPE_THRESHOLD);
+    expect(swipeThreshold(380)).toBe(152);
+  });
+});
+
 describe("swipeAxis", () => {
   it("attend quelques pixels avant de décider", () => {
     expect(swipeAxis(3, 2)).toBeNull();
@@ -43,6 +50,8 @@ describe("swipeAxis", () => {
   it("laisse le défilement vertical tranquille", () => {
     expect(swipeAxis(10, 30)).toBe("y");
     expect(swipeAxis(12, 11)).toBe("y");
+    // Un geste en diagonale reste un défilement.
+    expect(swipeAxis(30, 20)).toBe("y");
     expect(swipeAxis(30, 5)).toBe("x");
     expect(swipeAxis(-30, 5)).toBe("x");
   });

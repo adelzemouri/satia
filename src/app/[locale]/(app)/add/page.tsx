@@ -70,6 +70,8 @@ export default async function AddPage({ params, searchParams }: PageProps<"/[loc
         <SlotSelect date={date} slot={slot} />
       </header>
       <FoodPicker
+        // Une idée de plat ouvre la même page avec ?food= : le sélecteur repart de cet aliment.
+        key={preselected?.id ?? "search"}
         date={date}
         slot={slot}
         recent={recent.map(toItem)}

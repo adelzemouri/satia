@@ -3,7 +3,9 @@ import type { ReactNode } from "react";
 
 /** Bloc gris qui pulse à la place d'un contenu en cours de chargement. */
 export function Bone({ className }: { className: string }) {
-  return <div className={`animate-pulse rounded-xl bg-surface-muted ${className}`} />;
+  // Coins arrondis par défaut, sauf si la forme est donnée (cercle d'un bouton, pilule…).
+  const radius = /\brounded/.test(className) ? "" : "rounded-xl";
+  return <div className={`animate-pulse bg-surface-muted ${radius} ${className}`} />;
 }
 
 /** Carte vide de la forme des cartes de l'app. */
