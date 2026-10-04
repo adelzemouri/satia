@@ -1,7 +1,9 @@
-import type { CSSProperties } from "react";
-import { getFormatter, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 
 import type { Nutrients } from "@/domain/nutrition";
+import { CountUp } from "@/ui/count-up";
+
+import { RingArc } from "./ring-arc";
 
 type Goal = { kcal: number; proteinG: number; carbsG: number; fatG: number };
 
@@ -13,13 +15,15 @@ export async function CalorieSummary({
   totals,
   goal,
   compact = false,
+  day,
 }: {
   totals: Nutrients;
   goal: Goal | null;
   compact?: boolean;
+  /** Jour affiché (anneau de l'accueil) : l'anneau et le chiffre repartent de la dernière valeur vue. */
+  day?: string;
 }) {
   const t = await getTranslations("home");
-  const format = await getFormatter();
   const consumed = Math.round(totals.kcal);
   const target = goal?.kcal ?? 0;
   const percent = target > 0 ? Math.min(100, (consumed / target) * 100) : 0;
@@ -51,8 +55,7 @@ export async function CalorieSummary({
   }
   // Anneau de l'accueil : la part consommée en arc, ce qu'il reste au centre.
   const radius = 54;
-  const length = 2 * Math.PI * radius;
-  const offset = length * (1 - percent / 100);
+  const offset = 2 * Math.PI * radius * (1 - percent / 100);
   return (
     <div className="flex items-center gap-5">
       <div
@@ -65,22 +68,11 @@ export async function CalorieSummary({
       >
         <svg viewBox="0 0 128 128" className="size-full -rotate-90" aria-hidden="true">
           <circle cx="64" cy="64" r={radius} fill="none" strokeWidth="12" className="stroke-surface-muted" />
-          <circle
-            cx="64"
-            cy="64"
-            r={radius}
-            fill="none"
-            strokeWidth="12"
-            strokeLinecap="round"
-            strokeDasharray={length}
-            strokeDashoffset={offset}
-            className={`ring-fill ${over ? "stroke-accent" : "stroke-primary"}`}
-            style={{ "--ring-length": length } as CSSProperties}
-          />
+          <RingArc radius={radius} offset={offset} over={over} memoryKey={`ring:${day ?? "today"}`} />
         </svg>
         <span className="absolute inset-0 flex flex-col items-center justify-center leading-tight">
           <span className="font-display text-3xl font-extrabold tracking-tight">
-            {format.number(Math.abs(target - consumed))}
+            <CountUp value={Math.abs(target - consumed)} memoryKey={`left:${day ?? "today"}`} />
           </span>
           <span className="text-sm font-semibold text-text-muted">{over ? t("ringOver") : t("ringLeft")}</span>
         </span>

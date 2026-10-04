@@ -58,7 +58,7 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
       {catalog && (
         <figure className="-mx-4 flex flex-col gap-1 sm:mx-0">
           <div className="overflow-hidden sm:rounded-[var(--radius-card)]">
-            <RecipeVisual recipe={catalog} sizes="(min-width: 640px) 640px, 100vw" priority />
+            <RecipeVisual recipe={catalog} sizes="(min-width: 640px) 640px, 100vw" priority morph />
           </div>
           {RECIPE_PHOTOS.has(catalog.slug) && (
             <figcaption className="px-4 text-xs text-text-muted sm:px-0">{t("recipes.photoCaption")}</figcaption>

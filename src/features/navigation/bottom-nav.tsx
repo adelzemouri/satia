@@ -6,6 +6,8 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Icon, type ICONS } from "@/ui/icon";
 
+import { tabDirection } from "./transition-types";
+
 type TabKey = "home" | "journal" | "add" | "progress" | "profile";
 
 /**
@@ -52,19 +54,22 @@ function isActive(pathname: string, tab: (typeof TABS)[number]): boolean {
 export function BottomNav() {
   const t = useTranslations("nav");
   const pathname = usePathname();
+  const current = TABS.findIndex((tab) => isActive(pathname, tab));
   return (
     <nav
       aria-label={t("main")}
+      style={{ viewTransitionName: "bottom-nav" }}
       className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
     >
       <ul className="mx-auto grid max-w-2xl grid-cols-5">
-        {TABS.map((tab) => {
+        {TABS.map((tab, index) => {
           const active = isActive(pathname, tab);
           const central = tab.key === "add";
           return (
             <li key={tab.key} className="flex justify-center">
               <Link
                 href={tab.href}
+                transitionTypes={pathname === tab.href ? undefined : tabDirection(current, index)}
                 aria-current={active ? "page" : undefined}
                 aria-label={central ? t(tab.key) : undefined}
                 className={`relative flex min-h-16 w-full flex-col items-center justify-center gap-1 text-xs ${

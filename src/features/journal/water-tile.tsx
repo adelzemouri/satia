@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useOptimistic, useState, useTransition } from "react";
 
 import { Icon } from "@/ui/icon";
+import { haptic } from "@/ui/motion";
 import { useToast } from "@/ui/toast";
 
 import { setWaterAction } from "./actions";
@@ -21,6 +22,7 @@ export function WaterTile({ date, glasses, goal }: { date: string; glasses: numb
       setOptimistic(optimistic + 1);
       if (goal > 0 && optimistic + 1 === goal) {
         setCelebrating(true);
+        haptic([12, 60, 12]);
         toast({ message: t("goalReached") });
       }
       await setWaterAction(date, optimistic + 1);

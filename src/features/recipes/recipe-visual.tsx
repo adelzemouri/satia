@@ -1,3 +1,5 @@
+import { type ReactElement, ViewTransition } from "react";
+
 import type { CatalogRecipe } from "@/domain/recipes/catalog";
 
 import { DishArt } from "./dish-art";
@@ -11,13 +13,29 @@ export function RecipeVisual({
   recipe,
   sizes = "(min-width: 640px) 220px, 45vw",
   priority = false,
+  morph = false,
 }: {
   recipe: Pick<CatalogRecipe, "slug" | "art">;
   /** Largeur affichée, pour que le navigateur choisisse la bonne taille. */
   sizes?: string;
   /** Image principale de la page : chargée tout de suite. */
   priority?: boolean;
+  /**
+   * Vignette ou image principale d'une fiche : la photo s'agrandit de l'une à l'autre en
+   * changeant de page. Une seule par recette et par page, le nom devant être unique.
+   */
+  morph?: boolean;
 }) {
+  const visual = picture(recipe, sizes, priority);
+  if (!morph) return visual;
+  return (
+    <ViewTransition name={`recipe-${recipe.slug}`} share="morph" default="none">
+      {visual}
+    </ViewTransition>
+  );
+}
+
+function picture(recipe: Pick<CatalogRecipe, "slug" | "art">, sizes: string, priority: boolean): ReactElement {
   if (!RECIPE_PHOTOS.has(recipe.slug)) return <DishArt spec={recipe.art} seed={recipe.slug} />;
   const base = `/recipes/${recipe.slug}`;
   return (

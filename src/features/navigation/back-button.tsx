@@ -6,6 +6,7 @@ import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { Icon } from "@/ui/icon";
 
 import { isTabRoot, parentPath } from "./parent-path";
+import { NAV_BACK } from "./transition-types";
 
 /** Une page précédente de l'app existe-t-elle dans l'historique (Navigation API) ? */
 function canGoBackInApp(): boolean {
@@ -27,6 +28,7 @@ export function BackButton() {
   return (
     <Link
       href={parentPath(pathname)}
+      transitionTypes={NAV_BACK}
       onClick={(event) => {
         if (!canGoBackInApp()) return;
         event.preventDefault();

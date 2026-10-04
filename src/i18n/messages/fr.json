@@ -443,6 +443,7 @@
     "add": "Ajouter",
     "edit": "Modifier {label}",
     "delete": "Supprimer",
+    "swipeEdit": "Modifier",
     "save": "Enregistrer",
     "quantity": "Quantité",
     "unit": "Unité",
