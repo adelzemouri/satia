@@ -1563,5 +1563,12 @@
     "menu": "Menu",
     "recipes": "Recipes",
     "meals": "My meals"
+  },
+  "crash": {
+    "title": "Oops, this screen couldn't load",
+    "body": "It's not your fault. Reloading almost always fixes it.",
+    "recovering": "Updating the app, one moment…",
+    "reload": "Reload",
+    "retry": "Try again"
   }
 }

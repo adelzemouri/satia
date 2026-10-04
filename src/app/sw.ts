@@ -17,7 +17,7 @@ const PAGES_CACHE = "app-pages";
 const pages = new NetworkFirst({
   cacheName: PAGES_CACHE,
   // Réseau lent ou capricieux : on montre la dernière version enregistrée plutôt qu'un écran blanc.
-  networkTimeoutSeconds: 6,
+  networkTimeoutSeconds: 4,
   plugins: [new ExpirationPlugin({ maxEntries: 48, maxAgeSeconds: 7 * 24 * 3600 })],
 });
 

@@ -1,12 +1,14 @@
 import { SerwistProvider } from "@serwist/turbopack/react";
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { APP_NAME, BRAND_COLORS } from "@/config/app";
+import { splashStartupImages } from "@/config/splash";
+import { CHUNK_RECOVERY_SCRIPT } from "@/features/offline/chunk-recovery";
 import { parseTheme, THEME_COOKIE } from "@/features/preferences/theme";
 import { routing } from "@/i18n/routing";
 
@@ -22,7 +24,7 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
     applicationName: APP_NAME,
     title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
     description: t("description"),
-    appleWebApp: { capable: true, statusBarStyle: "default", title: APP_NAME },
+    appleWebApp: { capable: true, statusBarStyle: "default", title: APP_NAME, startupImage: splashStartupImages() },
     formatDetection: { telephone: false },
     icons: { apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }] },
   };
@@ -44,6 +46,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   setRequestLocale(locale);
 
   const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (
     <html
@@ -51,6 +54,9 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       data-theme={theme === "system" ? undefined : theme}
       className={`${sans.variable} h-full antialiased`}
     >
+      <head>
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: CHUNK_RECOVERY_SCRIPT }} />
+      </head>
       <body className="min-h-full bg-bg text-text">
         <NextIntlClientProvider>
           <SerwistProvider swUrl="/serwist/sw.js" reloadOnOnline={false}>
