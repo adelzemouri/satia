@@ -111,7 +111,7 @@ export function RecipeForm({
       if (result?.error) return setError(result.fieldErrors?.items ?? result.fieldErrors?.name ?? result.error);
       const id = initial?.id ?? (result as { id?: string } | null)?.id;
       if (onSaved && id) onSaved(id);
-      else router.push(family ? "/family" : "/foods");
+      else router.push(family ? "/recipes" : "/foods");
     });
 
   return (

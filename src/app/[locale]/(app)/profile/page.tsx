@@ -52,9 +52,7 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
         label={tAll("home.more")}
         links={[
           { href: "/coach", icon: "chat", label: tAll("coach.title") },
-          { href: "/family", icon: "family", label: tAll("family.title") },
-          { href: "/plan", icon: "book", label: tAll("plan.title") },
-          { href: "/meals", icon: "bookmark", label: tAll("savedMeals.title"), hint: tAll("savedMeals.hubHint") },
+          { href: "/plan", icon: "book", label: tAll("kitchen.title"), hint: tAll("kitchen.hint") },
           { href: "/fasting", icon: "timer", label: tAll("fasting.title") },
           { href: "/treatment", icon: "pill", label: tAll("treatment.title") },
           { href: "/foods", icon: "star", label: tAll("add.manageFoods") },

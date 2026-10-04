@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { savedMealKcal } from "@/domain/saved-meals";
+import { KitchenTabs } from "@/features/planning/kitchen-tabs";
 import { SavedMealItem } from "@/features/saved-meals/saved-meal-item";
 import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
@@ -20,6 +21,7 @@ export default async function SavedMealsPage({ params }: PageProps<"/[locale]/me
 
   return (
     <>
+      <KitchenTabs current="meals" />
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("savedMeals.title")}</h1>
       <p className="text-text-muted">{t("savedMeals.intro")}</p>
       {meals.length === 0 ? (

@@ -622,11 +622,10 @@ test("repas partagé : l'admin partage un plat du foyer, le membre le valide ave
 
   const teen = await newPage(browser);
   await signIn(teen, { email: TEEN.email, password: "nouveau-mot-de-passe-lea" });
-  await teen.goto("/family");
+  await teen.goto("/plan");
   const pending = teen.getByRole("region", { name: "Repas partagés à valider" });
   await expect(pending.getByRole("heading", { name: "Gratin du dimanche" })).toBeVisible();
   await expect(pending.getByText(/^Adel a partagé ce plat pour le dîner/)).toBeVisible();
-  await expect(teen.getByRole("region", { name: "Recettes du foyer" }).getByText("Gratin du dimanche")).toBeVisible();
   await expectNoA11yViolations(teen);
   await pending.getByText("½ part", { exact: true }).click();
   await expect(pending.getByText(/^Ça fait 75 g, \d+ kcal$/)).toBeVisible();
@@ -637,6 +636,7 @@ test("repas partagé : l'admin partage un plat du foyer, le membre le valide ave
 
   // Léa met sa photo du gratin : la fiche l'affiche, légendée comme photo de la famille.
   await teen.goto("/recipes");
+  await expect(teen.getByRole("region", { name: "Recettes du foyer" }).getByText("Gratin du dimanche")).toBeVisible();
   await teen.getByRole("link", { name: /^Gratin du dimanche/ }).click();
   await expect(teen.getByRole("heading", { level: 1 })).toHaveText("Gratin du dimanche");
   await withServerAction(teen, () =>
@@ -704,7 +704,7 @@ test("menu de la semaine, liste de courses commune, recettes et scanner de frigo
   test.slow(); // parcours sur quatre écrans
   await signInWithTotp(page);
   await page.getByRole("link", { name: "Moi", exact: true }).click();
-  await page.getByRole("link", { name: "Menu de la semaine" }).click();
+  await page.getByRole("link", { name: /^Cuisine/ }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Menu de la semaine");
   const add = page.getByRole("region", { name: "Ajouter un plat" });
   await add.getByLabel("Repas").selectOption("dinner");
@@ -1044,7 +1044,6 @@ test("audit d'accessibilité : chaque page de l'app, en thème clair et sombre",
     "/containers",
     "/meals",
     "/dictionary",
-    "/family",
     "/family/share",
     "/training",
     "/training/history",

@@ -1556,5 +1556,12 @@
       "bar": "{date} : {value, number} kcal",
       "none": "non noté"
     }
+  },
+  "kitchen": {
+    "title": "Cuisine",
+    "hint": "Menu de la semaine, recettes, mes repas",
+    "menu": "Menu",
+    "recipes": "Recettes",
+    "meals": "Mes repas"
   }
 }
