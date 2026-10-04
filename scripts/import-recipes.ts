@@ -8,6 +8,7 @@ import { createHash } from "node:crypto";
 import postgres from "postgres";
 
 import { CATALOG, CATALOG_PREFIX } from "../src/domain/recipes/catalog";
+import { RECIPE_PHOTOS } from "../src/features/recipes/recipe-photos";
 import { catalogRecipeValues, type IngredientValues } from "../src/domain/recipes/values";
 import { normalizeForSearch } from "../src/domain/search";
 
@@ -31,6 +32,7 @@ try {
     const byCode = new Map(ingredients.map((row) => [row.source_ref, row]));
     const hash = createHash("sha256")
       .update(JSON.stringify(CATALOG))
+      .update(JSON.stringify([...RECIPE_PHOTOS].sort()))
       .update(JSON.stringify(ingredients.map((row) => [row.source_ref, row.kcal, row.proteinG])))
       .digest("hex");
     const [current] = await sql<
@@ -61,6 +63,8 @@ try {
             fruit_veg_share: values.fruitVegShare,
             servings: recipe.servings,
             unit_weights: sql.json({ portion: values.portionGrams }),
+            // La photo de la recette sert de vignette partout où l'aliment apparaît (listes, quantité, journal).
+            image_url: RECIPE_PHOTOS.has(recipe.slug) ? `/recipes/${recipe.slug}-480.webp` : null,
           };
           const [saved] = await tx<{ id: string }[]>`
             insert into foods ${tx(row)}
@@ -69,7 +73,7 @@ try {
               kcal = excluded.kcal, protein_g = excluded.protein_g, carbs_g = excluded.carbs_g, fat_g = excluded.fat_g,
               fiber_g = excluded.fiber_g, sugars_g = excluded.sugars_g, salt_g = excluded.salt_g,
               fruit_veg_share = excluded.fruit_veg_share, servings = excluded.servings,
-              unit_weights = excluded.unit_weights, updated_at = now()
+              unit_weights = excluded.unit_weights, image_url = excluded.image_url, updated_at = now()
             returning id
           `;
           await tx`delete from recipe_items where recipe_id = ${saved!.id}`;
