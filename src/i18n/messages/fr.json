@@ -891,6 +891,7 @@
       "high": "Au top"
     },
     "scaleValue": "{question} : {value} sur 5",
+    "thanks": "Merci, c'est noté pour aujourd'hui.",
     "scaleHint": "De 1 ({low}) à 5 ({high})."
   },
   "habitual": {

@@ -87,6 +87,28 @@ body {
   }
 }
 
+/* Ressenti : la réponse choisie rebondit, la question suivante glisse en place. */
+.pop {
+  animation: pop 380ms cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.82);
+  }
+}
+
+.checkin-in {
+  animation: checkin-in 260ms ease-out;
+}
+
+@keyframes checkin-in {
+  from {
+    opacity: 0;
+    transform: translateX(0.75rem);
+  }
+}
+
 /* Petit rebond pour fêter un objectif atteint. */
 .celebrate {
   animation: celebrate 600ms ease-out;

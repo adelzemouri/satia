@@ -216,10 +216,11 @@ export function MealConfirmation({
                 />
               ) : (
                 <Button
-                  variant="ghost"
-                  className="self-start px-3"
+                  variant="secondary"
+                  className="min-h-11 self-start px-4 text-sm"
                   onClick={() => update(line.key, { searching: true })}
                 >
+                  <Icon name="search" />
                   {t("aiConfirm.changeFood")}
                 </Button>
               )}
