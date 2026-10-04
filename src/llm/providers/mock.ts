@@ -100,6 +100,10 @@ const RESPONSES: Record<string, unknown | ((request: LlmRequest) => unknown)> = 
 export function mockProvider(): LlmProvider {
   return {
     name: "mock",
+    /** Plus petit JPEG accepté : les tests vérifient le circuit, pas l'image. */
+    async generateImage() {
+      return { base64: Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(64, 1)]).toString("base64") };
+    },
     async complete(request: LlmRequest): Promise<LlmResponse> {
       const response = RESPONSES[request.schemaName] ?? {};
       const json = typeof response === "function" ? (response as (request: LlmRequest) => unknown)(request) : response;

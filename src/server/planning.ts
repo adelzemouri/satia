@@ -15,7 +15,8 @@ import { proposeMenu, scanFridge } from "@/llm";
 import { DomainError } from "./errors";
 import { createRecipe, familyRecipes, getFood, per100, searchFoods } from "./foods";
 import { daySummary } from "./journal";
-import { isImage, photoInputSchema } from "./meal-ai";
+import { photoInputSchema } from "./meal-ai";
+import { isImage } from "./photos";
 import { getGoalOn, getProfile } from "./profile";
 
 // --- Menu de la semaine ---------------------------------------------------------------

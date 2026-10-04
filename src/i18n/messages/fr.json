@@ -518,6 +518,12 @@
     "more": "Plus"
   },
   "foods": {
+    "photo": {
+      "add": "Ajouter une photo",
+      "change": "Changer la photo",
+      "sending": "Envoi de la photo…",
+      "caption": "Photo de la famille, visible seulement par le foyer."
+    },
     "title": "Mes aliments et recettes",
     "newFood": "Nouvel aliment",
     "newRecipe": "Nouvelle recette",

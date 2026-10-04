@@ -11,8 +11,7 @@ import { MEASUREMENT_KINDS, measurementChanges, POSES, type Pose } from "@/domai
 
 import { DomainError } from "./errors";
 import { assertNotFuture } from "./journal";
-import { isImage } from "./meal-ai";
-import { PHOTO_MIME_TYPES } from "./photos";
+import { isImage, PHOTO_MIME_TYPES } from "./photos";
 import { deleteObjects, putObject, signedGetUrl } from "./storage";
 
 const isoDate = z.iso.date();

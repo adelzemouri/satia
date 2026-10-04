@@ -217,6 +217,14 @@ Chaque fonction publique suit la même chaîne :
 5. **Journalisation** dans `llm_calls` (modèle, tokens, coût estimé, latence, statut),
    y compris en cas d'échec.
 
+Photos des recettes du foyer : `LLM_MODEL_IMAGE` (facultatif, API `images/generations`
+compatible OpenAI, par exemple Imagen via Gemini) génère une photo d'illustration pour les
+recettes du foyer qui n'en ont pas, après l'affichage de /recipes ou la création d'une
+recette (`after`), au plus deux ou trois à la fois. Coût par image `LLM_PRICE_IMAGE`
+(0,04 $ par défaut), compté dans le plafond mensuel ; une recette n'est tentée qu'une fois
+par semaine. La famille peut la remplacer par sa propre photo (bucket privé,
+`recipes/<foyer>/…`, servie par `/api/foods/<id>/photo` après contrôle d'accès).
+
 Mise en œuvre (phase 4) :
 - **Configuration** : `LLM_PROVIDER` vaut `openai` par défaut dès qu'une clé est fournie,
   `none` sinon (IA désactivée proprement). Tarifs `LLM_PRICE_{VISION,TEXT}_{INPUT,OUTPUT}`

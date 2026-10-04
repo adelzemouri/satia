@@ -634,6 +634,18 @@ test("repas partagé : l'admin partage un plat du foyer, le membre le valide ave
   await expect(teen.getByRole("region", { name: "Repas partagés à valider" })).toHaveCount(0);
   await teen.goto("/journal");
   await expect(teen.getByRole("region", { name: "Dîner" }).getByText(/^75 g ·/)).toBeVisible();
+
+  // Léa met sa photo du gratin : la fiche l'affiche, légendée comme photo de la famille.
+  await teen.goto("/recipes");
+  await teen.getByRole("link", { name: /^Gratin du dimanche/ }).click();
+  await expect(teen.getByRole("heading", { level: 1 })).toHaveText("Gratin du dimanche");
+  await withServerAction(teen, () =>
+    teen.getByLabel("Ajouter une photo").setInputFiles({ name: "gratin.png", mimeType: "image/png", buffer: MEAL_PNG }),
+  );
+  await expect(teen.getByText("Photo de la famille, visible seulement par le foyer.")).toBeVisible();
+  await expect(teen.locator("figure img").first()).toHaveAttribute("src", /\/api\/foods\/.+\/photo\?v=/);
+  await expect(teen.getByLabel("Changer la photo")).toBeAttached();
+  await expectNoA11yViolations(teen);
 });
 
 test("ressenti du jour et bilan qualité de la semaine", async ({ page }) => {

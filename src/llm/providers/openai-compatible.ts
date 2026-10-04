@@ -5,6 +5,11 @@ import { type LlmProvider, LlmProviderError, type LlmRequest, type LlmResponse }
 
 import { postJson } from "./http";
 
+const imageResponseSchema = z.object({ data: z.array(z.object({ b64_json: z.string().min(1) })).min(1) });
+
+/** Une image se génère en quelques secondes, parfois plus : délai plus large que le texte. */
+const IMAGE_TIMEOUT_MS = 60_000;
+
 const responseSchema = z.object({
   choices: z.array(z.object({ message: z.object({ content: z.string().nullable() }) })).min(1),
   usage: z.object({ prompt_tokens: z.number(), completion_tokens: z.number() }).partial().optional(),
@@ -63,6 +68,18 @@ export function openAiCompatibleProvider(options: {
       } catch {
         throw new LlmProviderError("invalid JSON", "invalid_json", usage);
       }
+    },
+    /** API « images/generations » (DALL·E, gpt-image, Imagen via Gemini…), image renvoyée en base64. */
+    async generateImage(request) {
+      const body = await postJson(
+        `${options.baseUrl}/images/generations`,
+        { Authorization: `Bearer ${options.apiKey}` },
+        { model: request.model, prompt: request.prompt, n: 1, response_format: "b64_json" },
+        IMAGE_TIMEOUT_MS,
+      );
+      const parsed = imageResponseSchema.safeParse(body);
+      if (!parsed.success) throw new LlmProviderError("unexpected image response", "invalid_json");
+      return { base64: parsed.data.data[0]!.b64_json };
     },
   };
 }

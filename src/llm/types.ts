@@ -21,9 +21,14 @@ export type LlmUsage = { inputTokens: number; outputTokens: number };
 
 export type LlmResponse = { json: unknown; usage: LlmUsage };
 
+/** Génération d'une image (photo d'illustration d'une recette). */
+export type ImageRequest = { model: string; prompt: string };
+
 export interface LlmProvider {
   readonly name: string;
   complete(request: LlmRequest): Promise<LlmResponse>;
+  /** Absente quand le fournisseur ne génère pas d'images (Anthropic). Renvoie l'image en base64. */
+  generateImage?(request: ImageRequest): Promise<{ base64: string }>;
 }
 
 /** Échec côté fournisseur : délai dépassé, erreur HTTP ou réponse illisible. */

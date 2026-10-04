@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import type { z } from "zod";
 
 import { type ActionState, toActionState } from "@/server/action-result";
 import {
@@ -8,8 +9,11 @@ import {
   createRecipe,
   type CustomFoodInput,
   deleteOwnFood,
+  fillRecipePhotosLater,
   type RecipeInput,
+  type recipePhotoSchema,
   setFavorite,
+  setRecipePhoto,
   setUnitWeight,
   updateRecipe,
 } from "@/server/foods";
@@ -79,11 +83,19 @@ export async function createFoodAction(input: CustomFoodInput): Promise<IdState>
 }
 
 export async function createRecipeAction(input: RecipeInput): Promise<IdState> {
-  return run(async (userId) => ({ ok: true, id: await createRecipe(userId, input) }));
+  return run(async (userId) => {
+    const id = await createRecipe(userId, input);
+    fillRecipePhotosLater(userId);
+    return { ok: true, id };
+  });
 }
 
 export async function updateRecipeAction(id: string, input: RecipeInput): Promise<IdState> {
   return run(async (userId) => (await updateRecipe(userId, id, input), { ok: true, id }));
+}
+
+export async function setRecipePhotoAction(input: z.input<typeof recipePhotoSchema>): Promise<IdState> {
+  return run(async (userId) => (await setRecipePhoto(userId, input), { ok: true }));
 }
 
 export async function deleteFoodAction(foodId: string): Promise<IdState> {
