@@ -1556,5 +1556,12 @@
       "bar": "{date}: {value, number} kcal",
       "none": "not noted"
     }
+  },
+  "kitchen": {
+    "title": "Kitchen",
+    "hint": "Weekly menu, recipes, my meals",
+    "menu": "Menu",
+    "recipes": "Recipes",
+    "meals": "My meals"
   }
 }

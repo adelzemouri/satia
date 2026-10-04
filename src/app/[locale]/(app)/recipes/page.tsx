@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { RECIPE_CATEGORIES } from "@/domain/recipes/catalog";
+import { KitchenTabs } from "@/features/planning/kitchen-tabs";
 import { DishThumb } from "@/features/recipes/dish-thumb";
 import { RecipeCard } from "@/features/recipes/recipe-card";
 import { RecipeFilter } from "@/features/recipes/recipe-filter";
@@ -30,6 +31,7 @@ export default async function RecipesPage({ params, searchParams }: PageProps<"/
 
   return (
     <>
+      <KitchenTabs current="recipes" />
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
       <p className="text-text-muted">{t("intro")}</p>
       <div className="flex flex-wrap gap-3">

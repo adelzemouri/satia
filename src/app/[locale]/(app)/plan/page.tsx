@@ -6,15 +6,17 @@ import { isoWeekStart } from "@/domain/streak";
 import { weekDates } from "@/domain/weekly-budget";
 import { AddPlanItemForm } from "@/features/planning/add-plan-item-form";
 import { AutoRefresh } from "@/features/planning/auto-refresh";
+import { PendingShares } from "@/features/family/pending-shares";
 import { GenerateMenuForm } from "@/features/planning/generate-menu-form";
+import { KitchenTabs } from "@/features/planning/kitchen-tabs";
 import { RemovePlanItem } from "@/features/planning/remove-plan-item";
 import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { aiAvailability } from "@/server/ai-availability";
+import { pendingShares } from "@/server/family";
 import { familyRecipes } from "@/server/foods";
 import { weekPlan } from "@/server/planning";
 import { requireUser } from "@/server/session";
-import { buttonClass } from "@/ui/button";
 import { Card } from "@/ui/card";
 import { formatDay } from "@/ui/format-date";
 import { Icon } from "@/ui/icon";
@@ -32,10 +34,11 @@ export default async function PlanPage({ params, searchParams }: PageProps<"/[lo
   const user = await requireUser(locale);
   const today = todayIso();
   const weekStart = weekParam((await searchParams).week, today);
-  const [items, recipes, ai] = await Promise.all([
+  const [items, recipes, ai, shares] = await Promise.all([
     weekPlan(user.householdId, weekStart),
     familyRecipes(user.id),
     aiAvailability(),
+    pendingShares(user.id),
   ]);
   const t = await getTranslations();
   const days = weekDates(weekStart);
@@ -44,22 +47,38 @@ export default async function PlanPage({ params, searchParams }: PageProps<"/[lo
   return (
     <>
       <AutoRefresh />
+      <KitchenTabs current="menu" />
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("plan.title")}</h1>
       <p className="text-text-muted">{t("plan.intro")}</p>
-      <nav aria-label={t("plan.title")} className="flex flex-wrap gap-3">
+      <nav aria-label={t("plan.title")} className="grid grid-cols-3 gap-2">
         {(
           [
             ["/shopping", "cart", t("plan.shopping")],
-            ["/recipes", "book", t("plan.recipes")],
             ["/fridge", "fridge", t("plan.fridge")],
+            ["/family/share", "family", t("family.shareDish")],
           ] as const
         ).map(([href, icon, label]) => (
-          <Link key={href} href={href} className={buttonClass("secondary", "px-4")}>
-            <Icon name={icon} />
+          <Link
+            key={href}
+            href={href}
+            className="flex min-h-20 flex-col items-center justify-center gap-1 rounded-2xl border border-border bg-surface px-2 py-2 text-center text-sm font-semibold hover:bg-surface-muted"
+          >
+            <span className="text-primary">
+              <Icon name={icon} />
+            </span>
             {label}
           </Link>
         ))}
       </nav>
+
+      {shares.length > 0 && (
+        <Card aria-labelledby="pending-title">
+          <h2 id="pending-title" className="text-xl font-semibold">
+            {t("family.pendingTitle")}
+          </h2>
+          <PendingShares shares={shares} />
+        </Card>
+      )}
 
       <div className="flex items-center justify-between gap-2">
         <Link
