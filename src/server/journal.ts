@@ -1,10 +1,10 @@
 import "server-only";
 
-import { and, asc, desc, eq, gte, lte, sum } from "drizzle-orm";
+import { and, asc, desc, eq, gte, like, lte, or, sum } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db/client";
-import { MEAL_SLOTS, mealEntries, type MealSlot, profiles, waterLogs, weightEntries } from "@/db/schema";
+import { foods, MEAL_SLOTS, mealEntries, type MealSlot, profiles, waterLogs, weightEntries } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { stepsKcal } from "@/domain/activity";
 import { addDays, computePlan } from "@/domain/energy";
@@ -12,6 +12,7 @@ import { energyZone, type EnergyZone, type Nutrients, nutrientsFor, sumNutrients
 import { computeStreak, isoWeekStart, type Streak } from "@/domain/streak";
 import { trainingDayGoal } from "@/domain/training/program";
 import { UNITS, toGrams } from "@/domain/units";
+import { glassesFromMl, isWaterFood, WATER_GROUP } from "@/domain/water";
 import { projectGoalDate, type TrendPoint, weeklyChangeKg, weightTrend } from "@/domain/weight-trend";
 
 import { DomainError } from "./errors";
@@ -197,6 +198,24 @@ export async function waterOn(userId: string, date: string): Promise<number> {
   return row?.glasses ?? 0;
 }
 
+/** Verres d'eau notés comme aliments dans les repas du jour (eau du robinet, minérale…). */
+export async function mealWaterGlasses(userId: string, date: string): Promise<number> {
+  const rows = await db()
+    .select({ grams: mealEntries.grams, groupFr: foods.groupFr, kcal: foods.kcal, searchName: foods.searchName })
+    .from(mealEntries)
+    .innerJoin(foods, eq(foods.id, mealEntries.foodId))
+    .where(
+      and(
+        eq(mealEntries.userId, userId),
+        eq(mealEntries.date, isoDate.parse(date)),
+        or(eq(foods.groupFr, WATER_GROUP), and(lte(foods.kcal, 1), like(foods.searchName, "eau%"))),
+      ),
+    );
+  // Une eau pèse un gramme par millilitre.
+  return glassesFromMl(rows.filter(isWaterFood).reduce((total, row) => total + row.grams, 0));
+}
+
+/** Le compteur ne garde que les verres ajoutés à la main ; l'eau des repas s'y ajoute à l'affichage. */
 export async function setWater(userId: string, date: string, glasses: number): Promise<void> {
   const day = isoDate.parse(date);
   assertNotFuture(day);
@@ -224,7 +243,8 @@ export type DaySummary = {
   bySlot: Record<MealSlot, { entries: MealEntry[]; totals: Nutrients }>;
   totals: Nutrients;
   goal: { kcal: number; proteinG: number; carbsG: number; fatG: number } | null;
-  water: { glasses: number; goal: number };
+  /** `glasses` = total du jour, dont `fromMeals` verres notés dans les repas. */
+  water: { glasses: number; fromMeals: number; goal: number };
   zone: EnergyZone | null;
   /** Calories dépensées à l'entraînement (déjà ajoutées à l'objectif) et nombre de séances. */
   training: { burnedKcal: number; sessions: number };
@@ -234,9 +254,10 @@ export type DaySummary = {
 
 /** Tout ce qu'il faut pour le tableau de bord et le journal d'un jour. */
 export async function daySummary(userId: string, date: string): Promise<DaySummary> {
-  const [entries, glasses, profile, weight, training, activity] = await Promise.all([
+  const [entries, glasses, mealGlasses, profile, weight, training, activity] = await Promise.all([
     entriesOn(userId, date),
     waterOn(userId, date),
+    mealWaterGlasses(userId, date),
     getProfile(userId),
     latestWeight(userId, date),
     trainingOn(userId, date),
@@ -281,7 +302,7 @@ export async function daySummary(userId: string, date: string): Promise<DaySumma
     bySlot,
     totals,
     goal,
-    water: { glasses, goal: profile?.waterGoalGlasses ?? 8 },
+    water: { glasses: glasses + mealGlasses, fromMeals: mealGlasses, goal: profile?.waterGoalGlasses ?? 8 },
     zone,
     training: { burnedKcal: training.burnedKcal, sessions: training.sessions },
     activity: { burnedKcal: activityBurned, steps: activity.steps },

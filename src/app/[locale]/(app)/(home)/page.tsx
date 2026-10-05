@@ -162,9 +162,9 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         <MealRings kcalBySlot={kcalBySlot} goalKcal={summary.goal?.kcal ?? null} current={current} date={today} />
       </Card>
 
-      {summary.entries.length > 0 && <BalanceCard quality={quality} />}
+      <WaterTile date={today} {...summary.water} />
 
-      <WaterTile date={today} glasses={summary.water.glasses} goal={summary.water.goal} />
+      {summary.entries.length > 0 && <BalanceCard quality={quality} />}
 
       <ActivityTiles steps={summary.activity.steps} burnedKcal={burnedKcal} />
 

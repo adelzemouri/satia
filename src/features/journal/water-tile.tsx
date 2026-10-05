@@ -7,18 +7,30 @@ import { Icon } from "@/ui/icon";
 import { haptic } from "@/ui/motion";
 import { useToast } from "@/ui/toast";
 
+import { GLASS_ML } from "@/domain/water";
+
 import { setWaterAction } from "./actions";
 
-/** Contenance d'un verre, pour afficher aussi le total en millilitres. */
-export const GLASS_ML = 250;
+export { GLASS_ML };
 /** Au-delà, les verres ne tiennent plus sur une ligne de téléphone : on n'en dessine pas plus. */
 const MAX_DRAWN = 12;
 
 /**
  * Carte de l'accueil : un verre dessiné par verre de l'objectif, rempli au fur et à mesure,
- * et deux boutons pour en ajouter ou en retirer un.
+ * et deux boutons pour en ajouter ou en retirer un. L'eau notée dans les repas (`fromMeals`)
+ * est comptée mais ne se retire que depuis le repas.
  */
-export function WaterTile({ date, glasses, goal }: { date: string; glasses: number; goal: number }) {
+export function WaterTile({
+  date,
+  glasses,
+  fromMeals,
+  goal,
+}: {
+  date: string;
+  glasses: number;
+  fromMeals: number;
+  goal: number;
+}) {
   const t = useTranslations("water");
   const [optimistic, setOptimistic] = useOptimistic(glasses);
   const [, startTransition] = useTransition();
@@ -27,10 +39,10 @@ export function WaterTile({ date, glasses, goal }: { date: string; glasses: numb
 
   const remove = () =>
     startTransition(async () => {
-      if (optimistic === 0) return;
+      if (optimistic <= fromMeals) return;
       setOptimistic(optimistic - 1);
       haptic();
-      await setWaterAction(date, optimistic - 1);
+      await setWaterAction(date, optimistic - 1 - fromMeals);
     });
 
   const add = () =>
@@ -42,7 +54,7 @@ export function WaterTile({ date, glasses, goal }: { date: string; glasses: numb
         haptic([12, 60, 12]);
         toast({ message: t("goalReached") });
       }
-      await setWaterAction(date, optimistic + 1);
+      await setWaterAction(date, optimistic + 1 - fromMeals);
     });
 
   const drawn = Math.min(MAX_DRAWN, Math.max(goal, optimistic));
@@ -64,12 +76,13 @@ export function WaterTile({ date, glasses, goal }: { date: string; glasses: numb
               {t("ml", { value: optimistic * GLASS_ML, goal: goal * GLASS_ML })}
             </span>
           </p>
+          {fromMeals > 0 && <p className="text-xs text-text-muted">{t("fromMeals", { count: fromMeals })}</p>}
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
             onClick={remove}
-            disabled={optimistic === 0}
+            disabled={optimistic <= fromMeals}
             aria-label={t("removeGlass")}
             className="flex size-12 items-center justify-center rounded-full bg-surface-muted text-text disabled:opacity-40"
           >

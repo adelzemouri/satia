@@ -3,14 +3,28 @@
 import { useTranslations } from "next-intl";
 import { useOptimistic, useTransition } from "react";
 
+import { GLASS_ML } from "@/domain/water";
 import { Icon } from "@/ui/icon";
 import { haptic } from "@/ui/motion";
 
 import { setWaterAction } from "./actions";
-import { Glass, GLASS_ML } from "./water-tile";
+import { Glass } from "./water-tile";
 
-/** Verres d'eau du jour : toucher un verre fixe le total à ce verre (ou le retire s'il était le dernier). */
-export function WaterTracker({ date, glasses, goal }: { date: string; glasses: number; goal: number }) {
+/**
+ * Verres d'eau du jour : toucher un verre fixe le total à ce verre (ou le retire s'il était le dernier).
+ * Les verres notés dans les repas (`fromMeals`) restent pleins : ils se retirent depuis le repas.
+ */
+export function WaterTracker({
+  date,
+  glasses,
+  fromMeals,
+  goal,
+}: {
+  date: string;
+  glasses: number;
+  fromMeals: number;
+  goal: number;
+}) {
   const t = useTranslations("water");
   const [optimistic, setOptimistic] = useOptimistic(glasses);
   const [, startTransition] = useTransition();
@@ -18,9 +32,10 @@ export function WaterTracker({ date, glasses, goal }: { date: string; glasses: n
 
   const set = (value: number) =>
     startTransition(async () => {
-      setOptimistic(value);
+      const total = Math.max(value, fromMeals);
+      setOptimistic(total);
       haptic();
-      await setWaterAction(date, value);
+      await setWaterAction(date, total - fromMeals);
     });
 
   return (
@@ -31,6 +46,7 @@ export function WaterTracker({ date, glasses, goal }: { date: string; glasses: n
           {" · "}
           {t("ml", { value: optimistic * GLASS_ML, goal: goal * GLASS_ML })}
         </span>
+        {fromMeals > 0 && <span className="block text-xs">{t("fromMeals", { count: fromMeals })}</span>}
       </p>
       <ul className="flex flex-wrap gap-1">
         {Array.from({ length: Math.min(slots + 1, 30) }, (_, i) => {

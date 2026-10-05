@@ -598,7 +598,8 @@
     "addGlass": "Ajouter un verre d'eau",
     "goalReached": "Objectif d'eau atteint, bravo !",
     "ml": "{value, number} / {goal, number} ml",
-    "removeGlass": "Retirer un verre d'eau"
+    "removeGlass": "Retirer un verre d'eau",
+    "fromMeals": "dont {count, plural, one {# verre} other {# verres}} dans tes repas"
   },
   "weight": {
     "title": "Mon poids",

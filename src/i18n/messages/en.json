@@ -598,7 +598,8 @@
     "addGlass": "Add a glass of water",
     "goalReached": "Water goal reached, well done!",
     "ml": "{value, number} / {goal, number} ml",
-    "removeGlass": "Remove a glass of water"
+    "removeGlass": "Remove a glass of water",
+    "fromMeals": "including {count, plural, one {# glass} other {# glasses}} from your meals"
   },
   "weight": {
     "title": "My weight",

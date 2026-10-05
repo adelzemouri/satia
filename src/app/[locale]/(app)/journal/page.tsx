@@ -232,7 +232,7 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
         <h2 id="water-title" className="text-lg font-bold">
           {t("water.title")}
         </h2>
-        <WaterTracker date={date} glasses={summary.water.glasses} goal={summary.water.goal} />
+        <WaterTracker date={date} {...summary.water} />
       </Card>
     </>
   );

@@ -305,6 +305,26 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await page.reload();
   await expect(page.getByText("3 / 8 verres")).toBeVisible();
 
+  // L'eau notée dans un repas compte aussi dans le compteur.
+  await page.goto("/add?slot=lunch");
+  await page.getByLabel("Rechercher un aliment").fill("eau du robinet");
+  await page
+    .getByRole("button", { name: /^Eau du robinet/ })
+    .first()
+    .click();
+  await page.getByLabel("Unité").selectOption("ml");
+  await page.getByLabel("Quantité").fill("500");
+  await page.getByRole("button", { name: "Ajouter au journal" }).click();
+  await expect(page.getByRole("region", { name: "Déjeuner" }).getByText(/^Eau du robinet/)).toBeVisible();
+  await expect(page.getByText("5 / 8 verres")).toBeVisible();
+  await expect(page.getByText("dont 2 verres dans tes repas")).toBeVisible();
+  await page.getByRole("link", { name: "Aujourd'hui" }).click();
+  await expect(page.getByText("5 / 8 verres")).toBeVisible();
+  // Le − ne retire que les verres ajoutés au compteur.
+  await withServerAction(page, () => page.getByRole("button", { name: "Retirer un verre d'eau" }).click());
+  await page.reload();
+  await expect(page.getByText("4 / 8 verres")).toBeVisible();
+
   await page.getByRole("link", { name: "Progrès" }).click();
   await page.getByRole("link", { name: /^Mon poids/ }).click();
   await page.getByLabel("Poids en kg").fill("82");
