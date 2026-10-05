@@ -69,7 +69,7 @@ export function CoachChat({
   useEffect(() => {
     if (!ask || asked.current) return;
     asked.current = true;
-    window.history.replaceState(window.history.state, "", window.location.pathname);
+    window.history.replaceState(null, "", window.location.pathname);
     send(t(`questions.${ask}`));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ask]);

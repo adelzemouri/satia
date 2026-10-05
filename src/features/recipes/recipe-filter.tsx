@@ -25,7 +25,7 @@ export function RecipeFilter<C extends string>({
     const url = new URL(window.location.href);
     if (value) url.searchParams.set("cat", value);
     else url.searchParams.delete("cat");
-    window.history.replaceState(window.history.state, "", url);
+    window.history.replaceState(null, "", url);
   };
   const chip = (active: boolean) =>
     `flex min-h-11 items-center whitespace-nowrap rounded-full px-4 font-semibold ${
