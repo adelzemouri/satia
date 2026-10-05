@@ -109,9 +109,11 @@ describe("base d'aliments", () => {
     expect((await searchFoods(userId, "crème liquide"))[0]?.nameFr).toMatch(/^Crème de lait.*fluide/);
     expect((await searchFoods(userId, "crème fraîche"))[0]?.nameFr).toMatch(/^Crème de lait.*épaisse/);
     // Des linguine reconnues sur une photo se comptent cuites, pas comme un paquet sec.
-    expect(pickForLabel("linguine cuites", await searchFoods(userId, "linguine cuites"))?.nameFr).toBe(
-      "Pâtes sèches standard, cuites, non salées",
-    );
+    for (const label of ["linguine cuites", "linguine", "linguines"]) {
+      expect(pickForLabel(label, await searchFoods(userId, label))?.nameFr).toBe(
+        "Pâtes sèches standard, cuites, non salées",
+      );
+    }
   });
 
   it("garde les aliments personnels privés et les fait passer en premier", async () => {
