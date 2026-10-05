@@ -40,6 +40,9 @@ const RESPONSES: Record<string, unknown | ((request: LlmRequest) => unknown)> = 
       { day: 1, slot: "lunch", recipe: 1, name: "", ingredients: [] },
     ],
   },
+  recipe_steps: {
+    steps: ["Prépare et coupe les ingrédients.", "Fais cuire doucement 10 minutes.", "Assaisonne et sers chaud."],
+  },
   fridge: {
     ingredients: ["œuf", "tomate", "fromage râpé", "pain"],
     ideas: [

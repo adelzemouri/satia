@@ -28,6 +28,7 @@ export type RecipeFormInitial = {
   cookedGrams: number | null;
   family: boolean;
   items: { food: FoodItem; grams: number }[];
+  steps: string[];
 };
 
 function toBase64(blob: Blob): Promise<string> {
@@ -106,6 +107,11 @@ export function RecipeForm({
         cookedGrams: readNumber(formData, "cookedGrams"),
         items: items.map((item) => ({ foodId: item.food.id, grams: Number(item.grams.replace(",", ".")) })),
         family,
+        // Une étape par ligne ; les lignes vides sont ignorées.
+        steps: String(formData.get("steps") ?? "")
+          .split("\n")
+          .map((line) => line.trim())
+          .filter(Boolean),
       };
       const result = initial ? await updateRecipeAction(initial.id, input) : await createRecipeAction(input);
       if (result?.error) return setError(result.fieldErrors?.items ?? result.fieldErrors?.name ?? result.error);
@@ -219,6 +225,21 @@ export function RecipeForm({
           />
         )}
       </fieldset>
+
+      <label className="flex flex-col gap-1.5">
+        <span className="text-lg font-semibold">{t("foods.steps")}</span>
+        <span id="steps-hint" className="text-sm text-text-muted">
+          {t("foods.stepsHint")}
+        </span>
+        <textarea
+          name="steps"
+          rows={5}
+          maxLength={6000}
+          defaultValue={initial?.steps.join("\n")}
+          aria-describedby="steps-hint"
+          className="rounded-2xl border border-border bg-surface px-3 py-2 text-base"
+        />
+      </label>
 
       {items.length > 0 && (
         <p className="rounded-2xl bg-surface-muted px-4 py-3 font-semibold" aria-live="polite">

@@ -13,6 +13,7 @@ export const LLM_FEATURES = [
   "fridge",
   "training_plan",
   "recipe_image",
+  "recipe_steps",
 ] as const;
 export type LlmFeature = (typeof LLM_FEATURES)[number];
 

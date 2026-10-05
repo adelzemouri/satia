@@ -20,7 +20,7 @@ import {
 import { providerFor } from "./providers";
 import { recipeImagePrompt } from "./prompts/recipe-image";
 import { coachSystem, weeklyReviewSystem } from "./prompts/coach";
-import { FRIDGE_SYSTEM, MENU_PLAN_SYSTEM } from "./prompts/planning";
+import { FRIDGE_SYSTEM, MENU_PLAN_SYSTEM, RECIPE_STEPS_SYSTEM } from "./prompts/planning";
 import { trainingPlanSystem } from "./prompts/training";
 import {
   coachReplySchema,
@@ -29,6 +29,7 @@ import {
   fridgeSchema,
   mealItemsSchema,
   menuPlanSchema,
+  recipeStepsSchema,
   trainingPlanSchema,
   weeklyReviewSchema,
 } from "./schemas";
@@ -280,6 +281,21 @@ export async function proposeMenu(userId: string, user: string): Promise<MenuPla
     maxOutputTokens: 4096,
   });
   return result.data;
+}
+
+/** Préparation d'une recette du foyer (modèle texte, une fois par recette). */
+export async function writeRecipeSteps(userId: string, user: string): Promise<string[]> {
+  const result = await callLlm({
+    userId,
+    feature: "recipe_steps",
+    kind: "text",
+    system: RECIPE_STEPS_SYSTEM,
+    user,
+    schemaName: "recipe_steps",
+    schema: recipeStepsSchema,
+    maxOutputTokens: 2048,
+  });
+  return result.data.steps;
 }
 
 export type FridgeScan = z.infer<typeof fridgeSchema>;

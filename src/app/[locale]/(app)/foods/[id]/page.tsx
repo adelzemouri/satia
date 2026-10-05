@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { COACH_NAME } from "@/config/app";
 import { todayIso } from "@/domain/dates";
 import { parseDayParam } from "@/domain/day-param";
 import { MEAL_SLOTS } from "@/domain/meals";
@@ -10,9 +11,11 @@ import { toLocale } from "@/i18n/routing";
 import { DomainError } from "@/server/errors";
 import { ProductThumb } from "@/features/foods/product-thumb";
 import { RecipePhotoForm } from "@/features/foods/recipe-photo-form";
+import { RecipeStepsButton } from "@/features/planning/recipe-steps-button";
 import { RecipeVisual } from "@/features/recipes/recipe-visual";
 import { RECIPE_PHOTOS } from "@/features/recipes/recipe-photos";
-import { type Food, getFoodDetails, isGeneratedRecipePhoto } from "@/server/foods";
+import { aiAvailability } from "@/server/ai-availability";
+import { type Food, getFoodDetails, isGeneratedRecipePhoto, recipeIngredients } from "@/server/foods";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
 import { Card } from "@/ui/card";
@@ -44,6 +47,12 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
   const editableRecipe =
     food.source === "recipe" && (food.ownerUserId === user.id || food.householdId === user.householdId);
   const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
+  // Recette du foyer ou personnelle : ses ingrédients et sa préparation, comme une fiche du catalogue.
+  const ownRecipe = food.source === "recipe" && !catalog;
+  const [ingredients, ai] = ownRecipe
+    ? await Promise.all([recipeIngredients(user.id, food.id), editableRecipe ? aiAvailability() : null])
+    : [[], null];
+  const steps = food.recipeSteps ?? [];
   const rows: { label: string; value: number | null; unit: string; indent?: boolean }[] = [
     { label: t("product.energy"), value: food.kcal, unit: "kcal" },
     { label: t("product.fat"), value: food.fatG, unit: "g" },
@@ -154,19 +163,43 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
             <h2 id="steps-title" className="text-xl font-bold">
               {t("recipes.steps")}
             </h2>
-            <ol className="flex flex-col gap-3">
-              {catalog.steps.map((step, index) => (
-                <li key={index} className="flex gap-3">
-                  <span
-                    aria-hidden
-                    className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary-soft text-sm font-bold text-primary"
-                  >
-                    {index + 1}
-                  </span>
-                  <span>{step}</span>
+            <StepList steps={catalog.steps} />
+          </Card>
+        </>
+      )}
+
+      {ownRecipe && ingredients.length > 0 && (
+        <>
+          <Card aria-labelledby="ingredients-title">
+            <div className="flex flex-col">
+              <h2 id="ingredients-title" className="text-xl font-bold">
+                {t("recipes.ingredients")}
+              </h2>
+              {food.servings && (
+                <p className="text-sm text-text-muted">{t("recipes.ingredientsFor", { count: food.servings })}</p>
+              )}
+            </div>
+            <ul className="flex flex-col divide-y divide-border">
+              {ingredients.map((item, index) => (
+                <li key={`${item.id}-${index}`} className="flex justify-between gap-3 py-2">
+                  <span className="first-letter:uppercase">{item.name}</span>
+                  <span className="shrink-0 text-text-muted">{number.format(item.grams)} g</span>
                 </li>
               ))}
-            </ol>
+            </ul>
+          </Card>
+          <Card aria-labelledby="steps-title">
+            <h2 id="steps-title" className="text-xl font-bold">
+              {t("recipes.steps")}
+            </h2>
+            {steps.length > 0 ? (
+              <StepList steps={steps} />
+            ) : (
+              <>
+                <p className="text-text-muted">{t("recipes.stepsEmpty")}</p>
+                {ai?.available && <RecipeStepsButton recipeId={food.id} coachName={COACH_NAME} />}
+              </>
+            )}
           </Card>
         </>
       )}
@@ -239,5 +272,24 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
         ) : null}
       </p>
     </>
+  );
+}
+
+/** Étapes numérotées d'une préparation. */
+function StepList({ steps }: { steps: readonly string[] }) {
+  return (
+    <ol className="flex flex-col gap-3">
+      {steps.map((step, index) => (
+        <li key={index} className="flex gap-3">
+          <span
+            aria-hidden
+            className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary-soft text-sm font-bold text-primary"
+          >
+            {index + 1}
+          </span>
+          <span>{step}</span>
+        </li>
+      ))}
+    </ol>
   );
 }

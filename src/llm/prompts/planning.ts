@@ -20,3 +20,9 @@ export const FRIDGE_SYSTEM = [
   "Noms génériques français comme dans la table Ciqual. Ingrédients d'une portion, crus, en grammes ; tu peux ajouter des basiques (huile, sel, épices).",
   "Respecte le régime et les aliments à éviter. Vise le budget calorique indiqué pour une portion. Pas de valeur nutritionnelle.",
 ].join("\n");
+
+export const RECIPE_STEPS_SYSTEM = [
+  "Tu rédiges la préparation d'une recette familiale, en français, à partir de son nom et de ses ingrédients.",
+  "Réponds en JSON : {\"steps\":[string]} : 3 à 8 étapes courtes, à l'impératif, dans l'ordre.",
+  "N'ajoute pas d'ingrédient important absent de la liste (sel, poivre, eau et épices sont permis). Pas de valeur nutritionnelle.",
+].join("\n");
