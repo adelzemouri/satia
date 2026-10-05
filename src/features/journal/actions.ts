@@ -12,6 +12,7 @@ import {
   fillRecipePhotosLater,
   type RecipeInput,
   type recipePhotoSchema,
+  regenerateRecipePhoto,
   setFavorite,
   setRecipePhoto,
   setUnitWeight,
@@ -97,6 +98,10 @@ export async function updateRecipeAction(id: string, input: RecipeInput): Promis
 
 export async function setRecipePhotoAction(input: z.input<typeof recipePhotoSchema>): Promise<IdState> {
   return run(async (userId) => (await setRecipePhoto(userId, input), { ok: true }));
+}
+
+export async function regenerateRecipePhotoAction(foodId: string): Promise<IdState> {
+  return run(async (userId) => (await regenerateRecipePhoto(userId, foodId), { ok: true }));
 }
 
 export async function deleteFoodAction(foodId: string): Promise<IdState> {

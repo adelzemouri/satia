@@ -293,17 +293,6 @@
       "capped": "Pour que ce soit tenable et sans risque, on limite la perte à environ 1 % de ton poids par semaine.",
       "start": "C'est parti !"
     },
-    "budget": {
-      "title": "Comment veux-tu gérer tes calories ?",
-      "daily": {
-        "label": "Budget quotidien",
-        "hint": "Le même objectif chaque jour. Simple et régulier."
-      },
-      "weekly": {
-        "label": "Budget hebdomadaire",
-        "hint": "Un total pour la semaine : chaque jour s'ajuste selon les précédents, et tu peux prévoir des jours plus larges."
-      }
-    },
     "coach": {
       "title": "Quel coach te ressemble ?",
       "hint": "Tu pourras en changer à tout moment."
@@ -553,8 +542,9 @@
     "photo": {
       "add": "Ajouter une photo",
       "change": "Changer la photo",
-      "sending": "Envoi de la photo…",
-      "caption": "Photo de la famille, visible seulement par le foyer."
+      "sending": "Photo en préparation…",
+      "caption": "Photo de la famille, visible seulement par le foyer.",
+      "regenerate": "Refaire la photo"
     },
     "title": "Mes aliments et recettes",
     "newFood": "Nouvel aliment",
@@ -821,23 +811,6 @@
     "whoHint": "Chacun recevra le plat à valider : rien n'est ajouté à son journal sans son accord.",
     "notEating": "Je n'en mange pas",
     "share": "Partager"
-  },
-  "week": {
-    "title": "Ma semaine",
-    "open": "Voir ma semaine",
-    "mode": "Mode de budget",
-    "daysTitle": "Jour par jour",
-    "gauge": "Cette semaine",
-    "gaugeValue": "{consumed, number} / {total, number} kcal",
-    "overspent": "La semaine est déjà bien remplie : les jours restants gardent un objectif confortable, et lundi tout repart de zéro.",
-    "largerHint": "Un repas de famille ou une sortie de prévu ? Coche le jour : il aura un peu plus, les autres un peu moins.",
-    "larger": "Plus large",
-    "largerFor": "Jour plus large : {day}",
-    "today": "aujourd'hui",
-    "pastDay": "{consumed, number} kcal saisies",
-    "target": "Objectif : {kcal, number} kcal",
-    "dailyHint": "En budget hebdomadaire, tu disposes d'un total pour la semaine : ce que tu n'as pas mangé un jour se retrouve les jours suivants, dans des limites raisonnables.",
-    "notLogged": "Rien de saisi : compté comme un jour à l'objectif"
   },
   "metabolism": {
     "title": "Mon métabolisme",
@@ -1171,17 +1144,11 @@
   },
   "recipes": {
     "title": "Recettes",
-    "intro": "Tes recettes et celles du foyer, y compris celles proposées par le coach.",
-    "mine": "Mes recettes",
-    "family": "Recettes du foyer",
+    "intro": "Les recettes de la famille et des idées simples, avec leurs calories calculées à partir de la table Ciqual.",
+    "ours": "Nos recettes",
     "none": "Aucune recette pour l'instant.",
     "perServing": "{kcal} kcal la part · {count, plural, one {# part} other {# parts}}",
     "new": "Nouvelle recette",
-    "newFamily": "Nouvelle recette du foyer",
-    "edit": "Modifier",
-    "editLabel": "Modifier {name}",
-    "ideas": "Idées de recettes",
-    "ideasIntro": "Des recettes simples pour toute la famille, avec leurs calories calculées à partir de la table Ciqual.",
     "filterLabel": "Type de recette",
     "all": "Toutes",
     "categories": {

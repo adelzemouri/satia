@@ -134,6 +134,13 @@
       "when": 1791197659396,
       "tag": "0018_meal_dish",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1791207579634,
+      "tag": "0019_daily_budget_only",
+      "breakpoints": true
     }
   ]
 }

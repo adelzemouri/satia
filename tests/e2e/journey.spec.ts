@@ -113,8 +113,6 @@ test("onboarding complet d'un adulte avec plan expliqué", async ({ page }) => {
   await page.getByLabel("Aliments que tu préfères éviter").fill("coriandre");
   await next.click();
   await next.click(); // horaires par défaut
-  await expect(page.getByLabel("Budget quotidien")).toBeChecked();
-  await next.click();
   await expect(page.getByLabel("Pédagogue")).toBeChecked();
   await page.getByLabel("Serein").check();
   await next.click();
@@ -763,7 +761,7 @@ test("repas partagé : l'admin partage un plat du foyer, le membre le valide ave
 
   // Léa met sa photo du gratin : la fiche l'affiche, légendée comme photo de la famille.
   await teen.goto("/recipes");
-  await expect(teen.getByRole("region", { name: "Recettes du foyer" }).getByText("Gratin du dimanche")).toBeVisible();
+  await expect(teen.getByRole("link", { name: /^Gratin du dimanche/ })).toBeVisible();
   await teen.getByRole("link", { name: /^Gratin du dimanche/ }).click();
   await expect(teen.getByRole("heading", { level: 1 })).toHaveText("Gratin du dimanche");
   await withServerAction(teen, () =>
@@ -886,14 +884,15 @@ test("menu de la semaine, liste de courses commune, recettes et scanner de frigo
   await expect(page.getByRole("region", { name: "Dans le panier" })).toHaveCount(0);
 
   await page.goto("/recipes");
-  await expect(page.getByRole("region", { name: "Recettes du foyer" }).getByText("Gratin du dimanche")).toBeVisible();
-  await expect(
-    page.getByRole("region", { name: "Recettes du foyer" }).getByText("Poêlée de lentilles aux carottes"),
-  ).toBeVisible();
+  // Une seule bibliothèque : les recettes de la famille avec les idées, et un filtre pour les retrouver.
+  await page.getByRole("group", { name: "Type de recette" }).getByRole("button", { name: "Nos recettes" }).click();
+  await expect(page.getByRole("link", { name: /^Gratin du dimanche/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /^Poêlée de lentilles aux carottes/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /^Minestrone/ })).toHaveCount(0);
   await expectNoA11yViolations(page);
 
   // Fiche d'une recette du foyer : ses ingrédients, et sa préparation rédigée à la demande.
-  await page.getByRole("region", { name: "Recettes du foyer" }).getByText("Poêlée de lentilles aux carottes").click();
+  await page.getByRole("link", { name: /^Poêlée de lentilles aux carottes/ }).click();
   await expect(page.getByRole("heading", { name: "Ingrédients" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Ingrédients" }).getByRole("listitem")).toHaveCount(3);
   await expect(page.getByText(/Pas encore de préparation/)).toBeVisible();
@@ -1110,7 +1109,7 @@ test("jeûne : planning, minuteur et historique ; traitement : rappel et journal
   await expect(page.getByLabel("Traitement")).toBeChecked();
 });
 
-test("mon métabolisme et budget hebdomadaire avec un jour plus large", async ({ page }) => {
+test("mon métabolisme : objectif figé ou ajusté", async ({ page }) => {
   await signInWithTotp(page);
   await page.getByRole("link", { name: "Progrès" }).click();
   await page.getByRole("link", { name: "Mon métabolisme" }).click();
@@ -1122,39 +1121,18 @@ test("mon métabolisme et budget hebdomadaire avec un jour plus large", async ({
   await expect(page.getByText(/Ton objectif est figé/)).toBeVisible();
   await page.getByRole("button", { name: "Laisser l'objectif s'ajuster" }).click();
   await expect(page.getByRole("button", { name: "Figer mon objectif" })).toBeVisible();
-
-  await page.goto("/week");
-  await expect(page.getByLabel("Budget quotidien")).toBeChecked();
-  await page.getByLabel("Budget hebdomadaire").check();
-  const days = page.getByRole("region", { name: "Jour par jour" });
-  await expect(days.getByRole("progressbar", { name: "Cette semaine" })).toBeVisible();
-  const lastDay = days.getByRole("checkbox", { name: /^Jour plus large/ }).last();
-  await withServerAction(page, () => lastDay.check());
-  await expect(lastDay).toBeChecked();
-  await expectNoA11yViolations(page);
-  await page.reload();
-  await expect(days.getByRole("checkbox", { name: /^Jour plus large/ }).last()).toBeChecked();
-
-  await page.goto("/");
-  await expect(page.getByRole("progressbar", { name: "Cette semaine" })).toBeVisible();
-  await expectNoA11yViolations(page);
-  // Retour au budget quotidien pour les tests suivants.
-  await page.goto("/week");
-  await page.getByLabel("Budget quotidien").check();
-  await expect(page.getByRole("region", { name: "Jour par jour" })).toHaveCount(0);
 });
 
 test("recettes du catalogue : bibliothèque illustrée, fiche et ajout", async ({ page }) => {
   await signInWithTotp(page);
   await page.goto("/recipes");
-  await expect(page.getByRole("heading", { name: "Idées de recettes" })).toBeVisible();
-  // Le filtre agit sur place : la page garde sa position et l'adresse retient la catégorie.
-  await page.evaluate(() => window.scrollTo(0, 400));
-  const scrolled = await page.evaluate(() => window.scrollY);
+  await expect(page.getByRole("link", { name: /^Minestrone/ })).toBeVisible();
+  // Le filtre agit sur place, sans recharger la page (ni la remonter) ; l'adresse retient la catégorie.
+  await page.evaluate(() => Object.assign(window, { samePage: true }));
   await page.getByRole("group", { name: "Type de recette" }).getByRole("button", { name: "Soupes" }).click();
   await expect(page.getByRole("button", { name: "Soupes" })).toHaveAttribute("aria-pressed", "true");
   await expect(page).toHaveURL(/cat=soup/);
-  expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
+  expect(await page.evaluate(() => "samePage" in window)).toBe(true);
   await expect(page.getByRole("link", { name: /^Minestrone/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /^Taboulé aux herbes/ })).toHaveCount(0);
   await page.getByRole("link", { name: /^Minestrone/ }).click();
@@ -1181,7 +1159,6 @@ test("audit d'accessibilité : chaque page de l'app, en thème clair et sombre",
     "/journal",
     "/add",
     "/progress",
-    "/week",
     "/quality",
     "/metabolism",
     "/coach",

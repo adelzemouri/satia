@@ -16,6 +16,7 @@ import {
   getRecipeForEdit,
   recipePhotoUrl,
   isGeneratedRecipePhoto,
+  regenerateRecipePhoto,
   searchFoods,
   setRecipePhoto,
   updateRecipe,
@@ -90,11 +91,19 @@ describe("espace famille", () => {
       // Déjà illustrée : aucun nouvel appel.
       expect(await fillRecipePhotos(admin.id)).toBe(0);
 
+      // Photo ratée : on la refait, avec une nouvelle adresse.
+      await regenerateRecipePhoto(admin.id, lasagnaId);
+      const [redone] = await db().select().from(foods).where(eq(foods.id, lasagnaId));
+      expect(isGeneratedRecipePhoto(redone!.photoKey!)).toBe(true);
+      expect(redone!.photoKey).not.toBe(row!.photoKey);
+      expect(redone!.imageUrl).not.toBe(row!.imageUrl);
+
       // La photo de la famille remplace celle de l'IA, et n'est jamais remplacée à son tour.
       await setRecipePhoto(admin.id, { foodId: lasagnaId, imageBase64: JPEG_BASE64, mime: "image/jpeg" });
       const [mine] = await db().select().from(foods).where(eq(foods.id, lasagnaId));
       expect(isGeneratedRecipePhoto(mine!.photoKey!)).toBe(false);
       expect(await fillRecipePhotos(admin.id)).toBe(0);
+      await expect(regenerateRecipePhoto(member.id, lasagnaId)).rejects.toThrow();
     });
 
     it("IA en pause : pas de photo, nouvel essai plus tard", async () => {

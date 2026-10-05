@@ -10,7 +10,6 @@ import {
   ACTIVITY_LEVELS,
   type ActivityLevel,
   allowedGoals,
-  BUDGET_MODES,
   type BudgetMode,
   COACH_STYLES,
   type CoachStyle,
@@ -64,7 +63,6 @@ type Step =
   | "pace"
   | "diet"
   | "meals"
-  | "budget"
   | "coach"
   | "disclaimer"
   | "summary";
@@ -175,7 +173,7 @@ export function OnboardingWizard({ defaultFirstName }: { defaultFirstName: strin
     if (changesWeight) list.push("targetWeight");
     list.push("activity");
     if (changesWeight) list.push("pace");
-    list.push("diet", "meals", "budget", "coach", "disclaimer", "summary");
+    list.push("diet", "meals", "coach", "disclaimer", "summary");
     return list;
   }, [draft.goal]);
 
@@ -402,21 +400,6 @@ export function OnboardingWizard({ defaultFirstName }: { defaultFirstName: strin
               />
             ))}
           </>
-        )}
-
-        {step === "budget" && (
-          <OptionList
-            legend={t("budget.title")}
-            hideLegend
-            name="budgetMode"
-            value={draft.budgetMode}
-            onChange={(budgetMode) => update({ budgetMode })}
-            options={BUDGET_MODES.map((value) => ({
-              value,
-              label: t(`budget.${value}.label`),
-              hint: t(`budget.${value}.hint`),
-            }))}
-          />
         )}
 
         {step === "coach" && (
