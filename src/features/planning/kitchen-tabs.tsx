@@ -3,14 +3,14 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 
 const TABS = [
-  { href: "/plan", key: "menu" },
   { href: "/recipes", key: "recipes" },
+  { href: "/plan", key: "menu" },
   { href: "/meals", key: "meals" },
 ] as const;
 
 /**
- * Onglets de l'espace « Cuisine » : le menu du foyer (et ses courses), les recettes, et les repas
- * enregistrés. Une seule entrée dans « Moi » mène ici ; chaque page garde son adresse.
+ * Onglets de l'espace « Cuisine » : les recettes, le menu du foyer (et ses courses), et les repas
+ * enregistrés. L'onglet « Cuisine » de la barre du bas mène ici ; chaque page garde son adresse.
  */
 export async function KitchenTabs({ current }: { current: (typeof TABS)[number]["key"] }) {
   const t = await getTranslations("kitchen");

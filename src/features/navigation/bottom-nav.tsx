@@ -6,15 +6,20 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Icon, type ICONS } from "@/ui/icon";
 
-type TabKey = "home" | "journal" | "add" | "progress" | "profile";
+type TabKey = "home" | "kitchen" | "add" | "progress" | "profile";
 
 /**
  * Quatre onglets et le bouton d'ajout au centre. Les pages secondaires allument l'onglet
- * dont elles dépendent (le poids sous « Progrès », le coach sous « Moi »…).
+ * dont elles dépendent (le journal sous « Aujourd'hui », le menu sous « Cuisine »…).
  */
 const TABS: { href: string; key: TabKey; icon: keyof typeof ICONS; sections?: string[] }[] = [
-  { href: "/", key: "home", icon: "home" },
-  { href: "/journal", key: "journal", icon: "journal" },
+  { href: "/", key: "home", icon: "home", sections: ["/journal"] },
+  {
+    href: "/recipes",
+    key: "kitchen",
+    icon: "book",
+    sections: ["/plan", "/meals", "/shopping", "/fridge", "/family"],
+  },
   { href: "/add", key: "add", icon: "plus", sections: ["/scan"] },
   {
     href: "/progress",
@@ -26,27 +31,15 @@ const TABS: { href: string; key: TabKey; icon: keyof typeof ICONS; sections?: st
     href: "/profile",
     key: "profile",
     icon: "profile",
-    sections: [
-      "/coach",
-      "/family",
-      "/plan",
-      "/shopping",
-      "/recipes",
-      "/meals",
-      "/fridge",
-      "/fasting",
-      "/treatment",
-      "/foods",
-      "/containers",
-      "/dictionary",
-      "/admin",
-    ],
+    sections: ["/coach", "/fasting", "/treatment", "/foods", "/containers", "/dictionary", "/admin"],
   },
 ];
 
 function isActive(pathname: string, tab: (typeof TABS)[number]): boolean {
-  if (tab.href === "/") return pathname === "/";
-  return [tab.href, ...(tab.sections ?? [])].some((base) => pathname === base || pathname.startsWith(`${base}/`));
+  if (tab.href === "/" && pathname === "/") return true;
+  return [...(tab.href === "/" ? [] : [tab.href]), ...(tab.sections ?? [])].some(
+    (base) => pathname === base || pathname.startsWith(`${base}/`),
+  );
 }
 
 /** Barre de navigation inférieure ; le bouton central ouvre l'ajout d'un aliment. */
