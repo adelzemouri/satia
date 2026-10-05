@@ -13,6 +13,8 @@ export type DraftItem = {
   key: string;
   /** Ce que l'IA (ou le texte) a reconnu, affiché pour comprendre la proposition. */
   label: string;
+  /** Plat reconnu par l'IA (« Pâtes au saumon »), pour regrouper ses composants. */
+  dish?: string | null;
   /** Nom proposé par l'IA, normalisé ; null pour une expression du dictionnaire personnel. */
   aiLabel: string | null;
   /** Proposition initiale, pour repérer une correction de l'utilisateur. */

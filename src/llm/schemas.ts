@@ -10,6 +10,8 @@ export const mealItemsSchema = z.object({
     .array(
       z.object({
         name: z.string().trim().min(1).max(80),
+        /** Plat auquel appartient l'aliment (« Pâtes au saumon »), null pour un aliment seul. */
+        dish: z.string().trim().min(1).max(60).nullish(),
         grams: z.number().positive().max(3000),
         /** Nombre de pièces quand l'aliment se compte (2 croque-monsieur, 3 œufs). */
         count: z.number().int().min(1).max(30).nullish(),

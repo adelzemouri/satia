@@ -9,6 +9,7 @@ import { availableUnits, type Unit } from "@/domain/units";
 import { CopyButton } from "@/features/journal/copy-button";
 import { CalorieSummary, MacroBars } from "@/features/journal/day-overview";
 import { EntryRow } from "@/features/journal/entry-row";
+import { groupByDish } from "@/domain/dishes";
 import { WaterTracker } from "@/features/journal/water-tracker";
 import { QualityBars } from "@/features/quality/quality-bars";
 import { SaveMealButton } from "@/features/saved-meals/save-meal-button";
@@ -188,24 +189,31 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
               <p className="text-text-muted">{t("journal.empty")}</p>
             ) : (
               <ul className="flex flex-col divide-y divide-border">
-                {entries.map((entry) => (
-                  <li key={entry.id}>
-                    <EntryRow
-                      entry={{
-                        id: entry.id,
-                        label: entry.label,
-                        quantity: entry.quantity,
-                        unit: entry.unit,
-                        grams: entry.grams,
-                        kcal: entry.kcal,
-                        slot: entry.slot,
-                        isEstimated: entry.isEstimated,
-                        imageUrl: (entry.foodId && foods.get(entry.foodId)?.imageUrl) || null,
-                      }}
-                      units={unitsFor(entry.foodId, entry.unit)}
-                    />
-                  </li>
-                ))}
+                {groupByDish(entries).flatMap((group) => [
+                  group.dish && (
+                    <li key={`dish-${group.items[0]!.id}`} className="pt-3 pb-1 text-sm font-semibold text-text-muted">
+                      {group.dish}
+                    </li>
+                  ),
+                  ...group.items.map((entry) => (
+                    <li key={entry.id}>
+                      <EntryRow
+                        entry={{
+                          id: entry.id,
+                          label: entry.label,
+                          quantity: entry.quantity,
+                          unit: entry.unit,
+                          grams: entry.grams,
+                          kcal: entry.kcal,
+                          slot: entry.slot,
+                          isEstimated: entry.isEstimated,
+                          imageUrl: (entry.foodId && foods.get(entry.foodId)?.imageUrl) || null,
+                        }}
+                        units={unitsFor(entry.foodId, entry.unit)}
+                      />
+                    </li>
+                  )),
+                ])}
               </ul>
             )}
             <div className="flex flex-wrap gap-2">

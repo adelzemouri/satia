@@ -8,7 +8,7 @@ import { Icon } from "@/ui/icon";
 import { haptic } from "@/ui/motion";
 
 import { setWaterAction } from "./actions";
-import { Glass } from "./water-tile";
+import { Glass } from "./glass";
 
 /**
  * Verres d'eau du jour : toucher un verre fixe le total à ce verre (ou le retire s'il était le dernier).
@@ -19,11 +19,14 @@ export function WaterTracker({
   glasses,
   fromMeals,
   goal,
+  onGoalReached,
 }: {
   date: string;
   glasses: number;
   fromMeals: number;
   goal: number;
+  /** Appelé quand un verre ajouté atteint l'objectif du jour. */
+  onGoalReached?: () => void;
 }) {
   const t = useTranslations("water");
   const [optimistic, setOptimistic] = useOptimistic(glasses);
@@ -35,6 +38,7 @@ export function WaterTracker({
       const total = Math.max(value, fromMeals);
       setOptimistic(total);
       haptic();
+      if (goal > 0 && total === goal && total > optimistic) onGoalReached?.();
       await setWaterAction(date, total - fromMeals);
     });
 

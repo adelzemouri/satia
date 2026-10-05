@@ -328,14 +328,14 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await expect(page.getByText("Petit-déj du matin")).toBeVisible();
 
   await page.getByRole("link", { name: "Aujourd'hui" }).click();
-  for (let glass = 0; glass < 3; glass++) {
-    await withServerAction(page, () => page.getByRole("button", { name: "Ajouter un verre d'eau" }).click());
-  }
+  // Sur l'accueil comme dans le journal, toucher un verre fixe le total du jour.
+  const glass = (n: number) => page.getByRole("button", { name: `Verre ${n}`, exact: true });
+  await withServerAction(page, () => glass(3).click());
   await expect(page.getByText("3 / 8 verres")).toBeVisible();
-  // Un verre de trop se retire aussi depuis l'accueil.
-  await withServerAction(page, () => page.getByRole("button", { name: "Retirer un verre d'eau" }).click());
+  // Retoucher le dernier verre plein le retire.
+  await withServerAction(page, () => glass(3).click());
   await expect(page.getByText("2 / 8 verres")).toBeVisible();
-  await withServerAction(page, () => page.getByRole("button", { name: "Ajouter un verre d'eau" }).click());
+  await withServerAction(page, () => glass(3).click());
   await page.reload();
   await expect(page.getByText("3 / 8 verres")).toBeVisible();
 
@@ -354,10 +354,13 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await expect(page.getByText("dont 2 verres dans tes repas")).toBeVisible();
   await page.getByRole("link", { name: "Aujourd'hui" }).click();
   await expect(page.getByText("5 / 8 verres")).toBeVisible();
-  // Le − ne retire que les verres ajoutés au compteur.
-  await withServerAction(page, () => page.getByRole("button", { name: "Retirer un verre d'eau" }).click());
+  // Retirer un verre ne touche qu'aux verres ajoutés au compteur, pas à l'eau du repas.
+  await withServerAction(page, () => glass(5).click());
   await page.reload();
   await expect(page.getByText("4 / 8 verres")).toBeVisible();
+  await withServerAction(page, () => glass(1).click());
+  await page.reload();
+  await expect(page.getByText("2 / 8 verres")).toBeVisible();
 
   await page.getByRole("link", { name: "Progrès" }).click();
   await page.getByRole("link", { name: /^Mon poids/ }).click();
@@ -525,8 +528,10 @@ test("saisie d'un repas par photo (LLM simulé), avec contenant et écran de con
   await page.getByRole("button", { name: "Analyser la photo" }).click();
 
   await expect(page.getByRole("heading", { name: "On vérifie ensemble ?" })).toBeVisible();
-  await expect(page.getByText(/^Riz basmati, cuit/)).toBeVisible();
-  await expect(page.getByText("Reconnu : riz basmati cuit")).toBeVisible();
+  // Les aliments d'un même plat sont regroupés sous son nom.
+  const dish = page.getByRole("region", { name: "Riz au poulet" });
+  await expect(dish.getByText(/^Riz basmati, cuit/)).toBeVisible();
+  await expect(dish.getByText("Reconnu : riz basmati cuit")).toBeVisible();
   await page.getByLabel(/^Quantité de Riz basmati, cuit/).fill("150");
   await expect(page.getByText(/^Total : \d+ kcal$/)).toBeVisible();
   await expectNoA11yViolations(page);
@@ -535,6 +540,7 @@ test("saisie d'un repas par photo (LLM simulé), avec contenant et écran de con
   await expect(page).toHaveURL(/\/journal\?date=/);
   const lunch = page.getByRole("region", { name: "Déjeuner" });
   await expect(lunch.getByText(/^Riz basmati, cuit/)).toBeVisible();
+  await expect(lunch.getByText("Riz au poulet", { exact: true })).toBeVisible();
   await expect(lunch.getByText(/^150 g ·/)).toBeVisible();
   await expect(lunch.getByRole("img", { name: "Photo du déjeuner" })).toBeAttached();
 });

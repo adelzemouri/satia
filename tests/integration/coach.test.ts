@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { db } from "@/db/client";
-import { coachMessages, coachReviews, foods, llmCalls, user } from "@/db/schema";
+import { coachMessages, coachReviews, foods, llmCalls, mealEntries, user } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
 import { catalogRecipe } from "@/domain/recipes/catalog";
@@ -11,6 +11,7 @@ import type { OnboardingInput } from "@/features/onboarding/schema";
 import { setupFirstAdmin } from "@/server/accounts";
 import {
   clearCoachMessages,
+  coachContextFor,
   ensureWeeklyReview,
   lastWeekReview,
   listCoachMessages,
@@ -95,6 +96,22 @@ describe("coach", () => {
     ]);
     await clearCoachMessages(userId);
     expect(await listCoachMessages(userId)).toEqual([]);
+  });
+
+  it("donne au coach les repas du jour regroupés par plat et ceux des jours précédents", async () => {
+    const userId = await setupUser();
+    const pasta = await firstFood(userId, "pâtes cuites");
+    const salmon = await firstFood(userId, "saumon cuit");
+    const today = todayIso();
+    await addEntry(userId, { date: addDays(today, -1), slot: "dinner", foodId: pasta.id, quantity: 150, unit: "g" });
+    await addEntry(userId, { date: today, slot: "lunch", foodId: pasta.id, quantity: 200, unit: "g" });
+    await addEntry(userId, { date: today, slot: "lunch", foodId: salmon.id, quantity: 100, unit: "g" });
+    await db().update(mealEntries).set({ dish: "Pâtes au saumon" }).where(eq(mealEntries.date, today));
+
+    const context = (await coachContextFor(userId, today))!;
+    expect(context).toMatch(/Repas d'aujourd'hui : déjeuner : Pâtes au saumon \(.+ 200 g, .+ 100 g\)\./);
+    expect(context).toMatch(/Hier : dîner : pâtes/);
+    expect(context).toMatch(/7 derniers jours : .+ kcal et \d+ g de protéines\./);
   });
 
   it("répond localement, sans appel au LLM, sous le plancher ou sur une dose", async () => {

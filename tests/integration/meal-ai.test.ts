@@ -156,6 +156,50 @@ describe("saisie IA", () => {
     await db().update(foods).set({ unitWeights: croque!.unitWeights }).where(eq(foods.id, croque!.id));
   });
 
+  it("regroupe les aliments par plat et garde des quantités réalistes", async () => {
+    const userId = await setupUser();
+    setProviderForTests(
+      scripted({
+        items: [
+          { name: "pâtes cuites", dish: "Pâtes au saumon", grams: 200, confidence: 0.8 },
+          { name: "saumon cuit", dish: "Pâtes au saumon", grams: 100, confidence: 0.7 },
+          { name: "laitue crue", dish: "Salade verte", grams: 60, confidence: 0.8 },
+          { name: "vinaigre balsamique", dish: "Salade verte", grams: 100, confidence: 0.6 },
+        ],
+      }),
+    );
+    const draft = await analyzeText(userId, { text: "pâtes au saumon et une salade au balsamique", method: "voice" });
+    expect(draft.items.map((item) => [item.dish, item.quantity])).toEqual([
+      ["Pâtes au saumon", 200],
+      ["Pâtes au saumon", 100],
+      ["Salade verte", 60],
+      // 100 g de balsamique ramenés à une portion habituelle.
+      ["Salade verte", 10],
+    ]);
+    await saveMeal(userId, {
+      date: todayIso(),
+      slot: "lunch",
+      method: "voice",
+      photoId: null,
+      items: draft.items.map((item) => ({
+        foodId: item.food!.id,
+        estimate: null,
+        quantity: item.quantity,
+        unit: item.unit,
+        aiLabel: item.aiLabel,
+        dish: item.dish,
+        proposal: item.proposal,
+      })),
+    });
+    const saved = await db().select().from(mealEntries).where(eq(mealEntries.userId, userId));
+    expect(saved.map((entry) => entry.dish).sort()).toEqual([
+      "Pâtes au saumon",
+      "Pâtes au saumon",
+      "Salade verte",
+      "Salade verte",
+    ]);
+  });
+
   it("estime les valeurs d'un aliment absent de la base et les marque « estimé »", async () => {
     const userId = await setupUser();
     setProviderForTests(

@@ -18,6 +18,7 @@ import {
   coachContext,
   type DayStats,
   type DishCandidate,
+  mealHistoryLines,
   mentionsMedicalTopic,
   workoutRequest,
   suggestDish,
@@ -44,7 +45,9 @@ import { getCalorieFloors } from "./settings";
 import { coachWorkoutLine } from "./training";
 
 /** Derniers échanges envoyés au LLM avec le nouveau message, et nombre de messages gardés. */
-const PROMPT_HISTORY = 6;
+const PROMPT_HISTORY = 10;
+/** Jours de repas passés résumés pour le coach. */
+const MEAL_HISTORY_DAYS = 14;
 const KEPT_MESSAGES = 100;
 
 const GOAL_LABELS = {
@@ -83,7 +86,7 @@ export async function listCoachMessages(userId: string, limit = 40): Promise<Coa
 export async function coachContextFor(userId: string, today: string = todayIso()): Promise<string | null> {
   const profile = await getProfile(userId);
   if (!profile) return null;
-  const [summary, floors, quality, feeling, week, weighIns] = await Promise.all([
+  const [summary, floors, quality, feeling, week, weighIns, meals] = await Promise.all([
     daySummary(userId, today),
     getCalorieFloors(),
     dayQualityFor(userId, today),
@@ -94,6 +97,25 @@ export async function coachContextFor(userId: string, today: string = todayIso()
       .from(weightEntries)
       .where(and(eq(weightEntries.userId, userId), gte(weightEntries.date, addDays(today, -60))))
       .orderBy(asc(weightEntries.date)),
+    db()
+      .select({
+        date: mealEntries.date,
+        slot: mealEntries.slot,
+        label: mealEntries.label,
+        dish: mealEntries.dish,
+        grams: mealEntries.grams,
+        kcal: mealEntries.kcal,
+        proteinG: mealEntries.proteinG,
+      })
+      .from(mealEntries)
+      .where(
+        and(
+          eq(mealEntries.userId, userId),
+          gte(mealEntries.date, addDays(today, -MEAL_HISTORY_DAYS)),
+          lte(mealEntries.date, today),
+        ),
+      )
+      .orderBy(asc(mealEntries.createdAt)),
   ]);
   return coachContext({
     firstName: profile.firstName,
@@ -113,6 +135,7 @@ export async function coachContextFor(userId: string, today: string = todayIso()
     fruitVegPortions: quality.fruitVegPortions,
     feeling,
     weekly: week && { consumed: week.consumed, total: week.total },
+    history: mealHistoryLines(meals, today, (days) => addDays(today, -days)),
   });
 }
 
