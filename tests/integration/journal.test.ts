@@ -267,9 +267,15 @@ describe("journal", () => {
     expect(summary.totals.kcal).toBe(1000);
     expect(summary.bySlot.lunch.entries).toHaveLength(1);
     expect(summary.goal?.kcal).toBeGreaterThan(1000);
-    expect(summary.water).toEqual({ glasses: 5, goal: 8 });
+    expect(summary.water).toEqual({ glasses: 5, fromMeals: 0, goal: 8 });
     expect(summary.zone).toBe("loss");
     expect((await streakFor(userId, today)).days).toBe(2);
+
+    // L'eau notée dans un repas s'ajoute aux verres du compteur, sans les modifier.
+    const [water] = await searchFoods(userId, "eau du robinet");
+    expect(water?.nameFr).toMatch(/^Eau du robinet/);
+    await addEntry(userId, { date: today, slot: "lunch", foodId: water!.id, quantity: 500, unit: "ml" });
+    expect((await daySummary(userId, today)).water).toEqual({ glasses: 7, fromMeals: 2, goal: 8 });
   });
 
   it("suit le poids avec une tendance lissée et l'exporte", async () => {
