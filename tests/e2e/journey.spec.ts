@@ -219,6 +219,14 @@ test("recette : l'ordre des ingrédients se change pendant la modification", asy
   }
   const ingredients = page.getByRole("group", { name: "Ingrédients" }).getByRole("listitem");
   await expect(ingredients).toHaveCount(2);
+  // Les longs noms Ciqual proposés ne font pas déborder le formulaire sur téléphone.
+  await page.getByLabel("Ajouter un ingrédient").fill("crème liquide");
+  await expect(page.getByRole("button", { name: /^Crème de lait.*fluide/ }).first()).toBeVisible();
+  const fits = await page
+    .getByRole("group", { name: "Ingrédients" })
+    .evaluate((el) => el.getBoundingClientRect().right <= el.parentElement!.getBoundingClientRect().right + 1);
+  expect(fits).toBe(true);
+  await page.getByLabel("Ajouter un ingrédient").fill("");
   await expect(page.getByRole("button", { name: /^Monter Pâtes/ })).toBeDisabled();
   await page.getByRole("button", { name: /^Monter Pomme/ }).click();
   await expect(ingredients.first()).toContainText("Pomme");

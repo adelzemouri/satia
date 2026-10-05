@@ -36,6 +36,12 @@ body {
   font-family: var(--font-sans);
 }
 
+/* Par défaut un fieldset s'élargit à son contenu le plus long (min-width: min-content) : un nom
+   d'aliment Ciqual sans espace faisait déborder tout le formulaire sur téléphone. */
+fieldset {
+  min-width: 0;
+}
+
 :focus-visible {
   outline: 3px solid var(--color-focus);
   outline-offset: 2px;

@@ -11,7 +11,7 @@ import { favorites, foods, mealEntries, recipeItems, user } from "@/db/schema";
 import { kcalFromMacros, type Nutrients, nutrientsFor, recipePer100g } from "@/domain/nutrition";
 import { recipeQuality } from "@/domain/quality";
 import { CATALOG_PREFIX } from "@/domain/recipes/catalog";
-import { normalizeForSearch } from "@/domain/search";
+import { normalizeForSearch, searchVariants } from "@/domain/search";
 
 import { COUNT_UNITS, type Unit } from "@/domain/units";
 import { AiUnavailableError, generateRecipeImage } from "@/llm";
@@ -87,9 +87,19 @@ export async function searchFoods(userId: string, query: string): Promise<FoodSu
   const q = normalizeForSearch(query);
   if (q.length < 2) return [];
   const words = q.split(" ").slice(0, 6);
+  // Tous les mots de la recherche, ou d'une de ses formulations Ciqual (« crème liquide » → « crème fluide »).
   const allWords = sql.join(
-    words.map((word) => sql`${foods.searchName} like ${`%${word}%`}`),
-    sql` and `,
+    [q, ...searchVariants(q)].map(
+      (text) =>
+        sql`(${sql.join(
+          text
+            .split(" ")
+            .slice(0, 6)
+            .map((word) => sql`${foods.searchName} like ${`%${word}%`}`),
+          sql` and `,
+        )})`,
+    ),
+    sql` or `,
   );
   return db()
     .select(foodSummaryColumns)
