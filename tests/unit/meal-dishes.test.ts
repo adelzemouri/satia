@@ -27,6 +27,8 @@ describe("plats et quantités de la saisie IA", () => {
     expect(realisticGrams("Huile d'olive", 100)).toBe(10);
     expect(realisticGrams("vinaigrette", 25)).toBe(25);
     expect(realisticGrams("saumon cuit", 100)).toBe(100);
+    expect(realisticGrams("poudre de protéines de lactosérum chocolatée", 899)).toBe(30);
+    expect(realisticGrams("whey", 60)).toBe(60);
   });
 });
 
