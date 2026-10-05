@@ -104,6 +104,9 @@ describe("base d'aliments", () => {
     expect(typo.some((food) => /^Yaourt/i.test(food.nameFr))).toBe(true);
     const accents = await searchFoods(userId, "CREME DE LAIT EPAISSE");
     expect(accents.some((food) => /^Crème de lait, 30% MG, épaisse/.test(food.nameFr))).toBe(true);
+    // Les mots du quotidien retrouvent le nom Ciqual, avant les desserts.
+    expect((await searchFoods(userId, "crème liquide"))[0]?.nameFr).toMatch(/^Crème de lait.*fluide/);
+    expect((await searchFoods(userId, "crème fraîche"))[0]?.nameFr).toMatch(/^Crème de lait.*épaisse/);
   });
 
   it("garde les aliments personnels privés et les fait passer en premier", async () => {
