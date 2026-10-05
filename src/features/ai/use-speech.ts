@@ -66,6 +66,8 @@ export function useSpeech(locale: string, onText: (text: string) => void) {
   const [listening, setListening] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const recognition = useRef<Recognition | null>(null);
+  // Dictées vraiment terminées (événement de fin reçu).
+  const [ended] = useState(() => new WeakSet<Recognition>());
   const callback = useRef(onText);
 
   useEffect(() => {
@@ -76,31 +78,72 @@ export function useSpeech(locale: string, onText: (text: string) => void) {
   const start = useCallback(() => {
     const Speech = recognitionClass();
     if (!Speech) return;
-    // Une seule dictée à la fois : relancer pendant qu'une autre tourne la ferait échouer.
-    recognition.current?.abort();
-    const instance = new Speech();
-    instance.lang = locale === "en" ? "en-US" : "fr-FR";
-    instance.interimResults = true;
-    instance.continuous = false;
-    instance.onresult = (event) => {
-      const text = Array.from(event.results, (result) => result[0]?.transcript ?? "").join(" ");
-      callback.current(text.trim());
+    // Une seule dictée à la fois : l'ancienne est coupée net. Sur iPhone, lancer la nouvelle
+    // avant que l'ancienne soit vraiment terminée la fait échouer en silence : on attend sa fin
+    // (au plus une demi-seconde).
+    const previous = recognition.current;
+    recognition.current = null;
+    const launch = () => {
+      const instance = new Speech();
+      instance.lang = locale === "en" ? "en-US" : "fr-FR";
+      instance.interimResults = true;
+      instance.continuous = false;
+      instance.onresult = (event) => {
+        // Un résultat tardif d'une dictée arrêtée ne doit pas écraser la nouvelle.
+        if (recognition.current !== instance) return;
+        const text = Array.from(event.results, (result) => result[0]?.transcript ?? "").join(" ");
+        callback.current(text.trim());
+      };
+      instance.onerror = (event) => {
+        if (recognition.current === instance) setError(speechErrorKey(event.error));
+      };
+      instance.onend = () => {
+        ended.add(instance);
+        if (recognition.current === instance) setListening(false);
+      };
+      recognition.current = instance;
+      setError(null);
+      try {
+        instance.start();
+        setListening(true);
+      } catch {
+        setListening(false);
+        setError("speech_failed");
+      }
     };
-    instance.onerror = (event) => setError(speechErrorKey(event.error));
-    instance.onend = () => {
-      if (recognition.current === instance) setListening(false);
-    };
-    recognition.current = instance;
-    setError(null);
-    try {
-      instance.start();
-      setListening(true);
-    } catch {
-      setError("speech_failed");
+    if (!previous || ended.has(previous)) {
+      launch();
+      return;
     }
-  }, [locale]);
+    let done = false;
+    const go = () => {
+      if (done) return;
+      done = true;
+      launch();
+    };
+    const previousEnd = previous.onend;
+    previous.onend = () => {
+      previousEnd?.();
+      go();
+    };
+    previous.abort();
+    window.setTimeout(go, 500);
+  }, [locale, ended]);
 
-  const stop = useCallback(() => recognition.current?.stop(), []);
+  /**
+   * Arrêt demandé : le bouton repasse tout de suite en « Dicter ». Safari sur iPhone ne
+   * signale pas toujours la fin de la dictée ; sans cela le bouton restait bloqué sur « Arrêter »
+   * et une nouvelle dictée devenait impossible.
+   */
+  const stop = useCallback(() => {
+    const instance = recognition.current;
+    setListening(false);
+    if (!instance) return;
+    instance.stop();
+    window.setTimeout(() => {
+      if (!ended.has(instance)) instance.abort();
+    }, 1500);
+  }, [ended]);
 
   return { supported, listening, error, start, stop };
 }

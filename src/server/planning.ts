@@ -10,10 +10,10 @@ import { addDays } from "@/domain/energy";
 import { nutrientsFor } from "@/domain/nutrition";
 import { AISLES, type PlannedDish, shoppingFromPlan } from "@/domain/planning";
 import { weekDates } from "@/domain/weekly-budget";
-import { proposeMenu, scanFridge } from "@/llm";
+import { proposeMenu, scanFridge, writeRecipeSteps } from "@/llm";
 
 import { DomainError } from "./errors";
-import { createRecipe, familyRecipes, getFood, per100, searchFoods } from "./foods";
+import { createRecipe, familyRecipes, getFood, getRecipeForEdit, per100, searchFoods, setRecipeSteps } from "./foods";
 import { daySummary } from "./journal";
 import { photoInputSchema } from "./meal-ai";
 import { isImage } from "./photos";
@@ -435,4 +435,24 @@ export async function recipeLibrary(userId: string, householdId: string) {
       ),
     )
     .orderBy(asc(foods.nameFr));
+}
+
+// --- Préparation d'une recette -------------------------------------------------------
+
+/**
+ * Le coach rédige la préparation d'une recette modifiable qui n'en a pas (recettes créées
+ * depuis le menu ou le frigo, ou saisies sans étapes). Elle est enregistrée et modifiable.
+ */
+export async function suggestRecipeSteps(userId: string, recipeId: string): Promise<string[]> {
+  const recipe = await getRecipeForEdit(userId, recipeId);
+  if (recipe.steps.length > 0) return recipe.steps;
+  const steps = await writeRecipeSteps(
+    userId,
+    [
+      `Recette : ${recipe.name} (${recipe.servings} portion${recipe.servings > 1 ? "s" : ""}).`,
+      `Ingrédients : ${recipe.items.map((item) => `${item.food.nameFr} ${Math.round(item.grams)} g`).join(", ")}.`,
+    ].join("\n"),
+  );
+  await setRecipeSteps(userId, recipe.id, steps);
+  return steps;
 }

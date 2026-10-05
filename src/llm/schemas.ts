@@ -83,3 +83,8 @@ export const trainingPlanSchema = z.object({
     )
     .max(7),
 });
+
+/** Étapes de préparation d'une recette du foyer, rédigées à la demande. */
+export const recipeStepsSchema = z.object({
+  steps: z.array(z.string().trim().min(1).max(300)).min(1).max(10),
+});

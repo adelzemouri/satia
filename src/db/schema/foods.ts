@@ -62,6 +62,8 @@ export const foods = pgTable(
     unitWeights: jsonb().$type<Partial<Record<CountUnit, number>>>(),
     /** Nombre de portions d'une recette. */
     servings: smallint(),
+    /** Étapes de préparation d'une recette du foyer ou personnelle (le catalogue a les siennes). */
+    recipeSteps: jsonb().$type<string[]>(),
     /**
      * Photo affichée : celle d'Open Food Facts (CC BY-SA), d'une recette du catalogue, ou
      * `/api/foods/<id>/photo` pour la photo d'une recette du foyer (voir photoKey).

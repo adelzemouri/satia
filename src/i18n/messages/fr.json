@@ -584,7 +584,9 @@
     "familyRecipeHint": "Visible et modifiable par tous les membres du foyer.",
     "fromPhoto": "Remplir à partir d'une photo",
     "photoNotFound": "Pas trouvé dans la base, à ajouter toi-même : {names}.",
-    "editRecipe": "Modifier la recette"
+    "editRecipe": "Modifier la recette",
+    "steps": "Préparation (facultatif)",
+    "stepsHint": "Une étape par ligne."
   },
   "water": {
     "title": "Eau",
@@ -593,7 +595,8 @@
     "goalLabel": "Objectif d'eau (verres de 250 ml par jour)",
     "addGlass": "Ajouter un verre d'eau",
     "goalReached": "Objectif d'eau atteint, bravo !",
-    "ml": "{value, number} / {goal, number} ml"
+    "ml": "{value, number} / {goal, number} ml",
+    "removeGlass": "Retirer un verre d'eau"
   },
   "weight": {
     "title": "Mon poids",
@@ -1189,7 +1192,10 @@
     "source": "Recette Pommelia",
     "homeTitle": "{slot, select, breakfast {Une idée pour le petit-déjeuner} lunch {Une idée pour le déjeuner} dinner {Une idée pour le dîner} other {Une idée de collation}}",
     "homeMore": "Voir toutes les recettes",
-    "photoCaption": "Photo d'illustration générée par IA."
+    "photoCaption": "Photo d'illustration générée par IA.",
+    "stepsEmpty": "Pas encore de préparation pour cette recette. Tu peux l'ajouter en la modifiant.",
+    "stepsAsk": "Demander la préparation à {name}",
+    "stepsWriting": "{name} rédige la préparation…"
   },
   "training": {
     "title": "Entraînement",

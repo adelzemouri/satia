@@ -282,6 +282,8 @@ export const recipeSchema = z.object({
     .max(40),
   /** Recette du foyer : visible et modifiable par tous ses membres. */
   family: z.boolean().default(false),
+  /** Étapes de préparation, dans l'ordre. */
+  steps: z.array(z.string().trim().min(1).max(500)).max(20).default([]),
 });
 export type RecipeInput = z.input<typeof recipeSchema>;
 
@@ -321,6 +323,7 @@ async function computeRecipe(userId: string, data: z.infer<typeof recipeSchema>)
     ...quality,
     servings: data.servings,
     unitWeights: { portion: round2(totalGrams / data.servings) },
+    recipeSteps: data.steps.length > 0 ? data.steps : null,
   };
 }
 
@@ -391,6 +394,7 @@ export type RecipeDetails = {
   /** Poids total déclaré (cuit), ou null s'il vaut la somme des ingrédients. */
   cookedGrams: number | null;
   items: { food: FoodSummary; grams: number }[];
+  steps: string[];
 };
 
 /** Recette modifiable par l'utilisateur, avec ses ingrédients, pour le formulaire d'édition. */
@@ -416,7 +420,37 @@ export async function getRecipeForEdit(userId: string, recipeId: string): Promis
     family: recipe.householdId !== null,
     cookedGrams: Math.abs(totalGrams - rawGrams) < 1 ? null : Math.round(totalGrams),
     items: rows.map(({ grams, ...food }) => ({ food, grams })),
+    steps: recipe.recipeSteps ?? [],
   };
+}
+
+/** Ingrédients d'une recette visible par l'utilisateur, pour sa fiche. */
+export async function recipeIngredients(
+  userId: string,
+  recipeId: string,
+): Promise<{ id: string; name: string; grams: number }[]> {
+  const [recipe] = await db()
+    .select({ id: foods.id })
+    .from(foods)
+    .where(and(eq(foods.id, z.uuid().parse(recipeId)), eq(foods.source, "recipe"), visibleTo(userId)));
+  if (!recipe) return [];
+  return db()
+    .select({ id: foods.id, name: foods.nameFr, grams: recipeItems.grams })
+    .from(recipeItems)
+    .innerJoin(foods, eq(foods.id, recipeItems.foodId))
+    .where(eq(recipeItems.recipeId, recipe.id))
+    .orderBy(recipeItems.position);
+}
+
+/** Enregistre les étapes de préparation d'une recette modifiable (proposées par le coach). */
+export async function setRecipeSteps(userId: string, recipeId: string, steps: readonly string[]): Promise<void> {
+  const value = z.array(z.string().trim().min(1).max(500)).min(1).max(20).parse(steps);
+  const updated = await db()
+    .update(foods)
+    .set({ recipeSteps: value, updatedAt: new Date() })
+    .where(and(eq(foods.id, z.uuid().parse(recipeId)), eq(foods.source, "recipe"), editableBy(userId)))
+    .returning({ id: foods.id });
+  if (updated.length === 0) throw new DomainError("not_found");
 }
 
 /** Recettes communes du foyer de l'utilisateur. */

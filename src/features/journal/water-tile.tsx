@@ -16,7 +16,7 @@ const MAX_DRAWN = 12;
 
 /**
  * Carte de l'accueil : un verre dessiné par verre de l'objectif, rempli au fur et à mesure,
- * et un bouton pour en ajouter un.
+ * et deux boutons pour en ajouter ou en retirer un.
  */
 export function WaterTile({ date, glasses, goal }: { date: string; glasses: number; goal: number }) {
   const t = useTranslations("water");
@@ -24,6 +24,14 @@ export function WaterTile({ date, glasses, goal }: { date: string; glasses: numb
   const [, startTransition] = useTransition();
   const toast = useToast();
   const [celebrating, setCelebrating] = useState(false);
+
+  const remove = () =>
+    startTransition(async () => {
+      if (optimistic === 0) return;
+      setOptimistic(optimistic - 1);
+      haptic();
+      await setWaterAction(date, optimistic - 1);
+    });
 
   const add = () =>
     startTransition(async () => {
@@ -57,14 +65,25 @@ export function WaterTile({ date, glasses, goal }: { date: string; glasses: numb
             </span>
           </p>
         </div>
-        <button
-          type="button"
-          onClick={add}
-          aria-label={t("addGlass")}
-          className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary"
-        >
-          <Icon name="plus" />
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={remove}
+            disabled={optimistic === 0}
+            aria-label={t("removeGlass")}
+            className="flex size-12 items-center justify-center rounded-full bg-surface-muted text-text disabled:opacity-40"
+          >
+            <Icon name="minus" />
+          </button>
+          <button
+            type="button"
+            onClick={add}
+            aria-label={t("addGlass")}
+            className="flex size-12 items-center justify-center rounded-full bg-primary text-on-primary"
+          >
+            <Icon name="plus" />
+          </button>
+        </div>
       </div>
       <ol className="flex flex-wrap gap-1.5" aria-hidden="true">
         {Array.from({ length: drawn }, (_, index) => (

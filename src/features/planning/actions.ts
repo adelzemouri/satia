@@ -20,6 +20,7 @@ import {
   setShoppingChecked,
   type shoppingItemSchema,
   shoppingFromMenu,
+  suggestRecipeSteps,
 } from "@/server/planning";
 import { fillRecipePhotosLater } from "@/server/foods";
 import { getCurrentUser } from "@/server/session";
@@ -101,6 +102,17 @@ export async function saveIdeaAction(input: z.input<typeof saveIdeaSchema>): Pro
     fillRecipePhotosLater(user.id, 1);
     revalidatePath("/recipes");
     return { id };
+  } catch (error) {
+    return { error: toActionState(error)?.error ?? "generic" };
+  }
+}
+
+export async function suggestRecipeStepsAction(recipeId: string): Promise<{ error?: string }> {
+  const user = await getCurrentUser();
+  if (!user) return { error: "generic" };
+  try {
+    await suggestRecipeSteps(user.id, recipeId);
+    return {};
   } catch (error) {
     return { error: toActionState(error)?.error ?? "generic" };
   }

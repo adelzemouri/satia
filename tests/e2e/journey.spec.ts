@@ -298,6 +298,10 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
     await withServerAction(page, () => page.getByRole("button", { name: "Ajouter un verre d'eau" }).click());
   }
   await expect(page.getByText("3 / 8 verres")).toBeVisible();
+  // Un verre de trop se retire aussi depuis l'accueil.
+  await withServerAction(page, () => page.getByRole("button", { name: "Retirer un verre d'eau" }).click());
+  await expect(page.getByText("2 / 8 verres")).toBeVisible();
+  await withServerAction(page, () => page.getByRole("button", { name: "Ajouter un verre d'eau" }).click());
   await page.reload();
   await expect(page.getByText("3 / 8 verres")).toBeVisible();
 
@@ -502,6 +506,45 @@ test("saisie en texte libre, puis par le dictionnaire personnel sans appel à l'
   await expect(page.getByLabel(/^Quantité de Pain de mie, courant/)).toHaveValue("60");
   await page.getByRole("button", { name: "Ajouter au journal" }).click();
   await expect(page.getByRole("region", { name: "Petit-déjeuner" }).getByText(/^Pain de mie, courant/)).toBeVisible();
+});
+
+test("dictée : arrêter puis relancer, même quand le navigateur ne signale pas la fin", async ({ page }) => {
+  // Reconnaissance vocale simulée comme Safari sur iPhone : après « stop », pas d'événement de fin,
+  // et une nouvelle dictée échoue tant que la précédente n'est pas terminée.
+  await page.addInitScript(() => {
+    let count = 0;
+    let active: unknown = null;
+    class FakeRecognition {
+      lang = "";
+      interimResults = false;
+      continuous = false;
+      onresult: ((event: unknown) => void) | null = null;
+      onerror: ((event: unknown) => void) | null = null;
+      onend: (() => void) | null = null;
+      start() {
+        if (active && active !== this) throw new DOMException("already started", "InvalidStateError");
+        active = this;
+        count += 1;
+        const words = count === 1 ? "deux œufs" : "et du pain";
+        setTimeout(() => this.onresult?.({ results: [Object.assign([{ transcript: words }], { isFinal: true })] }), 50);
+      }
+      stop() {}
+      abort() {
+        if (active === this) active = null;
+        setTimeout(() => this.onend?.(), 10);
+      }
+    }
+    (window as unknown as { SpeechRecognition: unknown }).SpeechRecognition = FakeRecognition;
+  });
+  await signIn(page, ADMIN);
+  await page.goto("/add?slot=dinner");
+  await page.getByRole("button", { name: "Écrire mon repas" }).click();
+  const field = page.getByLabel("Décris ton repas");
+  await page.getByRole("button", { name: "Dicter" }).click();
+  await expect(field).toHaveValue("deux œufs");
+  await page.getByRole("button", { name: "Arrêter la dictée" }).click();
+  await page.getByRole("button", { name: "Dicter" }).click();
+  await expect(field).toHaveValue("deux œufs et du pain");
 });
 
 test("activation de la double authentification puis connexion avec un code", async ({ page }) => {
@@ -764,6 +807,17 @@ test("menu de la semaine, liste de courses commune, recettes et scanner de frigo
   await expect(
     page.getByRole("region", { name: "Recettes du foyer" }).getByText("Poêlée de lentilles aux carottes"),
   ).toBeVisible();
+  await expectNoA11yViolations(page);
+
+  // Fiche d'une recette du foyer : ses ingrédients, et sa préparation rédigée à la demande.
+  await page.getByRole("region", { name: "Recettes du foyer" }).getByText("Poêlée de lentilles aux carottes").click();
+  await expect(page.getByRole("heading", { name: "Ingrédients" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Ingrédients" }).getByRole("listitem")).toHaveCount(3);
+  await expect(page.getByText(/Pas encore de préparation/)).toBeVisible();
+  await page.getByRole("button", { name: "Demander la préparation à Pépin" }).click();
+  await expect(page.getByText("Prépare et coupe les ingrédients.")).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("region", { name: "Préparation" }).getByRole("listitem")).toHaveCount(3);
   await expectNoA11yViolations(page);
 
   await page.goto("/fridge");
