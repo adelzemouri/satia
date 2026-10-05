@@ -702,8 +702,6 @@ test("coach : bilan, conversation (LLM simulé), garde-fou et personnalité", as
 
   // Depuis l'accueil, une question toute prête est posée à Pépin dès l'ouverture du coach.
   await page.goto("/");
-  await page.screenshot({ path: "test-results/home-top.png" });
-  await page.screenshot({ path: "test-results/home-full.png", fullPage: true });
   const card = page.getByRole("region", { name: /Demande à Pépin/ });
   const question = card.getByRole("link", { name: /\?$/ }).first();
   const asked = (await question.textContent()) ?? "";
