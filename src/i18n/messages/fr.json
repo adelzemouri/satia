@@ -116,7 +116,11 @@
       "treatmentDue": "{name} à {time}",
       "treatmentDone": "Prise notée",
       "treatmentHint": "Journal et rappels"
-    }
+    },
+    "macroGrams": "{name} {value, number} g",
+    "proteinShort": "Prot.",
+    "carbsShort": "Gluc.",
+    "fatShort": "Lip."
   },
   "theme": {
     "label": "Thème",
@@ -482,7 +486,11 @@
     "hasEntries": "repas saisis",
     "deleted": "Supprimé : {label}",
     "firstMeal": "Ajouter un repas",
-    "emptyDay": "Rien de noté ce jour-là pour l'instant. Un premier repas suffit pour voir ton bilan."
+    "emptyDay": "Rien de noté ce jour-là pour l'instant. Un premier repas suffit pour voir ton bilan.",
+    "macroLine": "P {protein, number} g · G {carbs, number} g · L {fat, number} g",
+    "splitTitle": "Répartition par repas",
+    "splitCaption": "Calories et macronutriments de chaque repas, avec leur part de la journée",
+    "grams": "{value, number} g"
   },
   "add": {
     "title": "Ajouter",
@@ -748,7 +756,15 @@
     "addLabel": "Aliment à ajouter",
     "total": "Total : {kcal, number} kcal",
     "save": "Ajouter au journal",
-    "restart": "Recommencer"
+    "restart": "Recommencer",
+    "toReview": "{count, plural, one {# aliment à vérifier} other {# aliments à vérifier}} avant l'ajout : un mauvais aliment fausserait tes calories et tes macros.",
+    "checks": {
+      "unrelated": "L'aliment trouvé ne ressemble pas à « {label} ». Change-le si ce n'est pas le bon.",
+      "dry": "Ce sont les valeurs d'un féculent sec ou cru, environ trois fois plus caloriques que cuit. Une assiette se pèse cuite.",
+      "heavy": "Grosse quantité pour un seul aliment : vérifie le poids."
+    },
+    "looksRight": "C'est bon pour {name}",
+    "reviewed": "Vérifié"
   },
   "personal": {
     "containersTitle": "Mes contenants",
@@ -810,7 +826,10 @@
     "who": "Avec qui ?",
     "whoHint": "Chacun recevra le plat à valider : rien n'est ajouté à son journal sans son accord.",
     "notEating": "Je n'en mange pas",
-    "share": "Partager"
+    "share": "Partager",
+    "sharedMealBy": "{name} a partagé ce repas pour le {slot} du {day}.",
+    "mealInfo": "Portion de {name} : {grams, number} g, {kcal, number} kcal",
+    "portions": "{value} {count, plural, one {portion} other {portions}}"
   },
   "metabolism": {
     "title": "Mon métabolisme",
@@ -941,7 +960,13 @@
     "noItems": "Plus aucun aliment : garde-en au moins un, ou supprime le repas depuis « Mes repas ».",
     "total": "Total : {kcal} kcal",
     "saveChanges": "Enregistrer les modifications",
-    "updated": "Repas modifié."
+    "updated": "Repas modifié.",
+    "share": "Partager {name}",
+    "shareTitle": "Partager « {name} »",
+    "shareIntro": "Tu as mangé la même chose qu'un proche ? Envoie-lui ce repas : il choisit sa portion et valide avant que ce soit ajouté à son journal.",
+    "shareDay": "Jour",
+    "shareAlone": "Personne d'autre dans le foyer pour l'instant. Invite ta famille depuis l'espace admin.",
+    "shared": "Repas partagé. Il attend la validation."
   },
   "coach": {
     "title": "Coach",
@@ -1153,7 +1178,6 @@
   "recipes": {
     "title": "Recettes",
     "intro": "Les recettes de la famille et des idées simples, avec leurs calories calculées à partir de la table Ciqual.",
-    "ours": "Nos recettes",
     "none": "Aucune recette pour l'instant.",
     "perServing": "{kcal} kcal la part · {count, plural, one {# part} other {# parts}}",
     "new": "Nouvelle recette",
@@ -1181,7 +1205,9 @@
     "photoCaption": "Photo d'illustration générée par IA.",
     "stepsEmpty": "Pas encore de préparation pour cette recette. Tu peux l'ajouter en la modifiant.",
     "stepsAsk": "Demander la préparation à {name}",
-    "stepsWriting": "{name} rédige la préparation…"
+    "stepsWriting": "{name} rédige la préparation…",
+    "search": "Rechercher une recette ou un ingrédient",
+    "noMatch": "Aucune recette ne correspond. Essaie un autre mot."
   },
   "training": {
     "title": "Entraînement",

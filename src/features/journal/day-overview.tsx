@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { MEAL_SLOTS, type MealSlot } from "@/domain/meals";
 import type { Nutrients } from "@/domain/nutrition";
 import { CountUp } from "@/ui/count-up";
 
@@ -129,5 +130,90 @@ export async function MacroBars({ totals, goal }: { totals: Nutrients; goal: Goa
         );
       })}
     </ul>
+  );
+}
+
+const MACRO_DOTS = [
+  ["protein", "proteinG", "bg-protein"],
+  ["carbs", "carbsG", "bg-carbs"],
+  ["fat", "fatG", "bg-fat"],
+] as const;
+
+/** Les macros d'un repas sur une ligne, sous son titre. */
+export async function MacroLine({ totals }: { totals: Nutrients }) {
+  const t = await getTranslations("home");
+  return (
+    <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-text-muted" aria-label={t("macros")}>
+      {MACRO_DOTS.map(([key, field, color]) => (
+        <li key={key} className="flex items-center gap-1.5">
+          <span aria-hidden="true" className={`size-2 rounded-full ${color}`} />
+          {t("macroGrams", { name: t(key), value: Math.round(totals[field]) })}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** Répartition des calories et des macros entre les repas de la journée, en tableau dépliable. */
+export async function MacroSplit({
+  bySlot,
+  totals,
+}: {
+  bySlot: Record<MealSlot, { entries: unknown[]; totals: Nutrients }>;
+  totals: Nutrients;
+}) {
+  const t = await getTranslations();
+  const share = (value: number, total: number) => (total > 0 ? Math.round((value / total) * 100) : 0);
+  const slots = MEAL_SLOTS.filter((slot) => bySlot[slot].entries.length > 0);
+  const cell = "px-2 py-2 text-right tabular-nums";
+  return (
+    <details className="rounded-2xl bg-surface-muted px-3 py-2">
+      <summary className="flex min-h-11 cursor-pointer items-center font-semibold">{t("journal.splitTitle")}</summary>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <caption className="sr-only">{t("journal.splitCaption")}</caption>
+          <thead>
+            <tr className="text-text-muted">
+              <th scope="col" className="py-2 pr-2 text-left font-semibold">
+                {t("journal.slot")}
+              </th>
+              <th scope="col" className={`${cell} font-semibold`}>
+                kcal
+              </th>
+              {MACRO_DOTS.map(([key, , color]) => (
+                <th key={key} scope="col" className={`${cell} font-semibold`}>
+                  <span className="inline-flex items-center gap-1">
+                    <span aria-hidden="true" className={`size-2 rounded-full ${color}`} />
+                    {t(`home.${key}Short`)}
+                  </span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {slots.map((slot) => {
+              const values = bySlot[slot].totals;
+              return (
+                <tr key={slot}>
+                  <th scope="row" className="py-2 pr-2 text-left font-semibold">
+                    {t(`slots.${slot}`)}
+                  </th>
+                  <td className={cell}>
+                    {Math.round(values.kcal)}
+                    <span className="block text-xs text-text-muted">{share(values.kcal, totals.kcal)} %</span>
+                  </td>
+                  {MACRO_DOTS.map(([key, field]) => (
+                    <td key={key} className={cell}>
+                      {t("journal.grams", { value: Math.round(values[field]) })}
+                      <span className="block text-xs text-text-muted">{share(values[field], totals[field])} %</span>
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </details>
   );
 }

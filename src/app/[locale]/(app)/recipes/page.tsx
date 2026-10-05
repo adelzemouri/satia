@@ -13,7 +13,7 @@ import { fillRecipePhotosLater } from "@/server/foods";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
 
-/** Filtre des recettes de la famille, à côté des catégories du catalogue. */
+/** Les recettes de la famille n'ont pas de catégorie : elles s'affichent sous « Toutes », en tête. */
 const OURS = "ours";
 
 export default async function RecipesPage({ params, searchParams }: PageProps<"/[locale]/recipes">) {
@@ -21,7 +21,7 @@ export default async function RecipesPage({ params, searchParams }: PageProps<"/
   setRequestLocale(locale);
   const user = await requireUser(locale);
   const { cat } = await searchParams;
-  const category = [OURS, ...RECIPE_CATEGORIES].find((value) => value === cat);
+  const category = RECIPE_CATEGORIES.find((value) => value === cat);
   const [recipes, catalog] = await Promise.all([recipeLibrary(user.id, user.householdId), catalogEntries()]);
   // Recettes du foyer encore sans photo : l'IA en prépare quelques-unes après l'affichage.
   fillRecipePhotosLater(user.id);
@@ -30,6 +30,7 @@ export default async function RecipesPage({ params, searchParams }: PageProps<"/
   const ours = recipes.map((recipe) => ({
     key: recipe.id,
     category: OURS,
+    text: recipe.name,
     card: (
       <HouseholdRecipeCard
         id={recipe.id}
@@ -43,12 +44,10 @@ export default async function RecipesPage({ params, searchParams }: PageProps<"/
   const ideas = catalog.map((entry) => ({
     key: entry.id,
     category: entry.recipe.category,
+    text: [entry.recipe.name, ...entry.recipe.ingredients.map(([, , label]) => label)].join(" "),
     card: <RecipeCard id={entry.id} recipe={entry.recipe} portionKcal={entry.portionKcal} />,
   }));
-  const categories = [
-    ...(ours.length > 0 ? [{ value: OURS, label: t("ours") }] : []),
-    ...RECIPE_CATEGORIES.map((value) => ({ value, label: t(`categories.${value}`) })),
-  ];
+  const categories = RECIPE_CATEGORIES.map((value) => ({ value, label: t(`categories.${value}`) }));
 
   return (
     <>
@@ -67,6 +66,8 @@ export default async function RecipesPage({ params, searchParams }: PageProps<"/
         <RecipeFilter
           label={t("filterLabel")}
           allLabel={t("all")}
+          searchLabel={t("search")}
+          noMatch={t("noMatch")}
           categories={categories}
           initial={category ?? null}
           items={[...ours, ...ideas]}

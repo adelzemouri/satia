@@ -5,6 +5,7 @@ import { KitchenTabs } from "@/features/planning/kitchen-tabs";
 import { SavedMealItem } from "@/features/saved-meals/saved-meal-item";
 import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
+import { otherMembers } from "@/server/family";
 import { listSavedMeals } from "@/server/saved-meals";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
@@ -16,7 +17,7 @@ export default async function SavedMealsPage({ params }: PageProps<"/[locale]/me
   const locale = toLocale((await params).locale);
   setRequestLocale(locale);
   const user = await requireUser(locale);
-  const meals = await listSavedMeals(user.id);
+  const [meals, members] = await Promise.all([listSavedMeals(user.id), otherMembers(user.id, user.householdId)]);
   const t = await getTranslations();
 
   return (
@@ -40,7 +41,7 @@ export default async function SavedMealsPage({ params }: PageProps<"/[locale]/me
       ) : (
         <ul className="flex flex-col gap-3">
           {meals.map((meal) => (
-            <SavedMealItem key={meal.id} id={meal.id} name={meal.name}>
+            <SavedMealItem key={meal.id} id={meal.id} name={meal.name} canShare={members.length > 0}>
               <span className="font-bold">{meal.name}</span>
               <span className="text-sm text-text-muted">{meal.items.map((item) => item.label).join(", ")}</span>
               <span className="text-sm font-semibold">{t("common.kcal", { value: savedMealKcal(meal.items) })}</span>

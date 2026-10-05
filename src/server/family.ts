@@ -1,12 +1,13 @@
 import "server-only";
 
-import { and, desc, eq, inArray, ne } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, ne } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db/client";
-import { foods, MEAL_SLOTS, mealEntries, sharedMealShares, sharedMeals, user } from "@/db/schema";
+import { foods, MEAL_SLOTS, mealEntries, savedMeals, sharedMealShares, sharedMeals, user } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { nutrientsFor } from "@/domain/nutrition";
+import { scaleSavedItem } from "@/domain/saved-meals";
 
 import { DomainError } from "./errors";
 import { getFood, per100 } from "./foods";
@@ -62,6 +63,18 @@ function entryFor(
   };
 }
 
+/** Membres du foyer (sans l'auteur) à qui partager ; erreur si l'un n'en fait pas partie. */
+async function householdMembers(userId: string, householdId: string, ids: string[]): Promise<string[]> {
+  const memberIds = [...new Set(ids)].filter((id) => id !== userId);
+  if (memberIds.length === 0) return [];
+  const found = await db()
+    .select({ id: user.id })
+    .from(user)
+    .where(and(inArray(user.id, memberIds), eq(user.householdId, householdId)));
+  if (found.length !== memberIds.length) throw new DomainError("not_found");
+  return memberIds;
+}
+
 /**
  * Partage un plat avec des membres du foyer. L'auteur l'ajoute tout de suite à son journal
  * s'il en mange ; les autres le reçoivent « à valider » : rien n'entre dans leur journal
@@ -77,14 +90,7 @@ export async function createSharedMeal(userId: string, householdId: string, inpu
   // Une recette personnelle reste invisible aux autres : on ne partage que ce qu'ils peuvent voir.
   if (dish.ownerUserId !== null && data.memberIds.length > 0) throw new DomainError("dish_not_shared");
 
-  const memberIds = [...new Set(data.memberIds)].filter((id) => id !== userId);
-  if (memberIds.length > 0) {
-    const found = await db()
-      .select({ id: user.id })
-      .from(user)
-      .where(and(inArray(user.id, memberIds), eq(user.householdId, householdId)));
-    if (found.length !== memberIds.length) throw new DomainError("not_found");
-  }
+  const memberIds = await householdMembers(userId, householdId, data.memberIds);
   if (memberIds.length === 0 && data.myParts === null) throw new DomainError("share_nobody");
 
   return db().transaction(async (tx) => {
@@ -120,7 +126,68 @@ export async function createSharedMeal(userId: string, householdId: string, inpu
   });
 }
 
+export const shareSavedMealSchema = z.object({
+  id: z.uuid(),
+  date: z.iso.date(),
+  slot: z.enum(MEAL_SLOTS),
+  memberIds: z.array(z.uuid()).min(1).max(10),
+});
+
+/**
+ * Partage un repas de « Mes repas » (déjà dans le journal de l'auteur) : chaque membre le reçoit
+ * à valider, avec sa portion exprimée par rapport à celle de l'auteur.
+ */
+export async function shareSavedMeal(
+  userId: string,
+  householdId: string,
+  input: z.input<typeof shareSavedMealSchema>,
+): Promise<string> {
+  const data = shareSavedMealSchema.parse(input);
+  if (data.date > todayIso()) throw new DomainError("future_date");
+  const [meal] = await db()
+    .select()
+    .from(savedMeals)
+    .where(and(eq(savedMeals.id, data.id), eq(savedMeals.userId, userId)));
+  if (!meal) throw new DomainError("not_found");
+  const memberIds = await householdMembers(userId, householdId, data.memberIds);
+  if (memberIds.length === 0) throw new DomainError("share_nobody");
+  // Les aliments perso de l'auteur restent privés : la ligne garde son nom et ses valeurs, sans lien.
+  const ids = meal.items.flatMap((item) => item.foodId ?? []);
+  const personal = new Set(
+    ids.length === 0
+      ? []
+      : (
+          await db()
+            .select({ id: foods.id })
+            .from(foods)
+            .where(and(inArray(foods.id, ids), isNotNull(foods.ownerUserId)))
+        ).map((row) => row.id),
+  );
+  const items = meal.items.map((item) => (item.foodId && personal.has(item.foodId) ? { ...item, foodId: null } : item));
+  const totalGrams = Math.max(1, round1(items.reduce((sum, item) => sum + item.grams, 0)));
+  return db().transaction(async (tx) => {
+    const [shared] = await tx
+      .insert(sharedMeals)
+      .values({
+        householdId,
+        createdBy: userId,
+        foodId: null,
+        name: meal.name,
+        items,
+        date: data.date,
+        slot: data.slot,
+        totalParts: 1,
+        totalGrams,
+      })
+      .returning({ id: sharedMeals.id });
+    await tx.insert(sharedMealShares).values(memberIds.map((id) => ({ sharedMealId: shared!.id, userId: id })));
+    return shared!.id;
+  });
+}
+
 export type PendingShare = {
+  /** Un plat cuisiné pour plusieurs (en parts), ou un repas de « Mes repas » (en portions). */
+  kind: "dish" | "meal";
   sharedMealId: string;
   dishName: string;
   imageUrl: string | null;
@@ -140,6 +207,8 @@ export async function pendingShares(userId: string): Promise<PendingShare[]> {
       dishName: foods.nameFr,
       imageUrl: foods.imageUrl,
       kcal: foods.kcal,
+      name: sharedMeals.name,
+      items: sharedMeals.items,
       fromName: user.name,
       date: sharedMeals.date,
       slot: sharedMeals.slot,
@@ -148,13 +217,20 @@ export async function pendingShares(userId: string): Promise<PendingShare[]> {
     })
     .from(sharedMealShares)
     .innerJoin(sharedMeals, eq(sharedMeals.id, sharedMealShares.sharedMealId))
-    .innerJoin(foods, eq(foods.id, sharedMeals.foodId))
+    .leftJoin(foods, eq(foods.id, sharedMeals.foodId))
     .leftJoin(user, eq(user.id, sharedMeals.createdBy))
     .where(and(eq(sharedMealShares.userId, userId), eq(sharedMealShares.status, "pending")))
     .orderBy(desc(sharedMeals.date), desc(sharedMeals.createdAt));
-  return rows.map(({ kcal, totalGrams, ...row }) => {
+  return rows.flatMap(({ kcal, totalGrams, name, items, dishName, ...row }): PendingShare[] => {
     const partGrams = round1(totalGrams / row.totalParts);
-    return { ...row, partGrams, partKcal: Math.round((kcal * partGrams) / 100) };
+    if (items) {
+      const mealKcal = items.reduce((sum, item) => sum + item.kcal, 0);
+      return [
+        { ...row, kind: "meal", dishName: name ?? "", partGrams, partKcal: Math.round(mealKcal / row.totalParts) },
+      ];
+    }
+    if (dishName === null || kcal === null) return [];
+    return [{ ...row, kind: "dish", dishName, partGrams, partKcal: Math.round((kcal * partGrams) / 100) }];
   });
 }
 
@@ -195,6 +271,32 @@ export async function respondToShare(
   }
   const grams = data.grams ?? (data.parts !== null ? (row.meal.totalGrams / row.meal.totalParts) * data.parts : null);
   if (!grams) throw new DomainError("portion_required");
+  const { items, name } = row.meal;
+  if (items) {
+    // Repas de « Mes repas » : chaque ligne suit la portion choisie, regroupée sous le nom du repas.
+    const factor = grams / row.meal.totalGrams;
+    await db().transaction(async (tx) => {
+      const entries = await tx
+        .insert(mealEntries)
+        .values(
+          items.map((item) => ({
+            ...scaleSavedItem(item, round1(item.quantity * factor)),
+            userId,
+            date: row.meal.date,
+            slot: data.slot,
+            dish: name,
+            inputMethod: "shared" as const,
+          })),
+        )
+        .returning({ id: mealEntries.id });
+      await tx
+        .update(sharedMealShares)
+        .set({ status: "accepted", entryId: entries[0]?.id ?? null, respondedAt: new Date() })
+        .where(where);
+    });
+    return;
+  }
+  if (!row.meal.foodId) throw new DomainError("not_found");
   const dish = await getFood(userId, row.meal.foodId);
   await db().transaction(async (tx) => {
     const [entry] = await tx

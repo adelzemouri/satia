@@ -549,7 +549,16 @@ test("saisie d'un repas par photo (LLM simulé), avec contenant et écran de con
   const dish = page.getByRole("region", { name: "Riz au poulet" });
   await expect(dish.getByText(/^Riz basmati, cuit/)).toBeVisible();
   await expect(dish.getByText("Reconnu : riz basmati cuit")).toBeVisible();
+  // Une quantité démesurée est signalée : l'ajout attend une relecture.
+  await page.getByLabel(/^Quantité de Riz basmati, cuit/).fill("900");
+  await expect(page.getByText("1 aliment à vérifier", { exact: false })).toBeVisible();
+  await expect(page.getByText("Grosse quantité pour un seul aliment : vérifie le poids.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Ajouter au journal" })).toBeDisabled();
+  await page.getByRole("button", { name: /^C'est bon pour Riz basmati/ }).click();
+  await expect(page.getByText("Vérifié", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Ajouter au journal" })).toBeEnabled();
   await page.getByLabel(/^Quantité de Riz basmati, cuit/).fill("150");
+  await expect(page.getByText("1 aliment à vérifier", { exact: false })).toHaveCount(0);
   await expect(page.getByText(/^Total : \d+ kcal$/)).toBeVisible();
   await expectNoA11yViolations(page);
   await page.getByRole("button", { name: "Ajouter au journal" }).click();
@@ -560,6 +569,15 @@ test("saisie d'un repas par photo (LLM simulé), avec contenant et écran de con
   await expect(lunch.getByText("Riz au poulet", { exact: true })).toBeVisible();
   await expect(lunch.getByText(/^150 g ·/)).toBeVisible();
   await expect(lunch.getByRole("img", { name: "Photo du déjeuner" })).toBeAttached();
+  // Macros de chaque aliment et répartition par repas.
+  await expect(lunch.getByText(/^P \d+ g · G \d+ g · L \d+ g$/).first()).toBeVisible();
+  await page.getByText("Répartition par repas").click();
+  await expect(
+    page
+      .getByRole("table", { name: /Calories et macronutriments/ })
+      .getByRole("rowheader", { name: "Déjeuner", exact: true }),
+  ).toBeVisible();
+  await expectNoA11yViolations(page);
 });
 
 test("saisie en texte libre, puis par le dictionnaire personnel sans appel à l'IA", async ({ page }) => {
@@ -782,6 +800,27 @@ test("repas partagé : l'admin partage un plat du foyer, le membre le valide ave
   await expect(teen.locator("figure img").first()).toHaveAttribute("src", /\/api\/foods\/.+\/photo\?v=/);
   await expect(teen.getByLabel("Changer la photo")).toBeAttached();
   await expectNoA11yViolations(teen);
+
+  // Un repas de « Mes repas » se partage aussi : Léa le valide avec sa portion.
+  await page.goto("/meals");
+  await page.getByRole("link", { name: "Partager Grand petit-déj" }).click();
+  await expect(page.getByRole("heading", { name: "Partager « Grand petit-déj »" })).toBeVisible();
+  await expect(page.getByLabel("Léa")).toBeChecked();
+  await expectNoA11yViolations(page);
+  await withServerAction(page, () => page.getByRole("button", { name: "Partager" }).click());
+  await expect(page).toHaveURL(/\/meals$/);
+
+  await teen.goto("/plan");
+  const meal = teen.getByRole("region", { name: "Repas partagés à valider" });
+  await expect(meal.getByRole("heading", { name: "Grand petit-déj" })).toBeVisible();
+  await expect(meal.getByText(/^Adel a partagé ce repas pour le/)).toBeVisible();
+  await expect(meal.getByText(/^Portion de Adel : \d+ g, \d+ kcal$/)).toBeVisible();
+  await expectNoA11yViolations(teen);
+  await meal.getByText("2 portions", { exact: true }).click();
+  await meal.getByRole("button", { name: "Ajouter à mon journal" }).click();
+  await expect(teen.getByRole("region", { name: "Repas partagés à valider" })).toHaveCount(0);
+  await teen.goto("/journal");
+  await expect(teen.getByText("Grand petit-déj", { exact: true })).toBeVisible();
 });
 
 test("ressenti du jour et bilan qualité de la semaine", async ({ page }) => {
@@ -895,11 +934,20 @@ test("menu de la semaine, liste de courses commune, recettes et scanner de frigo
   await expect(page.getByRole("region", { name: "Dans le panier" })).toHaveCount(0);
 
   await page.goto("/recipes");
-  // Une seule bibliothèque : les recettes de la famille avec les idées, et un filtre pour les retrouver.
-  await page.getByRole("group", { name: "Type de recette" }).getByRole("button", { name: "Nos recettes" }).click();
+  // Une seule bibliothèque : les recettes de la famille en tête, avec les idées, sans filtre à part.
+  await expect(
+    page.getByRole("group", { name: "Type de recette" }).getByRole("button", { name: "Nos recettes" }),
+  ).toHaveCount(0);
   await expect(page.getByRole("link", { name: /^Gratin du dimanche/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /^Poêlée de lentilles aux carottes/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /^Minestrone/ })).toBeVisible();
+  // Recherche sur place, par nom ou ingrédient.
+  await page.getByRole("searchbox", { name: "Rechercher une recette ou un ingrédient" }).fill("gratin");
+  await expect(page.getByRole("link", { name: /^Gratin du dimanche/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /^Minestrone/ })).toHaveCount(0);
+  await page.getByRole("searchbox", { name: "Rechercher une recette ou un ingrédient" }).fill("zzz");
+  await expect(page.getByText("Aucune recette ne correspond. Essaie un autre mot.")).toBeVisible();
+  await page.getByRole("searchbox", { name: "Rechercher une recette ou un ingrédient" }).fill("");
   await expectNoA11yViolations(page);
 
   // Fiche d'une recette du foyer : ses ingrédients, et sa préparation rédigée à la demande.

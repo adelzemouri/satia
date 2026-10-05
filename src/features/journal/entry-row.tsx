@@ -22,6 +22,9 @@ export type EntryView = {
   unit: Unit;
   grams: number;
   kcal: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
   slot: MealSlot;
   isEstimated: boolean;
   imageUrl: string | null;
@@ -49,6 +52,13 @@ export function EntryRow({ entry, units, readOnly = false }: { entry: EntryView;
             ? t("journal.entryValues", { grams: entry.grams, kcal: Math.round(entry.kcal) })
             : `${entry.quantity} ${t(`units.${entry.unit}`)} · ${t("journal.entryValues", { grams: entry.grams, kcal: Math.round(entry.kcal) })}`}
           {entry.isEstimated && ` · ${t("journal.estimated")}`}
+        </span>
+        <span className="text-xs text-text-muted">
+          {t("journal.macroLine", {
+            protein: Math.round(entry.proteinG),
+            carbs: Math.round(entry.carbsG),
+            fat: Math.round(entry.fatG),
+          })}
         </span>
       </span>
     </span>

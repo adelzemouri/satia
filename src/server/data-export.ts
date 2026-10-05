@@ -129,6 +129,7 @@ export async function collectUserData(userId: string) {
       date: sharedMeals.date,
       slot: sharedMeals.slot,
       dishFoodId: sharedMeals.foodId,
+      mealName: sharedMeals.name,
       status: sharedMealShares.status,
       entryId: sharedMealShares.entryId,
       respondedAt: sharedMealShares.respondedAt,
