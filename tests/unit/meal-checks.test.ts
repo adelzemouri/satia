@@ -16,6 +16,17 @@ describe("contrôle des aliments proposés par l'IA", () => {
   it("signale un aliment sans rapport avec ce qui a été reconnu", () => {
     expect(looksUnrelated("sauce au saumon", "Crème brûlée")).toBe(true);
     expect(line("saumon", { nameFr: "Julienne ou Lingue, cuite", kcal: 100 })).toEqual(["unrelated"]);
+    // Un mot en commun ne suffit pas : la tomate manque.
+    expect(
+      line(
+        "coulis de tomate",
+        { nameFr: "Coulis de fruits rouges (framboises, fraises, groseilles, cassis)", kcal: 108 },
+        60,
+        65,
+      ),
+    ).toEqual(["unrelated"]);
+    expect(line("coulis de tomate", { nameFr: "Tomate, coulis, appertisé", kcal: 44 }, 60, 26)).toEqual([]);
+    expect(line("œuf entier cru", { nameFr: "Oeuf, cru", kcal: 140 }, 120, 168)).toEqual([]);
   });
 
   it("signale des pâtes ou du riz comptés secs", () => {

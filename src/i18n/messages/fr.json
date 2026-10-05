@@ -758,7 +758,7 @@
     "restart": "Recommencer",
     "toReview": "{count, plural, one {# aliment à vérifier} other {# aliments à vérifier}} avant l'ajout : un mauvais aliment fausserait tes calories et tes macros.",
     "checks": {
-      "unrelated": "L'aliment trouvé ne ressemble pas à « {label} ». Change-le si ce n'est pas le bon.",
+      "unrelated": "L'aliment trouvé ne correspond pas tout à fait à « {label} ». Change-le si ce n'est pas le bon.",
       "dry": "Ce sont les valeurs d'un féculent sec ou cru, environ trois fois plus caloriques que cuit. Une assiette se pèse cuite.",
       "heavy": "Grosse quantité pour un seul aliment : vérifie le poids."
     },

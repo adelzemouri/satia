@@ -758,7 +758,7 @@
     "restart": "Start over",
     "toReview": "{count, plural, one {# food to check} other {# foods to check}} before adding: a wrong food would throw off your calories and macros.",
     "checks": {
-      "unrelated": "The food found doesn't look like “{label}”. Change it if it's not the right one.",
+      "unrelated": "The food found doesn't quite match “{label}”. Change it if it's not the right one.",
       "dry": "These are the values of a dry or raw starch, about three times more calories than cooked. A plate is weighed cooked.",
       "heavy": "Large amount for a single food: check the weight."
     },

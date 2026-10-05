@@ -107,6 +107,8 @@ describe("base d'aliments", () => {
     expect(accents.some((food) => /^Crème de lait, 30% MG, épaisse/.test(food.nameFr))).toBe(true);
     // Les mots du quotidien retrouvent le nom Ciqual, avant les desserts.
     expect((await searchFoods(userId, "crème liquide"))[0]?.nameFr).toMatch(/^Crème de lait.*fluide/);
+    // Tous les mots avant le premier : « coulis de tomate » n'est pas un coulis de fruits.
+    expect((await searchFoods(userId, "coulis de tomate"))[0]?.nameFr).toMatch(/^Tomate, coulis/);
     expect((await searchFoods(userId, "crème fraîche"))[0]?.nameFr).toMatch(/^Crème de lait.*épaisse/);
     // Des linguine reconnues sur une photo se comptent cuites, pas comme un paquet sec.
     for (const label of ["linguine cuites", "linguine", "linguines"]) {
