@@ -13,25 +13,52 @@ const DRY_STARCH_KCAL = 250;
 const HEAVY_GRAMS = 600;
 const HEAVY_KCAL = 800;
 
-const STOPWORDS = new Set(["avec", "sans", "pour", "fait", "maison", "nature", "petit", "grand", "grande"]);
+/** Mots qui précisent sans désigner l'aliment : leur absence dans le nom trouvé ne compte pas. */
+const STOPWORDS = new Set([
+  "avec",
+  "sans",
+  "pour",
+  "fait",
+  "maison",
+  "nature",
+  "petit",
+  "petite",
+  "grand",
+  "grande",
+  "entier",
+  "entiere",
+  "frais",
+  "fraiche",
+  "cuit",
+  "cuite",
+  "cuits",
+  "cuites",
+  "tranche",
+  "tranches",
+  "morceau",
+  "morceaux",
+  "portion",
+]);
 
 /** Racines des mots significatifs : « tomates cerises » → tomat, ceris. */
-function stems(text: string): Set<string> {
-  return new Set(
-    text
-      .split(" ")
-      .filter((word) => word.length >= 4 && !STOPWORDS.has(word))
-      .map((word) => word.slice(0, 5)),
-  );
+function stems(text: string): string[] {
+  return text
+    .split(" ")
+    .filter((word) => word.length >= 4 && !STOPWORDS.has(word))
+    .map((word) => word.slice(0, 5));
 }
 
-/** Vrai quand le nom de l'aliment trouvé n'a aucun mot en commun avec ce que l'IA a reconnu. */
+/**
+ * Vrai quand le nom de l'aliment trouvé laisse de côté un mot de ce que l'IA a reconnu :
+ * « coulis de tomate » ne doit pas devenir un coulis de fruits rouges. Une formulation Ciqual
+ * (« linguine » → « pâtes sèches ») compte comme le nom reconnu.
+ */
 export function looksUnrelated(label: string, foodName: string): boolean {
   const normalized = normalizeForSearch(label);
-  const wanted = stems([normalized, ...searchVariants(normalized)].join(" "));
-  if (wanted.size === 0) return false;
-  const found = stems(normalizeForSearch(foodName));
-  return ![...wanted].some((stem) => found.has(stem));
+  const found = new Set(stems(normalizeForSearch(foodName)));
+  const forms = [normalized, ...searchVariants(normalized)].map(stems).filter((list) => list.length > 0);
+  if (forms.length === 0) return false;
+  return !forms.some((list) => list.every((stem) => found.has(stem)));
 }
 
 export type CheckInput = {

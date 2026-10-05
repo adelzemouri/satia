@@ -117,8 +117,9 @@ export async function searchFoods(userId: string, query: string): Promise<FoodSu
     .orderBy(
       sql`(${foods.ownerUserId} is not null or ${foods.householdId} is not null) desc`,
       sql`(${foods.searchName} like ${`${q}%`}) desc`,
-      sql`(${foods.searchName} like ${`${words[0]}%`}) desc`,
+      // Tous les mots avant le premier seul : « coulis de tomate » donne « Tomate, coulis », pas un coulis de fruits.
       sql`(${allWords}) desc`,
+      sql`(${foods.searchName} like ${`${words[0]}%`}) desc`,
       sql`word_similarity(${q}, ${foods.searchName}) desc`,
       sql`length(${foods.searchName})`,
     )
