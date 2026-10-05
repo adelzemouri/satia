@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import type { FoodItem } from "@/features/foods/food-types";
 import { type ActionState, toActionState } from "@/server/action-result";
-import { createSharedMeal, respondToShare, type SharedMealInput } from "@/server/family";
+import { createSharedMeal, respondToShare, shareSavedMeal, type SharedMealInput } from "@/server/family";
 import { getFood } from "@/server/foods";
 import { getCurrentUser } from "@/server/session";
 
@@ -23,6 +23,14 @@ async function withUser<T>(
 export async function createSharedMealAction(input: SharedMealInput): Promise<ActionState> {
   return withUser(async (user) => {
     await createSharedMeal(user.id, user.householdId, input);
+    revalidatePath("/[locale]", "layout");
+    return { ok: true };
+  });
+}
+
+export async function shareSavedMealAction(input: Parameters<typeof shareSavedMeal>[2]): Promise<ActionState> {
+  return withUser(async (user) => {
+    await shareSavedMeal(user.id, user.householdId, input);
     revalidatePath("/[locale]", "layout");
     return { ok: true };
   });

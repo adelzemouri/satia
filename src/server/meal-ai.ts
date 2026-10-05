@@ -94,7 +94,8 @@ async function toDraftItems(
       const aiLabel = normalizeForSearch(item.name);
       const results = await searchFoods(userId, item.name);
       const rule = rules.get(aiLabel);
-      const food = (rule && ruledById.get(rule.foodId)) ?? pickForLabel(item.name, results);
+      const habit = (rule && ruledById.get(rule.foodId)) ?? null;
+      const food = habit ?? pickForLabel(item.name, results);
       const grams = Math.round(realisticGrams(item.name, item.grams));
       const count = item.count ?? null;
       // Des pièces comptées s'affichent en pièces quand l'aliment a un poids à la pièce.
@@ -110,6 +111,7 @@ async function toDraftItems(
         quantity: byPiece ? count : grams,
         unit: byPiece ? "piece" : "g",
         count,
+        fromHabit: habit !== null,
         alternatives: results
           .filter((result) => result.id !== food?.id)
           .slice(0, ALTERNATIVES)
@@ -218,6 +220,7 @@ export async function analyzeText(userId: string, input: z.input<typeof textInpu
           estimate: null,
           quantity: item.quantity,
           unit: item.unit,
+          fromHabit: true,
           alternatives: [],
         },
       ];

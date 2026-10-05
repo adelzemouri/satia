@@ -7,7 +7,7 @@ import { addDays } from "@/domain/energy";
 import { isoWeekStart } from "@/domain/streak";
 import { availableUnits, type Unit } from "@/domain/units";
 import { CopyButton } from "@/features/journal/copy-button";
-import { CalorieSummary, MacroBars } from "@/features/journal/day-overview";
+import { CalorieSummary, MacroBars, MacroLine, MacroSplit } from "@/features/journal/day-overview";
 import { EntryRow } from "@/features/journal/entry-row";
 import { groupByDish } from "@/domain/dishes";
 import { WaterTracker } from "@/features/journal/water-tracker";
@@ -141,6 +141,7 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
         </div>
         <CalorieSummary totals={summary.totals} goal={summary.goal} compact />
         <MacroBars totals={summary.totals} goal={summary.goal} />
+        {summary.entries.length > 0 && <MacroSplit bySlot={summary.bySlot} totals={summary.totals} />}
         <QualityBars quality={quality} />
         {summary.zone && <p className="text-sm text-text-muted">{t(`home.zone.${summary.zone}`)}</p>}
         {summary.entries.length === 0 && (
@@ -172,6 +173,7 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
                 {t("common.kcal", { value: Math.round(totals.kcal) })}
               </span>
             </div>
+            {entries.length > 0 && <MacroLine totals={totals} />}
             {slotPhotos.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {slotPhotos.map((url) => (
@@ -205,6 +207,9 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
                           unit: entry.unit,
                           grams: entry.grams,
                           kcal: entry.kcal,
+                          proteinG: entry.proteinG,
+                          carbsG: entry.carbsG,
+                          fatG: entry.fatG,
                           slot: entry.slot,
                           isEstimated: entry.isEstimated,
                           imageUrl: (entry.foodId && foods.get(entry.foodId)?.imageUrl) || null,

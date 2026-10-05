@@ -2,11 +2,11 @@ import { and, eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { db } from "@/db/client";
-import { foods, llmCalls, mealEntries, sharedMealShares, user } from "@/db/schema";
+import { foods, llmCalls, mealEntries, savedMeals, sharedMealShares, user } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
 import { acceptInvite, createAccessLink, setupFirstAdmin } from "@/server/accounts";
-import { createSharedMeal, otherMembers, pendingShares, respondToShare } from "@/server/family";
+import { createSharedMeal, otherMembers, pendingShares, respondToShare, shareSavedMeal } from "@/server/family";
 import {
   createCustomFood,
   createRecipe,
@@ -272,6 +272,89 @@ describe("espace famille", () => {
 
     // Une seule réponse par membre.
     await expect(respondToShare(member.id, mealId, { accept: false })).rejects.toMatchObject({ code: "not_found" });
+  });
+
+  it("partage un repas de « Mes repas » : le membre choisit sa portion, ses lignes suivent", async () => {
+    const { admin, member } = await setupFamily();
+    const pasta = await firstFood(admin.id, "pâtes cuites");
+    const sauce = await createCustomFood(admin.id, {
+      name: "Sauce secrète",
+      basis: "100g",
+      portionGrams: null,
+      kcal: 200,
+      proteinG: 2,
+      carbsG: 10,
+      fatG: 16,
+    });
+    const line = { unit: "g" as const, isEstimated: false };
+    const [saved] = await db()
+      .insert(savedMeals)
+      .values({
+        userId: admin.id,
+        name: "Pâtes au saumon",
+        items: [
+          {
+            ...line,
+            foodId: pasta.id,
+            label: "Pâtes",
+            quantity: 300,
+            grams: 300,
+            kcal: 450,
+            proteinG: 15,
+            carbsG: 90,
+            fatG: 3,
+          },
+          {
+            ...line,
+            foodId: sauce,
+            label: "Sauce secrète",
+            quantity: 100,
+            grams: 100,
+            kcal: 200,
+            proteinG: 2,
+            carbsG: 10,
+            fatG: 16,
+          },
+        ],
+      })
+      .returning({ id: savedMeals.id });
+
+    // Seul l'auteur peut partager son repas, et pas à un jour à venir.
+    await expect(
+      shareSavedMeal(member.id, member.householdId, {
+        id: saved!.id,
+        date: todayIso(),
+        slot: "lunch",
+        memberIds: [admin.id],
+      }),
+    ).rejects.toMatchObject({ code: "not_found" });
+    const sharedId = await shareSavedMeal(admin.id, admin.householdId, {
+      id: saved!.id,
+      date: todayIso(),
+      slot: "lunch",
+      memberIds: [member.id],
+    });
+    // Rien n'entre dans le journal de l'auteur (le repas y est déjà).
+    expect(await db().select().from(mealEntries)).toHaveLength(0);
+    const [pending] = await pendingShares(member.id);
+    expect(pending).toMatchObject({
+      kind: "meal",
+      sharedMealId: sharedId,
+      dishName: "Pâtes au saumon",
+      fromName: "Adel",
+      totalParts: 1,
+      partGrams: 400,
+      partKcal: 650,
+    });
+
+    await respondToShare(member.id, sharedId, { accept: true, parts: 0.5, grams: null, slot: "dinner" });
+    const entries = await db().select().from(mealEntries).where(eq(mealEntries.userId, member.id));
+    expect(entries.map((entry) => [entry.label, entry.grams, entry.kcal, entry.dish, entry.slot])).toEqual([
+      ["Pâtes", 150, 225, "Pâtes au saumon", "dinner"],
+      ["Sauce secrète", 50, 100, "Pâtes au saumon", "dinner"],
+    ]);
+    // L'aliment perso de l'auteur reste privé : la ligne garde ses valeurs, sans lien.
+    expect(entries.map((entry) => entry.foodId)).toEqual([pasta.id, null]);
   });
 
   it("un membre peut refuser, ou choisir sa portion en grammes", async () => {

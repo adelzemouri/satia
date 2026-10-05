@@ -44,6 +44,12 @@ const STARCH =
 const RAW = /\b(?:cru|crue|crus|crues)\b/;
 const COOKED = /\bcuit/;
 
+/** Féculent (pâtes, riz, légumineuses…) que l'on pèse d'ordinaire cuit, sauf « cru » explicite. */
+export function isCookedStarchLabel(label: string): boolean {
+  const normalized = normalizeForSearch(label);
+  return [normalized, ...searchVariants(normalized)].some((text) => STARCH.test(text)) && !RAW.test(normalized);
+}
+
 /**
  * Aliment à proposer pour un nom reconnu par l'IA. Une assiette se pèse cuite : pour des
  * pâtes, du riz ou des légumineuses (sauf « cru » explicite), ou tout nom dit « cuit »,

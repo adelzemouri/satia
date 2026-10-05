@@ -17,6 +17,7 @@ import { respondToShareAction } from "./actions";
 const PORTIONS = [0.5, 1, 1.5, 2] as const;
 
 export type PendingShareView = {
+  kind: "dish" | "meal";
   sharedMealId: string;
   dishName: string;
   imageUrl: string | null;
@@ -69,18 +70,24 @@ function PendingShare({ share }: { share: PendingShareView }) {
             {share.dishName}
           </h3>
           <p className="text-sm text-text-muted">
-            {t("family.sharedBy", {
+            {t(share.kind === "meal" ? "family.sharedMealBy" : "family.sharedBy", {
               name: share.fromName ?? t("family.someone"),
               slot: t(`slotsLower.${share.slot}`),
               day: formatDay(share.date, locale),
             })}
           </p>
           <p className="text-sm text-text-muted">
-            {t("family.partInfo", {
-              parts: share.totalParts,
-              grams: Math.round(share.partGrams),
-              kcal: share.partKcal,
-            })}
+            {share.kind === "meal"
+              ? t("family.mealInfo", {
+                  name: share.fromName ?? t("family.someone"),
+                  grams: Math.round(share.partGrams),
+                  kcal: share.partKcal,
+                })
+              : t("family.partInfo", {
+                  parts: share.totalParts,
+                  grams: Math.round(share.partGrams),
+                  kcal: share.partKcal,
+                })}
           </p>
         </div>
       </div>
@@ -102,7 +109,10 @@ function PendingShare({ share }: { share: PendingShareView }) {
                 onChange={() => setPortion(value)}
                 className="sr-only"
               />
-              {t("family.parts", { value: portionLabel(value), count: value })}
+              {t(share.kind === "meal" ? "family.portions" : "family.parts", {
+                value: portionLabel(value),
+                count: value,
+              })}
             </label>
           ))}
           <label

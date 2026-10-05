@@ -8,6 +8,7 @@ import { FoodSearchBox } from "@/features/foods/food-search-box";
 import { defaultUnit, type FoodItem } from "@/features/foods/food-types";
 import { ProductThumb } from "@/features/foods/product-thumb";
 import { groupByDish } from "@/domain/dishes";
+import { checkLine, type LineCheck } from "@/domain/meal-checks";
 import { MEAL_SLOTS, type MealSlot } from "@/domain/meals";
 import { type Nutrients, nutrientsFor, sumNutrients } from "@/domain/nutrition";
 import { availableUnits, toGrams, type Unit } from "@/domain/units";
@@ -36,6 +37,25 @@ function compute(line: Line): { grams: number; nutrients: Nutrients } | null {
   return grams === null ? null : { grams, nutrients: nutrientsFor(per100, grams) };
 }
 
+/** État relu d'une ligne : une modification (aliment, quantité, unité) demande une nouvelle relecture. */
+function signature(line: Line): string {
+  return `${line.food?.id ?? line.estimate?.name ?? ""}|${line.quantityText}|${line.unit}`;
+}
+
+/** Points à relire d'une ligne, une fois ses valeurs calculées. */
+function checksFor(line: Line, values: { grams: number; nutrients: Nutrients } | null): LineCheck[] {
+  if (!values) return [];
+  // L'aliment vient d'une habitude, ou l'utilisateur l'a choisi lui-même : rien à soupçonner.
+  const chosen = line.fromHabit === true || line.aiLabel === null || line.food?.id !== line.proposal?.foodId;
+  return checkLine({
+    label: line.label,
+    food: line.food,
+    chosen,
+    grams: values.grams,
+    kcal: values.nutrients.kcal,
+  });
+}
+
 /**
  * Écran de confirmation de la saisie IA : chaque aliment reconnu reste modifiable (aliment,
  * quantité, unité) ou supprimable avant l'ajout au journal. Les corrections servent ensuite
@@ -60,6 +80,8 @@ export function MealConfirmation({
   const [lines, setLines] = useState<Line[]>(() => draft.items.map(toLine));
   const [slot, setSlot] = useState<MealSlot>(initialSlot);
   const [adding, setAdding] = useState(false);
+  /** Lignes signalées que l'utilisateur a relues, avec l'état relu. */
+  const [reviewed, setReviewed] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -103,6 +125,10 @@ export function MealConfirmation({
 
   const computed = lines.map(compute);
   const computedByKey = new Map(lines.map((line, index) => [line.key, computed[index]]));
+  const checksByKey = new Map(lines.map((line, index) => [line.key, checksFor(line, computed[index] ?? null)]));
+  const toReview = lines.filter(
+    (line) => (checksByKey.get(line.key) ?? []).length > 0 && reviewed[line.key] !== signature(line),
+  );
   const complete = lines.length > 0 && computed.every(Boolean);
   const total = sumNutrients(computed.flatMap((value) => (value ? [value.nutrients] : [])));
 
@@ -142,6 +168,12 @@ export function MealConfirmation({
       )}
       {error && <Alert>{errorText(error)}</Alert>}
       {lines.length === 0 && <p className="text-text-muted">{t("aiConfirm.nothingFound")}</p>}
+      {toReview.length > 0 && (
+        <p role="status" className="flex items-start gap-2 rounded-2xl bg-accent-soft px-4 py-3 text-sm font-semibold">
+          <Icon name="alert" size={20} />
+          {t("aiConfirm.toReview", { count: toReview.length })}
+        </p>
+      )}
 
       {groupByDish(lines).map((group) => {
         const lineList = (
@@ -150,8 +182,13 @@ export function MealConfirmation({
               const values = computedByKey.get(line.key) ?? null;
               const name = line.food?.nameFr ?? line.estimate?.name;
               const units: Unit[] = line.food ? availableUnits(line.food) : ["g"];
+              const checks = checksByKey.get(line.key) ?? [];
+              const pendingReview = checks.length > 0 && reviewed[line.key] !== signature(line);
               return (
-                <li key={line.key} className="flex flex-col gap-3 rounded-2xl border border-border p-3">
+                <li
+                  key={line.key}
+                  className={`flex flex-col gap-3 rounded-2xl border p-3 ${pendingReview ? "border-accent" : "border-border"}`}
+                >
                   <div className="flex items-start gap-3">
                     {line.food?.imageUrl && <ProductThumb src={line.food.imageUrl} size={48} />}
                     <div className="flex min-w-0 flex-1 flex-col">
@@ -213,6 +250,35 @@ export function MealConfirmation({
                         })
                       : t("aiConfirm.incomplete")}
                   </p>
+                  {checks.length > 0 && (
+                    <div className="flex flex-col gap-2 rounded-2xl bg-accent-soft p-3 text-sm">
+                      <ul className="flex flex-col gap-1">
+                        {checks.map((check) => (
+                          <li key={check} className="flex items-start gap-2">
+                            <span className="mt-0.5">
+                              <Icon name="alert" size={18} />
+                            </span>
+                            {t(`aiConfirm.checks.${check}`, { label: line.label })}
+                          </li>
+                        ))}
+                      </ul>
+                      {pendingReview ? (
+                        <Button
+                          variant="secondary"
+                          className="min-h-11 self-start px-4 text-sm"
+                          onClick={() => setReviewed((map) => ({ ...map, [line.key]: signature(line) }))}
+                        >
+                          <Icon name="check" />
+                          {t("aiConfirm.looksRight", { name: name ?? line.label })}
+                        </Button>
+                      ) : (
+                        <p className="flex items-center gap-2 font-semibold">
+                          <Icon name="check" size={18} />
+                          {t("aiConfirm.reviewed")}
+                        </p>
+                      )}
+                    </div>
+                  )}
                   {line.searching ? (
                     <FoodSearchBox
                       label={t("aiConfirm.searchFor", { label: line.label })}
@@ -270,7 +336,7 @@ export function MealConfirmation({
         {t("aiConfirm.total", { kcal: Math.round(total.kcal) })}
       </p>
       <div className="flex flex-wrap gap-2">
-        <Button type="submit" disabled={pending || !complete}>
+        <Button type="submit" disabled={pending || !complete || toReview.length > 0}>
           {t("aiConfirm.save")}
         </Button>
         <Button variant="ghost" onClick={onCancel} disabled={pending}>

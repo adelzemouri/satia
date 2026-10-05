@@ -1,11 +1,11 @@
-import { date, index, numeric, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { date, index, jsonb, numeric, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 import { MEAL_SLOTS } from "@/domain/meals";
 
 import { user } from "./auth";
 import { foods } from "./foods";
 import { households } from "./households";
-import { mealEntries } from "./journal";
+import { mealEntries, type SavedMealItem } from "./journal";
 
 /**
  * Repas partagé : un plat préparé pour plusieurs, saisi une fois par un membre, avec son
@@ -19,10 +19,11 @@ export const sharedMeals = pgTable(
       .notNull()
       .references(() => households.id, { onDelete: "cascade" }),
     createdBy: uuid().references(() => user.id, { onDelete: "set null" }),
-    /** Le plat : une recette (du foyer le plus souvent) ou un aliment. */
-    foodId: uuid()
-      .notNull()
-      .references(() => foods.id, { onDelete: "cascade" }),
+    /** Le plat : une recette (du foyer le plus souvent) ou un aliment ; null pour un repas de « Mes repas ». */
+    foodId: uuid().references(() => foods.id, { onDelete: "cascade" }),
+    /** Repas de « Mes repas » partagé : son nom et ses lignes figées, pour une portion (1 part). */
+    name: text(),
+    items: jsonb().$type<SavedMealItem[]>(),
     date: date({ mode: "string" }).notNull(),
     slot: text({ enum: MEAL_SLOTS }).notNull(),
     totalParts: numeric({ precision: 4, scale: 1, mode: "number" }).notNull(),

@@ -25,6 +25,8 @@ export type DraftItem = {
   unit: Unit;
   /** Nombre de pièces vues par l'IA, pour expliquer un poids proposé en grammes. */
   count?: number | null;
+  /** Aliment tiré d'une habitude apprise ou du dictionnaire personnel : déjà validé par l'utilisateur. */
+  fromHabit?: boolean;
   /** Autres aliments proches dans la base, pour corriger en un tap. */
   alternatives: FoodItem[];
 };
