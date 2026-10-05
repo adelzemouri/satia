@@ -5,6 +5,7 @@ import { db } from "@/db/client";
 import { foods, user } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
+import { pickForLabel } from "@/domain/search";
 import type { OnboardingInput } from "@/features/onboarding/schema";
 import { setupFirstAdmin } from "@/server/accounts";
 import { collectUserData } from "@/server/data-export";
@@ -107,6 +108,10 @@ describe("base d'aliments", () => {
     // Les mots du quotidien retrouvent le nom Ciqual, avant les desserts.
     expect((await searchFoods(userId, "crème liquide"))[0]?.nameFr).toMatch(/^Crème de lait.*fluide/);
     expect((await searchFoods(userId, "crème fraîche"))[0]?.nameFr).toMatch(/^Crème de lait.*épaisse/);
+    // Des linguine reconnues sur une photo se comptent cuites, pas comme un paquet sec.
+    expect(pickForLabel("linguine cuites", await searchFoods(userId, "linguine cuites"))?.nameFr).toBe(
+      "Pâtes sèches standard, cuites, non salées",
+    );
   });
 
   it("garde les aliments personnels privés et les fait passer en premier", async () => {
