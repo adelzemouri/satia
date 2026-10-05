@@ -12,6 +12,7 @@ import { correctionRules, type CorrectionRule, isCorrection, resolveLocally } fr
 import { nutrientsFor } from "@/domain/nutrition";
 import { normalizeForSearch } from "@/domain/search";
 import { UNITS } from "@/domain/units";
+import { realisticGrams } from "@/domain/condiments";
 import { AI_INPUT_METHODS, type DraftItem, type MealDraft } from "@/features/ai/draft";
 import type { FoodItem } from "@/features/foods/food-types";
 import { analyzeMealPhoto, estimateFoods, type MealItem, parseMealText } from "@/llm";
@@ -94,13 +95,14 @@ async function toDraftItems(
       const results = await searchFoods(userId, item.name);
       const rule = rules.get(aiLabel);
       const food = (rule && ruledById.get(rule.foodId)) ?? results[0] ?? null;
-      const grams = Math.round(item.grams);
+      const grams = Math.round(realisticGrams(item.name, item.grams));
       const count = item.count ?? null;
       // Des pièces comptées s'affichent en pièces quand l'aliment a un poids à la pièce.
       const byPiece = count !== null && Boolean(food?.unitWeights?.piece);
       return {
         key: randomUUID(),
         label: item.name,
+        dish: item.dish ?? null,
         aiLabel,
         proposal: { foodId: food?.id ?? null, grams },
         food: food && toFoodItem(food),
@@ -252,6 +254,7 @@ export const saveMealSchema = z.object({
         quantity: z.number().positive().max(10_000),
         unit: z.enum(UNITS),
         aiLabel: z.string().max(80).nullable(),
+        dish: z.string().trim().min(1).max(60).nullish(),
         proposal: z.object({ foodId: z.uuid().nullable(), grams: z.number().positive().max(10_000) }).nullable(),
       }),
     )
@@ -270,7 +273,14 @@ export async function saveMeal(userId: string, input: SaveMealInput): Promise<nu
   if (data.photoId && !(await ownsPhoto(userId, data.photoId))) throw new DomainError("not_found");
   const rows = await Promise.all(
     data.items.map(async (item) => {
-      const base = { userId, date: data.date, slot: data.slot, inputMethod: data.method, photoId: data.photoId };
+      const base = {
+        userId,
+        date: data.date,
+        slot: data.slot,
+        inputMethod: data.method,
+        photoId: data.photoId,
+        dish: item.dish ?? null,
+      };
       if (item.foodId) {
         const { food, grams, nutrients } = await resolveEntry(userId, item.foodId, item.quantity, item.unit);
         const correction =

@@ -5,8 +5,8 @@ const RESPONSES: Record<string, unknown | ((request: LlmRequest) => unknown)> = 
   connection_test: { ok: true },
   meal_items: {
     items: [
-      { name: "riz basmati cuit", grams: 180, confidence: 0.8 },
-      { name: "poulet rôti", grams: 120, confidence: 0.7 },
+      { name: "riz basmati cuit", dish: "Riz au poulet", grams: 180, confidence: 0.8 },
+      { name: "poulet rôti", dish: "Riz au poulet", grams: 120, confidence: 0.7 },
     ],
   },
   // Réponse fixe qui cite la dernière ligne (le message de l'utilisateur), pour les tests.

@@ -40,6 +40,8 @@ export const mealEntries = pgTable(
     slot: text({ enum: MEAL_SLOTS }).notNull(),
     foodId: uuid().references(() => foods.id, { onDelete: "set null" }),
     label: text().notNull(),
+    /** Plat auquel appartient l'aliment (« Pâtes au saumon ») quand l'IA l'a reconnu. */
+    dish: text(),
     quantity: numeric({ precision: 7, scale: 2, mode: "number" }).notNull(),
     unit: text({ enum: UNITS }).notNull(),
     grams: value().notNull(),

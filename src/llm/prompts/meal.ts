@@ -4,14 +4,21 @@
  * viennent de la base locale, jamais de ces deux premiers prompts.
  */
 
-const ITEMS_JSON = '{"items":[{"name":string,"grams":number,"count":number|null,"confidence":number}]}';
+const ITEMS_JSON =
+  '{"items":[{"name":string,"dish":string|null,"grams":number,"count":number|null,"confidence":number}]}';
 const COUNT_RULE =
   "count : nombre de pièces si l'aliment se compte (2 croque-monsieur, 3 œufs), sinon null ; grams reste le poids total.";
+const DISH_RULE =
+  "dish : nom court du plat dont l'aliment fait partie, identique pour tous ses composants (« Pâtes au saumon », « Salade verte ») ; null pour un aliment seul (pomme, café). Garde les composants d'un même plat à la suite.";
+const PORTION_RULE =
+  "grams réaliste pour chaque composant, jamais 100 par défaut : assaisonnement et sauce en petite quantité (huile 5-10, vinaigre ou balsamique 5-15, vinaigrette 15-25, mayonnaise 15-20, fromage râpé 10-20, beurre 5-10).";
 
 export const MEAL_PHOTO_SYSTEM = [
   `Tu identifies les aliments d'une photo de repas. Réponds en JSON : ${ITEMS_JSON}.`,
   "name : nom générique français, comme dans la table Ciqual, avec la cuisson (ex. « riz blanc cuit »).",
   "Sépare les composants d'un plat (pâtes, sauce, fromage râpé). grams : poids comestible visible estimé.",
+  DISH_RULE,
+  PORTION_RULE,
   COUNT_RULE,
   "confidence : de 0 à 1. Aucune valeur nutritionnelle. Pas d'aliment : items vide.",
 ].join("\n");
@@ -19,7 +26,10 @@ export const MEAL_PHOTO_SYSTEM = [
 export const MEAL_TEXT_SYSTEM = [
   `Tu convertis la description d'un repas en aliments. Réponds en JSON : ${ITEMS_JSON}.`,
   "name : nom générique français, comme dans la table Ciqual, avec la cuisson (ex. « œuf brouillé »).",
+  "Sépare les composants d'un plat cité (« pâtes au saumon » : pâtes cuites, saumon, crème).",
   "grams : poids comestible, celui indiqué sinon une portion habituelle. confidence : de 0 à 1.",
+  DISH_RULE,
+  PORTION_RULE,
   COUNT_RULE,
   "Aucune valeur nutritionnelle. Pas d'aliment : items vide.",
 ].join("\n");

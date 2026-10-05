@@ -43,6 +43,8 @@ export type CoachContextInput = {
   fruitVegPortions: number;
   feeling: { hunger: number | null; energy: number | null; mood: number | null };
   weekly: { consumed: number; total: number } | null;
+  /** Lignes de l'historique des repas (voir `mealHistoryLines`). */
+  history?: readonly string[];
 };
 
 /** Contexte injecté dans chaque message : quelques lignes courtes (les tokens se paient). */
@@ -63,6 +65,7 @@ export function coachContext(input: CoachContextInput): string {
       : null,
     `Alimentation : ${input.diet}${input.foodsToAvoid ? `, à éviter : ${input.foodsToAvoid}` : ""}.`,
     feelingLine(input.feeling),
+    ...(input.history ?? []),
   ];
   return lines.filter(Boolean).join("\n");
 }
@@ -150,4 +153,95 @@ export function workoutRequest(message: string): { minutes: number; noEquipment:
     minutes: Math.min(60, Math.max(10, minutes)),
     noEquipment: /(sans|pas de|aucun)\s+(?:de\s+)?mat[ée]riel|no equipment/.test(text),
   };
+}
+
+// --- Historique des repas pour le coach ------------------------------------------------
+
+export type HistoryEntry = {
+  date: string;
+  slot: MealSlot;
+  label: string;
+  dish: string | null;
+  grams: number;
+  kcal: number;
+  proteinG: number;
+};
+
+const SLOT_NAMES: Record<MealSlot, string> = {
+  breakfast: "petit-déjeuner",
+  lunch: "déjeuner",
+  snack: "collation",
+  dinner: "dîner",
+};
+const SLOT_ORDER: readonly MealSlot[] = ["breakfast", "lunch", "snack", "dinner"];
+
+/** « Pâtes alimentaires, cuites, nature » → « pâtes alimentaires » : le début suffit au coach. */
+function shortName(label: string): string {
+  return label.split(/[,(]/)[0]!.trim().toLowerCase();
+}
+
+/** Repas d'un jour, regroupés par plat : « déjeuner : Pâtes au saumon (pâtes 180 g, saumon 100 g) ». */
+function dayMeals(entries: readonly HistoryEntry[], withGrams: boolean): string {
+  return SLOT_ORDER.flatMap((slot) => {
+    const inSlot = entries.filter((entry) => entry.slot === slot);
+    if (inSlot.length === 0) return [];
+    const parts: string[] = [];
+    const byDish = new Map<string, HistoryEntry[]>();
+    for (const entry of inSlot) {
+      if (entry.dish) byDish.set(entry.dish, [...(byDish.get(entry.dish) ?? []), entry]);
+      else parts.push(food(entry));
+    }
+    for (const [dish, items] of byDish) parts.unshift(`${dish} (${items.map(food).join(", ")})`);
+    return [`${SLOT_NAMES[slot]} : ${parts.join(", ")}`];
+  }).join(" ; ");
+
+  function food(entry: HistoryEntry): string {
+    return withGrams ? `${shortName(entry.label)} ${Math.round(entry.grams)} g` : shortName(entry.label);
+  }
+}
+
+/**
+ * Historique compact des repas pour personnaliser le coach : le détail d'aujourd'hui (avec
+ * les grammes), les repas des deux jours précédents, les totaux des 7 derniers jours et les
+ * aliments les plus fréquents sur la période. Quelques lignes : les tokens se paient.
+ */
+export function mealHistoryLines(
+  entries: readonly HistoryEntry[],
+  today: string,
+  dayBefore: (days: number) => string,
+): string[] {
+  const on = (date: string) => entries.filter((entry) => entry.date === date);
+  const lines: string[] = [];
+  const todays = on(today);
+  lines.push(todays.length > 0 ? `Repas d'aujourd'hui : ${dayMeals(todays, true)}.` : "Rien de saisi aujourd'hui.");
+  for (const [offset, name] of [
+    [1, "Hier"],
+    [2, "Avant-hier"],
+  ] as const) {
+    const day = on(dayBefore(offset));
+    if (day.length > 0) lines.push(`${name} : ${dayMeals(day, false)}.`);
+  }
+  const week = Array.from({ length: 7 }, (_, index) => dayBefore(index + 1)).flatMap((date) => {
+    const day = on(date);
+    if (day.length === 0) return [];
+    const kcal = day.reduce((sum, entry) => sum + entry.kcal, 0);
+    const protein = day.reduce((sum, entry) => sum + entry.proteinG, 0);
+    return [`${date.slice(5)} ${Math.round(kcal)} kcal et ${Math.round(protein)} g de protéines`];
+  });
+  if (week.length > 0) lines.push(`7 derniers jours : ${week.join(" ; ")}.`);
+  // Un plat compte une fois par repas, pas une fois par ingrédient.
+  const occurrences = new Map<string, string>();
+  for (const entry of entries) {
+    const key = entry.dish ? `${entry.date}|${entry.slot}|${entry.dish}` : `${entry.date}|${entry.slot}|${entry.label}`;
+    occurrences.set(key, entry.dish ?? shortName(entry.label));
+  }
+  const counts = new Map<string, number>();
+  for (const name of occurrences.values()) counts.set(name, (counts.get(name) ?? 0) + 1);
+  const frequent = [...counts]
+    .filter(([, count]) => count >= 2)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([name, count]) => `${name} ×${count}`);
+  if (frequent.length > 0) lines.push(`Souvent : ${frequent.join(", ")}.`);
+  return lines;
 }

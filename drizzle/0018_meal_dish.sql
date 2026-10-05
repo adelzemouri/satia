@@ -1,0 +1,1 @@
+ALTER TABLE "meal_entries" ADD COLUMN "dish" text;

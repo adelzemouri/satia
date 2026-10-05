@@ -7,6 +7,7 @@ import { useErrorText } from "@/features/auth/use-error-text";
 import { FoodSearchBox } from "@/features/foods/food-search-box";
 import { defaultUnit, type FoodItem } from "@/features/foods/food-types";
 import { ProductThumb } from "@/features/foods/product-thumb";
+import { groupByDish } from "@/domain/dishes";
 import { MEAL_SLOTS, type MealSlot } from "@/domain/meals";
 import { type Nutrients, nutrientsFor, sumNutrients } from "@/domain/nutrition";
 import { availableUnits, toGrams, type Unit } from "@/domain/units";
@@ -101,6 +102,7 @@ export function MealConfirmation({
   };
 
   const computed = lines.map(compute);
+  const computedByKey = new Map(lines.map((line, index) => [line.key, computed[index]]));
   const complete = lines.length > 0 && computed.every(Boolean);
   const total = sumNutrients(computed.flatMap((value) => (value ? [value.nutrients] : [])));
 
@@ -118,6 +120,7 @@ export function MealConfirmation({
           quantity: Number(line.quantityText.replace(",", ".")),
           unit: line.unit,
           aiLabel: line.aiLabel,
+          dish: line.dish ?? null,
           proposal: line.proposal,
         })),
       });
@@ -140,94 +143,109 @@ export function MealConfirmation({
       {error && <Alert>{errorText(error)}</Alert>}
       {lines.length === 0 && <p className="text-text-muted">{t("aiConfirm.nothingFound")}</p>}
 
-      <ul className="flex flex-col gap-3">
-        {lines.map((line, index) => {
-          const values = computed[index];
-          const name = line.food?.nameFr ?? line.estimate?.name;
-          const units: Unit[] = line.food ? availableUnits(line.food) : ["g"];
-          return (
-            <li key={line.key} className="flex flex-col gap-3 rounded-2xl border border-border p-3">
-              <div className="flex items-start gap-3">
-                {line.food?.imageUrl && <ProductThumb src={line.food.imageUrl} size={48} />}
-                <div className="flex min-w-0 flex-1 flex-col">
-                  <p className="font-semibold">{name ?? t("aiConfirm.noMatch")}</p>
-                  {line.aiLabel !== null && name !== line.label && (
-                    <p className="text-sm text-text-muted">{t("aiConfirm.recognized", { label: line.label })}</p>
+      {groupByDish(lines).map((group) => {
+        const lineList = (
+          <ul className="flex flex-col gap-3">
+            {group.items.map((line) => {
+              const values = computedByKey.get(line.key) ?? null;
+              const name = line.food?.nameFr ?? line.estimate?.name;
+              const units: Unit[] = line.food ? availableUnits(line.food) : ["g"];
+              return (
+                <li key={line.key} className="flex flex-col gap-3 rounded-2xl border border-border p-3">
+                  <div className="flex items-start gap-3">
+                    {line.food?.imageUrl && <ProductThumb src={line.food.imageUrl} size={48} />}
+                    <div className="flex min-w-0 flex-1 flex-col">
+                      <p className="font-semibold">{name ?? t("aiConfirm.noMatch")}</p>
+                      {line.aiLabel !== null && name !== line.label && (
+                        <p className="text-sm text-text-muted">{t("aiConfirm.recognized", { label: line.label })}</p>
+                      )}
+                      {!line.food && line.estimate && (
+                        <p className="text-sm font-semibold text-text-muted">{t("aiConfirm.estimated")}</p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setLines((list) => list.filter((item) => item.key !== line.key))}
+                      aria-label={t("aiConfirm.remove", { name: name ?? line.label })}
+                      className="flex size-12 items-center justify-center rounded-full text-text-muted hover:bg-surface-muted"
+                    >
+                      <Icon name="close" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <label className="flex flex-col gap-1.5">
+                      <span className="text-sm font-semibold">{t("journal.quantity")}</span>
+                      <input
+                        inputMode="decimal"
+                        value={line.quantityText}
+                        onChange={(event) => update(line.key, { quantityText: event.target.value })}
+                        aria-label={t("aiConfirm.quantityOf", { name: name ?? line.label })}
+                        className={inputClass}
+                      />
+                    </label>
+                    <label className="flex flex-col gap-1.5">
+                      <span className="text-sm font-semibold">{t("journal.unit")}</span>
+                      <select
+                        value={line.unit}
+                        onChange={(event) => update(line.key, { unit: event.target.value as Unit })}
+                        className={inputClass}
+                      >
+                        {units.map((value) => (
+                          <option key={value} value={value}>
+                            {t(`units.${value}`)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                  {line.count && line.unit === "g" && line.quantityText === String(line.quantity) && (
+                    <p className="text-sm text-text-muted">
+                      {t("aiConfirm.countHint", { count: line.count, each: Math.round(line.quantity / line.count) })}
+                    </p>
                   )}
-                  {!line.food && line.estimate && (
-                    <p className="text-sm font-semibold text-text-muted">{t("aiConfirm.estimated")}</p>
+                  <p className="text-sm" aria-live="polite">
+                    {values
+                      ? t("aiConfirm.values", {
+                          kcal: Math.round(values.nutrients.kcal),
+                          protein: Math.round(values.nutrients.proteinG),
+                          carbs: Math.round(values.nutrients.carbsG),
+                          fat: Math.round(values.nutrients.fatG),
+                        })
+                      : t("aiConfirm.incomplete")}
+                  </p>
+                  {line.searching ? (
+                    <FoodSearchBox
+                      label={t("aiConfirm.searchFor", { label: line.label })}
+                      suggestions={line.alternatives}
+                      onSelect={(food) => changeFood(line, food)}
+                    />
+                  ) : (
+                    <Button
+                      variant="secondary"
+                      className="min-h-11 self-start px-4 text-sm"
+                      onClick={() => update(line.key, { searching: true })}
+                    >
+                      <Icon name="search" />
+                      {t("aiConfirm.changeFood")}
+                    </Button>
                   )}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setLines((list) => list.filter((item) => item.key !== line.key))}
-                  aria-label={t("aiConfirm.remove", { name: name ?? line.label })}
-                  className="flex size-12 items-center justify-center rounded-full text-text-muted hover:bg-surface-muted"
-                >
-                  <Icon name="close" />
-                </button>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <label className="flex flex-col gap-1.5">
-                  <span className="text-sm font-semibold">{t("journal.quantity")}</span>
-                  <input
-                    inputMode="decimal"
-                    value={line.quantityText}
-                    onChange={(event) => update(line.key, { quantityText: event.target.value })}
-                    aria-label={t("aiConfirm.quantityOf", { name: name ?? line.label })}
-                    className={inputClass}
-                  />
-                </label>
-                <label className="flex flex-col gap-1.5">
-                  <span className="text-sm font-semibold">{t("journal.unit")}</span>
-                  <select
-                    value={line.unit}
-                    onChange={(event) => update(line.key, { unit: event.target.value as Unit })}
-                    className={inputClass}
-                  >
-                    {units.map((value) => (
-                      <option key={value} value={value}>
-                        {t(`units.${value}`)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-              {line.count && line.unit === "g" && line.quantityText === String(line.quantity) && (
-                <p className="text-sm text-text-muted">
-                  {t("aiConfirm.countHint", { count: line.count, each: Math.round(line.quantity / line.count) })}
-                </p>
-              )}
-              <p className="text-sm" aria-live="polite">
-                {values
-                  ? t("aiConfirm.values", {
-                      kcal: Math.round(values.nutrients.kcal),
-                      protein: Math.round(values.nutrients.proteinG),
-                      carbs: Math.round(values.nutrients.carbsG),
-                      fat: Math.round(values.nutrients.fatG),
-                    })
-                  : t("aiConfirm.incomplete")}
-              </p>
-              {line.searching ? (
-                <FoodSearchBox
-                  label={t("aiConfirm.searchFor", { label: line.label })}
-                  suggestions={line.alternatives}
-                  onSelect={(food) => changeFood(line, food)}
-                />
-              ) : (
-                <Button
-                  variant="secondary"
-                  className="min-h-11 self-start px-4 text-sm"
-                  onClick={() => update(line.key, { searching: true })}
-                >
-                  <Icon name="search" />
-                  {t("aiConfirm.changeFood")}
-                </Button>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+                </li>
+              );
+            })}
+          </ul>
+        );
+        if (group.dish === null) return <div key={group.items[0]!.key}>{lineList}</div>;
+        const dishKcal = sumNutrients(group.items.flatMap((line) => computedByKey.get(line.key)?.nutrients ?? [])).kcal;
+        return (
+          <section key={group.dish} aria-label={group.dish} className="flex flex-col gap-2">
+            <h3 className="flex items-baseline justify-between gap-3 font-semibold">
+              <span>{group.dish}</span>
+              <span className="text-sm text-text-muted">{t("common.kcal", { value: Math.round(dishKcal) })}</span>
+            </h3>
+            {lineList}
+          </section>
+        );
+      })}
 
       {adding ? (
         <FoodSearchBox label={t("aiConfirm.addLabel")} onSelect={addFood} />
