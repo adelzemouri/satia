@@ -5,10 +5,12 @@ import { and, desc, eq, lte } from "drizzle-orm";
 import { db } from "@/db/client";
 import { goals, profiles } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
-import { computePlan, type Plan } from "@/domain/energy";
+import { checkTargetWeight, computePlan, type Plan } from "@/domain/energy";
 import { goalChangesWeight } from "@/domain/profile";
 import { type OnboardingInput, onboardingSchema } from "@/features/onboarding/schema";
 
+import { DomainError } from "./errors";
+import { latestWeight } from "./journal";
 import { getCalorieFloors } from "./settings";
 
 export async function getProfile(userId: string) {
@@ -90,4 +92,29 @@ export async function saveOnboarding(userId: string, input: OnboardingInput): Pr
       .onConflictDoUpdate({ target: [goals.userId, goals.effectiveFrom], set: goal });
   });
   return plan;
+}
+
+/**
+ * Change le poids visé après l'inscription, avec les mêmes garde-fous : dans le sens de
+ * l'objectif et pas sous un poids santé. Vide = pas de poids visé. Les calories n'en dépendent pas.
+ */
+export async function setTargetWeight(userId: string, targetWeightKg: number | null): Promise<void> {
+  const profile = await getProfile(userId);
+  if (!profile) throw new DomainError("not_found");
+  if (!goalChangesWeight(profile.goal)) throw new DomainError("goal_not_allowed");
+  if (targetWeightKg !== null) {
+    if (!Number.isFinite(targetWeightKg) || targetWeightKg < 30 || targetWeightKg > 300) {
+      throw new DomainError("weight_range");
+    }
+    const current = (await latestWeight(userId)) ?? profile.startWeightKg;
+    const issue = checkTargetWeight(profile.goal, current, profile.heightCm, targetWeightKg);
+    if (issue) throw new DomainError(issue);
+  }
+  await db()
+    .update(profiles)
+    .set({
+      targetWeightKg: targetWeightKg === null ? null : Math.round(targetWeightKg * 10) / 10,
+      updatedAt: new Date(),
+    })
+    .where(eq(profiles.userId, userId));
 }

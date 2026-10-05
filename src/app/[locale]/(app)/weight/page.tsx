@@ -1,12 +1,16 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { todayIso } from "@/domain/dates";
+import { minHealthyWeightKg } from "@/domain/energy";
+import { goalChangesWeight } from "@/domain/profile";
 import { DeleteWeightButton } from "@/features/weight/delete-weight-button";
 import { WeightChart } from "@/features/weight/weight-chart";
+import { TargetWeightForm } from "@/features/weight/target-weight-form";
 import { WeightForm } from "@/features/weight/weight-form";
 import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { weightOverview } from "@/server/journal";
+import { getProfile } from "@/server/profile";
 import { requireUser } from "@/server/session";
 import { Card } from "@/ui/card";
 import { formatDay } from "@/ui/format-date";
@@ -19,7 +23,7 @@ export default async function WeightPage({ params }: PageProps<"/[locale]/weight
   const locale = toLocale((await params).locale);
   setRequestLocale(locale);
   const user = await requireUser(locale);
-  const overview = await weightOverview(user.id);
+  const [overview, profile] = await Promise.all([weightOverview(user.id), getProfile(user.id)]);
   const t = await getTranslations("weight");
   const today = todayIso();
   const last = overview.trend.at(-1);
@@ -59,6 +63,15 @@ export default async function WeightPage({ params }: PageProps<"/[locale]/weight
             </p>
           )}
           <p className="text-sm text-text-muted">{t("trendHint")}</p>
+        </Card>
+      )}
+
+      {profile && goalChangesWeight(profile.goal) && (
+        <Card aria-labelledby="target-title">
+          <h2 id="target-title" className="text-xl font-semibold">
+            {t("targetTitle")}
+          </h2>
+          <TargetWeightForm target={profile.targetWeightKg} minKg={minHealthyWeightKg(profile.heightCm)} />
         </Card>
       )}
 

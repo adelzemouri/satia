@@ -308,9 +308,21 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await page.getByRole("link", { name: "Progrès" }).click();
   await page.getByRole("link", { name: /^Mon poids/ }).click();
   await page.getByLabel("Poids en kg").fill("82");
-  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
   await expect(page.getByText("Tendance actuelle : 82 kg")).toBeVisible();
   await expect(page.getByText(/Encore quelques pesées/)).toBeVisible();
+
+  // L'objectif de poids se modifie ici, avec le même garde-fou qu'à l'inscription.
+  const goal = page.getByLabel("Poids visé (kg)");
+  await expect(goal).toHaveValue("77");
+  await goal.fill("50");
+  await page.getByRole("button", { name: "Enregistrer l'objectif" }).click();
+  await expect(page.getByText(/On préfère ne pas viser en dessous de/)).toBeVisible();
+  await goal.fill("75,5");
+  await page.getByRole("button", { name: "Enregistrer l'objectif" }).click();
+  await expect(page.getByText("Objectif de poids enregistré.")).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel("Poids visé (kg)")).toHaveValue("75.5");
   await expectNoA11yViolations(page);
 });
 

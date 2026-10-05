@@ -619,7 +619,12 @@
     "empty": "Aucune pesée pour l'instant.",
     "metabolismLink": "Voir mon métabolisme",
     "bodyLink": "Mensurations et photos",
-    "activityLink": "Activité et pas"
+    "activityLink": "Activité et pas",
+    "targetTitle": "Mon objectif de poids",
+    "targetLabel": "Poids visé (kg)",
+    "targetHint": "Laisse vide pour ne pas viser de poids précis. Ton objectif calorique ne change pas.",
+    "targetSave": "Enregistrer l'objectif",
+    "targetSaved": "Objectif de poids enregistré."
   },
   "scan": {
     "title": "Scanner un code-barres",

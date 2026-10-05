@@ -619,7 +619,12 @@
     "empty": "No weigh-in yet.",
     "metabolismLink": "See my metabolism",
     "bodyLink": "Measurements and photos",
-    "activityLink": "Activity and steps"
+    "activityLink": "Activity and steps",
+    "targetTitle": "My weight goal",
+    "targetLabel": "Target weight (kg)",
+    "targetHint": "Leave empty to have no specific target. Your calorie goal does not change.",
+    "targetSave": "Save goal",
+    "targetSaved": "Weight goal saved."
   },
   "scan": {
     "title": "Scan a barcode",
