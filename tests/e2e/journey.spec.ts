@@ -1127,9 +1127,12 @@ test("jeûne : planning, minuteur et historique ; traitement : rappel et journal
   await expect(page.getByText("Planning enregistré.")).toBeVisible();
 
   // Selon l'heure, le planning a pu démarrer un jeûne tout seul : on le termine d'abord.
+  // On attend que la page affiche l'un ou l'autre bouton avant de décider.
   const endFast = page.getByRole("button", { name: "Terminer le jeûne" });
-  if (await endFast.isVisible()) await endFast.click();
-  await page.getByRole("button", { name: "Commencer un jeûne maintenant" }).click();
+  const startFast = page.getByRole("button", { name: "Commencer un jeûne maintenant" });
+  await expect(endFast.or(startFast)).toBeVisible();
+  if (await endFast.isVisible()) await withServerAction(page, () => endFast.click());
+  await startFast.click();
   await expect(page.getByRole("progressbar", { name: "Progression du jeûne" })).toBeVisible();
   await expect(page.getByText(/^Encore \d+ h \d+ min avant ta fenêtre de repas\.$/)).toBeVisible();
   await expectNoA11yViolations(page);
