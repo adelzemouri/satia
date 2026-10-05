@@ -6,7 +6,7 @@ import { z } from "zod";
 
 import { APP_TIMEZONE } from "@/config/app";
 import { db } from "@/db/client";
-import { mealEntries, notificationLog, profiles, pushSubscriptions, user, waterLogs } from "@/db/schema";
+import { mealEntries, notificationLog, profiles, pushSubscriptions, user } from "@/db/schema";
 import { addDays } from "@/domain/energy";
 import { fastEventsOn } from "@/domain/fasting";
 import {
@@ -23,6 +23,7 @@ import fr from "@/i18n/messages/fr.json";
 import { env } from "./env";
 import { DomainError } from "./errors";
 import { fastingAllowed, getFastingPlan } from "./fasting";
+import { mealWaterGlasses, waterOn } from "./journal";
 import { treatmentRemindersOn } from "./treatment";
 
 const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
@@ -231,10 +232,7 @@ export async function runNotifications(now: Date, origin: string): Promise<{ sen
         .selectDistinct({ slot: mealEntries.slot })
         .from(mealEntries)
         .where(and(eq(mealEntries.userId, person.userId), eq(mealEntries.date, date))),
-      db()
-        .select({ glasses: waterLogs.glasses })
-        .from(waterLogs)
-        .where(and(eq(waterLogs.userId, person.userId), eq(waterLogs.date, date))),
+      Promise.all([waterOn(person.userId, date), mealWaterGlasses(person.userId, date)]),
       weekday === 1 && prefs.weeklyReview
         ? db()
             .select({ count: sql<number>`count(distinct ${mealEntries.date})::int` })
@@ -261,7 +259,7 @@ export async function runNotifications(now: Date, origin: string): Promise<{ sen
       prefs,
       mealTimes: person.mealTimes,
       loggedSlots: new Set(slots.map((row) => row.slot)),
-      waterGlasses: water[0]?.glasses ?? 0,
+      waterGlasses: water[0] + water[1],
       waterGoal: person.waterGoal,
       reviewReady: (reviewDays[0]?.count ?? 0) >= REVIEW_MIN_DAYS,
       fastEvents,
