@@ -570,7 +570,7 @@ test("saisie d'un repas par photo (LLM simulé), avec contenant et écran de con
   await expect(lunch.getByText(/^150 g ·/)).toBeVisible();
   await expect(lunch.getByRole("img", { name: "Photo du déjeuner" })).toBeAttached();
   // Macros de chaque aliment et répartition par repas.
-  await expect(lunch.getByText(/^P \d+ g · G \d+ g · L \d+ g$/).first()).toBeVisible();
+  await expect(lunch.getByText(/^Prot\. \d+ g$/).first()).toBeVisible();
   await page.getByText("Répartition par repas").click();
   await expect(
     page

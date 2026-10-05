@@ -53,12 +53,19 @@ export function EntryRow({ entry, units, readOnly = false }: { entry: EntryView;
             : `${entry.quantity} ${t(`units.${entry.unit}`)} · ${t("journal.entryValues", { grams: entry.grams, kcal: Math.round(entry.kcal) })}`}
           {entry.isEstimated && ` · ${t("journal.estimated")}`}
         </span>
-        <span className="text-xs text-text-muted">
-          {t("journal.macroLine", {
-            protein: Math.round(entry.proteinG),
-            carbs: Math.round(entry.carbsG),
-            fat: Math.round(entry.fatG),
-          })}
+        <span className="flex flex-wrap gap-x-3 text-sm text-text-muted">
+          {(
+            [
+              ["proteinShort", entry.proteinG, "bg-protein"],
+              ["carbsShort", entry.carbsG, "bg-carbs"],
+              ["fatShort", entry.fatG, "bg-fat"],
+            ] as const
+          ).map(([key, value, color]) => (
+            <span key={key} className="flex items-center gap-1">
+              <span aria-hidden="true" className={`size-2 rounded-full ${color}`} />
+              {t(`home.${key}`)} {t("journal.grams", { value: Math.round(value) })}
+            </span>
+          ))}
         </span>
       </span>
     </span>
