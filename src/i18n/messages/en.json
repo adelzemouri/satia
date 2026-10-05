@@ -508,7 +508,7 @@
     "ciqualAttribution": "Nutrition values: Anses Ciqual table, open licence.",
     "createFood": "Create a food",
     "createRecipe": "Create a recipe",
-    "manageFoods": "Manage my foods",
+    "manageFoods": "My own foods",
     "quantityTitle": "How much?",
     "preview": "That's {kcal, number} kcal",
     "addButton": "Add to diary",
@@ -933,7 +933,15 @@
     "delete": "Delete {name}",
     "deleted": "Deleted: {name}",
     "empty": "No saved meals yet. In the journal, tap “Save this meal” under a meal you have often.",
-    "hubHint": "Your everyday breakfast, your usual plate…"
+    "hubHint": "Your everyday breakfast, your usual plate…",
+    "edit": "Edit {name}",
+    "editTitle": "Edit the meal",
+    "itemsLegend": "Foods",
+    "removeItem": "Remove {name}",
+    "noItems": "No food left: keep at least one, or delete the meal from “My meals”.",
+    "total": "Total: {kcal} kcal",
+    "saveChanges": "Save changes",
+    "updated": "Meal updated."
   },
   "coach": {
     "title": "Coach",

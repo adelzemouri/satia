@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { type ReactNode, useState } from "react";
 
+import { Link } from "@/i18n/navigation";
 import { Icon } from "@/ui/icon";
 import { useToast } from "@/ui/toast";
 
@@ -33,6 +34,13 @@ export function SavedMealItem({ id, name, children }: { id: string; name: string
   return (
     <li className="flex items-start gap-3 rounded-[var(--radius-card)] bg-surface p-4">
       <div className="flex min-w-0 flex-1 flex-col gap-1">{children}</div>
+      <Link
+        href={`/meals/${id}`}
+        aria-label={t("edit", { name })}
+        className="flex size-11 shrink-0 items-center justify-center rounded-full text-text-muted hover:bg-surface-muted"
+      >
+        <Icon name="edit" size={20} />
+      </Link>
       <button
         type="button"
         onClick={remove}

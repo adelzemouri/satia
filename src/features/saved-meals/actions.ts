@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { type ActionState, toActionState } from "@/server/action-result";
-import { deleteSavedMeal, saveMeal, serveSavedMeal, unserveSavedMeal } from "@/server/saved-meals";
+import { deleteSavedMeal, saveMeal, serveSavedMeal, unserveSavedMeal, updateSavedMeal } from "@/server/saved-meals";
 import { getCurrentUser } from "@/server/session";
 
 export type SavedMealState = (ActionState & { id?: string; ids?: string[] }) | null;
@@ -34,4 +34,8 @@ export async function unserveSavedMealAction(entryIds: string[]): Promise<SavedM
 
 export async function deleteSavedMealAction(id: string): Promise<SavedMealState> {
   return run(async (userId) => (await deleteSavedMeal(userId, id), { ok: true }));
+}
+
+export async function updateSavedMealAction(input: Parameters<typeof updateSavedMeal>[1]): Promise<SavedMealState> {
+  return run(async (userId) => (await updateSavedMeal(userId, input), { ok: true }));
 }

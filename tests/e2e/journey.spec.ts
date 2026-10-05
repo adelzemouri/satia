@@ -332,6 +332,17 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await expect(page.getByRole("region", { name: "Collations" }).getByText("Granola maison")).toBeVisible();
   await page.goto("/meals");
   await expect(page.getByText("Petit-déj du matin")).toBeVisible();
+  // Un repas enregistré se modifie : nom et quantités.
+  await page.getByRole("link", { name: "Modifier Petit-déj du matin" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Modifier le repas");
+  await page.getByLabel("Nom du repas").fill("Grand petit-déj");
+  await page.getByRole("textbox", { name: "Granola maison" }).fill("2");
+  await expect(page.getByText("Total : 424 kcal")).toBeVisible();
+  await expectNoA11yViolations(page);
+  await withServerAction(page, () => page.getByRole("button", { name: "Enregistrer les modifications" }).click());
+  await expect(page).toHaveURL(/\/meals$/);
+  await expect(page.getByText("Grand petit-déj")).toBeVisible();
+  await expect(page.getByText("424 kcal")).toBeVisible();
 
   await page.getByRole("link", { name: "Aujourd'hui" }).click();
   // Sur l'accueil comme dans le journal, toucher un verre fixe le total du jour.
