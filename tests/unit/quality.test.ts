@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  dayBalanceScore,
   dayQuality,
   fruitVegShareForCategories,
   fruitVegShareForGroup,
@@ -34,7 +35,16 @@ describe("qualité nutritionnelle", () => {
         item({ name: "Pomme", grams: 160, fiberG: 2, fruitVegShare: 1 }),
         item({ name: "Ratatouille", grams: 100, fruitVegShare: 0.8 }),
       ]),
-    ).toEqual({ fiberG: 19.2, fruitVegPortions: 3 });
+    ).toEqual({ fiberG: 19.2, fruitVegPortions: 3, saltG: 0, sugarsG: 0 });
+  });
+
+  it("donne un équilibre du jour qui se remplit avec les fibres et les fruits et légumes", () => {
+    expect(dayBalanceScore({ fiberG: 0, fruitVegPortions: 0, saltG: 0, sugarsG: 0 })).toBe(20);
+    expect(dayBalanceScore({ fiberG: 15, fruitVegPortions: 2.5, saltG: 3, sugarsG: 20 })).toBe(60);
+    expect(dayBalanceScore({ fiberG: 40, fruitVegPortions: 6, saltG: 5, sugarsG: 50 })).toBe(100);
+    // Sel au-delà du repère : la part du sel baisse, sans jamais passer sous zéro.
+    expect(dayBalanceScore({ fiberG: 30, fruitVegPortions: 5, saltG: 7.5, sugarsG: 0 })).toBe(90);
+    expect(dayBalanceScore({ fiberG: 30, fruitVegPortions: 5, saltG: 20, sugarsG: 0 })).toBe(80);
   });
 
   it("calcule le bilan de la semaine sur les jours saisis, avec des idées positives", () => {

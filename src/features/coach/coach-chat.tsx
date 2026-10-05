@@ -3,6 +3,8 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState, useTransition } from "react";
 
+import type { CoachQuestion } from "@/domain/coach-questions";
+
 import { useErrorText } from "@/features/auth/use-error-text";
 import { Alert } from "@/ui/alert";
 import { Button } from "@/ui/button";
@@ -20,7 +22,19 @@ export type ChatMessage = {
 const MAX_LENGTH = 500;
 
 /** Conversation avec le coach : fil des messages, champ de saisie et effacement. */
-export function CoachChat({ messages }: { messages: ChatMessage[] }) {
+export function CoachChat({
+  messages,
+  coachName,
+  questions,
+  ask,
+}: {
+  messages: ChatMessage[];
+  coachName: string;
+  /** Questions toutes prêtes, proposées en boutons au-dessus du champ. */
+  questions: CoachQuestion[];
+  /** Question choisie sur l'accueil : envoyée dès l'ouverture de la page. */
+  ask: CoachQuestion | null;
+}) {
   const t = useTranslations("coach");
   const errorText = useErrorText();
   const [text, setText] = useState("");
@@ -33,8 +47,8 @@ export function CoachChat({ messages }: { messages: ChatMessage[] }) {
     end.current?.scrollIntoView({ block: "end" });
   }, [messages.length, sent]);
 
-  const send = () => {
-    const message = text.trim();
+  const send = (value = text) => {
+    const message = value.trim();
     if (!message) return;
     setSent(message);
     setError(null);
@@ -49,6 +63,17 @@ export function CoachChat({ messages }: { messages: ChatMessage[] }) {
     });
   };
 
+  // Question venue de l'accueil : posée une seule fois, puis retirée de l'adresse pour qu'un
+  // rechargement de la page ne la renvoie pas.
+  const asked = useRef(false);
+  useEffect(() => {
+    if (!ask || asked.current) return;
+    asked.current = true;
+    window.history.replaceState(window.history.state, "", window.location.pathname);
+    send(t(`questions.${ask}`));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ask]);
+
   const clear = () =>
     startTransition(async () => {
       const result = await clearCoachMessagesAction();
@@ -62,7 +87,7 @@ export function CoachChat({ messages }: { messages: ChatMessage[] }) {
       ) : (
         <ol aria-label={t("conversation")} className="flex flex-col gap-2">
           {messages.map((message) => (
-            <Bubble key={message.id} from={message.role} label={message.role === "user" ? t("you") : t("coach")}>
+            <Bubble key={message.id} from={message.role} label={message.role === "user" ? t("you") : coachName}>
               {message.notice ? t(`notices.${message.notice}`) : message.content}
             </Bubble>
           ))}
@@ -72,7 +97,7 @@ export function CoachChat({ messages }: { messages: ChatMessage[] }) {
                 {sent}
               </Bubble>
               <li role="status" className="text-sm text-text-muted">
-                {t("thinking")}
+                {t("thinking", { name: coachName })}
               </li>
             </>
           )}
@@ -81,6 +106,26 @@ export function CoachChat({ messages }: { messages: ChatMessage[] }) {
       )}
 
       {error && <Alert>{errorText(error)}</Alert>}
+
+      {questions.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <h3 className="text-sm font-semibold text-text-muted">{t("suggestions")}</h3>
+          <ul data-swipe-lock className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
+            {questions.map((question) => (
+              <li key={question} className="shrink-0">
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => send(t(`questions.${question}`))}
+                  className="min-h-11 rounded-full border border-border bg-surface-muted px-4 py-2 text-sm font-semibold disabled:opacity-60"
+                >
+                  {t(`questions.${question}`)}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <form
         className="flex flex-col gap-2"

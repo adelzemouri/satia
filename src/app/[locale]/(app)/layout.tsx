@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { BackButton } from "@/features/navigation/back-button";
 import { BottomNav } from "@/features/navigation/bottom-nav";
+import { TabSwipe } from "@/features/navigation/tab-swipe";
 import { OfflineProvider, OfflineStatus } from "@/features/offline/offline-provider";
 import { toLocale } from "@/i18n/routing";
 import { requireUser } from "@/server/session";
@@ -27,7 +28,7 @@ export default async function AppLayout({ children, params }: LayoutProps<"/[loc
         >
           <OfflineStatus userId={user.id} />
           <BackButton />
-          {children}
+          <TabSwipe>{children}</TabSwipe>
         </main>
         <BottomNav />
       </ToastProvider>

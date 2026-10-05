@@ -131,7 +131,7 @@ test("onboarding complet d'un adulte avec plan expliqué", async ({ page }) => {
 
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bonjour Adel");
   await expect(page.getByText("kcal restantes", { exact: true })).toBeVisible();
-  await expect(page.getByText("Protéines")).toBeVisible();
+  await expect(page.getByText("Protéines", { exact: true })).toBeVisible();
   await expectNoA11yViolations(page);
 });
 
@@ -200,7 +200,8 @@ test("ajout manuel d'un repas depuis la base Ciqual", async ({ page }) => {
 
   await page.getByRole("link", { name: "Aujourd'hui" }).click();
   await expect(page.getByRole("progressbar", { name: /kcal consommées/ })).not.toHaveAttribute("aria-valuenow", "0");
-  await expect(page.getByText(/^5\d kcal · Pomme, pulpe et peau, crue/)).toBeVisible();
+  // L'anneau du déjeuner affiche les calories du créneau sur sa part de l'objectif.
+  await expect(page.getByRole("link", { name: "Ajouter au déjeuner" })).toContainText(/^Déjeuner5\d \/ \d/);
   await expect(page.getByText(/1 jour d'affilée/)).toBeVisible();
   await expectNoA11yViolations(page);
 });
@@ -674,7 +675,7 @@ test("coach : bilan, conversation (LLM simulé), garde-fou et personnalité", as
   await signInWithTotp(page);
   await page.getByRole("link", { name: "Moi", exact: true }).click();
   await page.getByRole("link", { name: "Coach", exact: true }).click();
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Coach");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pépin");
   // Le foyer de test vient d'être créé : pas assez de jours la semaine dernière pour un bilan.
   await expect(page.getByText(/Pas encore de bilan/)).toBeVisible();
   await expect(page.getByLabel("Serein")).toBeChecked();
@@ -698,6 +699,21 @@ test("coach : bilan, conversation (LLM simulé), garde-fou et personnalité", as
 
   await page.getByRole("button", { name: "Effacer la conversation" }).click();
   await expect(page.getByText(/Aucun message pour l'instant/)).toBeVisible();
+
+  // Depuis l'accueil, une question toute prête est posée à Pépin dès l'ouverture du coach.
+  await page.goto("/");
+  await page.screenshot({ path: "test-results/home-top.png" });
+  await page.screenshot({ path: "test-results/home-full.png", fullPage: true });
+  const card = page.getByRole("region", { name: /Demande à Pépin/ });
+  const question = card.getByRole("link", { name: /\?$/ }).first();
+  const asked = (await question.textContent()) ?? "";
+  await question.click();
+  await expect(page).toHaveURL(/\/coach$/);
+  await expect(conversation.getByText(`Tu me demandais : « ${asked} »`, { exact: false })).toBeVisible();
+  await page.reload();
+  // Le rechargement ne repose pas la question.
+  await expect(conversation.getByText(/Tu me demandais/)).toHaveCount(1);
+  await page.getByRole("button", { name: "Effacer la conversation" }).click();
 });
 
 test("menu de la semaine, liste de courses commune, recettes et scanner de frigo (LLM simulé)", async ({ page }) => {
@@ -826,7 +842,7 @@ test("espace Training : profil sportif, séance express guidée, suivi et biblio
   await expectNoA11yViolations(page);
 
   await page.goto("/");
-  await expect(page.getByText(/^Dont \d+ kcal dépensées en activité\.$/)).toBeVisible();
+  await expect(page.getByRole("link", { name: /^Activité/ })).toContainText(/Activité[1-9]\d* kcal/);
 
   await page.goto("/training/library?muscle=core");
   await expect(page.getByRole("link", { name: /Planche sur les avant-bras/ })).toBeVisible();
@@ -898,7 +914,7 @@ test("corps et activité : mensuration, photos de progression, activité, pas et
   await expectNoA11yViolations(page);
 
   await page.goto("/");
-  await expect(page.getByText(/^Dont \d+ kcal dépensées en activité\.$/)).toBeVisible();
+  await expect(page.getByRole("link", { name: /^Activité/ })).toContainText(/Activité[1-9]\d* kcal/);
 });
 
 test("jeûne : planning, minuteur et historique ; traitement : rappel et journal des prises", async ({ page }) => {
@@ -926,7 +942,7 @@ test("jeûne : planning, minuteur et historique ; traitement : rappel et journal
   await expectNoA11yViolations(page);
 
   await page.goto("/");
-  await page.getByRole("link", { name: /^Jeûne en cours.*Voir le minuteur$/ }).click();
+  await page.getByRole("link", { name: /^Jeûne en cours/ }).click();
   await page.getByRole("button", { name: "Terminer le jeûne" }).click();
   await expect(page.getByRole("button", { name: "Commencer un jeûne maintenant" })).toBeVisible();
   const history = page.getByRole("region", { name: "Historique" });

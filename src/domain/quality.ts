@@ -55,13 +55,30 @@ export type QualityItem = {
   fruitVegShare: number;
 };
 
-export type DayQuality = { fiberG: number; fruitVegPortions: number };
+export type DayQuality = { fiberG: number; fruitVegPortions: number; saltG: number; sugarsG: number };
 
 export function dayQuality(items: readonly QualityItem[]): DayQuality {
+  const total = (pick: (item: QualityItem) => number | null) =>
+    round1(items.reduce((sum, item) => sum + ((pick(item) ?? 0) * item.grams) / 100, 0));
   return {
-    fiberG: round1(items.reduce((sum, item) => sum + ((item.fiberG ?? 0) * item.grams) / 100, 0)),
+    fiberG: total((item) => item.fiberG),
     fruitVegPortions: round1(fruitVegGrams(items) / FRUIT_VEG_PORTION_G),
+    saltG: total((item) => item.saltG),
+    sugarsG: total((item) => item.sugarsG),
   };
+}
+
+/**
+ * Équilibre du jour sur 100, à titre indicatif : il se remplit au fil des repas avec les fibres
+ * (40 %) et les fruits et légumes (40 %) ; le sel (20 %) reste plein jusqu'au repère de 5 g puis
+ * baisse doucement. Aucun aliment n'est « interdit » : on regarde ce qu'on ajoute.
+ */
+export function dayBalanceScore(quality: DayQuality): number {
+  const fiber = Math.min(1, quality.fiberG / FIBER_GOAL_G);
+  const fruitVeg = Math.min(1, quality.fruitVegPortions / FRUIT_VEG_GOAL_PORTIONS);
+  const salt =
+    quality.saltG <= SALT_REFERENCE_G ? 1 : Math.max(0, 1 - (quality.saltG - SALT_REFERENCE_G) / SALT_REFERENCE_G);
+  return Math.round(100 * (0.4 * fiber + 0.4 * fruitVeg + 0.2 * salt));
 }
 
 function fruitVegGrams(items: readonly QualityItem[]): number {

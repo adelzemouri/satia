@@ -85,7 +85,37 @@
     "goalLabel": "Objectif",
     "eatenLabel": "Consommé",
     "ringLeft": "kcal restantes",
-    "ringOver": "kcal en plus"
+    "ringOver": "kcal en plus",
+    "burnedLabel": "Dépensées",
+    "slotKcal": "{kcal, number} / {target, number}",
+    "week": {
+      "label": "Ma semaine",
+      "day": "{day} : {kcal, number} kcal"
+    },
+    "balance": {
+      "title": "Équilibre du jour",
+      "outOf": " / 100",
+      "score": "Note indicative : {score} sur 100",
+      "saltValue": "{value, number} g, repère {reference} g",
+      "open": "Voir mon bilan qualité"
+    },
+    "cards": {
+      "steps": "Pas",
+      "stepsValue": "{steps, number}",
+      "stepsEmpty": "Ajoute tes pas du jour",
+      "activity": "Activité",
+      "kcal": "{value, number} kcal",
+      "activityEmpty": "Note une marche, une séance…",
+      "activityHint": "Déjà ajoutées à ton objectif",
+      "fasting": "Jeûne",
+      "fastingIdle": "Pas en cours",
+      "fastingElapsed": "{h} h {m} min",
+      "fastingProgress": "Progression du jeûne",
+      "treatment": "Traitement",
+      "treatmentDue": "{name} à {time}",
+      "treatmentDone": "Prise notée",
+      "treatmentHint": "Journal et rappels"
+    }
   },
   "theme": {
     "label": "Thème",
@@ -562,7 +592,8 @@
     "glass": "Verre {n}",
     "goalLabel": "Objectif d'eau (verres de 250 ml par jour)",
     "addGlass": "Ajouter un verre d'eau",
-    "goalReached": "Objectif d'eau atteint, bravo !"
+    "goalReached": "Objectif d'eau atteint, bravo !",
+    "ml": "{value, number} / {goal, number} ml"
   },
   "weight": {
     "title": "Mon poids",
@@ -930,7 +961,7 @@
     "empty": "Aucun message pour l'instant. Par exemple : « Que manger ce soir avec ce qu'il me reste ? »",
     "you": "Toi",
     "coach": "Coach",
-    "thinking": "Le coach réfléchit…",
+    "thinking": "{name} réfléchit…",
     "ask": "Ton message",
     "askHint": "Une question sur ton repas du soir, une envie, un doute…",
     "send": "Envoyer",
@@ -961,7 +992,24 @@
     "suggestionTitle": "{slot, select, breakfast {Une idée pour ton petit-déjeuner} lunch {Une idée pour ton déjeuner} snack {Une idée pour ta collation} other {Une idée pour ton dîner}}",
     "suggestionHint": "Une portion de {name} ({kcal} kcal) tient dans ce qu'il te reste aujourd'hui.",
     "suggestionAdd": "Ajouter {name}",
-    "disclaimer": "Le coach de {appName} ne remplace pas un avis médical. Il peut se tromper : pour toute question de santé, parles-en à un professionnel."
+    "disclaimer": "Le coach de {appName} ne remplace pas un avis médical. Il peut se tromper : pour toute question de santé, parles-en à un professionnel.",
+    "cardTitle": "Une question ? Demande à {name}",
+    "cardHint": "Ton coach connaît ta journée et répond en quelques lignes.",
+    "cardOpen": "Discuter avec {name}",
+    "suggestions": "Idées de questions",
+    "questions": {
+      "breakfastIdea": "Un petit-déjeuner qui tient jusqu'à midi ?",
+      "lunchBox": "Une idée de déjeuner à emporter ?",
+      "snackIdea": "Quelle collation pour cet après-midi ?",
+      "sweetTooth": "Envie de sucré : que choisir ?",
+      "dinnerIdea": "Que manger ce soir avec ce qu'il me reste ?",
+      "moreProtein": "Comment ajouter des protéines facilement ?",
+      "moreFiber": "Où trouver plus de fibres ?",
+      "eatingOut": "Comment garder le cap au restaurant ?",
+      "weekSoFar": "Comment se passe ma semaine ?",
+      "hydration": "Des astuces pour boire plus d'eau ?"
+    },
+    "subtitle": "Ton coach nutrition"
   },
   "notifications": {
     "title": "Notifications",
