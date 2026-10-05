@@ -487,7 +487,6 @@
     "deleted": "Deleted: {label}",
     "firstMeal": "Add a meal",
     "emptyDay": "Nothing logged that day yet. One meal is enough to see your summary.",
-    "macroLine": "P {protein, number} g · C {carbs, number} g · F {fat, number} g",
     "splitTitle": "Split by meal",
     "splitCaption": "Calories and macronutrients of each meal, with their share of the day",
     "grams": "{value, number} g"

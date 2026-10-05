@@ -487,7 +487,6 @@
     "deleted": "Supprimé : {label}",
     "firstMeal": "Ajouter un repas",
     "emptyDay": "Rien de noté ce jour-là pour l'instant. Un premier repas suffit pour voir ton bilan.",
-    "macroLine": "P {protein, number} g · G {carbs, number} g · L {fat, number} g",
     "splitTitle": "Répartition par repas",
     "splitCaption": "Calories et macronutriments de chaque repas, avec leur part de la journée",
     "grams": "{value, number} g"
