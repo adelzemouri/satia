@@ -11,6 +11,8 @@ export const ICONS = {
   star: "m12 4 2.4 5 5.4.6-4 3.7 1.1 5.4L12 16l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6L12 4Z",
   left: "m15 5-7 7 7 7",
   right: "m9 5 7 7-7 7",
+  up: "m5 15 7-7 7 7",
+  down: "m5 9 7 7 7-7",
   trash: "M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13M10 11v5M14 11v5",
   edit: "M4 20h4L19 9l-4-4L4 16v4ZM13.5 6.5l4 4",
   bookmark: "M7 4h10v16l-5-4-5 4V4Z",
