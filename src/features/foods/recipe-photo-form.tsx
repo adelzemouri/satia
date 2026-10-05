@@ -5,7 +5,7 @@ import { useRef, useState, useTransition } from "react";
 
 import { compressImage, toBase64 } from "@/features/ai/compress-image";
 import { useErrorText } from "@/features/auth/use-error-text";
-import { setRecipePhotoAction } from "@/features/journal/actions";
+import { regenerateRecipePhotoAction, setRecipePhotoAction } from "@/features/journal/actions";
 import { Alert } from "@/ui/alert";
 import { buttonClass } from "@/ui/button";
 import { Icon } from "@/ui/icon";
@@ -13,8 +13,19 @@ import { Icon } from "@/ui/icon";
 /** Côté long des photos de recette : nette en grand sur un téléphone, légère à stocker. */
 const RECIPE_PHOTO_MAX_SIDE = 1080;
 
-/** Prendre ou choisir la photo d'une recette du foyer, ou remplacer celle générée par l'IA. */
-export function RecipePhotoForm({ foodId, hasPhoto }: { foodId: string; hasPhoto: boolean }) {
+/**
+ * Prendre ou choisir la photo d'une recette du foyer, ou remplacer celle générée par l'IA ;
+ * une photo IA qui ne ressemble pas au plat peut aussi être refaite.
+ */
+export function RecipePhotoForm({
+  foodId,
+  hasPhoto,
+  canRegenerate = false,
+}: {
+  foodId: string;
+  hasPhoto: boolean;
+  canRegenerate?: boolean;
+}) {
   const t = useTranslations("foods.photo");
   const errorText = useErrorText();
   const input = useRef<HTMLInputElement>(null);
@@ -40,13 +51,19 @@ export function RecipePhotoForm({ foodId, hasPhoto }: { foodId: string; hasPhoto
     });
   };
 
+  const regenerate = () =>
+    startTransition(async () => {
+      const result = await regenerateRecipePhotoAction(foodId);
+      setError(result?.error ?? null);
+    });
+
   return (
     <div className="flex flex-col gap-3">
       {error && <Alert>{errorText(error)}</Alert>}
       <div className="flex flex-wrap gap-3">
         <label className={`${buttonClass("secondary")} cursor-pointer ${pending ? "opacity-60" : ""}`}>
           <Icon name="camera" />
-          {pending ? t("sending") : hasPhoto ? t("change") : t("add")}
+          {hasPhoto ? t("change") : t("add")}
           <input
             ref={input}
             type="file"
@@ -56,7 +73,16 @@ export function RecipePhotoForm({ foodId, hasPhoto }: { foodId: string; hasPhoto
             onChange={(event) => upload(event.target.files?.[0])}
           />
         </label>
+        {canRegenerate && (
+          <button type="button" className={buttonClass("secondary")} disabled={pending} onClick={regenerate}>
+            <Icon name="refresh" />
+            {t("regenerate")}
+          </button>
+        )}
       </div>
+      <p role="status" className="text-sm text-text-muted empty:hidden">
+        {pending ? t("sending") : ""}
+      </p>
     </div>
   );
 }

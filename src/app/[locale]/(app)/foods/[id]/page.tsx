@@ -6,6 +6,7 @@ import { todayIso } from "@/domain/dates";
 import { parseDayParam } from "@/domain/day-param";
 import { MEAL_SLOTS } from "@/domain/meals";
 import { catalogRecipeFor } from "@/domain/recipes/catalog";
+import { llmConfig } from "@/llm/config";
 import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { DomainError } from "@/server/errors";
@@ -111,7 +112,13 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
         {t("product.add")}
       </Link>
       {editableRecipe && (
-        <RecipePhotoForm foodId={food.id} hasPhoto={Boolean(food.photoKey && !isGeneratedRecipePhoto(food.photoKey))} />
+        <RecipePhotoForm
+          foodId={food.id}
+          hasPhoto={Boolean(food.photoKey && !isGeneratedRecipePhoto(food.photoKey))}
+          canRegenerate={Boolean(
+            food.photoKey && isGeneratedRecipePhoto(food.photoKey) && ai?.available && llmConfig().imageModel,
+          )}
+        />
       )}
       {editableRecipe && (
         <div className="flex flex-wrap gap-3">

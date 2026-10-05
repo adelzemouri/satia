@@ -57,7 +57,6 @@ export default async function ProgressPage({ params }: PageProps<"/[locale]/prog
           { href: "/training", icon: "dumbbell", label: t("nav.training") },
           { href: "/activity", icon: "run", label: t("activity.title") },
           { href: "/body", icon: "ruler", label: t("body.title") },
-          { href: "/week", icon: "calendar", label: t("week.title") },
           { href: "/quality", icon: "sprout", label: t("quality.title") },
           { href: "/metabolism", icon: "pulse", label: t("metabolism.title") },
         ]}

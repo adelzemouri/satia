@@ -533,6 +533,54 @@ export function isGeneratedRecipePhoto(photoKey: string): boolean {
   return photoKey.split("/").at(-1)!.startsWith(AI_PHOTO_PREFIX);
 }
 
+type GeneratedPhoto = { photoKey: string; imageUrl: string };
+
+/** Fait générer par l'IA la photo d'une recette (d'après son nom et ses ingrédients) et la range. */
+async function generatePhoto(
+  userId: string,
+  recipe: { id: string; name: string; householdId: string | null },
+): Promise<GeneratedPhoto | null> {
+  const ingredients = await db()
+    .select({ name: foods.nameFr })
+    .from(recipeItems)
+    .innerJoin(foods, eq(foods.id, recipeItems.foodId))
+    .where(eq(recipeItems.recipeId, recipe.id))
+    .orderBy(desc(recipeItems.grams));
+  const bytes = await generateRecipeImage(
+    userId,
+    recipe.name,
+    ingredients.map((item) => item.name.split(",")[0]!.toLowerCase()),
+  );
+  const mime = imageMime(bytes);
+  if (!mime) return null;
+  const id = randomUUID();
+  const photoKey = `recipes/${recipe.householdId ?? userId}/${AI_PHOTO_PREFIX}${id}.${mime.slice("image/".length).replace("jpeg", "jpg")}`;
+  await putObject(photoKey, bytes, mime);
+  return { photoKey, imageUrl: recipePhotoPath(recipe.id, id.slice(0, 8)) };
+}
+
+/**
+ * Refait la photo générée d'une recette qui ne ressemble pas au plat. Une photo prise par la
+ * famille n'est jamais remplacée ainsi (elle se change avec « Changer la photo »).
+ */
+export async function regenerateRecipePhoto(userId: string, foodId: string): Promise<void> {
+  const [food] = await db()
+    .select({ id: foods.id, name: foods.nameFr, photoKey: foods.photoKey, householdId: foods.householdId })
+    .from(foods)
+    .where(and(eq(foods.id, z.uuid().parse(foodId)), eq(foods.source, "recipe"), editableBy(userId)));
+  if (!food || (food.photoKey && !isGeneratedRecipePhoto(food.photoKey))) throw new DomainError("not_found");
+  const photo = await generatePhoto(userId, food);
+  if (!photo) throw new AiUnavailableError("provider_error");
+  const [saved] = await db()
+    .update(foods)
+    .set({ ...photo, photoAttemptedAt: new Date(), updatedAt: new Date() })
+    .where(and(eq(foods.id, food.id), food.photoKey ? eq(foods.photoKey, food.photoKey) : isNull(foods.photoKey)))
+    .returning({ id: foods.id });
+  // Photo changée entre-temps (par la famille) : la nouvelle image n'est pas gardée.
+  const obsolete = saved ? food.photoKey : photo.photoKey;
+  if (obsolete) await deleteObjects([obsolete]).catch(logPhotoError);
+}
+
 /** Photos générées à la fois : quelques secondes chacune, dans la limite du budget IA. */
 const GENERATED_PHOTOS_PER_RUN = 2;
 /** Après un échec (IA en pause, budget atteint…), on retente une semaine plus tard. */
@@ -569,36 +617,22 @@ export async function fillRecipePhotos(userId: string, limit = GENERATED_PHOTOS_
       .where(and(eq(foods.id, recipe.id), or(isNull(foods.photoAttemptedAt), lt(foods.photoAttemptedAt, retryBefore))))
       .returning({ id: foods.id });
     if (!claimed) continue;
-    const ingredients = await db()
-      .select({ name: foods.nameFr })
-      .from(recipeItems)
-      .innerJoin(foods, eq(foods.id, recipeItems.foodId))
-      .where(eq(recipeItems.recipeId, recipe.id))
-      .orderBy(desc(recipeItems.grams));
-    let bytes: Uint8Array;
+    let photo: GeneratedPhoto | null;
     try {
-      bytes = await generateRecipeImage(
-        userId,
-        recipe.name,
-        ingredients.map((item) => item.name.split(",")[0]!.toLowerCase()),
-      );
+      photo = await generatePhoto(userId, recipe);
     } catch (error) {
       // IA indisponible (pause, budget, panne) : on s'arrête là et on réessaiera plus tard.
       if (error instanceof AiUnavailableError) break;
       throw error;
     }
-    const mime = imageMime(bytes);
-    if (!mime) continue;
-    const id = randomUUID();
-    const photoKey = `recipes/${recipe.householdId ?? userId}/${AI_PHOTO_PREFIX}${id}.${mime.slice("image/".length).replace("jpeg", "jpg")}`;
-    await putObject(photoKey, bytes, mime);
+    if (!photo) continue;
     const [saved] = await db()
       .update(foods)
-      .set({ photoKey, imageUrl: recipePhotoPath(recipe.id, id.slice(0, 8)), updatedAt: new Date() })
+      .set({ ...photo, updatedAt: new Date() })
       .where(and(eq(foods.id, recipe.id), isNull(foods.photoKey)))
       .returning({ id: foods.id });
     if (saved) created++;
-    else await deleteObjects([photoKey]).catch(logPhotoError);
+    else await deleteObjects([photo.photoKey]).catch(logPhotoError);
   }
   return created;
 }

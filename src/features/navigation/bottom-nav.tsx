@@ -25,7 +25,7 @@ const TABS: { href: string; key: TabKey; icon: keyof typeof ICONS; sections?: st
     href: "/progress",
     key: "progress",
     icon: "chart",
-    sections: ["/weight", "/body", "/activity", "/training", "/week", "/quality", "/metabolism"],
+    sections: ["/weight", "/body", "/activity", "/training", "/quality", "/metabolism"],
   },
   {
     href: "/profile",

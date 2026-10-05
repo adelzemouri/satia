@@ -14,12 +14,11 @@ import { CoachCard } from "@/features/home/coach-card";
 import { ActivityTiles, FastingTile, TreatmentTile } from "@/features/home/day-cards";
 import { MealRings } from "@/features/home/meal-rings";
 import { WeekStrip } from "@/features/home/week-strip";
-import { WeekGauge } from "@/features/adaptive/week-gauge";
 import { PendingShares } from "@/features/family/pending-shares";
 import { RecipeCard } from "@/features/recipes/recipe-card";
 import { Link, redirect } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
-import { ensureWeeklyCheck, weekBudget } from "@/server/adaptive";
+import { ensureWeeklyCheck } from "@/server/adaptive";
 import { pendingShares } from "@/server/family";
 import { purgePhotosIfDue } from "@/server/photos";
 import { currentFast, fastingAllowed, getFastingPlan } from "@/server/fasting";
@@ -46,20 +45,18 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   await ensureWeeklyCheck(user.id, today);
   const now = new Date();
   const weekday = (new Date(`${today}T00:00:00Z`).getUTCDay() + 6) % 7;
-  const [summary, streak, shares, week, fast, fastingPlan, canFast, catalog, days, quality, reminders] =
-    await Promise.all([
-      daySummary(user.id, today),
-      streakFor(user.id, today),
-      pendingShares(user.id),
-      profile.budgetMode === "weekly" ? weekBudget(user.id, today) : null,
-      currentFast(user.id, now),
-      getFastingPlan(user.id),
-      fastingAllowed(user.id),
-      catalogEntries(),
-      weekIntake(user.id, today),
-      dayQualityFor(user.id, today),
-      treatmentRemindersOn(user.id, today, weekday),
-    ]);
+  const [summary, streak, shares, fast, fastingPlan, canFast, catalog, days, quality, reminders] = await Promise.all([
+    daySummary(user.id, today),
+    streakFor(user.id, today),
+    pendingShares(user.id),
+    currentFast(user.id, now),
+    getFastingPlan(user.id),
+    fastingAllowed(user.id),
+    catalogEntries(),
+    weekIntake(user.id, today),
+    dayQualityFor(user.id, today),
+    treatmentRemindersOn(user.id, today, weekday),
+  ]);
   // Le repas du moment est mis en avant : c'est le plus probable à saisir maintenant.
   const current = slotAt(now, APP_TIMEZONE);
   const ideas = ideasForSlot(catalog, current, `${user.id}:${today}`, 4);
@@ -139,12 +136,6 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         </h2>
         <CalorieSummary totals={summary.totals} goal={summary.goal} burnedKcal={burnedKcal} />
         <MacroBars totals={summary.totals} goal={summary.goal} />
-        {week && (
-          <Link href="/week" className="flex flex-col gap-2 rounded-2xl bg-surface-muted px-4 py-3">
-            <WeekGauge consumed={week.consumed} total={week.total} />
-            <span className="font-semibold text-primary">{t("week.open")}</span>
-          </Link>
-        )}
       </Card>
 
       <Card aria-labelledby="meals-title">

@@ -293,17 +293,6 @@
       "capped": "To keep it sustainable and safe, weight loss is limited to about 1% of your weight per week.",
       "start": "Let's go!"
     },
-    "budget": {
-      "title": "How would you like to manage your calories?",
-      "daily": {
-        "label": "Daily budget",
-        "hint": "The same goal every day. Simple and steady."
-      },
-      "weekly": {
-        "label": "Weekly budget",
-        "hint": "One total for the week: each day adjusts to the previous ones, and you can plan bigger days."
-      }
-    },
     "coach": {
       "title": "Which coach suits you?",
       "hint": "You can change it at any time."
@@ -553,8 +542,9 @@
     "photo": {
       "add": "Add a photo",
       "change": "Change the photo",
-      "sending": "Sending the photo…",
-      "caption": "Family photo, only visible to your household."
+      "sending": "Preparing the photo…",
+      "caption": "Family photo, only visible to your household.",
+      "regenerate": "Redo the photo"
     },
     "title": "My foods and recipes",
     "newFood": "New food",
@@ -821,23 +811,6 @@
     "whoHint": "Each person gets the dish to confirm: nothing is added to their journal without their approval.",
     "notEating": "I'm not having any",
     "share": "Share"
-  },
-  "week": {
-    "title": "My week",
-    "open": "See my week",
-    "mode": "Budget mode",
-    "daysTitle": "Day by day",
-    "gauge": "This week",
-    "gaugeValue": "{consumed, number} / {total, number} kcal",
-    "overspent": "This week is already well filled: the remaining days keep a comfortable goal, and everything starts fresh on Monday.",
-    "largerHint": "A family meal or a night out coming up? Tick the day: it gets a bit more, the others a bit less.",
-    "larger": "Bigger day",
-    "largerFor": "Bigger day: {day}",
-    "today": "today",
-    "pastDay": "{consumed, number} kcal logged",
-    "target": "Goal: {kcal, number} kcal",
-    "dailyHint": "With a weekly budget you have a total for the week: what you didn't eat one day carries over to the following days, within sensible limits.",
-    "notLogged": "Nothing logged: counted as a day on target"
   },
   "metabolism": {
     "title": "My metabolism",
@@ -1171,17 +1144,11 @@
   },
   "recipes": {
     "title": "Recipes",
-    "intro": "Your recipes and the household's, including those suggested by the coach.",
-    "mine": "My recipes",
-    "family": "Household recipes",
+    "intro": "The family's recipes and simple ideas, with calories worked out from the Ciqual table.",
+    "ours": "Our recipes",
     "none": "No recipe yet.",
     "perServing": "{kcal} kcal per serving · {count, plural, one {# serving} other {# servings}}",
     "new": "New recipe",
-    "newFamily": "New household recipe",
-    "edit": "Edit",
-    "editLabel": "Edit {name}",
-    "ideas": "Recipe ideas",
-    "ideasIntro": "Simple recipes for the whole family, with calories worked out from the Ciqual table.",
     "filterLabel": "Recipe type",
     "all": "All",
     "categories": {

@@ -4,9 +4,10 @@
  */
 export function recipeImagePrompt(name: string, ingredients: readonly string[]): string {
   return [
-    `Appetizing home-cooked dish: "${name}"`,
-    ingredients.length > 0 && `(main ingredients: ${ingredients.slice(0, 6).join(", ")})`,
-    "served on a simple plate on a light wooden table, natural daylight, three-quarter view,",
+    `Appetizing photo of exactly this dish: "${name}" (French name).`,
+    ingredients.length > 0 &&
+      `Show only these ingredients, clearly recognizable: ${ingredients.slice(0, 8).join(", ")}.`,
+    "Served the way it is usually served (bowl, glass or plate), on a light wooden table, natural daylight, three-quarter view,",
     "realistic food photography, no text, no people, no hands, no logo.",
   ]
     .filter(Boolean)

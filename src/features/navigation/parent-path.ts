@@ -14,7 +14,6 @@ const HUBS: Record<string, string> = {
   "/body": "/progress",
   "/activity": "/progress",
   "/training": "/progress",
-  "/week": "/progress",
   "/quality": "/progress",
   "/metabolism": "/progress",
 };
