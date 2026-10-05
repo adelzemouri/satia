@@ -11,7 +11,14 @@ import { collectUserData } from "@/server/data-export";
 import { searchFoods } from "@/server/foods";
 import { addEntry, entriesOn } from "@/server/journal";
 import { saveOnboarding } from "@/server/profile";
-import { deleteSavedMeal, listSavedMeals, saveMeal, serveSavedMeal, unserveSavedMeal } from "@/server/saved-meals";
+import {
+  deleteSavedMeal,
+  listSavedMeals,
+  saveMeal,
+  serveSavedMeal,
+  unserveSavedMeal,
+  updateSavedMeal,
+} from "@/server/saved-meals";
 
 import { resetDatabase } from "./helpers";
 
@@ -123,6 +130,38 @@ describe("mes repas", () => {
 
     await deleteSavedMeal(userId, id);
     expect(await listSavedMeals(userId)).toHaveLength(0);
+  });
+
+  it("modifie un repas enregistré : nom, quantités et aliments retirés", async () => {
+    const userId = await setupUser();
+    for (const [query, quantity] of [
+      ["pomme", 150],
+      ["yaourt", 125],
+    ] as const) {
+      await addEntry(userId, {
+        date: yesterday,
+        slot: "breakfast",
+        foodId: await foodId(userId, query),
+        quantity,
+        unit: "g",
+      });
+    }
+    const id = await saveMeal(userId, { date: yesterday, slot: "breakfast", name: "Petit-déj" });
+    const [before] = await listSavedMeals(userId);
+    await updateSavedMeal(userId, { id, name: "Petit-déj léger", items: [{ index: 1, quantity: 250 }] });
+    const [after] = await listSavedMeals(userId);
+    expect(after!.name).toBe("Petit-déj léger");
+    expect(after!.items).toHaveLength(1);
+    expect(after!.items[0]).toMatchObject({ label: before!.items[1]!.label, quantity: 250, grams: 250 });
+    expect(after!.items[0]!.kcal).toBeCloseTo(before!.items[1]!.kcal * 2, 0);
+
+    // Position inconnue, liste vide ou repas d'un autre membre : refusés.
+    await expect(updateSavedMeal(userId, { id, name: "X", items: [{ index: 5, quantity: 1 }] })).rejects.toThrow();
+    await expect(updateSavedMeal(userId, { id, name: "X", items: [] })).rejects.toThrow();
+    const memberId = await createMember(userId);
+    await expect(
+      updateSavedMeal(memberId, { id, name: "X", items: [{ index: 0, quantity: 1 }] }),
+    ).rejects.toMatchObject({ code: "not_found" });
   });
 
   it("refuse un repas vide, un jour à venir et le repas d'un autre membre", async () => {

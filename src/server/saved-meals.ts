@@ -4,6 +4,7 @@ import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db/client";
+import { scaleSavedItem } from "@/domain/saved-meals";
 import { MEAL_SLOTS, mealEntries, savedMeals, type SavedMealItem } from "@/db/schema";
 
 import { DomainError } from "./errors";
@@ -58,6 +59,32 @@ export async function saveMeal(userId: string, input: z.input<typeof saveSchema>
     .values({ userId, name: data.name, items })
     .returning({ id: savedMeals.id });
   return row!.id;
+}
+
+export async function getSavedMeal(userId: string, id: string): Promise<SavedMeal> {
+  return getOwnSavedMeal(userId, id);
+}
+
+const updateSchema = z.object({
+  id: z.uuid(),
+  name: z.string().trim().min(1).max(60),
+  /** Lignes gardées, repérées par leur position d'origine, avec leur nouvelle quantité. */
+  items: z
+    .array(z.object({ index: z.number().int().min(0), quantity: z.number().positive().max(10_000) }))
+    .min(1)
+    .max(100),
+});
+
+/** Renomme un repas enregistré, change ses quantités ou retire des aliments. */
+export async function updateSavedMeal(userId: string, input: z.input<typeof updateSchema>): Promise<void> {
+  const data = updateSchema.parse(input);
+  const meal = await getOwnSavedMeal(userId, data.id);
+  const indexes = data.items.map((item) => item.index);
+  if (new Set(indexes).size !== indexes.length || indexes.some((index) => index >= meal.items.length)) {
+    throw new DomainError("not_found");
+  }
+  const items = data.items.map((item) => scaleSavedItem(meal.items[item.index]!, item.quantity));
+  await db().update(savedMeals).set({ name: data.name, items }).where(eq(savedMeals.id, meal.id));
 }
 
 async function getOwnSavedMeal(userId: string, id: string): Promise<SavedMeal> {

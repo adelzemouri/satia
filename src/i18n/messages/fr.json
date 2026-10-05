@@ -508,7 +508,7 @@
     "ciqualAttribution": "Valeurs nutritionnelles : table Ciqual de l'Anses, licence ouverte.",
     "createFood": "Créer un aliment",
     "createRecipe": "Créer une recette",
-    "manageFoods": "Gérer mes aliments",
+    "manageFoods": "Mes aliments perso",
     "quantityTitle": "Combien ?",
     "preview": "Ça fait {kcal, number} kcal",
     "addButton": "Ajouter au journal",
@@ -933,7 +933,15 @@
     "delete": "Supprimer {name}",
     "deleted": "Supprimé : {name}",
     "empty": "Aucun repas enregistré pour l'instant. Dans le journal, touche « Enregistrer ce repas » sous un repas que tu prends souvent.",
-    "hubHint": "Ton petit-déj de tous les jours, ton assiette type…"
+    "hubHint": "Ton petit-déj de tous les jours, ton assiette type…",
+    "edit": "Modifier {name}",
+    "editTitle": "Modifier le repas",
+    "itemsLegend": "Aliments",
+    "removeItem": "Retirer {name}",
+    "noItems": "Plus aucun aliment : garde-en au moins un, ou supprime le repas depuis « Mes repas ».",
+    "total": "Total : {kcal} kcal",
+    "saveChanges": "Enregistrer les modifications",
+    "updated": "Repas modifié."
   },
   "coach": {
     "title": "Coach",
