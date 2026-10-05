@@ -11,7 +11,7 @@ const COUNT_RULE =
 const DISH_RULE =
   "dish : nom court du plat dont l'aliment fait partie, identique pour tous ses composants (« Pâtes au saumon », « Salade verte ») ; null pour un aliment seul (pomme, café). Garde les composants d'un même plat à la suite.";
 const PORTION_RULE =
-  "grams réaliste pour chaque composant, jamais 100 par défaut : assaisonnement et sauce en petite quantité (huile 5-10, vinaigre ou balsamique 5-15, vinaigrette 15-25, mayonnaise 15-20, fromage râpé 10-20, beurre 5-10).";
+  "grams réaliste pour chaque composant, jamais 100 par défaut : assaisonnement et sauce en petite quantité (huile 5-10, vinaigre ou balsamique 5-15, vinaigrette 15-25, mayonnaise 15-20, fromage râpé 10-20, beurre 5-10). Paquet, pot ou bouteille : la portion consommée (1 dose de whey 30, 1 yaourt 125), jamais le poids net imprimé.";
 
 export const MEAL_PHOTO_SYSTEM = [
   `Tu identifies les aliments d'une photo de repas. Réponds en JSON : ${ITEMS_JSON}.`,
