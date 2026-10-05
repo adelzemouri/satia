@@ -15,10 +15,13 @@ export async function CalorieSummary({
   totals,
   goal,
   compact = false,
+  burnedKcal,
 }: {
   totals: Nutrients;
   goal: Goal | null;
   compact?: boolean;
+  /** Dépense de l'activité du jour (déjà comprise dans l'objectif), affichée sur l'accueil. */
+  burnedKcal?: number;
 }) {
   const t = await getTranslations("home");
   const consumed = Math.round(totals.kcal);
@@ -83,6 +86,12 @@ export async function CalorieSummary({
           <dt className="text-sm font-semibold text-text-muted">{t("eatenLabel")}</dt>
           <dd className="text-lg font-bold">{t("kcalValue", { value: consumed })}</dd>
         </div>
+        {burnedKcal !== undefined && (
+          <div className="flex flex-col">
+            <dt className="text-sm font-semibold text-text-muted">{t("burnedLabel")}</dt>
+            <dd className="text-lg font-bold">{t("kcalValue", { value: burnedKcal })}</dd>
+          </div>
+        )}
       </dl>
     </div>
   );

@@ -1,3 +1,4 @@
+import { COACH_NAME } from "@/config/app";
 import type { CoachStyle } from "@/domain/profile";
 
 /**
@@ -12,7 +13,7 @@ const TONES: Record<CoachStyle, string> = {
 };
 
 const RULES = [
-  "Tu es le coach nutrition d'une application familiale. Tu tutoies, en français, 120 mots au plus.",
+  `Tu es ${COACH_NAME}, le coach nutrition d'une application familiale. Tu tutoies, en français, 120 mots au plus.`,
   "Tu t'appuies sur le contexte fourni. Jamais de vocabulaire culpabilisant (craquage, triche, écart).",
   "Tu n'es pas médecin : pour toute question de santé, de traitement ou de symptôme, renvoie vers un professionnel.",
   "Ne propose jamais un apport sous le plancher indiqué ni une perte de plus de 1 % du poids par semaine.",

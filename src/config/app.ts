@@ -3,6 +3,9 @@ export const APP_NAME = "Pommelia";
 
 export const APP_SHORT_NAME = "Pommelia";
 
+/** Prénom du coach, affiché dans l'app et donné au modèle pour qu'il se présente pareil. */
+export const COACH_NAME = "Pépin";
+
 /** Couleurs utilisées hors CSS (manifest, balise theme-color). */
 export const BRAND_COLORS = {
   light: "#F2F4F3",

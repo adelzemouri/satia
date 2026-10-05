@@ -43,7 +43,7 @@ export function SwipeRow({
 
   const left = dx < 0;
   return (
-    <div className="relative overflow-hidden rounded-xl">
+    <div data-swipe-lock className="relative overflow-hidden rounded-xl">
       {Math.abs(dx) > 16 && (
         <div
           aria-hidden="true"

@@ -85,7 +85,37 @@
     "goalLabel": "Goal",
     "eatenLabel": "Eaten",
     "ringLeft": "kcal left",
-    "ringOver": "kcal over"
+    "ringOver": "kcal over",
+    "burnedLabel": "Burned",
+    "slotKcal": "{kcal, number} / {target, number}",
+    "week": {
+      "label": "My week",
+      "day": "{day}: {kcal, number} kcal"
+    },
+    "balance": {
+      "title": "Today's balance",
+      "outOf": " / 100",
+      "score": "Indicative score: {score} out of 100",
+      "saltValue": "{value, number} g, guide {reference} g",
+      "open": "See my quality report"
+    },
+    "cards": {
+      "steps": "Steps",
+      "stepsValue": "{steps, number}",
+      "stepsEmpty": "Add today's steps",
+      "activity": "Activity",
+      "kcal": "{value, number} kcal",
+      "activityEmpty": "Log a walk, a workout…",
+      "activityHint": "Already added to your goal",
+      "fasting": "Fasting",
+      "fastingIdle": "Not running",
+      "fastingElapsed": "{h} h {m} min",
+      "fastingProgress": "Fasting progress",
+      "treatment": "Treatment",
+      "treatmentDue": "{name} at {time}",
+      "treatmentDone": "Dose logged",
+      "treatmentHint": "Log and reminders"
+    }
   },
   "theme": {
     "label": "Theme",
@@ -562,7 +592,8 @@
     "glass": "Glass {n}",
     "goalLabel": "Water goal (250 ml glasses per day)",
     "addGlass": "Add a glass of water",
-    "goalReached": "Water goal reached, well done!"
+    "goalReached": "Water goal reached, well done!",
+    "ml": "{value, number} / {goal, number} ml"
   },
   "weight": {
     "title": "My weight",
@@ -930,7 +961,7 @@
     "empty": "No messages yet. For example: “What can I eat tonight with what I have left?”",
     "you": "You",
     "coach": "Coach",
-    "thinking": "The coach is thinking…",
+    "thinking": "{name} is thinking…",
     "ask": "Your message",
     "askHint": "A question about dinner, a craving, a doubt…",
     "send": "Send",
@@ -961,7 +992,24 @@
     "suggestionTitle": "{slot, select, breakfast {An idea for breakfast} lunch {An idea for lunch} snack {An idea for your snack} other {An idea for dinner}}",
     "suggestionHint": "A serving of {name} ({kcal} kcal) fits in what you have left today.",
     "suggestionAdd": "Add {name}",
-    "disclaimer": "The {appName} coach is not medical advice. It can make mistakes: for any health question, talk to a professional."
+    "disclaimer": "The {appName} coach is not medical advice. It can make mistakes: for any health question, talk to a professional.",
+    "cardTitle": "A question? Ask {name}",
+    "cardHint": "Your coach knows your day and answers in a few lines.",
+    "cardOpen": "Chat with {name}",
+    "suggestions": "Question ideas",
+    "questions": {
+      "breakfastIdea": "A breakfast that lasts until lunch?",
+      "lunchBox": "A packed lunch idea?",
+      "snackIdea": "Which snack for this afternoon?",
+      "sweetTooth": "Craving something sweet: what to pick?",
+      "dinnerIdea": "What can I eat tonight with what I have left?",
+      "moreProtein": "How can I add protein easily?",
+      "moreFiber": "Where can I find more fibre?",
+      "eatingOut": "How do I stay on track at a restaurant?",
+      "weekSoFar": "How is my week going?",
+      "hydration": "Tips to drink more water?"
+    },
+    "subtitle": "Your nutrition coach"
   },
   "notifications": {
     "title": "Notifications",

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, desc, eq, gte, lte } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lte, sum } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db/client";
@@ -9,7 +9,7 @@ import { todayIso } from "@/domain/dates";
 import { stepsKcal } from "@/domain/activity";
 import { addDays, computePlan } from "@/domain/energy";
 import { energyZone, type EnergyZone, type Nutrients, nutrientsFor, sumNutrients } from "@/domain/nutrition";
-import { computeStreak, type Streak } from "@/domain/streak";
+import { computeStreak, isoWeekStart, type Streak } from "@/domain/streak";
 import { trainingDayGoal } from "@/domain/training/program";
 import { UNITS, toGrams } from "@/domain/units";
 import { projectGoalDate, type TrendPoint, weeklyChangeKg, weightTrend } from "@/domain/weight-trend";
@@ -128,6 +128,19 @@ export async function entriesOn(userId: string, date: string): Promise<MealEntry
     .from(mealEntries)
     .where(and(eq(mealEntries.userId, userId), eq(mealEntries.date, isoDate.parse(date))))
     .orderBy(asc(mealEntries.createdAt));
+}
+
+/** Calories saisies chaque jour de la semaine (lundi à dimanche) qui contient `date`. */
+export async function weekIntake(userId: string, date: string): Promise<{ date: string; kcal: number }[]> {
+  const start = isoWeekStart(isoDate.parse(date));
+  const dates = Array.from({ length: 7 }, (_, index) => addDays(start, index));
+  const rows = await db()
+    .select({ date: mealEntries.date, kcal: sum(mealEntries.kcal).mapWith(Number) })
+    .from(mealEntries)
+    .where(and(eq(mealEntries.userId, userId), gte(mealEntries.date, dates[0]!), lte(mealEntries.date, dates[6]!)))
+    .groupBy(mealEntries.date);
+  const byDate = new Map(rows.map((row) => [row.date, row.kcal]));
+  return dates.map((day) => ({ date: day, kcal: Math.round(byDate.get(day) ?? 0) }));
 }
 
 /** Jours de l'intervalle (bornes incluses) où au moins un aliment a été saisi. */
