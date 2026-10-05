@@ -28,7 +28,8 @@
     "training": "Training",
     "skipToContent": "Aller au contenu",
     "progress": "Progrès",
-    "back": "Retour"
+    "back": "Retour",
+    "kitchen": "Cuisine"
   },
   "home": {
     "greeting": "Bonjour {name}",
@@ -331,7 +332,8 @@
     "aiEntryHint": "Tes contenants et tes expressions aident l'IA à mieux comprendre tes repas.",
     "containers": "Mes contenants",
     "dictionary": "Mon dictionnaire",
-    "settings": "Réglages"
+    "settings": "Réglages",
+    "journalHint": "Tous tes jours, le détail des repas et la copie d'un jour"
   },
   "admin": {
     "title": "Administration",

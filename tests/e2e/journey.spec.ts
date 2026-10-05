@@ -242,7 +242,7 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Ajouter Granola maison" })).toBeVisible();
 
   // Une suppression dans le journal s'annule aussi : la ligne revient et reste après rechargement.
-  await page.getByRole("link", { name: "Journal" }).click();
+  await page.goto("/journal");
   const breakfast = page.getByRole("region", { name: "Petit-déjeuner" });
   await breakfast.getByRole("button", { name: "Modifier Granola maison" }).click();
   await breakfast.getByRole("button", { name: "Supprimer" }).click();
@@ -763,8 +763,8 @@ test("coach : bilan, conversation (LLM simulé), garde-fou et personnalité", as
 test("menu de la semaine, liste de courses commune, recettes et scanner de frigo (LLM simulé)", async ({ page }) => {
   test.slow(); // parcours sur quatre écrans
   await signInWithTotp(page);
-  await page.getByRole("link", { name: "Moi", exact: true }).click();
-  await page.getByRole("link", { name: /^Cuisine/ }).click();
+  await page.getByRole("link", { name: "Cuisine", exact: true }).click();
+  await page.getByRole("navigation", { name: "Cuisine" }).getByRole("link", { name: "Menu" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Menu de la semaine");
   const add = page.getByRole("region", { name: "Ajouter un plat" });
   await add.getByLabel("Repas").selectOption("dinner");

@@ -28,7 +28,8 @@
     "training": "Training",
     "skipToContent": "Skip to content",
     "progress": "Progress",
-    "back": "Back"
+    "back": "Back",
+    "kitchen": "Kitchen"
   },
   "home": {
     "greeting": "Hello {name}",
@@ -331,7 +332,8 @@
     "aiEntryHint": "Your containers and expressions help the AI understand your meals better.",
     "containers": "My containers",
     "dictionary": "My dictionary",
-    "settings": "Settings"
+    "settings": "Settings",
+    "journalHint": "All your days, meal details and copying a day"
   },
   "admin": {
     "title": "Admin",
