@@ -54,9 +54,11 @@ export function pickForLabel<T extends { nameFr: string }>(label: string, result
   const starch = [normalized, ...searchVariants(normalized)].some((text) => STARCH.test(text));
   const wantsCooked = COOKED.test(normalized) || (starch && !RAW.test(normalized));
   if (wantsCooked) {
+    // Pour un féculent, la version cuite doit en être un aussi : « linguine » ressemble à
+    // « Julienne ou Lingue, cuite », un poisson.
     const cooked = results.find((food) => {
       const name = normalizeForSearch(food.nameFr);
-      return COOKED.test(name) && !RAW.test(name);
+      return COOKED.test(name) && !RAW.test(name) && (!starch || STARCH.test(name));
     });
     if (cooked) return cooked;
   }

@@ -30,6 +30,8 @@ describe("aliment proposé pour un nom reconnu par l'IA", () => {
 
   it("préfère des pâtes cuites à un paquet sec", () => {
     expect(pickForLabel("linguine", [dry, raw, cooked])).toBe(cooked);
+    // Un poisson au nom proche n'est pas des pâtes cuites.
+    expect(pickForLabel("linguine", [dry, { nameFr: "Julienne ou Lingue, cuite" }, cooked])).toBe(cooked);
     expect(pickForLabel("riz blanc", [{ nameFr: "Riz blanc, cru" }, { nameFr: "Riz blanc, cuit, non salé" }])).toEqual({
       nameFr: "Riz blanc, cuit, non salé",
     });
