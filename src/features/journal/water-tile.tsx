@@ -10,7 +10,7 @@ import { useToast } from "@/ui/toast";
 import { setWaterAction } from "./actions";
 
 /** Contenance d'un verre, pour afficher aussi le total en millilitres. */
-const GLASS_ML = 250;
+export const GLASS_ML = 250;
 /** Au-delà, les verres ne tiennent plus sur une ligne de téléphone : on n'en dessine pas plus. */
 const MAX_DRAWN = 12;
 
@@ -96,8 +96,8 @@ export function WaterTile({ date, glasses, goal }: { date: string; glasses: numb
   );
 }
 
-/** Verre stylisé : contour, et eau qui monte quand il est compté. */
-function Glass({ full, fresh }: { full: boolean; fresh: boolean }) {
+/** Verre stylisé : contour, et eau qui monte quand il est compté (aussi utilisé par le journal). */
+export function Glass({ full, fresh }: { full: boolean; fresh: boolean }) {
   return (
     <svg viewBox="0 0 24 30" className={`h-8 w-6 ${fresh ? "pop" : ""}`}>
       <path

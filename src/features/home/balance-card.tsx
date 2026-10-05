@@ -67,7 +67,8 @@ export async function BalanceCard({ quality }: { quality: DayQuality }) {
       <ul className="grid grid-cols-3 gap-3">
         {rows.map((row) => (
           <li key={row.key} className="flex flex-col gap-1.5">
-            <span className="text-sm font-semibold">{row.label}</span>
+            {/* Hauteur de deux lignes : les jauges restent alignées quand un libellé passe à la ligne. */}
+            <span className="flex min-h-10 items-end text-sm leading-tight font-semibold">{row.label}</span>
             <span className="h-1.5 overflow-hidden rounded-full bg-surface-muted" aria-hidden="true">
               <span
                 className={`bar-grow block h-full rounded-full ${row.high ? "bg-accent" : "bg-primary"}`}
