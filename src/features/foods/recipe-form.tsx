@@ -76,6 +76,17 @@ export function RecipeForm({
   const totals = sumNutrients(items.map((item) => nutrientsFor(item.food, Number(item.grams.replace(",", ".")) || 0)));
   const perServing = Math.round(totals.kcal / Math.max(1, Number(servings) || 1));
 
+  const [moved, setMoved] = useState("");
+  /** Échange un ingrédient avec son voisin ; l'ordre de la liste est celui de la recette. */
+  const move = (index: number, offset: -1 | 1) => {
+    const target = index + offset;
+    if (target < 0 || target >= items.length) return;
+    const next = [...items];
+    [next[index], next[target]] = [next[target]!, next[index]!];
+    setItems(next);
+    setMoved(t("foods.ingredientMoved", { name: next[target]!.food.nameFr, position: target + 1, total: next.length }));
+  };
+
   const addIngredients = (added: Ingredient[]) =>
     setItems((list) => [...list, ...added.filter((item) => !list.some((other) => other.food.id === item.food.id))]);
 
@@ -191,6 +202,26 @@ export function RecipeForm({
                   g
                 </span>
               </label>
+              <div className="flex">
+                <button
+                  type="button"
+                  aria-label={t("foods.moveUp", { name: item.food.nameFr })}
+                  onClick={() => move(index, -1)}
+                  disabled={index === 0}
+                  className="flex size-11 items-center justify-center rounded-full text-text-muted hover:bg-surface-muted disabled:opacity-30"
+                >
+                  <Icon name="up" />
+                </button>
+                <button
+                  type="button"
+                  aria-label={t("foods.moveDown", { name: item.food.nameFr })}
+                  onClick={() => move(index, 1)}
+                  disabled={index === items.length - 1}
+                  className="flex size-11 items-center justify-center rounded-full text-text-muted hover:bg-surface-muted disabled:opacity-30"
+                >
+                  <Icon name="down" />
+                </button>
+              </div>
               <button
                 type="button"
                 aria-label={t("foods.removeIngredient", { name: item.food.nameFr })}
@@ -202,6 +233,9 @@ export function RecipeForm({
             </li>
           ))}
         </ul>
+        <p className="sr-only" aria-live="polite">
+          {moved}
+        </p>
         <label className="flex flex-col gap-1.5">
           <span className="font-semibold">{t("foods.addIngredient")}</span>
           <input

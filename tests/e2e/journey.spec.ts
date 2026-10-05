@@ -206,6 +206,40 @@ test("ajout manuel d'un repas depuis la base Ciqual", async ({ page }) => {
   await expectNoA11yViolations(page);
 });
 
+test("recette : l'ordre des ingrédients se change pendant la modification", async ({ page }) => {
+  await signIn(page, ADMIN);
+  await page.goto("/foods/new-recipe");
+  await page.getByLabel("Nom", { exact: true }).fill("Salade de pâtes");
+  for (const [query, name] of [
+    ["pâtes cuites", /^Pâtes/],
+    ["pomme crue", /^Pomme, pulpe et peau, crue/],
+  ] as const) {
+    await page.getByLabel("Ajouter un ingrédient").fill(query);
+    await page.getByRole("button", { name }).first().click();
+  }
+  const ingredients = page.getByRole("group", { name: "Ingrédients" }).getByRole("listitem");
+  await expect(ingredients).toHaveCount(2);
+  await expect(page.getByRole("button", { name: /^Monter Pâtes/ })).toBeDisabled();
+  await page.getByRole("button", { name: /^Monter Pomme/ }).click();
+  await expect(ingredients.first()).toContainText("Pomme");
+  await expect(page.getByRole("button", { name: /^Monter Pomme/ })).toBeDisabled();
+  await expectNoA11yViolations(page);
+  await page.getByRole("button", { name: "Créer" }).click();
+  await expect(page).toHaveURL(/\/foods$/);
+
+  await page.getByRole("link", { name: /^Salade de pâtes/ }).click();
+  const card = page.getByRole("region", { name: "Ingrédients" }).getByRole("listitem");
+  await expect(card.first()).toContainText("Pomme");
+  // En modification, on redescend la pomme : la fiche suit le nouvel ordre.
+  await page.getByRole("link", { name: "Modifier la recette" }).click();
+  await page.getByRole("button", { name: /^Descendre Pomme/ }).click();
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
+  await expect(page).toHaveURL(/\/foods$/);
+  await page.getByRole("link", { name: /^Salade de pâtes/ }).click();
+  await expect(card.first()).toContainText("Pâtes");
+  await expect(card.last()).toContainText("Pomme");
+});
+
 test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await signIn(page, ADMIN);
   await page.goto("/foods/new");
