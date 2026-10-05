@@ -513,8 +513,10 @@ test("dictée : arrêter puis relancer, même quand le navigateur ne signale pas
   // et une nouvelle dictée échoue tant que la précédente n'est pas terminée.
   await page.addInitScript(() => {
     let count = 0;
-    let active: unknown = null;
+    // Numéro de la dictée en cours (0 : aucune).
+    let active = 0;
     class FakeRecognition {
+      id = 0;
       lang = "";
       interimResults = false;
       continuous = false;
@@ -522,15 +524,16 @@ test("dictée : arrêter puis relancer, même quand le navigateur ne signale pas
       onerror: ((event: unknown) => void) | null = null;
       onend: (() => void) | null = null;
       start() {
-        if (active && active !== this) throw new DOMException("already started", "InvalidStateError");
-        active = this;
+        if (active !== 0 && active !== this.id) throw new DOMException("already started", "InvalidStateError");
         count += 1;
+        this.id = count;
+        active = this.id;
         const words = count === 1 ? "deux œufs" : "et du pain";
         setTimeout(() => this.onresult?.({ results: [Object.assign([{ transcript: words }], { isFinal: true })] }), 50);
       }
       stop() {}
       abort() {
-        if (active === this) active = null;
+        if (active === this.id) active = 0;
         setTimeout(() => this.onend?.(), 10);
       }
     }
