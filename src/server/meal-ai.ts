@@ -10,7 +10,7 @@ import { type ContainerKind, containers, foodCorrections, MEAL_SLOTS, mealEntrie
 import { todayIso } from "@/domain/dates";
 import { correctionRules, type CorrectionRule, isCorrection, resolveLocally } from "@/domain/meal-text";
 import { nutrientsFor } from "@/domain/nutrition";
-import { normalizeForSearch } from "@/domain/search";
+import { normalizeForSearch, pickForLabel } from "@/domain/search";
 import { UNITS } from "@/domain/units";
 import { realisticGrams } from "@/domain/condiments";
 import { AI_INPUT_METHODS, type DraftItem, type MealDraft } from "@/features/ai/draft";
@@ -94,7 +94,7 @@ async function toDraftItems(
       const aiLabel = normalizeForSearch(item.name);
       const results = await searchFoods(userId, item.name);
       const rule = rules.get(aiLabel);
-      const food = (rule && ruledById.get(rule.foodId)) ?? results[0] ?? null;
+      const food = (rule && ruledById.get(rule.foodId)) ?? pickForLabel(item.name, results);
       const grams = Math.round(realisticGrams(item.name, item.grams));
       const count = item.count ?? null;
       // Des pièces comptées s'affichent en pièces quand l'aliment a un poids à la pièce.
