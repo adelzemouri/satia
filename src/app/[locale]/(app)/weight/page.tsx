@@ -13,6 +13,7 @@ import { weightOverview } from "@/server/journal";
 import { getProfile } from "@/server/profile";
 import { requireUser } from "@/server/session";
 import { Card } from "@/ui/card";
+import { PrivacyToggle, PrivateBlock } from "@/ui/private";
 import { formatDay } from "@/ui/format-date";
 import { EmptyState } from "@/ui/empty-state";
 
@@ -31,7 +32,10 @@ export default async function WeightPage({ params }: PageProps<"/[locale]/weight
 
   return (
     <>
-      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
+        <PrivacyToggle />
+      </div>
 
       <Card aria-labelledby="add-weight">
         <h2 id="add-weight" className="text-xl font-semibold">
@@ -45,23 +49,27 @@ export default async function WeightPage({ params }: PageProps<"/[locale]/weight
           <h2 id="trend-title" className="text-xl font-semibold">
             {t("trend")}
           </h2>
-          <p className="font-display text-2xl font-extrabold tracking-tight">{t("current", { value: last.trendKg })}</p>
-          <WeightChart
-            points={overview.trend.slice(-CHART_DAYS)}
-            targetKg={overview.targetWeightKg}
-            label={t("chart")}
-          />
-          <p>{overview.weeklyChangeKg === null ? t("notEnough") : t("weekly", { value: overview.weeklyChangeKg })}</p>
-          {overview.targetWeightKg !== null && overview.weeklyChangeKg !== null && (
-            <p>
-              {overview.projectedGoalDate
-                ? t("projection", {
-                    target: overview.targetWeightKg,
-                    date: formatDay(overview.projectedGoalDate, locale, "long"),
-                  })
-                : t("noProjection", { target: overview.targetWeightKg })}
+          <PrivateBlock className="flex flex-col gap-3">
+            <p className="font-display text-2xl font-extrabold tracking-tight">
+              {t("current", { value: last.trendKg })}
             </p>
-          )}
+            <WeightChart
+              points={overview.trend.slice(-CHART_DAYS)}
+              targetKg={overview.targetWeightKg}
+              label={t("chart")}
+            />
+            <p>{overview.weeklyChangeKg === null ? t("notEnough") : t("weekly", { value: overview.weeklyChangeKg })}</p>
+            {overview.targetWeightKg !== null && overview.weeklyChangeKg !== null && (
+              <p>
+                {overview.projectedGoalDate
+                  ? t("projection", {
+                      target: overview.targetWeightKg,
+                      date: formatDay(overview.projectedGoalDate, locale, "long"),
+                    })
+                  : t("noProjection", { target: overview.targetWeightKg })}
+              </p>
+            )}
+          </PrivateBlock>
           <p className="text-sm text-text-muted">{t("trendHint")}</p>
         </Card>
       )}
@@ -71,7 +79,9 @@ export default async function WeightPage({ params }: PageProps<"/[locale]/weight
           <h2 id="target-title" className="text-xl font-semibold">
             {t("targetTitle")}
           </h2>
-          <TargetWeightForm target={profile.targetWeightKg} minKg={minHealthyWeightKg(profile.heightCm)} />
+          <PrivateBlock>
+            <TargetWeightForm target={profile.targetWeightKg} minKg={minHealthyWeightKg(profile.heightCm)} />
+          </PrivateBlock>
         </Card>
       )}
 
@@ -82,18 +92,20 @@ export default async function WeightPage({ params }: PageProps<"/[locale]/weight
         {history.length === 0 ? (
           <EmptyState scene="scale">{t("empty")}</EmptyState>
         ) : (
-          <ul className="flex flex-col divide-y divide-border">
-            {history.map((entry) => (
-              <li key={entry.date} className="flex items-center gap-2 py-1">
-                <span className="flex-1 first-letter:uppercase">{formatDay(entry.date, locale)}</span>
-                <span className="font-semibold">{entry.weightKg} kg</span>
-                <DeleteWeightButton
-                  date={entry.date}
-                  label={t("delete", { date: formatDay(entry.date, locale, "short") })}
-                />
-              </li>
-            ))}
-          </ul>
+          <PrivateBlock>
+            <ul className="flex flex-col divide-y divide-border">
+              {history.map((entry) => (
+                <li key={entry.date} className="flex items-center gap-2 py-1">
+                  <span className="flex-1 first-letter:uppercase">{formatDay(entry.date, locale)}</span>
+                  <span className="font-semibold">{entry.weightKg} kg</span>
+                  <DeleteWeightButton
+                    date={entry.date}
+                    label={t("delete", { date: formatDay(entry.date, locale, "short") })}
+                  />
+                </li>
+              ))}
+            </ul>
+          </PrivateBlock>
         )}
       </Card>
 

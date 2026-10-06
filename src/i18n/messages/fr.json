@@ -649,6 +649,10 @@
     "removeGlass": "Retirer un verre d'eau",
     "fromMeals": "dont {count, plural, one {# verre} other {# verres}} dans tes repas"
   },
+  "privacy": {
+    "show": "Afficher mon poids",
+    "hide": "Masquer mon poids"
+  },
   "weight": {
     "title": "Mon poids",
     "add": "Nouvelle pesée",
@@ -1026,6 +1030,7 @@
     "ideas": "Des idées pour cette semaine",
     "chatTitle": "Discuter",
     "conversation": "Conversation avec le coach",
+    "earlier": "Messages précédents ({count})",
     "empty": "Aucun message pour l'instant. Par exemple : « Que manger ce soir avec ce qu'il me reste ? »",
     "you": "Toi",
     "coach": "Coach",

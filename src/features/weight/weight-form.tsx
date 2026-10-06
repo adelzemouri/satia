@@ -8,12 +8,15 @@ import { setWeightAction } from "@/features/journal/actions";
 import { Alert } from "@/ui/alert";
 import { Button } from "@/ui/button";
 import { Field } from "@/ui/field";
+import { useWeightShown } from "@/ui/private";
 
 export function WeightForm({ today, lastWeight }: { today: string; lastWeight: number | null }) {
   const t = useTranslations("weight");
   const errorText = useErrorText();
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  // La dernière pesée ne pré-remplit le champ que si le poids est affiché.
+  const shown = useWeightShown();
 
   const submit = (formData: FormData) =>
     startTransition(async () => {
@@ -30,10 +33,11 @@ export function WeightForm({ today, lastWeight }: { today: string; lastWeight: n
       <div className="grid grid-cols-2 gap-3">
         <Field label={t("date")} name="date" type="date" defaultValue={today} max={today} required />
         <Field
+          key={String(shown)}
           label={t("weight")}
           name="weightKg"
           inputMode="decimal"
-          defaultValue={lastWeight ?? undefined}
+          defaultValue={shown ? (lastWeight ?? undefined) : undefined}
           required
         />
       </div>

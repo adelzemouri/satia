@@ -12,6 +12,7 @@ import { checkinOn, feelingHistory } from "@/server/quality";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
 import { Card } from "@/ui/card";
+import { PrivateBlock } from "@/ui/private";
 
 /** Courbe de l'onglet : les deux derniers mois suffisent à voir la tendance. */
 const CHART_DAYS = 60;
@@ -48,7 +49,7 @@ export default async function ProgressPage({ params }: PageProps<"/[locale]/prog
           </Link>
         </div>
         {trend ? (
-          <>
+          <PrivateBlock className="flex flex-col gap-3">
             <p className="flex flex-wrap items-baseline gap-x-3">
               <span className="font-display text-3xl font-extrabold tracking-tight">
                 {t("progress.weightValue", { value: trend.trendKg })}
@@ -64,7 +65,7 @@ export default async function ProgressPage({ params }: PageProps<"/[locale]/prog
               targetKg={overview.targetWeightKg}
               label={t("weight.chart")}
             />
-          </>
+          </PrivateBlock>
         ) : (
           <>
             <p className="text-text-muted">{t("progress.weightEmpty")}</p>
