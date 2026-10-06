@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 
+import { shortFoodName } from "@/domain/food-name";
 import { Icon } from "@/ui/icon";
 
 import type { FoodItem } from "./food-types";
@@ -41,7 +42,7 @@ export function FoodList({
             >
               {food.imageUrl && <ProductThumb src={food.imageUrl} />}
               <span className="flex min-w-0 flex-1 flex-col">
-                <span className="w-full truncate font-semibold">{food.nameFr}</span>
+                <span className="w-full truncate font-semibold">{shortFoodName(food.nameFr)}</span>
                 <span className="text-sm text-text-muted">
                   {describe?.(food) ??
                     [

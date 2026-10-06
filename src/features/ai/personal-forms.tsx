@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
+import { shortFoodName } from "@/domain/food-name";
 import { CONTAINER_KINDS, type ContainerKind } from "@/db/schema/meal-ai";
 import { useErrorText } from "@/features/auth/use-error-text";
 import { FoodSearchBox } from "@/features/foods/food-search-box";
@@ -193,7 +194,7 @@ export function ExpressionForm() {
       {food ? (
         <>
           <div className="flex items-center justify-between gap-2 rounded-2xl bg-surface-muted px-4 py-2">
-            <span className="font-semibold">{food.nameFr}</span>
+            <span className="font-semibold">{shortFoodName(food.nameFr)}</span>
             <Button variant="ghost" className="px-3" onClick={() => setFood(null)}>
               {t("personal.otherFood")}
             </Button>

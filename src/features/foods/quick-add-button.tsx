@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
+import { shortFoodName } from "@/domain/food-name";
 import type { MealSlot } from "@/domain/meals";
 import { addEntryAction, deleteEntryAction } from "@/features/journal/actions";
 import { useOfflineQueue } from "@/features/offline/offline-provider";
@@ -50,7 +51,7 @@ export function QuickAddButton({
         haptic();
         const id = result?.id;
         toast({
-          message: t("addedTo", { name: food.nameFr, slot: tSlots(slot) }),
+          message: t("addedTo", { name: shortFoodName(food.nameFr), slot: tSlots(slot) }),
           undo: id
             ? () => {
                 setAdded(false);

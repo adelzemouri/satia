@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
+import { shortFoodName } from "@/domain/food-name";
 import type { SavedMealItem } from "@/db/schema";
 import { savedMealKcal, scaleSavedItem } from "@/domain/saved-meals";
 import { useErrorText } from "@/features/auth/use-error-text";
@@ -69,7 +70,7 @@ export function SavedMealForm({ id, name, items }: { id: string; name: string; i
             <li key={row.index} className="flex items-end gap-3 py-3">
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                 <label htmlFor={`qty-${row.index}`} className="font-semibold">
-                  {row.item.label}
+                  {shortFoodName(row.item.label)}
                 </label>
                 <div className="flex items-center gap-2">
                   <input

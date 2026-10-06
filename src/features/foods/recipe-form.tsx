@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { type ChangeEvent, useState, useTransition } from "react";
 
+import { shortFoodName } from "@/domain/food-name";
 import { analyzePhotoAction } from "@/features/ai/actions";
 import { compressImage } from "@/features/ai/compress-image";
 import { useErrorText } from "@/features/auth/use-error-text";
@@ -186,7 +187,7 @@ export function RecipeForm({
           {items.map((item, index) => (
             <li key={item.food.id} className="flex items-end gap-2">
               <label className="flex flex-1 flex-col gap-1">
-                <span className="text-sm font-semibold">{item.food.nameFr}</span>
+                <span className="text-sm font-semibold">{shortFoodName(item.food.nameFr)}</span>
                 <span className="sr-only">{t("foods.ingredientGrams", { name: item.food.nameFr })}</span>
                 <span className="flex items-center gap-2">
                   <input
