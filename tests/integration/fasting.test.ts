@@ -161,7 +161,11 @@ describe("jeûne et traitement", () => {
     const userId = await setupUser();
     await saveFastingPlan(userId, everyDay);
     await setNotificationPrefs(userId, { ...DEFAULT_NOTIFICATION_PREFS, meals: false, water: false });
-    await saveSubscription(userId, { endpoint: "https://push.example.com/a", keys: { p256dh: "p", auth: "a" } }, null);
+    await saveSubscription(
+      userId,
+      { endpoint: "https://fcm.googleapis.com/fcm/send/a", keys: { p256dh: "p", auth: "a" } },
+      null,
+    );
     await addTreatment(userId, { name: "Injection", reminderTime: "09:00", reminderDays: [4] });
     const sent: PushPayload[] = [];
     setPushSenderForTests(async (_target, payload) => (sent.push(payload), 201));

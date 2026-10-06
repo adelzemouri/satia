@@ -56,7 +56,7 @@ async function setupUser() {
 }
 
 const subscription = (id: string) => ({
-  endpoint: `https://push.example.com/${id}`,
+  endpoint: `https://fcm.googleapis.com/fcm/send/${id}`,
   keys: { p256dh: `p256dh-${id}`, auth: `auth-${id}` },
 });
 
@@ -86,6 +86,15 @@ describe("notifications", () => {
     await saveSubscription(userId, subscription("b"), null);
     expect(await subscriptionCount(userId)).toBe(2);
     await removeSubscription(userId, subscription("b").endpoint);
+    expect(await subscriptionCount(userId)).toBe(1);
+    // Le serveur n'envoie de requêtes qu'aux services push des navigateurs.
+    for (const endpoint of [
+      "https://example.com/hook",
+      "http://fcm.googleapis.com/x",
+      "https://fcm.googleapis.com.evil.io/x",
+    ]) {
+      await expect(saveSubscription(userId, { ...subscription("c"), endpoint }, null)).rejects.toThrow();
+    }
     expect(await subscriptionCount(userId)).toBe(1);
 
     const prefs = { ...DEFAULT_NOTIFICATION_PREFS, water: false, quietStart: "21:30" };

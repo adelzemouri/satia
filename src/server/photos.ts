@@ -7,6 +7,7 @@ import { and, eq, inArray, lt, or, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { appSettings, mealEntries, photos } from "@/db/schema";
 
+import { purgeRateLimits } from "./rate-limit";
 import { getPhotoSettings } from "./settings";
 import { deleteObjects, putObject, signedGetUrl } from "./storage";
 
@@ -98,6 +99,7 @@ export type PurgeRun = { lastRunAt: string; purged: number };
 /** Purge immédiate (cron ou bouton de l'admin), en gardant trace du dernier passage. */
 export async function runPhotoPurge(now: Date = new Date()): Promise<number> {
   const purged = await purgePhotos(now);
+  await purgeRateLimits();
   await recordPurge({ lastRunAt: now.toISOString(), purged });
   return purged;
 }
@@ -120,6 +122,7 @@ export async function purgePhotosIfDue(now: Date = new Date()): Promise<number |
     })
     .returning({ key: appSettings.key });
   if (claimed.length === 0) return null;
+  await purgeRateLimits();
   const purged = await purgePhotos(now);
   if (purged > 0) await recordPurge({ ...value, purged });
   return purged;

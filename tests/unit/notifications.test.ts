@@ -97,7 +97,7 @@ describe("clés VAPID générées dans le navigateur", () => {
     const browser = await crypto.subtle.generateKey({ name: "ECDH", namedCurve: "P-256" }, true, ["deriveBits"]);
     const details = webpush.generateRequestDetails(
       {
-        endpoint: "https://push.example.com/abc",
+        endpoint: "https://fcm.googleapis.com/fcm/send/abc",
         keys: {
           p256dh: toBase64url(await crypto.subtle.exportKey("raw", browser.publicKey)),
           auth: Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString("base64url"),

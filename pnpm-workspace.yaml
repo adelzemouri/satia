@@ -4,3 +4,7 @@ allowBuilds:
   unrs-resolver: false
   "@parcel/watcher": false
   "@swc/core": false
+
+# Correctifs de sécurité des dépendances de build (pnpm audit).
+overrides:
+  browserslist: ">=4.28.7"
