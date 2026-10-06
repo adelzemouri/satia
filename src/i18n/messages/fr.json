@@ -1642,6 +1642,9 @@
   },
   "progress": {
     "title": "Progrès",
+    "weightOpen": "Pesées et objectif",
+    "weightValue": "{value, number} kg",
+    "weightEmpty": "Note une première pesée pour voir ta courbe ici.",
     "lastWeight": "Dernière pesée : {value, number} kg",
     "history": {
       "title": "Mes 4 dernières semaines",
