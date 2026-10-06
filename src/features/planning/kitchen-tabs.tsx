@@ -15,7 +15,7 @@ const TABS = [
 export async function KitchenTabs({ current }: { current: (typeof TABS)[number]["key"] }) {
   const t = await getTranslations("kitchen");
   return (
-    <nav aria-label={t("title")} className="grid grid-cols-3 gap-1 rounded-full bg-surface-muted p-1">
+    <nav aria-label={t("title")} className="grid grid-cols-3 gap-1 rounded-full bg-surface-muted p-1 lg:max-w-md">
       {TABS.map((tab) => (
         <Link
           key={tab.key}

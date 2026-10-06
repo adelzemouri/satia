@@ -51,6 +51,7 @@ export default async function RecipesPage({ params, searchParams }: PageProps<"/
 
   return (
     <>
+      <span data-wide hidden />
       <KitchenTabs current="recipes" />
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
       <p className="text-text-muted">{t("intro")}</p>

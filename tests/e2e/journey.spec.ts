@@ -141,6 +141,19 @@ test("le thème choisi dans le profil est appliqué et conservé", async ({ page
   await expectNoA11yViolations(page);
 });
 
+test("sur ordinateur, une barre latérale remplace la barre du bas", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await signIn(page, ADMIN);
+  const nav = page.getByRole("navigation", { name: "Navigation principale" });
+  await expect(nav).toHaveCount(1);
+  await nav.getByRole("link", { name: "Journal" }).click();
+  await expect(page).toHaveURL(/\/journal/);
+  await expect(nav.getByRole("link", { name: "Journal" })).toHaveAttribute("aria-current", "page");
+  await page.keyboard.press("n");
+  await expect(page).toHaveURL(/\/add$/);
+  await expectNoA11yViolations(page);
+});
+
 test("réglages des notifications et génération des clés côté admin", async ({ page }) => {
   await signIn(page, ADMIN);
   await page.goto("/profile/notifications");
