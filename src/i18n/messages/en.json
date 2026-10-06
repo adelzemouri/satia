@@ -648,6 +648,10 @@
     "removeGlass": "Remove a glass of water",
     "fromMeals": "including {count, plural, one {# glass} other {# glasses}} from your meals"
   },
+  "privacy": {
+    "show": "Show my weight",
+    "hide": "Hide my weight"
+  },
   "weight": {
     "title": "My weight",
     "add": "New weigh-in",
@@ -1025,6 +1029,7 @@
     "ideas": "Ideas for this week",
     "chatTitle": "Chat",
     "conversation": "Conversation with the coach",
+    "earlier": "Earlier messages ({count})",
     "empty": "No messages yet. For example: “What can I eat tonight with what I have left?”",
     "you": "You",
     "coach": "Coach",

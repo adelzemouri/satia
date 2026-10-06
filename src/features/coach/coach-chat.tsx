@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useTransition } from "react";
 
 import type { CoachQuestion } from "@/domain/coach-questions";
 
@@ -20,6 +20,8 @@ export type ChatMessage = {
 };
 
 const MAX_LENGTH = 500;
+/** Messages affichés d'abord, puis par tranche avec « Messages précédents ». */
+const PAGE = 10;
 
 /** Conversation avec le coach : fil des messages, champ de saisie et effacement. */
 export function CoachChat({
@@ -41,11 +43,32 @@ export function CoachChat({
   const [sent, setSent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  const end = useRef<HTMLLIElement>(null);
+  const [shown, setShown] = useState(PAGE);
+  // La conversation défile dans son propre cadre : la page reste en haut (bilan de la semaine),
+  // et seul le cadre se place sur le dernier message.
+  const scroller = useRef<HTMLDivElement>(null);
+  const keepOffset = useRef<number | null>(null);
 
   useEffect(() => {
-    end.current?.scrollIntoView({ block: "end" });
+    const box = scroller.current;
+    if (box) box.scrollTop = box.scrollHeight;
   }, [messages.length, sent]);
+
+  // Après « Messages précédents », le message lu reste au même endroit.
+  useLayoutEffect(() => {
+    const box = scroller.current;
+    if (!box || keepOffset.current === null) return;
+    box.scrollTop = box.scrollHeight - keepOffset.current;
+    keepOffset.current = null;
+  }, [shown]);
+
+  const showEarlier = () => {
+    const box = scroller.current;
+    if (box) keepOffset.current = box.scrollHeight - box.scrollTop;
+    setShown((count) => count + PAGE);
+  };
+  const visible = messages.slice(-shown);
+  const hidden = messages.length - visible.length;
 
   const send = (value = text) => {
     const message = value.trim();
@@ -85,24 +108,34 @@ export function CoachChat({
       {messages.length === 0 && !sent ? (
         <EmptyState scene="chat">{t("empty")}</EmptyState>
       ) : (
-        <ol aria-label={t("conversation")} className="flex flex-col gap-2">
-          {messages.map((message) => (
-            <Bubble key={message.id} from={message.role} label={message.role === "user" ? t("you") : coachName}>
-              {message.notice ? t(`notices.${message.notice}`) : message.content}
-            </Bubble>
-          ))}
-          {sent && (
-            <>
-              <Bubble from="user" label={t("you")}>
-                {sent}
-              </Bubble>
-              <li role="status" className="text-sm text-text-muted">
-                {t("thinking", { name: coachName })}
-              </li>
-            </>
+        // Cadre défilant atteignable au clavier (axe : scrollable-region-focusable).
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+        <div ref={scroller} tabIndex={0} className="-mx-2 max-h-[60vh] overflow-y-auto overscroll-contain px-2">
+          {hidden > 0 && (
+            <div className="flex justify-center pb-2">
+              <Button variant="ghost" onClick={showEarlier}>
+                {t("earlier", { count: hidden })}
+              </Button>
+            </div>
           )}
-          <li ref={end} aria-hidden className="h-0" />
-        </ol>
+          <ol aria-label={t("conversation")} className="flex flex-col gap-2">
+            {visible.map((message) => (
+              <Bubble key={message.id} from={message.role} label={message.role === "user" ? t("you") : coachName}>
+                {message.notice ? t(`notices.${message.notice}`) : message.content}
+              </Bubble>
+            ))}
+            {sent && (
+              <>
+                <Bubble from="user" label={t("you")}>
+                  {sent}
+                </Bubble>
+                <li role="status" className="text-sm text-text-muted">
+                  {t("thinking", { name: coachName })}
+                </li>
+              </>
+            )}
+          </ol>
+        </div>
       )}
 
       {error && <Alert>{errorText(error)}</Alert>}
