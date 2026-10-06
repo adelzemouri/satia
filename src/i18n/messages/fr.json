@@ -1054,7 +1054,8 @@
     },
     "notices": {
       "floor": "Je préfère ne pas t'accompagner en dessous de ton minimum journalier : ce serait trop peu pour ton corps. On peut regarder ensemble comment rendre tes repas plus rassasiants à calories égales.",
-      "medical": "Les questions de dose ou de médicament relèvent de ton médecin ou de ton pharmacien. Je peux t'aider sur tes repas et tes habitudes."
+      "medical": "Les questions de dose ou de médicament relèvent de ton médecin ou de ton pharmacien. Je peux t'aider sur tes repas et tes habitudes.",
+      "care": "Ce que tu décris peut être dur pour ton corps, et tu mérites d'être bien accompagné·e. Parles-en à ton médecin ou à un professionnel de santé, sans attendre. Je reste là pour t'aider à construire des repas qui te font du bien."
     },
     "suggestionTitle": "{slot, select, breakfast {Une idée pour ton petit-déjeuner} lunch {Une idée pour ton déjeuner} snack {Une idée pour ta collation} other {Une idée pour ton dîner}}",
     "suggestionHint": "Une portion de {name} ({kcal} kcal) tient dans ce qu'il te reste aujourd'hui.",
