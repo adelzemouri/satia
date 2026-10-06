@@ -13,7 +13,7 @@ export const coachMessages = pgTable(
     role: text({ enum: ["user", "coach"] }).notNull(),
     content: text().notNull(),
     /** Réponse locale du coach, sans appel au LLM (texte traduit à l'affichage). */
-    notice: text({ enum: ["floor", "medical"] }),
+    notice: text({ enum: ["floor", "medical", "care"] }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index().on(t.userId, t.createdAt)],

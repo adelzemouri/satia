@@ -20,6 +20,9 @@ import {
   type DishCandidate,
   mealHistoryLines,
   mentionsMedicalTopic,
+  mentionsRiskyPractice,
+  promptLine,
+  suggestsDailyBelowFloor,
   workoutRequest,
   suggestDish,
   weekStats,
@@ -62,7 +65,7 @@ export type CoachMessage = {
   id: string;
   role: "user" | "coach";
   content: string;
-  notice: "floor" | "medical" | null;
+  notice: "floor" | "medical" | "care" | null;
   createdAt: Date;
 };
 
@@ -142,8 +145,8 @@ export async function coachContextFor(userId: string, today: string = todayIso()
 export const coachMessageSchema = z.string().trim().min(1).max(500);
 
 /**
- * Envoie un message au coach. Une demande sous le plancher ou une question de dosage reçoit
- * une réponse locale, sans appel au LLM. Le message n'est enregistré qu'avec sa réponse :
+ * Envoie un message au coach. Une demande sous le plancher, une pratique à risque ou une
+ * question de dosage reçoit une réponse locale, sans appel au LLM. Le message n'est enregistré qu'avec sa réponse :
  * si l'IA est indisponible, rien n'est perdu côté formulaire et rien n'est stocké.
  */
 export async function sendCoachMessage(userId: string, text: string): Promise<CoachMessage> {
@@ -155,6 +158,8 @@ export async function sendCoachMessage(userId: string, text: string): Promise<Co
   let reply: { content: string; notice: CoachMessage["notice"] };
   if (asksBelowFloor(message, floors[profile.sex])) {
     reply = { content: "", notice: "floor" };
+  } else if (mentionsRiskyPractice(message)) {
+    reply = { content: "", notice: "care" };
   } else if (mentionsMedicalTopic(message)) {
     reply = { content: "", notice: "medical" };
   } else {
@@ -166,11 +171,15 @@ export async function sendCoachMessage(userId: string, text: string): Promise<Co
     ]);
     const conversation = history
       .filter((entry) => entry.notice === null)
-      .map((entry) => `${entry.role === "user" ? "Moi" : "Coach"} : ${entry.content}`);
-    const prompt = [`Contexte :\n${context}`, workoutLine, ...conversation, `Moi : ${message}`]
+      .map((entry) => `${entry.role === "user" ? "Moi" : "Coach"} : ${promptLine(entry.content)}`);
+    const prompt = [`Contexte :\n${context}`, workoutLine, ...conversation, `Moi : ${promptLine(message)}`]
       .filter(Boolean)
       .join("\n");
-    reply = { content: await coachReply(userId, profile.coachStyle, prompt), notice: null };
+    const content = await coachReply(userId, profile.coachStyle, prompt);
+    // Dernier filet : une réponse qui proposerait un apport sous le plancher n'est pas montrée.
+    reply = suggestsDailyBelowFloor(content, floors[profile.sex])
+      ? { content: "", notice: "floor" }
+      : { content, notice: null };
   }
 
   return db().transaction(async (tx) => {

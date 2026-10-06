@@ -16,7 +16,7 @@ export type ChatMessage = {
   id: string;
   role: "user" | "coach";
   content: string;
-  notice: "floor" | "medical" | null;
+  notice: "floor" | "medical" | "care" | null;
 };
 
 const MAX_LENGTH = 500;

@@ -1042,7 +1042,8 @@
     },
     "notices": {
       "floor": "I'd rather not help you go below your daily minimum: it would be too little for your body. We can look together at making your meals more filling for the same calories.",
-      "medical": "Questions about doses or medication are for your doctor or pharmacist. I can help with your meals and habits."
+      "medical": "Questions about doses or medication are for your doctor or pharmacist. I can help with your meals and habits.",
+      "care": "What you describe can be hard on your body, and you deserve proper support. Please talk to your doctor or a health professional soon. I'm here to help you build meals that do you good."
     },
     "suggestionTitle": "{slot, select, breakfast {An idea for breakfast} lunch {An idea for lunch} snack {An idea for your snack} other {An idea for dinner}}",
     "suggestionHint": "A serving of {name} ({kcal} kcal) fits in what you have left today.",

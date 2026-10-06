@@ -19,10 +19,53 @@ export function asksBelowFloor(message: string, floor: number): boolean {
  * Questions de dosage ou de médicament : elles relèvent d'un professionnel de santé, le coach
  * répond localement sans appel au LLM. Les autres sujets de santé sont cadrés par le prompt.
  */
-const MEDICAL_PATTERN = /\b(doses?|dosages?|posologies?|m[ée]dicaments?|injections?|insuline)\b/i;
+const MEDICAL_PATTERN =
+  /\b(doses?|dosages?|posologies?|m[ée]dicaments?|injections?|insuline|ozempic|wegovy|mounjaro|saxenda|s[ée]maglutide|tirz[ée]patide|liraglutide|glp-?1)\b/i;
 
 export function mentionsMedicalTopic(message: string): boolean {
   return MEDICAL_PATTERN.test(message);
+}
+
+/**
+ * Signes de pratiques à risque (purge, laxatifs, arrêt de l'alimentation, jeûne de plusieurs
+ * jours) : le coach répond localement, avec douceur, et oriente vers un professionnel.
+ */
+const CARE_PATTERNS = [
+  /\blaxatifs?\b|\bdiur[ée]tiques?\b|\bcoupe-?faim\b/i,
+  /\b(me faire |se faire )?vomir\b|\bvomissements?\b|\bpurger?\b/i,
+  /\banorexi\w*|\bboulimi\w*|\bhyperphagi\w*/i,
+  /\b(ne plus|arr[êe]ter de|plus jamais) manger\b|\bsauter tous (les|mes) repas\b/i,
+  /\bje[uû]n\w*\s+(?:de\s+|pendant\s+)?(?:\d+|deux|trois|quatre|cinq|six|sept|plusieurs)\s*jours?\b/i,
+];
+/** Au-delà, un jeûne sort de ce que propose l'app (20 h au plus). */
+const MAX_FAST_HOURS = 24;
+
+export function mentionsRiskyPractice(message: string): boolean {
+  if (CARE_PATTERNS.some((pattern) => pattern.test(message))) return true;
+  for (const match of message.matchAll(/je[uû]n\w*\D{0,20}?(\d{2,3})\s*h(?:eures?)?\b/gi)) {
+    if (Number(match[1]) > MAX_FAST_HOURS) return true;
+  }
+  return false;
+}
+
+/**
+ * Réponse du LLM qui propose un apport quotidien sous le plancher (« 1 000 kcal par jour ») :
+ * elle est remplacée par la réponse locale. Seuls les totaux journaliers comptent, pas
+ * « il te reste 400 kcal ».
+ */
+export function suggestsDailyBelowFloor(reply: string, floor: number): boolean {
+  const pattern =
+    /(\d[\d\s.\u202f\u00a0]{1,6})\s*(?:k?cal|calories?)\b[^.!?\n]{0,25}?(?:par jour|\/\s*jour|par journ[ée]e|quotidien\w*|chaque jour|per day|a day)/gi;
+  for (const match of reply.matchAll(pattern)) {
+    const value = Number(match[1]!.replace(/[\s.\u202f\u00a0]/g, ""));
+    if (value >= 300 && value < floor) return true;
+  }
+  return false;
+}
+
+/** Message utilisateur aplati sur une ligne pour le prompt : il ne peut pas imiter une réplique du coach. */
+export function promptLine(message: string): string {
+  return message.replace(/\s+/g, " ").trim();
 }
 
 export type CoachContextInput = {
