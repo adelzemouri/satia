@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useState, useTransition } from "react";
 
+import { shortFoodName } from "@/domain/food-name";
 import { useErrorText } from "@/features/auth/use-error-text";
 import { FoodSearchBox } from "@/features/foods/food-search-box";
 import { defaultUnit, type FoodItem } from "@/features/foods/food-types";
@@ -180,7 +181,7 @@ export function MealConfirmation({
           <ul className="flex flex-col gap-3">
             {group.items.map((line) => {
               const values = computedByKey.get(line.key) ?? null;
-              const name = line.food?.nameFr ?? line.estimate?.name;
+              const name = line.food ? shortFoodName(line.food.nameFr) : line.estimate?.name;
               const units: Unit[] = line.food ? availableUnits(line.food) : ["g"];
               const checks = checksByKey.get(line.key) ?? [];
               const pendingReview = checks.length > 0 && reviewed[line.key] !== signature(line);

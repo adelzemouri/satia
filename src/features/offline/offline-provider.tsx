@@ -12,6 +12,7 @@ import {
   useSyncExternalStore,
 } from "react";
 
+import { shortFoodName } from "@/domain/food-name";
 import { useErrorText } from "@/features/auth/use-error-text";
 import { addEntryAction } from "@/features/journal/actions";
 import { useRouter } from "@/i18n/navigation";
@@ -156,7 +157,7 @@ export function OfflineStatus({ userId }: { userId: string }) {
             {pending.map((entry) => (
               <li key={entry.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                 <span>
-                  <span className="font-semibold">{entry.label}</span>
+                  <span className="font-semibold">{shortFoodName(entry.label)}</span>
                   <span className="text-text-muted">
                     {" · "}
                     {entry.quantity} {t(`units.${entry.unit}`)} · {t(`slots.${entry.slot}`)} ·{" "}

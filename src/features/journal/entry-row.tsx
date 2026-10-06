@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
+import { shortFoodName } from "@/domain/food-name";
 import { useErrorText } from "@/features/auth/use-error-text";
 import { ProductThumb } from "@/features/foods/product-thumb";
 import { MEAL_SLOTS, type MealSlot } from "@/domain/meals";
@@ -46,7 +47,9 @@ export function EntryRow({ entry, units, readOnly = false }: { entry: EntryView;
     <span className="flex min-w-0 flex-1 items-center gap-3">
       {entry.imageUrl && <ProductThumb src={entry.imageUrl} size={40} />}
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate font-semibold">{entry.label}</span>
+        <span className="truncate font-semibold" title={entry.label}>
+          {shortFoodName(entry.label)}
+        </span>
         <span className="text-sm text-text-muted">
           {entry.unit === "g"
             ? t("journal.entryValues", { grams: entry.grams, kcal: Math.round(entry.kcal) })

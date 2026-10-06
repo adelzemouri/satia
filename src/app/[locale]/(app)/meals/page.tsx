@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { shortFoodName } from "@/domain/food-name";
 import { savedMealKcal } from "@/domain/saved-meals";
 import { KitchenTabs } from "@/features/planning/kitchen-tabs";
 import { SavedMealItem } from "@/features/saved-meals/saved-meal-item";
@@ -43,7 +44,9 @@ export default async function SavedMealsPage({ params }: PageProps<"/[locale]/me
           {meals.map((meal) => (
             <SavedMealItem key={meal.id} id={meal.id} name={meal.name} canShare={members.length > 0}>
               <span className="font-bold">{meal.name}</span>
-              <span className="text-sm text-text-muted">{meal.items.map((item) => item.label).join(", ")}</span>
+              <span className="text-sm text-text-muted">
+                {meal.items.map((item) => shortFoodName(item.label)).join(" · ")}
+              </span>
               <span className="text-sm font-semibold">{t("common.kcal", { value: savedMealKcal(meal.items) })}</span>
             </SavedMealItem>
           ))}

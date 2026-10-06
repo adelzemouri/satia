@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
+import { shortFoodName } from "@/domain/food-name";
 import { useErrorText } from "@/features/auth/use-error-text";
 import { addEntryAction, deleteEntryAction, setUnitWeightAction } from "@/features/journal/actions";
 import { isNetworkFailure } from "@/features/offline/pending-queue";
@@ -81,7 +82,7 @@ export function QuantityForm({
         haptic();
         const id = result?.id;
         toast({
-          message: t("add.addedTo", { name: food.nameFr, slot: t(`slotsLower.${slot}`) }),
+          message: t("add.addedTo", { name: shortFoodName(food.nameFr), slot: t(`slotsLower.${slot}`) }),
           undo: id ? () => void deleteEntryAction(id) : undefined,
         });
         router.push({ pathname: "/journal", query: { date } });
@@ -94,7 +95,7 @@ export function QuantityForm({
   if (queued) {
     return (
       <div className="flex flex-col gap-4">
-        <Alert tone="success">{t("offline.queued", { name: food.nameFr })}</Alert>
+        <Alert tone="success">{t("offline.queued", { name: shortFoodName(food.nameFr) })}</Alert>
         <Button variant="secondary" onClick={onCancel}>
           {t("offline.addAnother")}
         </Button>
@@ -111,8 +112,11 @@ export function QuantityForm({
         {food.imageUrl && <FoodPhoto src={food.imageUrl} />}
         <div className="flex items-center gap-3">
           <p className="font-semibold">
-            {food.nameFr}
+            {shortFoodName(food.nameFr)}
             {food.brand && <span className="font-normal text-text-muted"> · {food.brand}</span>}
+            {shortFoodName(food.nameFr) !== food.nameFr && (
+              <span className="block text-sm font-normal text-text-muted">{food.nameFr}</span>
+            )}
           </p>
         </div>
       </div>
