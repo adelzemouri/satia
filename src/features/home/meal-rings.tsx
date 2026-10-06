@@ -39,7 +39,7 @@ export async function MealRings({
               <MiniRing percent={percent} size={56} stroke={5}>
                 <span
                   className={`flex size-8 items-center justify-center rounded-full ${
-                    highlight ? "bg-primary text-on-primary" : "text-primary"
+                    highlight ? "bg-pomme text-on-pomme" : "text-primary"
                   }`}
                 >
                   <Icon name="plus" size={18} />

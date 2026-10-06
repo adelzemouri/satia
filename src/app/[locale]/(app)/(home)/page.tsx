@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { after } from "next/server";
 
-import { APP_TIMEZONE } from "@/config/app";
+import { APP_TIMEZONE, COACH_NAME } from "@/config/app";
 import { todayIso } from "@/domain/dates";
 import { dailyMessage, STREAK_MILESTONES } from "@/domain/daily-message";
 import { slotAt } from "@/domain/meals";
@@ -11,6 +11,8 @@ import { CalorieSummary, MacroBars } from "@/features/journal/day-overview";
 import { WaterTile } from "@/features/journal/water-tile";
 import { BalanceCard } from "@/features/home/balance-card";
 import { CoachCard } from "@/features/home/coach-card";
+import { CoachAvatar } from "@/features/coach/coach-avatar";
+import { StreakCelebration } from "@/features/home/streak-celebration";
 import { ActivityTiles, FastingTile, TreatmentTile } from "@/features/home/day-cards";
 import { MealRings } from "@/features/home/meal-rings";
 import { WeekStrip } from "@/features/home/week-strip";
@@ -112,11 +114,18 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           <h1 className="font-display text-3xl font-extrabold tracking-tight">
             {t("home.greeting", { name: profile.firstName })}
           </h1>
-          <p className="text-text-muted">
-            {message.key === "tip"
-              ? t(`home.daily.tips.${String(message.index) as "0"}`)
-              : t(`home.daily.${message.key}`, message)}
-          </p>
+          {/* Pépin signe le message du jour : c'est lui qui parle dans toute l'app. */}
+          <div className="mt-1 flex items-end gap-2">
+            <CoachAvatar size={40} />
+            <p
+              className={`rounded-2xl rounded-bl-md px-3.5 py-2.5 text-sm ${message.key === "streak" ? "bg-pomme-soft font-semibold" : "bg-surface"}`}
+            >
+              <span className="sr-only">{t("home.pepinSays", { name: COACH_NAME })} </span>
+              {message.key === "tip"
+                ? t(`home.daily.tips.${String(message.index) as "0"}`)
+                : t(`home.daily.${message.key}`, message)}
+            </p>
+          </div>
         </div>
         <WeekStrip days={days} today={today} goalKcal={summary.goal?.kcal ?? null} locale={locale} />
       </header>
@@ -195,9 +204,9 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
       <section
         aria-labelledby="streak-title"
-        className={`flex items-center gap-3 rounded-[var(--radius-card)] p-4 ${milestone ? "celebrate bg-primary-soft" : "bg-surface"}`}
+        className={`flex items-center gap-3 rounded-[var(--radius-card)] p-4 ${milestone ? "celebrate bg-pomme-soft" : "bg-surface"}`}
       >
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary">
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-pomme text-on-pomme">
           <Icon name="sprout" />
         </span>
         <div className="flex flex-col">
@@ -207,6 +216,8 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           {streak.frozenDays.length > 0 && <p className="text-sm text-text-muted">{t("home.streakFrozen")}</p>}
         </div>
       </section>
+
+      {milestone && <StreakCelebration days={streak.days} date={today} />}
     </>
   );
 }

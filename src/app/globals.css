@@ -16,11 +16,14 @@
   --color-accent: var(--color-accent);
   --color-accent-soft: var(--color-accent-soft);
   --color-on-accent: var(--color-on-accent);
+  --color-pomme: var(--color-pomme);
+  --color-pomme-soft: var(--color-pomme-soft);
+  --color-on-pomme: var(--color-on-pomme);
   --color-protein: var(--color-protein);
   --color-carbs: var(--color-carbs);
   --color-fat: var(--color-fat);
   --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-title), ui-serif, Georgia, serif;
   --radius-card: var(--radius-card);
 }
 
@@ -34,6 +37,12 @@ html {
 
 body {
   font-family: var(--font-sans);
+}
+
+/* Titres et grands chiffres en Fraunces, version arrondie (axe SOFT) : l'identité « gourmande ». */
+.font-display {
+  font-variation-settings: "SOFT" 100;
+  font-optical-sizing: auto;
 }
 
 /* Par défaut un fieldset s'élargit à son contenu le plus long (min-width: min-content) : un nom
@@ -181,5 +190,48 @@ fieldset {
   ::view-transition-image-pair(*) {
     animation-duration: 0s !important;
     animation-delay: 0s !important;
+  }
+}
+
+/* Célébration d'une série : l'écran monte, des pépins et des feuilles tombent. */
+.celebration {
+  animation: page-in 260ms ease-out;
+}
+
+.confetti {
+  position: absolute;
+  top: -1.5rem;
+  width: 0.6rem;
+  height: 0.85rem;
+  border-radius: 50% 50% 45% 45%;
+  animation: confetti-fall 3.4s linear infinite;
+}
+
+.confetti-seed {
+  background: #7a4b2c;
+}
+
+.confetti-leaf {
+  width: 0.9rem;
+  height: 0.55rem;
+  border-radius: 0 100% 0 100%;
+  background: #9be0d6;
+}
+
+.confetti-light {
+  background: var(--color-on-pomme);
+  opacity: 0.7;
+}
+
+@keyframes confetti-fall {
+  to {
+    transform: translateY(110vh) rotate(320deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confetti {
+    animation: none;
+    top: var(--rest);
   }
 }

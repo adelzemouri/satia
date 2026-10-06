@@ -37,6 +37,9 @@ const PAIRS: [string, string, number][] = [
   ["color-protein", "color-surface", 4.5],
   ["color-carbs", "color-surface", 4.5],
   ["color-fat", "color-surface", 4.5],
+  ["color-on-pomme", "color-pomme", 4.5],
+  ["color-text", "color-pomme-soft", 4.5],
+  ["color-pomme", "color-surface", 3],
   ["color-focus", "color-bg", 3],
 ];
 
