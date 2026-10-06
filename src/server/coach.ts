@@ -1,16 +1,20 @@
 import "server-only";
 
 import { and, asc, desc, eq, gte, inArray, lte, notInArray, sum } from "drizzle-orm";
+import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
 import { db } from "@/db/client";
 import {
+  activities,
   coachMessages,
   coachReviews,
   dailyCheckins,
+  dailySteps,
   mealEntries,
   metabolismChecks,
   profiles,
+  trainingSessions,
   weightEntries,
 } from "@/db/schema";
 import {
@@ -25,6 +29,7 @@ import {
   weekStats,
 } from "@/domain/coach";
 import { APP_TIMEZONE } from "@/config/app";
+import { longHistoryLines } from "@/domain/coach-history";
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
 import { type MealSlot, slotAt } from "@/domain/meals";
@@ -46,8 +51,8 @@ import { coachWorkoutLine } from "./training";
 
 /** Derniers échanges envoyés au LLM avec le nouveau message, et nombre de messages gardés. */
 const PROMPT_HISTORY = 10;
-/** Jours de repas passés résumés pour le coach. */
-const MEAL_HISTORY_DAYS = 14;
+/** Profondeur de l'historique résumé pour le coach (repas, poids, ressentis, activité). */
+const HISTORY_DAYS = 365;
 const KEPT_MESSAGES = 100;
 
 const GOAL_LABELS = {
@@ -82,21 +87,12 @@ export async function listCoachMessages(userId: string, limit = 40): Promise<Coa
   return rows.reverse();
 }
 
-/** Contexte compact du jour pour le coach (quelques lignes). */
-export async function coachContextFor(userId: string, today: string = todayIso()): Promise<string | null> {
-  const profile = await getProfile(userId);
-  if (!profile) return null;
-  const [summary, floors, quality, feeling, week, weighIns, meals] = await Promise.all([
-    daySummary(userId, today),
-    getCalorieFloors(),
-    dayQualityFor(userId, today),
-    checkinOn(userId, today),
-    profile.budgetMode === "weekly" ? weekBudget(userId, today) : null,
-    db()
-      .select({ date: weightEntries.date, weightKg: weightEntries.weightKg })
-      .from(weightEntries)
-      .where(and(eq(weightEntries.userId, userId), gte(weightEntries.date, addDays(today, -60))))
-      .orderBy(asc(weightEntries.date)),
+/** Repas, poids, ressentis et activité de l'année écoulée, pour le contexte du coach. */
+async function historyFor(userId: string, today: string) {
+  const since = addDays(today, -HISTORY_DAYS);
+  const range = (table: { userId: AnyPgColumn; date: AnyPgColumn }) =>
+    and(eq(table.userId, userId), gte(table.date, since), lte(table.date, today));
+  const [meals, weighIns, checkins, sessions, freeActivities, steps] = await Promise.all([
     db()
       .select({
         date: mealEntries.date,
@@ -108,14 +104,56 @@ export async function coachContextFor(userId: string, today: string = todayIso()
         proteinG: mealEntries.proteinG,
       })
       .from(mealEntries)
-      .where(
-        and(
-          eq(mealEntries.userId, userId),
-          gte(mealEntries.date, addDays(today, -MEAL_HISTORY_DAYS)),
-          lte(mealEntries.date, today),
-        ),
-      )
+      .where(range(mealEntries))
       .orderBy(asc(mealEntries.createdAt)),
+    db()
+      .select({ date: weightEntries.date, weightKg: weightEntries.weightKg })
+      .from(weightEntries)
+      .where(range(weightEntries))
+      .orderBy(asc(weightEntries.date)),
+    db()
+      .select({
+        date: dailyCheckins.date,
+        hunger: dailyCheckins.hunger,
+        energy: dailyCheckins.energy,
+        mood: dailyCheckins.mood,
+      })
+      .from(dailyCheckins)
+      .where(range(dailyCheckins)),
+    db()
+      .select({ date: trainingSessions.date, minutes: trainingSessions.durationMin })
+      .from(trainingSessions)
+      .where(range(trainingSessions)),
+    db().select({ date: activities.date, minutes: activities.durationMin }).from(activities).where(range(activities)),
+    db().select({ date: dailySteps.date, steps: dailySteps.steps }).from(dailySteps).where(range(dailySteps)),
+  ]);
+  return { meals, weighIns, checkins, moves: [...sessions, ...freeActivities], steps };
+}
+
+/** Totaux par jour saisi (aujourd'hui exclu : la journée n'est pas finie). */
+function dayTotals(meals: readonly { date: string; kcal: number; proteinG: number }[], today: string) {
+  const days = new Map<string, { date: string; kcal: number; proteinG: number }>();
+  for (const meal of meals) {
+    if (meal.date === today) continue;
+    const day = days.get(meal.date) ?? { date: meal.date, kcal: 0, proteinG: 0 };
+    day.kcal += meal.kcal;
+    day.proteinG += meal.proteinG;
+    days.set(meal.date, day);
+  }
+  return [...days.values()];
+}
+
+/** Contexte du coach : le jour en détail, puis tout l'historique résumé (quelques dizaines de lignes). */
+export async function coachContextFor(userId: string, today: string = todayIso()): Promise<string | null> {
+  const profile = await getProfile(userId);
+  if (!profile) return null;
+  const [summary, floors, quality, feeling, week, history] = await Promise.all([
+    daySummary(userId, today),
+    getCalorieFloors(),
+    dayQualityFor(userId, today),
+    checkinOn(userId, today),
+    profile.budgetMode === "weekly" ? weekBudget(userId, today) : null,
+    historyFor(userId, today),
   ]);
   return coachContext({
     firstName: profile.firstName,
@@ -127,7 +165,7 @@ export async function coachContextFor(userId: string, today: string = todayIso()
     macros: summary.totals,
     macroGoals: summary.goal,
     floorKcal: floors[profile.sex],
-    trendKg: weightTrend(weighIns).at(-1)?.trendKg ?? null,
+    trendKg: weightTrend(history.weighIns.filter((row) => row.date >= addDays(today, -60))).at(-1)?.trendKg ?? null,
     targetKg: profile.targetWeightKg,
     diet: profile.diet,
     foodsToAvoid: profile.foodsToAvoid,
@@ -135,7 +173,17 @@ export async function coachContextFor(userId: string, today: string = todayIso()
     fruitVegPortions: quality.fruitVegPortions,
     feeling,
     weekly: week && { consumed: week.consumed, total: week.total },
-    history: mealHistoryLines(meals, today, (days) => addDays(today, -days)),
+    history: [
+      ...mealHistoryLines(history.meals, today, (days) => addDays(today, -days)),
+      ...longHistoryLines({
+        today,
+        days: dayTotals(history.meals, today),
+        weights: history.weighIns,
+        checkins: history.checkins,
+        moves: history.moves,
+        steps: history.steps,
+      }),
+    ],
   });
 }
 
