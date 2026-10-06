@@ -39,41 +39,42 @@ export function useWeightShown(): boolean {
   return useSyncExternalStore(subscribe, read, () => false);
 }
 
-/** Bloc flouté tant que le poids est masqué ; un toucher l'affiche. */
+const PILL =
+  "inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-surface px-4 text-sm font-semibold text-primary shadow-sm";
+
+/**
+ * Bloc flouté tant que le poids est masqué : la pastille « Afficher » le dévoile, la pastille
+ * « Masquer » au même endroit le refloute (partout dans l'app).
+ */
 export function PrivateBlock({ children, className = "" }: { children: ReactNode; className?: string }) {
   const shown = useWeightShown();
   const t = useTranslations("privacy");
-  if (shown) return <div className={className}>{children}</div>;
+  if (shown) {
+    return (
+      <div className="flex flex-col gap-2">
+        <div className={className}>{children}</div>
+        <button type="button" onClick={() => setWeightShown(false)} className={`${PILL} self-end`}>
+          <Icon name="eyeOff" size={18} />
+          {t("hide")}
+        </button>
+      </div>
+    );
+  }
   return (
-    <div className="relative min-h-11">
+    <div className="relative min-h-16">
       <div inert className={`pointer-events-none blur-md select-none ${className}`}>
         {children}
       </div>
       <button
         type="button"
         onClick={() => setWeightShown(true)}
-        className="absolute inset-0 flex items-center justify-center gap-2 rounded-2xl font-semibold text-primary"
+        className="group absolute inset-0 flex items-center justify-center rounded-2xl"
       >
-        <Icon name="eye" />
-        {t("show")}
+        <span className={`${PILL} group-hover:bg-surface-muted`}>
+          <Icon name="eye" size={18} />
+          {t("show")}
+        </span>
       </button>
     </div>
-  );
-}
-
-/** Bouton qui affiche ou masque le poids partout dans l'app. */
-export function PrivacyToggle() {
-  const shown = useWeightShown();
-  const t = useTranslations("privacy");
-  return (
-    <button
-      type="button"
-      onClick={() => setWeightShown(!shown)}
-      aria-pressed={!shown}
-      className="inline-flex min-h-11 shrink-0 items-center gap-1.5 text-sm font-semibold text-primary"
-    >
-      <Icon name={shown ? "eyeOff" : "eye"} size={18} />
-      {shown ? t("hide") : t("show")}
-    </button>
   );
 }
