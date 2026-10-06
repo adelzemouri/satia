@@ -1,20 +1,28 @@
-import { Bone, SkeletonPage } from "@/ui/skeleton";
+import { Bone, SkeletonPage, TitleBone } from "@/ui/skeleton";
 
-/** Squelette de l'ajout : titre et repas, recherche, photo / voix / code-barres, puis la liste. */
+/**
+ * Squelette de l'ajout : titre et repas, recherche, la photo en grand, voix et code-barres, les
+ * autres façons d'ajouter, puis les listes (récents, favoris, les miens).
+ */
 export default function AddLoading() {
   return (
     <SkeletonPage>
       <div className="flex items-center justify-between gap-3">
-        <Bone className="h-9 w-32 rounded-2xl" />
-        <Bone className="h-14 w-44 rounded-full" />
+        <TitleBone className="w-32" />
+        <Bone className="h-12 w-36 rounded-full" />
       </div>
-      <Bone className="h-14 w-full rounded-full" />
-      <div className="grid grid-cols-3 gap-3">
-        {[0, 1, 2].map((index) => (
-          <Bone key={index} className="h-24 rounded-[var(--radius-card)]" />
+      <Bone className="h-14 w-full rounded-2xl" />
+      <Bone className="h-28 w-full rounded-2xl" />
+      <div className="grid grid-cols-2 gap-3">
+        {[0, 1].map((index) => (
+          <Bone key={index} className="h-24 rounded-2xl" />
         ))}
       </div>
-      <Bone className="h-12 w-full rounded-full" />
+      <div className="flex gap-5">
+        <Bone className="h-4 w-32" />
+        <Bone className="h-4 w-32" />
+      </div>
+      <Bone className="h-[52px] w-full rounded-full" />
       <div className="flex flex-col rounded-[var(--radius-card)] bg-surface px-4">
         {[0, 1, 2, 3].map((index) => (
           <div key={index} className="flex min-h-16 items-center gap-3 py-2">
