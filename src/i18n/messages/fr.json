@@ -53,6 +53,7 @@
     "openJournal": "Voir le détail du journal",
     "streak": "{days, plural, =0 {Pas encore de série : un repas saisi aujourd'hui la lance.} one {# jour d'affilée} other {# jours d'affilée}}",
     "streakFrozen": "Un jour de repos a été couvert cette semaine, ta série continue.",
+    "streakShort": "{days} j",
     "more": "Raccourcis",
     "activityBurned": "Dont {kcal} kcal dépensées en activité.",
     "fastRunning": "Jeûne en cours",
@@ -1049,7 +1050,7 @@
     "suggestionAdd": "Ajouter {name}",
     "disclaimer": "Le coach de {appName} ne remplace pas un avis médical. Il peut se tromper : pour toute question de santé, parles-en à un professionnel.",
     "cardTitle": "Une question ? Demande à {name}",
-    "cardHint": "Ton coach connaît ta journée et répond en quelques lignes.",
+    "cardHint": "Ton coach connaît ton historique et répond en quelques lignes.",
     "cardOpen": "Discuter avec {name}",
     "suggestions": "Idées de questions",
     "questions": {

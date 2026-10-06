@@ -197,7 +197,7 @@ test("ajout manuel d'un repas depuis la base Ciqual", async ({ page }) => {
   await expect(page.getByRole("progressbar", { name: /kcal consommées/ })).not.toHaveAttribute("aria-valuenow", "0");
   // L'anneau du déjeuner affiche les calories du créneau sur sa part de l'objectif.
   await expect(page.getByRole("link", { name: "Ajouter au déjeuner" })).toContainText(/^Déjeuner5\d \/ \d/);
-  await expect(page.getByText(/1 jour d'affilée/)).toBeVisible();
+  await expect(page.getByRole("link", { name: /1 jour d'affilée/ })).toBeVisible();
   await expectNoA11yViolations(page);
 });
 

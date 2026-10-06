@@ -41,47 +41,38 @@ export async function BalanceCard({ quality }: { quality: DayQuality }) {
     },
   ];
   return (
-    <section
-      aria-labelledby="balance-title"
-      className="flex flex-col gap-4 rounded-[var(--radius-card)] bg-surface p-5"
-    >
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 id="balance-title" className="text-lg font-bold">
+    <Link href="/quality" className="flex flex-col gap-3 rounded-[var(--radius-card)] bg-surface px-5 py-4">
+      <span className="flex items-baseline justify-between gap-3">
+        <h2 id="balance-title" className="font-bold">
           {t("home.balance.title")}
         </h2>
-        <p className="shrink-0">
+        <span className="shrink-0">
           <span className="font-display text-2xl font-extrabold text-primary">
             <CountUp value={score} />
           </span>
           <span className="font-semibold text-text-muted">{t("home.balance.outOf")}</span>
           <span className="sr-only">{t("home.balance.score", { score })}</span>
-        </p>
-      </div>
+        </span>
+      </span>
       {/* Jauge en dégradé avec un repère à la position de la note. */}
-      <div className="relative h-2.5 rounded-full bg-linear-to-r from-primary-soft to-primary" aria-hidden="true">
+      <span className="relative h-2.5 rounded-full bg-linear-to-r from-primary-soft to-primary" aria-hidden="true">
         <span
           className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-surface bg-primary shadow"
           style={{ left: `${Math.min(97, Math.max(3, score))}%` }}
         />
-      </div>
-      <ul className="grid grid-cols-3 gap-3">
+      </span>
+      {/* Les trois repères en une ligne ; le détail est sur le bilan qualité. */}
+      <span className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-muted">
         {rows.map((row) => (
-          <li key={row.key} className="flex flex-col gap-1.5">
-            {/* Hauteur de deux lignes : les jauges restent alignées quand un libellé passe à la ligne. */}
-            <span className="flex min-h-10 items-end text-sm leading-tight font-semibold">{row.label}</span>
-            <span className="h-1.5 overflow-hidden rounded-full bg-surface-muted" aria-hidden="true">
-              <span
-                className={`bar-grow block h-full rounded-full ${row.high ? "bg-accent" : "bg-primary"}`}
-                style={{ width: `${Math.min(100, row.percent)}%` }}
-              />
-            </span>
-            <span className="text-xs text-text-muted">{row.value}</span>
-          </li>
+          <span key={row.key} className="flex items-center gap-1.5">
+            <span
+              aria-hidden="true"
+              className={`size-2 rounded-full ${row.high ? "bg-accent" : row.percent >= 100 ? "bg-primary" : "bg-primary-soft"}`}
+            />
+            {row.label} {row.value}
+          </span>
         ))}
-      </ul>
-      <Link href="/quality" className="text-sm font-semibold text-primary underline-offset-4 hover:underline">
-        {t("home.balance.open")}
-      </Link>
-    </section>
+      </span>
+    </Link>
   );
 }

@@ -9,7 +9,7 @@ import { todayIso } from "@/domain/dates";
 import { stepsKcal } from "@/domain/activity";
 import { addDays, computePlan } from "@/domain/energy";
 import { energyZone, type EnergyZone, type Nutrients, nutrientsFor, sumNutrients } from "@/domain/nutrition";
-import { computeStreak, isoWeekStart, type Streak } from "@/domain/streak";
+import { computeStreak, type Streak } from "@/domain/streak";
 import { trainingDayGoal } from "@/domain/training/program";
 import { UNITS, toGrams } from "@/domain/units";
 import { glassesFromMl, isWaterFood, WATER_GROUP } from "@/domain/water";
@@ -131,9 +131,9 @@ export async function entriesOn(userId: string, date: string): Promise<MealEntry
     .orderBy(asc(mealEntries.createdAt));
 }
 
-/** Calories saisies chaque jour de la semaine (lundi à dimanche) qui contient `date`. */
-export async function weekIntake(userId: string, date: string): Promise<{ date: string; kcal: number }[]> {
-  const start = isoWeekStart(isoDate.parse(date));
+/** Calories des 7 derniers jours, aujourd'hui compris (pas de jours à venir, vides par définition). */
+export async function recentIntake(userId: string, date: string): Promise<{ date: string; kcal: number }[]> {
+  const start = addDays(isoDate.parse(date), -6);
   const dates = Array.from({ length: 7 }, (_, index) => addDays(start, index));
   const rows = await db()
     .select({ date: mealEntries.date, kcal: sum(mealEntries.kcal).mapWith(Number) })

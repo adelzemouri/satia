@@ -12,10 +12,10 @@ export async function CoachCard({ questions }: { questions: CoachQuestion[] }) {
   return (
     <section
       aria-labelledby="coach-card-title"
-      className="flex flex-col gap-4 rounded-[var(--radius-card)] bg-surface p-5"
+      className="flex flex-col gap-3 rounded-[var(--radius-card)] bg-surface p-5"
     >
       <div className="flex items-center gap-3">
-        <CoachAvatar size={52} />
+        <CoachAvatar size={44} />
         <div className="flex min-w-0 flex-col">
           <h2 id="coach-card-title" className="text-lg font-bold">
             {t("cardTitle", { name: COACH_NAME })}
@@ -23,24 +23,27 @@ export async function CoachCard({ questions }: { questions: CoachQuestion[] }) {
           <p className="text-sm text-text-muted">{t("cardHint")}</p>
         </div>
       </div>
-      <ul className="flex flex-col gap-2">
+      <ul className="flex flex-wrap gap-2">
         {questions.map((question) => (
           <li key={question}>
             <Link
               href={{ pathname: "/coach", query: { ask: question } }}
-              className="flex min-h-12 items-center justify-between gap-3 rounded-2xl bg-surface-muted px-4 py-2.5 font-semibold"
+              className="flex min-h-11 items-center rounded-full bg-surface-muted px-4 py-2 text-sm font-semibold"
             >
-              <span>{t(`questions.${question}`)}</span>
-              <span className="shrink-0 text-primary">
-                <Icon name="right" size={18} />
-              </span>
+              {t(`questions.${question}`)}
             </Link>
           </li>
         ))}
+        <li>
+          <Link
+            href="/coach"
+            className="flex min-h-11 items-center gap-1 rounded-full px-3 py-2 text-sm font-semibold text-primary"
+          >
+            {t("cardOpen", { name: COACH_NAME })}
+            <Icon name="right" size={16} />
+          </Link>
+        </li>
       </ul>
-      <Link href="/coach" className="text-sm font-semibold text-primary underline-offset-4 hover:underline">
-        {t("cardOpen", { name: COACH_NAME })}
-      </Link>
     </section>
   );
 }
