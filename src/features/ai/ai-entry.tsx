@@ -178,12 +178,18 @@ export function AiEntry({
       ) : (
         !describing && (
           <>
-            <div className="grid grid-cols-3 gap-3">
-              <label className={tileClass(true, "cursor-pointer focus-within:outline-2")}>
-                <Icon name="camera" size={28} />
-                {t("takePhoto")}
-                <input type="file" accept="image/*" capture="environment" onChange={choosePhoto} className="sr-only" />
-              </label>
+            {/* La photo est le geste le plus rapide : elle prend toute la largeur, voix et code-barres en dessous. */}
+            <label className="flex min-h-28 cursor-pointer items-center gap-4 rounded-2xl bg-primary px-5 text-on-primary focus-within:outline-2">
+              <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-on-primary/15">
+                <Icon name="camera" size={30} />
+              </span>
+              <span className="flex flex-col">
+                <span className="text-lg font-bold">{t("takePhoto")}</span>
+                <span className="text-sm">{t("takePhotoHint")}</span>
+              </span>
+              <input type="file" accept="image/*" capture="environment" onChange={choosePhoto} className="sr-only" />
+            </label>
+            <div className="grid grid-cols-2 gap-3">
               <button type="button" onClick={speak} className={tileClass(false)}>
                 <Icon name="mic" size={28} />
                 {t("voice")}
