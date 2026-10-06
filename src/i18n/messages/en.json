@@ -507,8 +507,9 @@
   },
   "journal": {
     "title": "Diary",
-    "previousDay": "Previous day",
-    "nextDay": "Next day",
+    "previousWeek": "Previous week",
+    "nextWeek": "Next week",
+    "backToToday": "Back to today",
     "today": "Today",
     "yesterday": "Yesterday",
     "dayTotal": "Day total",

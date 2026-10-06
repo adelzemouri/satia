@@ -507,8 +507,9 @@
   },
   "journal": {
     "title": "Journal",
-    "previousDay": "Jour précédent",
-    "nextDay": "Jour suivant",
+    "previousWeek": "Semaine précédente",
+    "nextWeek": "Semaine suivante",
+    "backToToday": "Revenir à aujourd'hui",
     "today": "Aujourd'hui",
     "yesterday": "Hier",
     "dayTotal": "Total de la journée",

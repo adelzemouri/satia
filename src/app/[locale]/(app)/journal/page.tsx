@@ -65,29 +65,7 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
 
   return (
     <>
-      <header className="flex items-center justify-between gap-2">
-        <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("journal.title")}</h1>
-        <nav className="flex items-center gap-1" aria-label={t("journal.days")}>
-          <Link
-            href={{ pathname: "/journal", query: { date: addDays(date, -1) } }}
-            aria-label={t("journal.previousDay")}
-            className="flex size-12 items-center justify-center rounded-full hover:bg-surface-muted"
-          >
-            <Icon name="left" />
-          </Link>
-          {date < today ? (
-            <Link
-              href={{ pathname: "/journal", query: { date: addDays(date, 1) } }}
-              aria-label={t("journal.nextDay")}
-              className="flex size-12 items-center justify-center rounded-full hover:bg-surface-muted"
-            >
-              <Icon name="right" />
-            </Link>
-          ) : (
-            <span className="size-12" aria-hidden />
-          )}
-        </nav>
-      </header>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("journal.title")}</h1>
 
       <ol aria-label={t("journal.week")} className="grid grid-cols-7 gap-1.5">
         {week.map((day) => {
@@ -123,6 +101,27 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
           );
         })}
       </ol>
+
+      {/* Changer de semaine : des liens en toutes lettres, pour ne pas confondre avec le bouton Retour. */}
+      <nav
+        aria-label={t("journal.days")}
+        className="-mt-2 flex items-center justify-between gap-3 text-sm font-semibold"
+      >
+        <Link
+          href={{ pathname: "/journal", query: { date: addDays(date, -7) } }}
+          className="flex min-h-11 items-center text-primary underline-offset-4 hover:underline"
+        >
+          {t("journal.previousWeek")}
+        </Link>
+        {date !== today && (
+          <Link
+            href={{ pathname: "/journal", query: { date: addDays(date, 7) < today ? addDays(date, 7) : today } }}
+            className="flex min-h-11 items-center text-primary underline-offset-4 hover:underline"
+          >
+            {addDays(date, 7) < today ? t("journal.nextWeek") : t("journal.backToToday")}
+          </Link>
+        )}
+      </nav>
 
       <Card aria-labelledby="day-total">
         <div className="flex items-baseline justify-between gap-3">
