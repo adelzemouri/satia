@@ -5,8 +5,8 @@ import { formatDay, formatWeekday } from "@/ui/format-date";
 import { MiniRing } from "@/ui/mini-ring";
 
 /**
- * Bandeau de la semaine en cours : un anneau par jour, rempli selon les calories saisies par
- * rapport à l'objectif. Un jour passé ouvre son journal ; les jours à venir restent grisés.
+ * Bandeau des 7 derniers jours : un anneau par jour, rempli selon les calories saisies par
+ * rapport à l'objectif. Chaque jour ouvre son journal.
  */
 export async function WeekStrip({
   days,

@@ -24,7 +24,7 @@ import { ensureWeeklyCheck } from "@/server/adaptive";
 import { pendingShares } from "@/server/family";
 import { purgePhotosIfDue } from "@/server/photos";
 import { currentFast, fastingAllowed, getFastingPlan } from "@/server/fasting";
-import { daySummary, streakFor, weekIntake } from "@/server/journal";
+import { daySummary, streakFor, recentIntake } from "@/server/journal";
 import { dayQualityFor } from "@/server/quality";
 import { treatmentRemindersOn } from "@/server/treatment";
 import { getProfile } from "@/server/profile";
@@ -55,7 +55,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     getFastingPlan(user.id),
     fastingAllowed(user.id),
     catalogEntries(),
-    weekIntake(user.id, today),
+    recentIntake(user.id, today),
     dayQualityFor(user.id, today),
     treatmentRemindersOn(user.id, today, weekday),
   ]);
@@ -103,6 +103,14 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             <span className="first-letter:uppercase">{formatDay(today, locale)}</span>
           </Link>
           <Link
+            href="/progress"
+            aria-label={t("home.streak", { days: streak.days })}
+            className={`ml-auto flex min-h-12 items-center gap-1.5 rounded-full px-3.5 font-bold ${milestone ? "celebrate bg-pomme text-on-pomme" : "bg-pomme-soft text-text"}`}
+          >
+            <Icon name="sprout" size={20} />
+            {t("home.streakShort", { days: streak.days })}
+          </Link>
+          <Link
             href="/profile"
             aria-label={t("home.openProfile")}
             className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary-soft text-lg font-extrabold text-primary"
@@ -126,6 +134,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
                 : t(`home.daily.${message.key}`, message)}
             </p>
           </div>
+          {streak.frozenDays.length > 0 && <p className="text-sm text-text-muted">{t("home.streakFrozen")}</p>}
         </div>
         <WeekStrip days={days} today={today} goalKcal={summary.goal?.kcal ?? null} locale={locale} />
       </header>
@@ -139,16 +148,14 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         </Card>
       )}
 
+      {/* Le premier écran : l'anneau, les macros et les repas du jour, avec un seul geste à faire. */}
       <Card aria-labelledby="today-title">
         <h2 id="today-title" className="sr-only">
           {t("home.todayGoal")}
         </h2>
         <CalorieSummary totals={summary.totals} goal={summary.goal} burnedKcal={burnedKcal} />
         <MacroBars totals={summary.totals} goal={summary.goal} />
-      </Card>
-
-      <Card aria-labelledby="meals-title">
-        <div className="flex items-baseline justify-between gap-3">
+        <div className="flex items-baseline justify-between gap-3 border-t border-border pt-4">
           <h2 id="meals-title" className="text-lg font-bold">
             {t("home.meals")}
           </h2>
@@ -164,16 +171,13 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
       <WaterTile date={today} {...summary.water} />
 
+      <div className="grid grid-cols-2 gap-3">
+        <ActivityTiles steps={summary.activity.steps} burnedKcal={burnedKcal} />
+        {showFasting && <FastingTile fast={fast} now={now} />}
+        {reminders.length > 0 && <TreatmentTile reminders={reminders} />}
+      </div>
+
       {summary.entries.length > 0 && <BalanceCard quality={quality} />}
-
-      <ActivityTiles steps={summary.activity.steps} burnedKcal={burnedKcal} />
-
-      {(showFasting || reminders.length > 0) && (
-        <div className="grid grid-cols-2 gap-4">
-          {showFasting && <FastingTile fast={fast} now={now} />}
-          {reminders.length > 0 && <TreatmentTile reminders={reminders} />}
-        </div>
-      )}
 
       <CoachCard questions={questions} />
 
@@ -201,21 +205,6 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           </ul>
         </section>
       )}
-
-      <section
-        aria-labelledby="streak-title"
-        className={`flex items-center gap-3 rounded-[var(--radius-card)] p-4 ${milestone ? "celebrate bg-pomme-soft" : "bg-surface"}`}
-      >
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-pomme text-on-pomme">
-          <Icon name="sprout" />
-        </span>
-        <div className="flex flex-col">
-          <h2 id="streak-title" className="font-bold">
-            {t("home.streak", { days: streak.days })}
-          </h2>
-          {streak.frozenDays.length > 0 && <p className="text-sm text-text-muted">{t("home.streakFrozen")}</p>}
-        </div>
-      </section>
 
       {milestone && <StreakCelebration days={streak.days} date={today} />}
     </>

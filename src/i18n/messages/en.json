@@ -53,6 +53,7 @@
     "openJournal": "See the full diary",
     "streak": "{days, plural, =0 {No streak yet: logging a meal today starts one.} one {# day in a row} other {# days in a row}}",
     "streakFrozen": "A rest day was covered this week, your streak goes on.",
+    "streakShort": "{days} d",
     "more": "Shortcuts",
     "activityBurned": "Including {kcal} kcal burned through activity.",
     "fastRunning": "Fast in progress",
@@ -1049,7 +1050,7 @@
     "suggestionAdd": "Add {name}",
     "disclaimer": "The {appName} coach is not medical advice. It can make mistakes: for any health question, talk to a professional.",
     "cardTitle": "A question? Ask {name}",
-    "cardHint": "Your coach knows your day and answers in a few lines.",
+    "cardHint": "Your coach knows your history and answers in a few lines.",
     "cardOpen": "Chat with {name}",
     "suggestions": "Question ideas",
     "questions": {

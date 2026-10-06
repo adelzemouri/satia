@@ -20,23 +20,23 @@ function Tile({
   children?: React.ReactNode;
 }) {
   return (
-    <Link href={href} className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-surface p-4">
+    <Link href={href} className="flex flex-col gap-1 rounded-[var(--radius-card)] bg-surface px-4 py-3">
       <span className="flex items-center gap-2 text-primary">
-        <Icon name={icon} size={20} />
-        <span className="font-bold text-text">{title}</span>
+        <Icon name={icon} size={18} />
+        <span className="text-sm font-bold text-text">{title}</span>
       </span>
-      <span className="font-display text-xl font-extrabold">{value}</span>
-      {hint && <span className="text-sm text-text-muted">{hint}</span>}
+      <span className="font-display text-lg font-extrabold">{value}</span>
+      {hint && <span className="text-xs text-text-muted">{hint}</span>}
       {children}
     </Link>
   );
 }
 
-/** Pas du jour et calories dépensées en activité, côte à côte. */
+/** Pas du jour et calories dépensées en activité, côte à côte (dans la grille de l'accueil). */
 export async function ActivityTiles({ steps, burnedKcal }: { steps: number; burnedKcal: number }) {
   const t = await getTranslations("home.cards");
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <>
       <Tile
         href="/activity"
         icon="run"
@@ -51,7 +51,7 @@ export async function ActivityTiles({ steps, burnedKcal }: { steps: number; burn
         value={t("kcal", { value: burnedKcal })}
         hint={burnedKcal === 0 ? t("activityEmpty") : t("activityHint")}
       />
-    </div>
+    </>
   );
 }
 
