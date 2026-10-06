@@ -12,6 +12,7 @@ import { checkinOn, feelingHistory } from "@/server/quality";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
 import { Card } from "@/ui/card";
+import { formatDay } from "@/ui/format-date";
 import { PrivateBlock } from "@/ui/private";
 
 /** Courbe de l'onglet : les deux derniers mois suffisent à voir la tendance. */
@@ -29,7 +30,7 @@ export default async function ProgressPage({ params }: PageProps<"/[locale]/prog
     feelingHistory(user.id, today),
   ]);
   const trend = overview.trend.at(-1);
-  const weight = overview.entries.at(-1)?.weightKg ?? null;
+  const lastWeighIn = overview.entries.at(-1)?.date ?? null;
   const t = await getTranslations();
 
   return (
@@ -102,7 +103,10 @@ export default async function ProgressPage({ params }: PageProps<"/[locale]/prog
             href: "/weight",
             icon: "weight",
             label: t("weight.title"),
-            hint: weight === null ? undefined : t("progress.lastWeight", { value: weight }),
+            hint:
+              lastWeighIn === null
+                ? undefined
+                : t("progress.lastWeighIn", { date: formatDay(lastWeighIn, locale, "short") }),
           },
           { href: "/training", icon: "dumbbell", label: t("nav.training") },
           { href: "/activity", icon: "run", label: t("activity.title") },

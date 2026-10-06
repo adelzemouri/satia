@@ -1665,7 +1665,7 @@
     "weightOpen": "Weigh-ins and goal",
     "weightValue": "{value, number} kg",
     "weightEmpty": "Log a first weigh-in to see your curve here.",
-    "lastWeight": "Last weigh-in: {value, number} kg",
+    "lastWeighIn": "Last weigh-in: {date}",
     "history": {
       "title": "My last 4 weeks",
       "intro": "How you felt each day, next to the calories you logged.",
