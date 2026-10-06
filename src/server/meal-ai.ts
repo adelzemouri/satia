@@ -13,6 +13,7 @@ import { nutrientsFor } from "@/domain/nutrition";
 import { normalizeForSearch, pickForLabel } from "@/domain/search";
 import { UNITS } from "@/domain/units";
 import { realisticGrams } from "@/domain/condiments";
+import { looksUnrelated } from "@/domain/meal-checks";
 import { AI_INPUT_METHODS, type DraftItem, type MealDraft } from "@/features/ai/draft";
 import type { FoodItem } from "@/features/foods/food-types";
 import { analyzeMealPhoto, estimateFoods, type MealItem, parseMealText } from "@/llm";
@@ -95,7 +96,12 @@ async function toDraftItems(
       const results = await searchFoods(userId, item.name);
       const rule = rules.get(aiLabel);
       const habit = (rule && ruledById.get(rule.foodId)) ?? null;
-      const food = habit ?? pickForLabel(item.name, results);
+      // Une recette n'est retenue que si l'IA l'a nommée : « beurre de cacahuète » ne devient pas
+      // « Fromage blanc, müesli et beurre de cacahuète », qui en contient seulement.
+      const candidates = results.filter(
+        (result) => result.source !== "recipe" || !looksUnrelated(result.nameFr, item.name),
+      );
+      const food = habit ?? pickForLabel(item.name, candidates);
       const grams = Math.round(realisticGrams(item.name, item.grams));
       const count = item.count ?? null;
       // Des pièces comptées s'affichent en pièces quand l'aliment a un poids à la pièce.

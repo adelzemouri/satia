@@ -8,7 +8,7 @@ import { setProviderForTests } from "@/llm/providers";
 import type { LlmProvider } from "@/llm/types";
 import { acceptInvite, createAccessLink, setupFirstAdmin } from "@/server/accounts";
 import { collectUserData } from "@/server/data-export";
-import { searchFoods, setUnitWeight } from "@/server/foods";
+import { createRecipe, searchFoods, setUnitWeight } from "@/server/foods";
 import { analyzePhoto, analyzeText, saveMeal } from "@/server/meal-ai";
 import { createContainer, listContainers, saveExpression } from "@/server/personal";
 import { lastPhotoPurge, purgePhotos, purgePhotosIfDue, runPhotoPurge } from "@/server/photos";
@@ -198,6 +198,35 @@ describe("saisie IA", () => {
       "Salade verte",
       "Salade verte",
     ]);
+  });
+
+  it("ne prend pas une recette qui contient seulement l'aliment reconnu", async () => {
+    const userId = await setupUser();
+    const peanut = await firstFood(userId, "beurre de cacahuete");
+    const muesli = await firstFood(userId, "muesli");
+    await createRecipe(userId, {
+      name: "Fromage blanc, müesli et beurre de cacahuète",
+      servings: 1,
+      cookedGrams: null,
+      family: true,
+      items: [
+        { foodId: peanut.id, grams: 15 },
+        { foodId: muesli.id, grams: 40 },
+      ],
+    });
+    setProviderForTests(
+      scripted({
+        items: [
+          { name: "beurre de cacahuète", grams: 15, confidence: 0.8 },
+          { name: "fromage blanc, müesli et beurre de cacahuète", grams: 200, confidence: 0.8 },
+        ],
+      }),
+    );
+    const draft = await analyzeText(userId, { text: "tartine beurre de cacahuète et mon bol", method: "text" });
+    expect(draft.items[0]!.food).toMatchObject({ source: "ciqual" });
+    expect(draft.items[0]!.food!.nameFr).toMatch(/^Beurre de cacahu/);
+    // Nommée en entier, la recette du foyer reste retenue.
+    expect(draft.items[1]!.food).toMatchObject({ source: "recipe" });
   });
 
   it("estime les valeurs d'un aliment absent de la base et les marque « estimé »", async () => {
