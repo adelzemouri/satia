@@ -166,7 +166,11 @@ Conseils :
 - **Changer un secret** : modifier la variable sur Vercel puis redéployer (Deployments >
   ⋯ > Redeploy). `CRON_SECRET` doit rester identique sur Vercel et dans GitHub.
 - **Mises à jour** : une pull request par changement ; la CI (lint, types, tests
-  unitaires, d'intégration et e2e, image Docker) doit être verte avant la fusion.
+  unitaires, d'intégration et e2e) doit être verte avant la fusion. L'image Docker
+  n'est reconstruite que si `Dockerfile`, les dépendances ou `next.config.ts` changent,
+  et sur `main` seul le contrôle rapide repasse : le dépôt est privé, ses minutes
+  GitHub Actions (2 000 par mois) sont comptées. Un budget Actions à 0 $
+  (Settings > Billing > Budgets) bloque tout dépassement au lieu de le facturer.
 - **Table Ciqual** : le workflow « Données Ciqual » régénère `data/ciqual-2020.csv`
   quand le script de conversion change ; l'import en production se fait au déploiement
   suivant.
