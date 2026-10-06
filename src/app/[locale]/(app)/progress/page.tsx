@@ -33,8 +33,9 @@ export default async function ProgressPage({ params }: PageProps<"/[locale]/prog
   const t = await getTranslations();
 
   return (
-    <>
-      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("progress.title")}</h1>
+    // Sur ordinateur, les cartes se rangent sur deux colonnes.
+    <div data-wide className="flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start">
+      <h1 className="font-display text-3xl font-extrabold tracking-tight lg:col-span-2">{t("progress.title")}</h1>
 
       <Card aria-labelledby="weight-title">
         <div className="flex items-baseline justify-between gap-3">
@@ -110,6 +111,6 @@ export default async function ProgressPage({ params }: PageProps<"/[locale]/prog
           { href: "/metabolism", icon: "pulse", label: t("metabolism.title") },
         ]}
       />
-    </>
+    </div>
   );
 }

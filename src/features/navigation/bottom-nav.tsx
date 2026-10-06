@@ -52,7 +52,7 @@ export function BottomNav() {
     <nav
       aria-label={t("main")}
       style={{ viewTransitionName: "bottom-nav" }}
-      className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
+      className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
     >
       <ul className="mx-auto grid max-w-2xl grid-cols-5">
         {TABS.map((tab) => {

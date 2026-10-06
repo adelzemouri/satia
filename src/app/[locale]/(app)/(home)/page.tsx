@@ -90,8 +90,10 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const milestone = summary.entries.length > 0 && (STREAK_MILESTONES as readonly number[]).includes(streak.days);
 
   return (
-    <>
-      <header className="flex flex-col gap-4">
+    // Téléphone : une seule colonne (les deux groupes s'effacent avec « contents »). Ordinateur :
+    // la journée à gauche, eau, activité et Pépin à droite, l'en-tête sur toute la largeur.
+    <div data-wide className="flex flex-col gap-6 lg:grid lg:grid-cols-[1.45fr_1fr] lg:items-start">
+      <header className="flex flex-col gap-4 lg:col-span-2">
         <div className="flex items-center justify-between gap-3">
           <Link
             href="/journal"
@@ -139,74 +141,81 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         <WeekStrip days={days} today={today} goalKcal={summary.goal?.kcal ?? null} locale={locale} />
       </header>
 
-      {shares.length > 0 && (
-        <Card aria-labelledby="pending-title">
-          <h2 id="pending-title" className="text-xl font-bold">
-            {t("family.pendingTitle")}
-          </h2>
-          <PendingShares shares={shares} />
-        </Card>
-      )}
-
-      {/* Le premier écran : l'anneau, les macros et les repas du jour, avec un seul geste à faire. */}
-      <Card aria-labelledby="today-title">
-        <h2 id="today-title" className="sr-only">
-          {t("home.todayGoal")}
-        </h2>
-        <CalorieSummary totals={summary.totals} goal={summary.goal} burnedKcal={burnedKcal} />
-        <MacroBars totals={summary.totals} goal={summary.goal} />
-        <div className="flex items-baseline justify-between gap-3 border-t border-border pt-4">
-          <h2 id="meals-title" className="text-lg font-bold">
-            {t("home.meals")}
-          </h2>
-          <Link
-            href="/journal"
-            className="shrink-0 text-sm font-semibold text-primary underline-offset-4 hover:underline"
-          >
-            {t("home.openJournal")}
-          </Link>
-        </div>
-        <MealRings kcalBySlot={kcalBySlot} goalKcal={summary.goal?.kcal ?? null} current={current} date={today} />
-      </Card>
-
-      <WaterTile date={today} {...summary.water} />
-
-      <div className="grid grid-cols-2 gap-3">
-        <ActivityTiles steps={summary.activity.steps} burnedKcal={burnedKcal} />
-        {showFasting && <FastingTile fast={fast} now={now} />}
-        {reminders.length > 0 && <TreatmentTile reminders={reminders} />}
-      </div>
-
-      {summary.entries.length > 0 && <BalanceCard quality={quality} />}
-
-      <CoachCard questions={questions} />
-
-      {ideas.length > 0 && (
-        <section aria-labelledby="ideas-title" className="flex flex-col gap-3">
-          <div className="flex items-baseline justify-between gap-3">
-            <h2 id="ideas-title" className="text-xl font-bold">
-              {t("recipes.homeTitle", { slot: current })}
+      <div className="contents lg:flex lg:min-w-0 lg:flex-col lg:gap-6">
+        {shares.length > 0 && (
+          <Card aria-labelledby="pending-title">
+            <h2 id="pending-title" className="text-xl font-bold">
+              {t("family.pendingTitle")}
             </h2>
-            <Link href="/recipes" className="shrink-0 font-semibold text-primary underline-offset-4 hover:underline">
-              {t("recipes.homeMore")}
+            <PendingShares shares={shares} />
+          </Card>
+        )}
+
+        {/* Le premier écran : l'anneau, les macros et les repas du jour, avec un seul geste à faire. */}
+        <Card aria-labelledby="today-title">
+          <h2 id="today-title" className="sr-only">
+            {t("home.todayGoal")}
+          </h2>
+          <CalorieSummary totals={summary.totals} goal={summary.goal} burnedKcal={burnedKcal} />
+          <MacroBars totals={summary.totals} goal={summary.goal} />
+          <div className="flex items-baseline justify-between gap-3 border-t border-border pt-4">
+            <h2 id="meals-title" className="text-lg font-bold">
+              {t("home.meals")}
+            </h2>
+            <Link
+              href="/journal"
+              className="shrink-0 text-sm font-semibold text-primary underline-offset-4 hover:underline"
+            >
+              {t("home.openJournal")}
             </Link>
           </div>
-          <ul data-swipe-lock className="-mx-4 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-1">
-            {ideas.map((entry) => (
-              <li key={entry.id} className="flex w-[44%] shrink-0 snap-start sm:w-[30%]">
-                <RecipeCard
-                  id={entry.id}
-                  recipe={entry.recipe}
-                  portionKcal={entry.portionKcal}
-                  query={{ slot: current, date: today }}
-                />
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+          <MealRings kcalBySlot={kcalBySlot} goalKcal={summary.goal?.kcal ?? null} current={current} date={today} />
+        </Card>
+
+        {ideas.length > 0 && (
+          <section aria-labelledby="ideas-title" className="order-last flex flex-col gap-3 lg:order-none">
+            <div className="flex items-baseline justify-between gap-3">
+              <h2 id="ideas-title" className="text-xl font-bold">
+                {t("recipes.homeTitle", { slot: current })}
+              </h2>
+              <Link href="/recipes" className="shrink-0 font-semibold text-primary underline-offset-4 hover:underline">
+                {t("recipes.homeMore")}
+              </Link>
+            </div>
+            <ul
+              data-swipe-lock
+              className="-mx-4 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 lg:mx-0 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0"
+            >
+              {ideas.map((entry) => (
+                <li key={entry.id} className="flex w-[44%] shrink-0 snap-start sm:w-[30%] lg:w-auto">
+                  <RecipeCard
+                    id={entry.id}
+                    recipe={entry.recipe}
+                    portionKcal={entry.portionKcal}
+                    query={{ slot: current, date: today }}
+                  />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+      </div>
+
+      <div className="contents lg:flex lg:min-w-0 lg:flex-col lg:gap-6">
+        <WaterTile date={today} {...summary.water} />
+
+        <div className="grid grid-cols-2 gap-3">
+          <ActivityTiles steps={summary.activity.steps} burnedKcal={burnedKcal} />
+          {showFasting && <FastingTile fast={fast} now={now} />}
+          {reminders.length > 0 && <TreatmentTile reminders={reminders} />}
+        </div>
+
+        {summary.entries.length > 0 && <BalanceCard quality={quality} />}
+
+        <CoachCard questions={questions} />
+      </div>
 
       {milestone && <StreakCelebration days={streak.days} date={today} />}
-    </>
+    </div>
   );
 }

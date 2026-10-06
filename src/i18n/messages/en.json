@@ -29,7 +29,8 @@
     "skipToContent": "Skip to content",
     "progress": "Progress",
     "back": "Back",
-    "kitchen": "Kitchen"
+    "kitchen": "Kitchen",
+    "addMeal": "Add a meal"
   },
   "home": {
     "greeting": "Hello {name}",

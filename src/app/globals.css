@@ -35,6 +35,13 @@ html {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Sur ordinateur, plus de barre du bas à contourner. */
+@media (min-width: 64rem) {
+  html {
+    scroll-padding-bottom: 1rem;
+  }
+}
+
 body {
   font-family: var(--font-sans);
 }
