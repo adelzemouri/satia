@@ -46,6 +46,8 @@ function isActive(pathname: string, tab: (typeof TABS)[number]): boolean {
 export function BottomNav() {
   const t = useTranslations("nav");
   const pathname = usePathname();
+  // Pendant l'onboarding, on va au bout avant de pouvoir partir ailleurs dans l'app.
+  if (pathname === "/onboarding") return null;
   return (
     <nav
       aria-label={t("main")}

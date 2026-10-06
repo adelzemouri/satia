@@ -33,7 +33,7 @@ export async function WeekStrip({
               <span className="text-xs font-semibold text-text-muted first-letter:uppercase" aria-hidden="true">
                 {formatWeekday(day.date, locale).slice(0, 3).replace(".", "")}
               </span>
-              <MiniRing percent={percent} size={38} stroke={4} tone={over ? "accent" : "primary"}>
+              <MiniRing percent={percent} size={38} stroke={4} tone={over ? "muted" : "primary"}>
                 <span
                   className={`text-sm ${
                     day.date === today ? "font-extrabold text-primary" : future ? "text-text-muted" : "font-semibold"

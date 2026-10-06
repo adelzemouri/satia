@@ -35,7 +35,7 @@ export function RingArc({ radius, offset, over }: { radius: number; offset: numb
       strokeLinecap="round"
       strokeDasharray={length}
       strokeDashoffset={offset}
-      className={`ring-fill ${over ? "stroke-accent" : "stroke-primary"}`}
+      className={`ring-fill ${over ? "stroke-text-muted" : "stroke-primary"}`}
       style={{ "--ring-length": length } as CSSProperties}
     />
   );

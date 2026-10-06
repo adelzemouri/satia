@@ -39,7 +39,7 @@ export async function CalorieSummary({
       className="block h-3 overflow-hidden rounded-full bg-surface-muted"
     >
       <span
-        className={`bar-grow block h-full rounded-full ${over ? "bg-accent" : "bg-primary"}`}
+        className={`bar-grow block h-full rounded-full ${over ? "bg-text-muted" : "bg-primary"}`}
         style={{ width: `${percent}%` }}
       />
     </span>

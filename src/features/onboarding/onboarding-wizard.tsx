@@ -24,6 +24,7 @@ import {
   SEXES,
 } from "@/domain/profile";
 import { useErrorText } from "@/features/auth/use-error-text";
+import { CoachAvatar } from "@/features/coach/coach-avatar";
 import { Alert } from "@/ui/alert";
 import { Button } from "@/ui/button";
 import { Card } from "@/ui/card";
@@ -67,6 +68,13 @@ type Step =
   | "disclaimer"
   | "summary";
 
+/** Écrans de l'onboarding : chacun regroupe quelques questions, présentées par Pépin. */
+type PageKey = "you" | "body" | "goal" | "rhythm" | "habits" | "coach" | "summary";
+type Page = { key: PageKey; steps: Step[] };
+
+/** Étapes dont l'erreur s'affiche sous le champ lui-même plutôt qu'en message. */
+const FIELD_STEPS: readonly Step[] = ["firstName", "birthDate", "height", "weight", "targetWeight"];
+
 const INITIAL: Draft = {
   firstName: "",
   sex: null,
@@ -77,7 +85,8 @@ const INITIAL: Draft = {
   targetWeightKg: "",
   activityLevel: null,
   pace: "gentle",
-  diet: null,
+  // Le régime le plus courant est déjà coché : on le change si besoin, sans message d'erreur.
+  diet: "omnivore",
   foodsToAvoid: "",
   mealTimes: { breakfast: "07:30", lunch: "12:30", dinner: "19:30" },
   budgetMode: "daily",
@@ -162,22 +171,26 @@ export function OnboardingWizard({ defaultFirstName }: { defaultFirstName: strin
 
   const [draft, setDraft] = useState<Draft>({ ...INITIAL, firstName: defaultFirstName });
   const [index, setIndex] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+  /** Erreur en cours et l'étape qu'elle concerne (aucune pour une erreur du serveur). */
+  const [error, setError] = useState<{ code: string; step: Step | null } | null>(null);
   const [plan, setPlan] = useState<Plan | null>(null);
   const [pending, startTransition] = useTransition();
   const headingRef = useRef<HTMLHeadingElement>(null);
 
-  const steps = useMemo<Step[]>(() => {
+  const pages = useMemo<Page[]>(() => {
     const changesWeight = draft.goal != null && goalChangesWeight(draft.goal);
-    const list: Step[] = ["firstName", "sex", "birthDate", "height", "weight", "goal"];
-    if (changesWeight) list.push("targetWeight");
-    list.push("activity");
-    if (changesWeight) list.push("pace");
-    list.push("diet", "meals", "coach", "disclaimer", "summary");
-    return list;
+    return [
+      { key: "you", steps: ["firstName", "sex", "birthDate"] },
+      { key: "body", steps: ["height", "weight"] },
+      { key: "goal", steps: changesWeight ? ["goal", "targetWeight"] : ["goal"] },
+      { key: "rhythm", steps: changesWeight ? ["activity", "pace"] : ["activity"] },
+      { key: "habits", steps: ["diet", "meals"] },
+      { key: "coach", steps: ["coach", "disclaimer"] },
+      { key: "summary", steps: ["summary"] },
+    ];
   }, [draft.goal]);
 
-  const step = steps[index]!;
+  const page = pages[index]!;
   const update = (patch: Partial<Draft>) => {
     setDraft((current) => ({ ...current, ...patch }));
     setError(null);
@@ -191,19 +204,21 @@ export function OnboardingWizard({ defaultFirstName }: { defaultFirstName: strin
   const formatDate = (iso: string) => format.dateTime(new Date(`${iso}T12:00:00Z`), { dateStyle: "long" });
 
   function next() {
-    const problem = validateStep(step, draft, today);
-    if (problem) {
-      setError(problem);
-      return;
+    for (const step of page.steps) {
+      const problem = validateStep(step, draft, today);
+      if (problem) {
+        setError({ code: problem, step });
+        return;
+      }
     }
-    if (steps[index + 1] === "summary") {
+    if (pages[index + 1]?.key === "summary") {
       startTransition(async () => {
         const result = await previewPlanAction(toInput(draft));
         if (result && "plan" in result) {
           setPlan(result.plan);
           setIndex(index + 1);
         } else {
-          setError(result?.error ?? "generic");
+          setError({ code: result?.error ?? "generic", step: null });
         }
       });
       return;
@@ -219,74 +234,48 @@ export function OnboardingWizard({ defaultFirstName }: { defaultFirstName: strin
   function start() {
     startTransition(async () => {
       const result = await saveOnboardingAction(toInput(draft));
-      if (result?.error) setError(result.error);
+      if (result?.error) setError({ code: result.error, step: null });
     });
   }
 
   const minor = draft.birthDate ? isMinor(draft.birthDate, today) : false;
   const errorMessage =
-    error === "below_healthy_bmi"
-      ? errorText(error, { min: format.number(minHealthyWeightKg(toNumber(draft.heightCm) ?? 0)) })
-      : errorText(error);
-  const total = steps.length;
+    error?.code === "below_healthy_bmi"
+      ? errorText(error.code, { min: format.number(minHealthyWeightKg(toNumber(draft.heightCm) ?? 0)) })
+      : errorText(error?.code ?? null);
+  /** Message d'erreur à afficher sous le champ de cette étape. */
+  const fieldError = (step: Step) => (error?.step === step ? errorMessage : undefined);
+  const total = pages.length;
+  const summary = page.key === "summary";
 
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <p className="text-sm font-semibold text-text-muted">{t("progress", { current: index + 1, total })}</p>
-        <div
-          role="progressbar"
-          aria-label={t("progress", { current: index + 1, total })}
-          aria-valuemin={1}
-          aria-valuemax={total}
-          aria-valuenow={index + 1}
-          className="h-2 overflow-hidden rounded-full bg-surface-muted"
-        >
-          <div
-            className="h-full rounded-full bg-primary transition-all"
-            style={{ width: `${((index + 1) / total) * 100}%` }}
-          />
-        </div>
-      </div>
-
-      <form
-        className="flex flex-col gap-6"
-        noValidate
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (step === "summary") start();
-          else next();
-        }}
-      >
-        <h1 ref={headingRef} tabIndex={-1} className="font-display text-3xl font-extrabold tracking-tight outline-none">
-          {step === "summary" ? t("summary.title") : t(`${step}.title`)}
-        </h1>
-
-        {step === "firstName" && (
+  /** Contenu d'une question ; l'erreur d'une question à choix s'affiche juste en dessous. */
+  function renderStep(step: Step) {
+    switch (step) {
+      case "firstName":
+        return (
           <Field
             label={t("firstName.label")}
             value={draft.firstName}
             onChange={(e) => update({ firstName: e.target.value })}
             autoComplete="given-name"
-            error={errorMessage}
+            error={fieldError("firstName")}
           />
-        )}
-
-        {step === "sex" && (
+        );
+      case "sex":
+        return (
           <>
-            <p className="text-text-muted">{t("sex.hint")}</p>
             <OptionList
               legend={t("sex.title")}
-              hideLegend
               name="sex"
               value={draft.sex}
               onChange={(sex) => update({ sex })}
               options={SEXES.map((value) => ({ value, label: t(`sex.${value}`) }))}
             />
+            <p className="-mt-2 text-sm text-text-muted">{t("sex.hint")}</p>
           </>
-        )}
-
-        {step === "birthDate" && (
+        );
+      case "birthDate":
+        return (
           <Field
             label={t("birthDate.label")}
             type="date"
@@ -294,31 +283,31 @@ export function OnboardingWizard({ defaultFirstName }: { defaultFirstName: strin
             value={draft.birthDate}
             onChange={(e) => update({ birthDate: e.target.value })}
             autoComplete="bday"
-            error={errorMessage}
+            error={fieldError("birthDate")}
           />
-        )}
-
-        {step === "height" && (
+        );
+      case "height":
+        return (
           <Field
             label={t("height.label")}
             inputMode="numeric"
             value={draft.heightCm}
             onChange={(e) => update({ heightCm: e.target.value })}
-            error={errorMessage}
+            error={fieldError("height")}
           />
-        )}
-
-        {step === "weight" && (
+        );
+      case "weight":
+        return (
           <Field
             label={t("weight.label")}
             inputMode="decimal"
             value={draft.weightKg}
             onChange={(e) => update({ weightKg: e.target.value })}
-            error={errorMessage}
+            error={fieldError("weight")}
           />
-        )}
-
-        {step === "goal" && (
+        );
+      case "goal":
+        return (
           <>
             {minor && <Alert tone="info">{t("goal.minorHint")}</Alert>}
             <OptionList
@@ -330,28 +319,22 @@ export function OnboardingWizard({ defaultFirstName }: { defaultFirstName: strin
               options={allowedGoals(draft.birthDate, today).map((value) => ({ value, label: t(`goal.${value}`) }))}
             />
           </>
-        )}
-
-        {step === "targetWeight" && (
-          <>
-            <Field
-              label={t("targetWeight.label")}
-              hint={t("targetWeight.hint")}
-              inputMode="decimal"
-              value={draft.targetWeightKg}
-              onChange={(e) => update({ targetWeightKg: e.target.value })}
-              error={errorMessage}
-            />
-            <Button variant="ghost" onClick={() => (update({ targetWeightKg: "" }), setIndex(index + 1))}>
-              {t("targetWeight.skip")}
-            </Button>
-          </>
-        )}
-
-        {step === "activity" && (
+        );
+      case "targetWeight":
+        return (
+          <Field
+            label={t("targetWeight.label")}
+            hint={t("targetWeight.hint")}
+            inputMode="decimal"
+            value={draft.targetWeightKg}
+            onChange={(e) => update({ targetWeightKg: e.target.value })}
+            error={fieldError("targetWeight")}
+          />
+        );
+      case "activity":
+        return (
           <OptionList
             legend={t("activity.title")}
-            hideLegend
             name="activity"
             value={draft.activityLevel}
             onChange={(activityLevel) => update({ activityLevel })}
@@ -361,17 +344,17 @@ export function OnboardingWizard({ defaultFirstName }: { defaultFirstName: strin
               hint: t(`activity.${level}.hint`),
             }))}
           />
-        )}
-
-        {step === "pace" && (
+        );
+      case "pace":
+        // Le rythme et sa date estimée dépendent du niveau d'activité : on attend qu'il soit choisi.
+        return draft.activityLevel ? (
           <PaceStep draft={draft} today={today} onChange={(pace) => update({ pace })} formatDate={formatDate} />
-        )}
-
-        {step === "diet" && (
+        ) : null;
+      case "diet":
+        return (
           <>
             <OptionList
               legend={t("diet.title")}
-              hideLegend
               name="diet"
               value={draft.diet}
               onChange={(diet) => update({ diet })}
@@ -385,45 +368,44 @@ export function OnboardingWizard({ defaultFirstName }: { defaultFirstName: strin
               maxLength={500}
             />
           </>
-        )}
-
-        {step === "meals" && (
-          <>
-            <p className="text-text-muted">{t("meals.hint")}</p>
-            {(["breakfast", "lunch", "dinner"] as const).map((meal) => (
-              <Field
-                key={meal}
-                label={t(`meals.${meal}`)}
-                type="time"
-                value={draft.mealTimes[meal]}
-                onChange={(e) => update({ mealTimes: { ...draft.mealTimes, [meal]: e.target.value } })}
-              />
-            ))}
-          </>
-        )}
-
-        {step === "coach" && (
-          <>
-            <p className="text-text-muted">{t("coach.hint")}</p>
-            <OptionList
-              legend={t("coach.title")}
-              hideLegend
-              name="coachStyle"
-              value={draft.coachStyle}
-              onChange={(coachStyle) => update({ coachStyle })}
-              options={COACH_STYLES.map((value) => ({
-                value,
-                label: tcoach(`styles.${value}.label`),
-                hint: tcoach(`styles.${value}.hint`),
-              }))}
-            />
-          </>
-        )}
-
-        {step === "disclaimer" && (
-          <>
-            <p className="text-lg">{t("disclaimer.body", { appName: APP_NAME })}</p>
-            <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-2 border-border bg-surface px-4">
+        );
+      case "meals":
+        return (
+          <fieldset className="flex flex-col gap-3">
+            <legend className="mb-2 font-semibold">{t("meals.title")}</legend>
+            <p className="text-sm text-text-muted">{t("meals.hint")}</p>
+            <div className="grid grid-cols-3 gap-3">
+              {(["breakfast", "lunch", "dinner"] as const).map((meal) => (
+                <Field
+                  key={meal}
+                  label={t(`meals.${meal}`)}
+                  type="time"
+                  value={draft.mealTimes[meal]}
+                  onChange={(e) => update({ mealTimes: { ...draft.mealTimes, [meal]: e.target.value } })}
+                />
+              ))}
+            </div>
+          </fieldset>
+        );
+      case "coach":
+        return (
+          <OptionList
+            legend={t("coach.title")}
+            name="coachStyle"
+            value={draft.coachStyle}
+            onChange={(coachStyle) => update({ coachStyle })}
+            options={COACH_STYLES.map((value) => ({
+              value,
+              label: tcoach(`styles.${value}.label`),
+              hint: tcoach(`styles.${value}.hint`),
+            }))}
+          />
+        );
+      case "disclaimer":
+        return (
+          <div className="flex flex-col gap-3 rounded-[var(--radius-card)] bg-surface p-4">
+            <p>{t("disclaimer.body", { appName: APP_NAME })}</p>
+            <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-2 border-border bg-bg px-4">
               <input
                 type="checkbox"
                 checked={draft.disclaimerAccepted}
@@ -432,14 +414,62 @@ export function OnboardingWizard({ defaultFirstName }: { defaultFirstName: strin
               />
               <span className="font-semibold">{t("disclaimer.accept")}</span>
             </label>
-          </>
-        )}
+          </div>
+        );
+      case "summary":
+        return plan && <Summary plan={plan} goal={draft.goal!} formatDate={formatDate} />;
+    }
+  }
 
-        {step === "summary" && plan && <Summary plan={plan} goal={draft.goal!} formatDate={formatDate} />}
+  return (
+    <div className="flex flex-col gap-6">
+      <div
+        role="progressbar"
+        aria-label={t("progress", { current: index + 1, total })}
+        aria-valuemin={1}
+        aria-valuemax={total}
+        aria-valuenow={index + 1}
+        className="flex justify-center gap-1.5"
+      >
+        {pages.map((item, position) => (
+          <span
+            key={item.key}
+            className={`h-2 rounded-full transition-all ${position === index ? "w-6 bg-primary" : position < index ? "w-2 bg-primary" : "w-2 bg-border"}`}
+          />
+        ))}
+      </div>
 
-        {error && !["firstName", "birthDate", "height", "weight", "targetWeight"].includes(step) && (
-          <Alert>{errorMessage}</Alert>
-        )}
+      <form
+        className="flex flex-col gap-6"
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (summary) start();
+          else next();
+        }}
+      >
+        <div key={page.key} className="checkin-in flex flex-col items-center gap-3 text-center">
+          <CoachAvatar size={index === 0 ? 80 : 56} />
+          <p className="relative max-w-sm rounded-2xl bg-surface px-4 py-3 text-sm">
+            {t(`pages.${page.key}.pepin`, { name: draft.firstName.trim() || defaultFirstName })}
+          </p>
+          <h1
+            ref={headingRef}
+            tabIndex={-1}
+            className="font-display text-3xl font-extrabold tracking-tight outline-none"
+          >
+            {summary ? t("summary.title") : t(`pages.${page.key}.title`)}
+          </h1>
+        </div>
+
+        {page.steps.map((step) => (
+          <section key={step} className="flex flex-col gap-3">
+            {renderStep(step)}
+            {error?.step === step && !FIELD_STEPS.includes(step) && <Alert>{errorMessage}</Alert>}
+          </section>
+        ))}
+
+        {error && error.step === null && <Alert>{errorMessage}</Alert>}
 
         <div className="flex gap-3">
           {index > 0 && (
@@ -448,7 +478,7 @@ export function OnboardingWizard({ defaultFirstName }: { defaultFirstName: strin
             </Button>
           )}
           <Button type="submit" className="flex-1" disabled={pending}>
-            {step === "summary" ? t("summary.start") : tc("continue")}
+            {summary ? t("summary.start") : tc("continue")}
           </Button>
         </div>
       </form>

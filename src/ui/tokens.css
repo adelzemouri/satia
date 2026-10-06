@@ -1,5 +1,6 @@
 /*
- * Design tokens Pommelia — piste « Net » : fond clair et sobre, vert canard, cartes blanches sans bordure.
+ * Design tokens Pommelia — piste « Net » : fond clair et sobre, vert canard, cartes blanches sans bordure,
+ * rouge pomme pour les bons moments, titres en Fraunces.
  * Les couples texte/fond sont vérifiés WCAG AA par tests/unit/tokens.test.ts.
  */
 :root,
@@ -17,6 +18,9 @@
   --color-accent: #b3412c; /* brique, pour les dépassements et les actions destructives */
   --color-accent-soft: #f7e0da;
   --color-on-accent: #ffffff;
+  --color-pomme: #c94e35; /* rouge pomme, réservé aux bons moments (séries, repas à venir, célébrations) */
+  --color-pomme-soft: #fce3dc;
+  --color-on-pomme: #ffffff;
   --color-focus: #1d4ed8;
   --color-protein: #b3412c;
   --color-carbs: #8a6418;
@@ -37,6 +41,9 @@
   --color-accent: #f08a70;
   --color-accent-soft: #45231b;
   --color-on-accent: #0f1513;
+  --color-pomme: #f29a80;
+  --color-pomme-soft: #3d211a;
+  --color-on-pomme: #0f1513;
   --color-focus: #93b4ff;
   --color-protein: #f08a70;
   --color-carbs: #e0bd6c;
@@ -58,6 +65,9 @@
     --color-accent: #f08a70;
     --color-accent-soft: #45231b;
     --color-on-accent: #0f1513;
+    --color-pomme: #f29a80;
+    --color-pomme-soft: #3d211a;
+    --color-on-pomme: #0f1513;
     --color-focus: #93b4ff;
     --color-protein: #f08a70;
     --color-carbs: #e0bd6c;

@@ -84,38 +84,35 @@ test("onboarding complet d'un adulte avec plan expliqué", async ({ page }) => {
   await expect(page).toHaveURL(/\/onboarding$/);
   const next = page.getByRole("button", { name: "Continuer" });
 
+  // Six écrans regroupés, présentés par Pépin, sans barre d'onglets pour partir en cours de route.
+  await expect(page.getByRole("navigation", { name: "Navigation principale" })).toHaveCount(0);
   await expect(page.getByLabel("Prénom")).toHaveValue("Adel");
-  await next.click();
   await page.getByLabel("Homme").check();
-  await next.click();
   await page.getByLabel("Date de naissance").fill("1988-04-12");
   await next.click();
   await page.getByLabel("Taille en cm").fill("178");
-  await next.click();
   await page.getByLabel("Poids en kg").fill("25");
   await next.click();
   await expect(page.getByText("Indique un poids entre 30 et 300 kg.")).toBeVisible();
   await page.getByLabel("Poids en kg").fill("82,5");
   await next.click();
   await page.getByLabel("Perdre du poids").check();
-  await next.click();
   await page.getByLabel("Poids cible en kg").fill("55");
   await next.click();
   await expect(page.getByText(/On préfère ne pas viser en dessous de 58,7 kg/)).toBeVisible();
   await page.getByLabel("Poids cible en kg").fill("77");
   await next.click();
   await page.getByLabel("Un peu actif").check();
-  await next.click();
   await expect(page.getByText(/Environ 0,25 kg par semaine · Objectif estimé vers le/)).toBeVisible();
   await page.getByLabel("Doux").check();
   await next.click();
+  // « Omnivore » est déjà coché : on peut le changer.
+  await expect(page.getByLabel("Omnivore")).toBeChecked();
   await page.getByLabel("Sans porc").check();
   await page.getByLabel("Aliments que tu préfères éviter").fill("coriandre");
-  await next.click();
   await next.click(); // horaires par défaut
   await expect(page.getByLabel("Pédagogue")).toBeChecked();
   await page.getByLabel("Serein").check();
-  await next.click();
   await next.click();
   await expect(alertIn(page)).toHaveText("Merci de confirmer avoir lu ce message.");
   await page.getByLabel("J'ai compris").check();
@@ -709,15 +706,12 @@ test("l'admin invite un membre mineur qui n'a pas accès à la perte de poids", 
   await expect(teen).toHaveURL(/\/onboarding$/);
 
   const next = teen.getByRole("button", { name: "Continuer" });
-  await next.click();
   await teen.getByLabel("Femme").check();
-  await next.click();
   const fifteenYearsAgo = new Date();
   fifteenYearsAgo.setFullYear(fifteenYearsAgo.getFullYear() - 15);
   await teen.getByLabel("Date de naissance").fill(fifteenYearsAgo.toISOString().slice(0, 10));
   await next.click();
   await teen.getByLabel("Taille en cm").fill("160");
-  await next.click();
   await teen.getByLabel("Poids en kg").fill("50");
   await next.click();
   await expect(teen.getByText(/Avant 18 ans, on se concentre sur l'équilibre/)).toBeVisible();

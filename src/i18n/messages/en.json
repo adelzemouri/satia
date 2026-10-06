@@ -120,7 +120,13 @@
     "macroGrams": "{name} {value, number} g",
     "proteinShort": "Prot.",
     "carbsShort": "Carbs",
-    "fatShort": "Fat"
+    "fatShort": "Fat",
+    "pepinSays": "{name} says:",
+    "celebration": {
+      "title": "{days, plural, one {day} other {days}} in a row",
+      "body": "Well done! Consistency is what makes the difference, not perfection.",
+      "continue": "Continue"
+    }
   },
   "theme": {
     "label": "Theme",
@@ -300,6 +306,36 @@
     "coach": {
       "title": "Which coach suits you?",
       "hint": "You can change it at any time."
+    },
+    "pages": {
+      "you": {
+        "title": "Let's get to know you",
+        "pepin": "Hi! I'm Pépin, your coach. Let's get to know each other in six short steps."
+      },
+      "body": {
+        "title": "Your body today",
+        "pepin": "Thanks {name}. These two measurements are only used to work out your needs."
+      },
+      "goal": {
+        "title": "Your goal",
+        "pepin": "What brings you here? There's no wrong answer."
+      },
+      "rhythm": {
+        "title": "Your daily life",
+        "pepin": "We'll go at your pace, never faster than what's good for you."
+      },
+      "habits": {
+        "title": "Your habits",
+        "pepin": "Tell me how you eat: I adapt to you, not the other way round."
+      },
+      "coach": {
+        "title": "Your coach",
+        "pepin": "Last step: how would you like me to talk to you?"
+      },
+      "summary": {
+        "title": "Your starting plan",
+        "pepin": "Here's your plan, {name}. It will adjust itself over time."
+      }
     }
   },
   "profile": {

@@ -120,7 +120,13 @@
     "macroGrams": "{name} {value, number} g",
     "proteinShort": "Prot.",
     "carbsShort": "Gluc.",
-    "fatShort": "Lip."
+    "fatShort": "Lip.",
+    "pepinSays": "{name} te dit :",
+    "celebration": {
+      "title": "{days, plural, one {jour} other {jours}} d'affilée",
+      "body": "Bravo ! C'est la régularité qui fait la différence, pas la perfection.",
+      "continue": "Continuer"
+    }
   },
   "theme": {
     "label": "Thème",
@@ -300,6 +306,36 @@
     "coach": {
       "title": "Quel coach te ressemble ?",
       "hint": "Tu pourras en changer à tout moment."
+    },
+    "pages": {
+      "you": {
+        "title": "Faisons connaissance",
+        "pepin": "Bonjour ! Moi c'est Pépin, ton coach. On fait connaissance en six petites étapes."
+      },
+      "body": {
+        "title": "Ton corps aujourd'hui",
+        "pepin": "Merci {name}. Ces deux mesures servent seulement à calculer tes besoins."
+      },
+      "goal": {
+        "title": "Ton objectif",
+        "pepin": "Qu'est-ce qui t'amène ? Il n'y a pas de mauvaise réponse."
+      },
+      "rhythm": {
+        "title": "Ton quotidien",
+        "pepin": "On avance à ton rythme, jamais plus vite que ce qui est bon pour toi."
+      },
+      "habits": {
+        "title": "Tes habitudes",
+        "pepin": "Dis-moi comment tu manges : c'est moi qui m'adapte, pas l'inverse."
+      },
+      "coach": {
+        "title": "Ton coach",
+        "pepin": "Dernière étape : comment veux-tu que je te parle ?"
+      },
+      "summary": {
+        "title": "Ton plan de départ",
+        "pepin": "Voilà ton plan, {name}. Il s'ajustera tout seul avec le temps."
+      }
     }
   },
   "profile": {

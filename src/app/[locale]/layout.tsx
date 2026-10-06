@@ -1,6 +1,6 @@
 import { SerwistProvider } from "@serwist/turbopack/react";
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 import { cookies, headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
@@ -14,8 +14,9 @@ import { routing } from "@/i18n/routing";
 
 import "../globals.css";
 
-// Une seule famille pour les titres et le texte : nette et lisible sur téléphone.
+// Texte courant net et lisible sur téléphone ; titres et grands chiffres en Fraunces arrondie.
 const sans = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-body", display: "swap" });
+const title = Fraunces({ subsets: ["latin"], axes: ["SOFT", "opsz"], variable: "--font-title", display: "swap" });
 
 export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Promise<Metadata> {
   const { locale } = await params;
@@ -52,7 +53,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
     <html
       lang={locale}
       data-theme={theme === "system" ? undefined : theme}
-      className={`${sans.variable} h-full antialiased`}
+      className={`${sans.variable} ${title.variable} h-full antialiased`}
     >
       <head>
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: CHUNK_RECOVERY_SCRIPT }} />
