@@ -761,7 +761,8 @@
   "aiEntry": {
     "title": "Photo, voix ou texte",
     "hint": "Prends ton assiette en photo ou décris ton repas : tu vérifies tout avant l'ajout.",
-    "takePhoto": "Photo",
+    "takePhoto": "Prendre mon repas en photo",
+    "takePhotoHint": "L'IA reconnaît les aliments, tu vérifies avant l'ajout.",
     "choosePhoto": "Choisir une photo",
     "photoAlt": "Photo de ton repas",
     "note": "Une précision ? (facultatif)",
