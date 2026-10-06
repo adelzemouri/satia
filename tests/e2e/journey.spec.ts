@@ -196,10 +196,13 @@ test("ajout manuel d'un repas depuis la base Ciqual", async ({ page }) => {
 
   await page.getByRole("link", { name: "Aujourd'hui" }).click();
   await expect(page.getByRole("progressbar", { name: /kcal consommées/ })).not.toHaveAttribute("aria-valuenow", "0");
-  // L'anneau du déjeuner affiche les calories du créneau sur sa part de l'objectif.
-  await expect(page.getByRole("link", { name: "Ajouter au déjeuner" })).toContainText(/^Déjeuner5\d \/ \d/);
+  // L'anneau du déjeuner affiche les calories du créneau sur sa part de l'objectif et ouvre son détail.
+  await expect(page.getByRole("link", { name: "Voir le déjeuner" })).toContainText(/^Déjeuner5\d \/ \d/);
   await expect(page.getByRole("link", { name: /1 jour d'affilée/ })).toBeVisible();
   await expectNoA11yViolations(page);
+  await page.getByRole("link", { name: "Voir le déjeuner" }).click();
+  await expect(page).toHaveURL(/\/journal\?date=.*#slot-lunch$/);
+  await expect(page.getByRole("region", { name: "Déjeuner" }).getByText(/^Pomme, pulpe et peau, crue/)).toBeVisible();
 });
 
 test("recette : l'ordre des ingrédients se change pendant la modification", async ({ page }) => {

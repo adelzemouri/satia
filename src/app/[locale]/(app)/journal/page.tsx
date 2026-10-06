@@ -25,6 +25,7 @@ import { Card } from "@/ui/card";
 import { EmptyState } from "@/ui/empty-state";
 import { formatDay, formatWeekday } from "@/ui/format-date";
 import { Icon } from "@/ui/icon";
+import { ScrollToHash } from "@/ui/scroll-to-hash";
 
 export default async function JournalPage({ params, searchParams }: PageProps<"/[locale]/journal">) {
   const locale = toLocale((await params).locale);
@@ -65,6 +66,7 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
 
   return (
     <>
+      <ScrollToHash />
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("journal.title")}</h1>
 
       <ol aria-label={t("journal.week")} className="grid grid-cols-7 gap-1.5">
@@ -165,7 +167,7 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
         return (
           <Card key={slot} aria-labelledby={`slot-${slot}`}>
             <div className="flex items-center justify-between gap-3">
-              <h2 id={`slot-${slot}`} className="text-lg font-bold">
+              <h2 id={`slot-${slot}`} className="scroll-mt-24 text-lg font-bold">
                 {t(`slots.${slot}`)}
               </h2>
               <span className="font-semibold text-text-muted">
@@ -224,7 +226,7 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
               <Link
                 href={{ pathname: "/add", query: { slot, date } }}
                 className={buttonClass("secondary")}
-                aria-label={t("home.addTo", { slot: t(`slotsLower.${slot}`) })}
+                aria-label={t("home.addTo", { slot, name: t(`slotsLower.${slot}`) })}
               >
                 <Icon name="plus" />
                 {t("journal.add")}

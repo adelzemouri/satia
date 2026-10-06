@@ -49,7 +49,8 @@
       "gain": "Aujourd'hui, tu es en zone de prise de poids."
     },
     "meals": "Repas du jour",
-    "addTo": "Ajouter au {slot}",
+    "addTo": "{slot, select, snack {Ajouter aux {name}} other {Ajouter au {name}}}",
+    "viewSlot": "{slot, select, snack {Voir les {name}} other {Voir le {name}}}",
     "openJournal": "Voir le détail du journal",
     "streak": "{days, plural, =0 {Pas encore de série : un repas saisi aujourd'hui la lance.} one {# jour d'affilée} other {# jours d'affilée}}",
     "streakFrozen": "Un jour de repos a été couvert cette semaine, ta série continue.",
