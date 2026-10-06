@@ -200,25 +200,29 @@ function dayMeals(entries: readonly HistoryEntry[], withGrams: boolean): string 
   }
 }
 
+/** Jours passés dont le coach voit le détail des repas (au-delà, les moyennes de `longHistoryLines`). */
+export const DETAILED_MEAL_DAYS = 6;
+
 /**
- * Historique compact des repas pour personnaliser le coach : le détail d'aujourd'hui (avec
- * les grammes), les repas des deux jours précédents, les totaux des 7 derniers jours et les
- * aliments les plus fréquents sur la période. Quelques lignes : les tokens se paient.
+ * Historique des repas pour personnaliser le coach : le détail d'aujourd'hui (avec les grammes),
+ * les plats de chacun des 6 jours précédents, les totaux des 7 derniers jours et les plats les
+ * plus fréquents sur tout l'historique fourni. Quelques lignes : les tokens se paient.
  */
 export function mealHistoryLines(
   entries: readonly HistoryEntry[],
   today: string,
   dayBefore: (days: number) => string,
 ): string[] {
-  const on = (date: string) => entries.filter((entry) => entry.date === date);
+  const byDate = new Map<string, HistoryEntry[]>();
+  for (const entry of entries) byDate.set(entry.date, [...(byDate.get(entry.date) ?? []), entry]);
+  const on = (date: string) => byDate.get(date) ?? [];
   const lines: string[] = [];
   const todays = on(today);
   lines.push(todays.length > 0 ? `Repas d'aujourd'hui : ${dayMeals(todays, true)}.` : "Rien de saisi aujourd'hui.");
-  for (const [offset, name] of [
-    [1, "Hier"],
-    [2, "Avant-hier"],
-  ] as const) {
-    const day = on(dayBefore(offset));
+  for (let offset = 1; offset <= DETAILED_MEAL_DAYS; offset++) {
+    const date = dayBefore(offset);
+    const day = on(date);
+    const name = offset === 1 ? "Hier" : offset === 2 ? "Avant-hier" : `Le ${date.slice(5)}`;
     if (day.length > 0) lines.push(`${name} : ${dayMeals(day, false)}.`);
   }
   const week = Array.from({ length: 7 }, (_, index) => dayBefore(index + 1)).flatMap((date) => {
@@ -240,8 +244,8 @@ export function mealHistoryLines(
   const frequent = [...counts]
     .filter(([, count]) => count >= 2)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
+    .slice(0, 12)
     .map(([name, count]) => `${name} ×${count}`);
-  if (frequent.length > 0) lines.push(`Souvent : ${frequent.join(", ")}.`);
+  if (frequent.length > 0) lines.push(`Le plus souvent : ${frequent.join(", ")}.`);
   return lines;
 }

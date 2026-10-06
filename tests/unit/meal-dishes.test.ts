@@ -65,7 +65,7 @@ describe("historique des repas pour le coach", () => {
     expect(lines[3]).toBe(
       "7 derniers jours : 10-04 560 kcal et 28 g de protéines ; 10-03 560 kcal et 28 g de protéines.",
     );
-    expect(lines[4]).toBe("Souvent : Pâtes au saumon ×2.");
+    expect(lines[4]).toBe("Le plus souvent : Pâtes au saumon ×2.");
   });
 
   it("dit simplement quand rien n'est saisi", () => {
