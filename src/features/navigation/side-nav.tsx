@@ -94,9 +94,10 @@ export function SideNav() {
       <ul className="flex flex-col gap-1">
         {items.map((item) => (
           <li key={item.href}>
-            <SideLink item={item} active={isActive(pathname, item)} />
+            <SideLink item={item} active={isActive(pathname, item)} group={item.href === "/recipes"} />
             {item.href === "/recipes" && kitchenOpen && (
-              <ul className="mt-1 mb-2 hidden flex-col gap-0.5 pl-11 xl:flex">
+              // Un filet relie les pages au groupe, sous son icône ; la page ouverte y prend un trait vert.
+              <ul className="mt-1 mb-2 ml-[1.375rem] hidden flex-col gap-0.5 border-l-2 border-border xl:flex">
                 {kitchen.map((sub) => {
                   const active = isActive(pathname, sub);
                   return (
@@ -104,8 +105,10 @@ export function SideNav() {
                       <Link
                         href={sub.href}
                         aria-current={active ? "page" : undefined}
-                        className={`flex min-h-9 items-center rounded-lg px-3 text-sm ${
-                          active ? "font-bold text-primary" : "font-semibold text-text-muted hover:text-text"
+                        className={`-ml-0.5 flex min-h-9 items-center rounded-r-lg border-l-2 pr-3 pl-4 text-sm ${
+                          active
+                            ? "border-primary bg-primary-soft font-bold text-primary"
+                            : "border-transparent font-semibold text-text-muted hover:bg-surface-muted hover:text-text"
                         }`}
                       >
                         {sub.label}
@@ -138,7 +141,8 @@ export function SideNav() {
   );
 }
 
-function SideLink({ item, active }: { item: Item; active: boolean }) {
+/** Pour un groupe (Cuisine), le fond vert passe à la page ouverte du sous-menu, quand il s'affiche. */
+function SideLink({ item, active, group = false }: { item: Item; active: boolean; group?: boolean }) {
   return (
     <Link
       href={item.href}
@@ -146,7 +150,7 @@ function SideLink({ item, active }: { item: Item; active: boolean }) {
       title={item.label}
       className={`flex min-h-12 items-center justify-center gap-3 rounded-xl px-3 xl:justify-start ${
         active
-          ? "bg-primary-soft font-bold text-primary"
+          ? `bg-primary-soft font-bold text-primary ${group ? "xl:bg-transparent" : ""}`
           : "font-semibold text-text-muted hover:bg-surface-muted hover:text-text"
       }`}
     >
