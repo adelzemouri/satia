@@ -149,6 +149,12 @@ test("sur ordinateur, une barre latérale remplace la barre du bas", async ({ pa
   await nav.getByRole("link", { name: "Journal" }).click();
   await expect(page).toHaveURL(/\/journal/);
   await expect(nav.getByRole("link", { name: "Journal" })).toHaveAttribute("aria-current", "page");
+  // La barre latérale remplace aussi le bouton « Retour » des pages secondaires.
+  await page.goto("/weight");
+  await expect(page.getByRole("link", { name: "Retour" })).toHaveCount(0);
+  await page.setViewportSize({ width: 412, height: 800 });
+  await expect(page.getByRole("link", { name: "Retour" })).toBeVisible();
+  await page.setViewportSize({ width: 1280, height: 800 });
   await page.keyboard.press("n");
   await expect(page).toHaveURL(/\/add$/);
   await expectNoA11yViolations(page);

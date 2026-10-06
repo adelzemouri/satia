@@ -16,7 +16,8 @@ function canGoBackInApp(): boolean {
 /**
  * Bouton « Retour » des pages secondaires. Il revient à la page précédente quand on est arrivé
  * depuis l'app (on retrouve ainsi le défilement et les filtres), sinon il ouvre la page parente :
- * indispensable dans l'app installée sur iPhone, qui n'a pas de bouton retour.
+ * indispensable dans l'app installée sur iPhone, qui n'a pas de bouton retour. Sur ordinateur, la
+ * barre latérale et le bouton précédent du navigateur suffisent : il y est masqué.
  */
 export function BackButton() {
   const t = useTranslations("nav");
@@ -32,7 +33,7 @@ export function BackButton() {
         event.preventDefault();
         router.back();
       }}
-      className="-mb-3 -ml-2 inline-flex min-h-11 items-center gap-1 self-start rounded-full pr-3 pl-1 font-semibold text-primary hover:bg-primary-soft"
+      className="-mb-3 -ml-2 inline-flex min-h-11 items-center gap-1 self-start rounded-full pr-3 pl-1 font-semibold text-primary hover:bg-primary-soft lg:hidden"
     >
       <Icon name="left" size={20} />
       {t("back")}
