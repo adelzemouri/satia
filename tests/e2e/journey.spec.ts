@@ -398,7 +398,10 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   // Le poids est flouté par défaut : on l'affiche pour la suite.
   await expect(page.getByLabel("Poids en kg")).toHaveValue("");
   await page.getByRole("button", { name: "Afficher mon poids" }).first().click();
-  await expect(page.getByRole("button", { name: "Masquer mon poids" })).toBeVisible();
+  // Masquer depuis un bloc refloute tout ; on réaffiche pour la suite.
+  await page.getByRole("button", { name: "Masquer mon poids" }).first().click();
+  await expect(page.getByRole("button", { name: "Masquer mon poids" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Afficher mon poids" }).first().click();
   await page.getByLabel("Poids en kg").fill("82");
   await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
   await expect(page.getByText("Tendance actuelle : 82 kg")).toBeVisible();

@@ -13,7 +13,7 @@ import { weightOverview } from "@/server/journal";
 import { getProfile } from "@/server/profile";
 import { requireUser } from "@/server/session";
 import { Card } from "@/ui/card";
-import { PrivacyToggle, PrivateBlock } from "@/ui/private";
+import { PrivateBlock } from "@/ui/private";
 import { formatDay } from "@/ui/format-date";
 import { EmptyState } from "@/ui/empty-state";
 
@@ -32,10 +32,7 @@ export default async function WeightPage({ params }: PageProps<"/[locale]/weight
 
   return (
     <>
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
-        <PrivacyToggle />
-      </div>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
 
       <Card aria-labelledby="add-weight">
         <h2 id="add-weight" className="text-xl font-semibold">
