@@ -50,3 +50,11 @@ export async function assertBelowLimit(key: string, rule: RateLimitRule): Promis
     throw new RateLimitedError(Math.max(1, Math.ceil(rule.window - elapsed)));
   }
 }
+
+/** Supprime les compteurs expirés (IP et e-mails de connexion ne sont pas gardés au-delà d'un jour). */
+export async function purgeRateLimits(): Promise<number> {
+  const rows = await db().execute(
+    sql`delete from rate_limits where window_start < now() - interval '1 day' returning key`,
+  );
+  return rows.length;
+}

@@ -94,7 +94,8 @@ ou plus) ; `openssl rand -base64 32` fait la même chose en terminal.
 | `LLM_*`                                    | pour l'IA        | Fournisseur, clé, modèles et tarifs (voir `.env.example`) ; sans clé, la saisie manuelle reste disponible     |
 | `APP_HOSTS`                                | non              | Domaines personnalisés, séparés par des virgules                                                              |
 
-Si une variable manque ou est invalide, `/api/health` le dit dans son champ `config`.
+Si une variable manque ou est invalide, `/api/health` le dit dans son champ `config` (détail visible
+connecté en admin, ou avec `Authorization: Bearer $CRON_SECRET` ; en public, seul `status` est donné).
 
 ### Secrets GitHub Actions
 
@@ -152,7 +153,8 @@ Conseils :
 ## Exploitation
 
 - **État de santé** : `/api/health` vérifie la configuration, la base, le stockage et
-  l'IA, et donne la région et la latence de la base. Vercel > Logs montre les erreurs
+  l'IA, et donne la région et la latence de la base (détail réservé à l'admin connecté ou au
+  secret cron ; en public, seulement `status`). Vercel > Logs montre les erreurs
   serveur.
 - **Membres** : Administration, section « Membres du foyer », pour inviter (lien à usage unique, à
   transmettre soi-même : il n'y a pas d'e-mail), générer un lien de nouveau mot de

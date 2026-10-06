@@ -12,3 +12,4 @@ process.env.S3_SECRET_ACCESS_KEY ??= "pommelia-secret";
 process.env.S3_FORCE_PATH_STYLE ??= "true";
 process.env.BETTER_AUTH_SECRET ??= "integration-secret-integration-secret";
 process.env.SETUP_TOKEN ??= "integration-setup-token";
+process.env.CRON_SECRET ??= "integration-cron-secret";

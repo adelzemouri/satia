@@ -37,8 +37,28 @@ export const notificationPrefsSchema = z.object({
   quietEnd: time,
 });
 
+/** Services push des navigateurs (Google, Apple, Mozilla, Microsoft) : le serveur n'écrit qu'à eux. */
+const PUSH_SERVICE_HOSTS = [
+  "fcm.googleapis.com",
+  "android.googleapis.com",
+  "push.apple.com",
+  "push.services.mozilla.com",
+  "notify.windows.com",
+];
+
+export function isPushServiceUrl(value: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return false;
+  }
+  if (url.protocol !== "https:" || url.port !== "" || url.username !== "" || url.password !== "") return false;
+  return PUSH_SERVICE_HOSTS.some((host) => url.hostname === host || url.hostname.endsWith(`.${host}`));
+}
+
 export const pushSubscriptionSchema = z.object({
-  endpoint: z.url().max(2000),
+  endpoint: z.url().max(2000).refine(isPushServiceUrl, "push_service"),
   keys: z.object({ p256dh: z.string().min(1).max(200), auth: z.string().min(1).max(100) }),
 });
 export type PushSubscriptionInput = z.input<typeof pushSubscriptionSchema>;

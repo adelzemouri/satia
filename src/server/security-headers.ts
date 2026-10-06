@@ -8,6 +8,9 @@ export const STATIC_SECURITY_HEADERS: Record<string, string> = {
   "Cross-Origin-Opener-Policy": "same-origin",
 };
 
+/** Les réponses d'API ne sont jamais des documents : rien à charger, rien à encadrer. */
+export const API_CONTENT_SECURITY_POLICY = "default-src 'none'; frame-ancestors 'none'";
+
 export function buildContentSecurityPolicy(nonce: string, isDev: boolean): string {
   const directives = [
     "default-src 'self'",
@@ -16,7 +19,8 @@ export function buildContentSecurityPolicy(nonce: string, isDev: boolean): strin
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' blob: data: https:",
     "font-src 'self'",
-    "connect-src 'self' https:",
+    // Le navigateur ne parle qu'à l'app : Open Food Facts et le LLM sont appelés côté serveur.
+    `connect-src 'self'${isDev ? " ws:" : ""}`,
     "worker-src 'self'",
     "manifest-src 'self'",
     "object-src 'none'",

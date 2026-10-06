@@ -1,12 +1,12 @@
 "use server";
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { getLocale } from "next-intl/server";
 
 import { redirect } from "@/i18n/navigation";
 import { acceptInvite, resetPassword, setupFirstAdmin } from "@/server/accounts";
 import { type ActionState, toActionState } from "@/server/action-result";
-import { auth } from "@/server/auth";
+import { auth, pendingTwoFactorUserId } from "@/server/auth";
 import { assertBelowLimit, consumeRateLimit, enforceRateLimit } from "@/server/rate-limit";
 import { clientIp } from "@/server/request";
 
@@ -57,15 +57,17 @@ export async function verifyTwoFactorAction(_prev: ActionState, formData: FormDa
       method: formData.get("method"),
       trustDevice: formData.get("trustDevice") === "on",
     });
-    const failuresKey = `2fa:failures:${await clientIp()}`;
-    await assertBelowLimit(failuresKey, ATTEMPTS);
+    // Compté par IP et par compte : changer d'IP ne donne pas plus d'essais sur un même compte.
+    const userId = await pendingTwoFactorUserId(await cookies());
+    const failureKeys = [`2fa:failures:${await clientIp()}`, ...(userId ? [`2fa:failures:user:${userId}`] : [])];
+    for (const key of failureKeys) await assertBelowLimit(key, key.includes(":user:") ? LOGIN_FAILURES : ATTEMPTS);
     const requestHeaders = await headers();
     const body = { code: input.code, trustDevice: input.trustDevice };
     try {
       if (input.method === "totp") await auth().api.verifyTOTP({ body, headers: requestHeaders });
       else await auth().api.verifyBackupCode({ body, headers: requestHeaders });
     } catch (error) {
-      await consumeRateLimit(failuresKey, ATTEMPTS);
+      for (const key of failureKeys) await consumeRateLimit(key, key.includes(":user:") ? LOGIN_FAILURES : ATTEMPTS);
       throw error;
     }
   } catch (error) {

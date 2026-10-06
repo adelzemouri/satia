@@ -1,6 +1,7 @@
 import "server-only";
 
 import { betterAuth } from "better-auth";
+import { eq } from "drizzle-orm";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { twoFactor } from "better-auth/plugins";
@@ -82,4 +83,23 @@ let instance: Auth | undefined;
 export function auth(): Auth {
   instance ??= createAuth();
   return instance;
+}
+
+type CookieReader = { getAll(): { name: string; value: string }[] };
+
+/**
+ * Compte en attente de son code 2FA, d'après le cookie posé par la connexion (sa valeur pointe
+ * vers une ligne de `verification` qui contient l'identifiant du compte). Null sans cookie valide.
+ */
+export async function pendingTwoFactorUserId(store: CookieReader): Promise<string | null> {
+  const cookie = store.getAll().find(({ name }) => name.endsWith("pommelia.two_factor"));
+  if (!cookie) return null;
+  // Cookie signé : « identifiant.signature ». Un identifiant inventé ne correspond à aucune ligne.
+  const raw = decodeURIComponent(cookie.value);
+  const identifier = raw.slice(0, raw.lastIndexOf(".") > 0 ? raw.lastIndexOf(".") : undefined);
+  const [row] = await db()
+    .select({ userId: schema.verification.value, expiresAt: schema.verification.expiresAt })
+    .from(schema.verification)
+    .where(eq(schema.verification.identifier, identifier));
+  return row && row.expiresAt > new Date() ? row.userId : null;
 }
