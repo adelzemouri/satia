@@ -1,0 +1,29 @@
+name: Image Docker
+
+# Vérifie que l'image se construit, seulement quand ce qui la compose change
+# (le build complet de Next.js y est refait : environ 3 minutes Actions).
+on:
+  pull_request:
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - next.config.ts
+      - .github/workflows/docker.yml
+  workflow_dispatch:
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docker:
+    name: Image Docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with: { context: ., push: false, cache-from: type=gha, cache-to: "type=gha,mode=max" }
