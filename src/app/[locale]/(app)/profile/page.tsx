@@ -1,25 +1,12 @@
-import { cookies } from "next/headers";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { APP_NAME } from "@/config/app";
-import { withDefaultPrefs } from "@/domain/notifications";
-import { LanguageSwitcher } from "@/features/preferences/language-switcher";
-import { parseTheme, THEME_COOKIE } from "@/features/preferences/theme";
-import { ThemeSwitcher } from "@/features/preferences/theme-switcher";
-import { WaterGoalForm } from "@/features/journal/water-goal-form";
-import { DeviceSubscription } from "@/features/notifications/device-subscription";
-import { NotificationPrefsForm } from "@/features/notifications/prefs-form";
 import { HubLinks } from "@/features/navigation/hub-links";
 import { LogoutForm } from "@/features/offline/logout-form";
-import { DeleteAccountForm } from "@/features/profile/delete-account-form";
-import { TwoFactorSection } from "@/features/profile/two-factor-section";
-import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
-import { subscriptionCount, vapidPublicKey } from "@/server/notifications";
 import { getProfile } from "@/server/profile";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
-import { Card } from "@/ui/card";
 import { Icon } from "@/ui/icon";
 
 export default async function ProfilePage({ params }: PageProps<"/[locale]/profile">) {
@@ -27,8 +14,6 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
   setRequestLocale(locale);
   const user = await requireUser(locale);
   const profile = await getProfile(user.id);
-  const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
-  const devices = await subscriptionCount(user.id);
   const t = await getTranslations("profile");
   const tn = await getTranslations("notifications");
   const tAll = await getTranslations();
@@ -60,70 +45,32 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
         ]}
       />
 
-      <h2 className="mt-2 text-xl font-bold">{t("settings")}</h2>
-
-      <Card aria-labelledby="prefs">
-        <h2 id="prefs" className="text-xl font-semibold">
-          {t("preferences")}
-        </h2>
-        <ThemeSwitcher initialTheme={theme} />
-        <LanguageSwitcher />
-        <WaterGoalForm goal={profile?.waterGoalGlasses ?? 8} />
-      </Card>
-
-      {profile && (
-        <Card aria-labelledby="notifications">
-          <h2 id="notifications" className="text-xl font-semibold">
-            {tn("title")}
-          </h2>
-          <p className="text-text-muted">{tn("hint")}</p>
-          <DeviceSubscription publicKey={vapidPublicKey()} devices={devices} />
-          <NotificationPrefsForm prefs={withDefaultPrefs(profile.notificationPrefs)} />
-        </Card>
-      )}
-
-      <Card aria-labelledby="ai-entry">
-        <h2 id="ai-entry" className="text-xl font-semibold">
-          {t("aiEntry")}
-        </h2>
-        <p className="text-text-muted">{t("aiEntryHint")}</p>
-        <div className="flex flex-wrap gap-3">
-          <Link href="/containers" className={buttonClass("secondary")}>
-            {t("containers")}
-          </Link>
-          <Link href="/dictionary" className={buttonClass("secondary")}>
-            {t("dictionary")}
-          </Link>
-        </div>
-      </Card>
-
-      <Card aria-labelledby="security">
-        <h2 id="security" className="text-xl font-semibold">
-          {t("security")}
-        </h2>
-        <TwoFactorSection enabled={user.twoFactorEnabled} />
-      </Card>
-
-      <Card aria-labelledby="data">
-        <h2 id="data" className="text-xl font-semibold">
-          {t("data")}
-        </h2>
-        <div className="flex flex-wrap gap-3">
-          <a href="/api/me/export?format=json" className={buttonClass("secondary")} download>
-            {t("exportJson")}
-          </a>
-          <a href="/api/me/export?format=csv" className={buttonClass("secondary")} download>
-            {t("exportCsv")}
-          </a>
-        </div>
-      </Card>
-
-      <Card aria-labelledby="delete">
-        <h2 id="delete" className="text-xl font-semibold">
-          {t("deleteTitle")}
-        </h2>
-        <DeleteAccountForm />
-      </Card>
+      <h2 className="mt-2 text-lg font-bold">{t("settings")}</h2>
+      <HubLinks
+        label={t("settings")}
+        links={[
+          { href: "/profile/preferences", icon: "sliders", label: t("preferences"), hint: t("preferencesHint") },
+          ...(profile
+            ? [
+                {
+                  href: "/profile/notifications",
+                  icon: "bell",
+                  label: tn("title"),
+                  hint: t("notificationsHint"),
+                } as const,
+              ]
+            : []),
+          { href: "/containers", icon: "sparkle", label: t("containers"), hint: t("containersHint") },
+          { href: "/dictionary", icon: "book", label: t("dictionary"), hint: t("dictionaryHint") },
+          {
+            href: "/profile/security",
+            icon: "lock",
+            label: t("security"),
+            hint: t(user.twoFactorEnabled ? "securityOn" : "securityOff"),
+          },
+          { href: "/profile/account", icon: "download", label: t("data"), hint: t("dataHint") },
+        ]}
+      />
 
       <LogoutForm>
         <button type="submit" className={buttonClass("secondary", "w-full")}>

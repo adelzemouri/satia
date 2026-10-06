@@ -61,7 +61,7 @@ export async function confirmTwoFactorAction(_prev: ActionState, formData: FormD
     const state = toActionState(error);
     return state?.error === "invalid_credentials" ? { error: "invalid_code" } : state;
   }
-  return redirect({ href: "/profile", locale: await getLocale() });
+  return redirect({ href: "/profile/security", locale: await getLocale() });
 }
 
 export async function disableTwoFactorAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -74,7 +74,7 @@ export async function disableTwoFactorAction(_prev: ActionState, formData: FormD
   } catch (error) {
     return toActionState(error);
   }
-  return redirect({ href: "/profile", locale: await getLocale() });
+  return redirect({ href: "/profile/security", locale: await getLocale() });
 }
 
 export async function deleteAccountAction(_prev: ActionState, formData: FormData): Promise<ActionState> {

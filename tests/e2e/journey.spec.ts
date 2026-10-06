@@ -133,6 +133,7 @@ test("onboarding complet d'un adulte avec plan expliqué", async ({ page }) => {
 test("le thème choisi dans le profil est appliqué et conservé", async ({ page }) => {
   await signIn(page, ADMIN);
   await page.getByRole("link", { name: "Moi", exact: true }).click();
+  await page.getByRole("link", { name: /^Préférences/ }).click();
   await page.getByText("Sombre").click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.reload();
@@ -142,8 +143,8 @@ test("le thème choisi dans le profil est appliqué et conservé", async ({ page
 
 test("réglages des notifications et génération des clés côté admin", async ({ page }) => {
   await signIn(page, ADMIN);
-  await page.goto("/profile");
-  const card = page.getByRole("region", { name: "Notifications" });
+  await page.goto("/profile/notifications");
+  const card = page.getByRole("main");
   await expect(card.getByText("Les notifications ne sont pas encore configurées par l'admin.")).toBeVisible();
   await expect(card.getByLabel("Repas non saisis")).toBeChecked();
   await card.getByLabel("Hydratation").uncheck();
@@ -656,8 +657,8 @@ test("dictée : arrêter puis relancer, même quand le navigateur ne signale pas
 
 test("activation de la double authentification puis connexion avec un code", async ({ page }) => {
   await signIn(page, ADMIN);
-  await page.goto("/profile");
-  const security = page.getByRole("region", { name: "Sécurité" });
+  await page.goto("/profile/security");
+  const security = page.getByRole("main");
   await security.getByLabel("Mot de passe").fill(ADMIN.password);
   await security.getByRole("button", { name: "Activer la double authentification" }).click();
   await expect(security.getByRole("img", { name: "QR code" })).toBeVisible();
@@ -666,6 +667,7 @@ test("activation de la double authentification puis connexion avec un code", asy
   await security.getByRole("button", { name: "Confirmer" }).click();
   await expect(page.getByText("La double authentification est activée.")).toBeVisible();
 
+  await page.goto("/profile");
   await page.getByRole("button", { name: "Se déconnecter" }).click();
   await expect(page).toHaveURL(/\/login$/);
   await signIn(page, ADMIN);
@@ -1160,7 +1162,7 @@ test("jeûne : planning, minuteur et historique ; traitement : rappel et journal
   await expect(logs.getByText(/cuisse gauche/)).toBeVisible();
   await expectNoA11yViolations(page);
 
-  await page.goto("/profile");
+  await page.goto("/profile/notifications");
   await expect(page.getByLabel("Jeûne")).toBeChecked();
   await expect(page.getByLabel("Traitement")).toBeChecked();
 });
@@ -1238,6 +1240,10 @@ test("audit d'accessibilité : chaque page de l'app, en thème clair et sombre",
     "/treatment",
     "/weight",
     "/profile",
+    "/profile/preferences",
+    "/profile/notifications",
+    "/profile/security",
+    "/profile/account",
     "/admin",
     "/admin/ai",
   ];
@@ -1269,7 +1275,7 @@ test("audit d'accessibilité : chaque page de l'app, en thème clair et sombre",
 
 test("export des données en JSON et CSV", async ({ page }) => {
   await signInWithTotp(page);
-  await page.goto("/profile");
+  await page.goto("/profile/account");
   const [json] = await Promise.all([
     page.waitForEvent("download"),
     page.getByRole("link", { name: "Télécharger (JSON)" }).click(),
@@ -1289,7 +1295,7 @@ test("export des données en JSON et CSV", async ({ page }) => {
 test("un membre supprime son compte ; le dernier admin ne peut pas", async ({ page, browser }) => {
   const teen = await newPage(browser);
   await signIn(teen, { email: TEEN.email, password: "nouveau-mot-de-passe-lea" });
-  await teen.goto("/profile");
+  await teen.goto("/profile/account");
   const danger = teen.getByRole("region", { name: "Supprimer mon compte" });
   await danger.getByLabel("Mot de passe").fill("nouveau-mot-de-passe-lea");
   await danger.getByRole("button", { name: "Supprimer définitivement" }).click();
@@ -1298,7 +1304,7 @@ test("un membre supprime son compte ; le dernier admin ne peut pas", async ({ pa
   await expect(alertIn(teen)).toHaveText("E-mail ou mot de passe incorrect.");
 
   await signInWithTotp(page);
-  await page.goto("/profile");
+  await page.goto("/profile/account");
   const own = page.getByRole("region", { name: "Supprimer mon compte" });
   await own.getByLabel("Mot de passe").fill(ADMIN.password);
   await own.getByRole("button", { name: "Supprimer définitivement" }).click();
