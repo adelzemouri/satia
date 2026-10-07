@@ -49,7 +49,8 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
       </div>
 
       <div data-col className="flex flex-col gap-6">
-        <h2 className="mt-2 text-lg font-bold lg:mt-0">{t("settings")}</h2>
+        {/* Sur ordinateur, les deux cartes sont côte à côte : le titre reste lu par les lecteurs d'écran sans décaler la carte. */}
+        <h2 className="mt-2 text-lg font-bold lg:sr-only">{t("settings")}</h2>
         <HubLinks
           label={t("settings")}
           links={[
