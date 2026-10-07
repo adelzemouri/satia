@@ -23,7 +23,7 @@ export function HubLinks({ label, links }: { label: string; links: HubLink[] }) 
           <li key={link.label}>
             <Link
               href={link.href}
-              className="relative flex min-h-16 items-center gap-4 px-5 py-2 transition-colors hover:bg-surface-muted hover:before:opacity-0 focus-visible:bg-surface-muted focus-visible:outline-offset-[-3px] focus-visible:before:opacity-0 in-[li+li]:before:absolute in-[li+li]:before:start-[4.75rem] in-[li+li]:before:end-0 in-[li+li]:before:top-0 in-[li+li]:before:h-px in-[li+li]:before:bg-border in-[li:has(:focus-visible)+li]:before:opacity-0 in-[li:hover+li]:before:opacity-0"
+              className="relative flex min-h-16 items-center gap-4 px-5 py-2 transition-colors before:absolute before:start-[4.75rem] before:end-0 before:top-0 before:h-px hover:bg-surface-muted hover:before:opacity-0 focus-visible:bg-surface-muted focus-visible:outline-offset-[-3px] focus-visible:before:opacity-0 in-[li+li]:before:bg-border in-[li:has(:focus-visible)+li]:before:opacity-0 in-[li:hover+li]:before:opacity-0"
             >
               <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary">
                 <Icon name={link.icon} />
