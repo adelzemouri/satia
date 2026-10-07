@@ -27,6 +27,11 @@ function recognitionClass(): RecognitionConstructor | null {
 
 const subscribeNothing = () => () => {};
 
+/** Délai sans aucun texte avant de relancer une dictée restée muette, nombre de relances et pause. */
+const SILENT_RESTART_MS = 3000;
+const SILENT_RESTARTS = 4;
+const RESTART_PAUSE_MS = 1000;
+
 /**
  * Message pour une erreur de la reconnaissance vocale, ou null quand il n'y a rien à dire
  * (`aborted` : la dictée a été arrêtée volontairement ou relancée).
@@ -69,61 +74,99 @@ export function useSpeech(locale: string, onText: (text: string) => void) {
   // Dictées vraiment terminées (événement de fin reçu).
   const [ended] = useState(() => new WeakSet<Recognition>());
   const callback = useRef(onText);
+  const watchdog = useRef<number | null>(null);
 
   useEffect(() => {
     callback.current = onText;
   });
-  useEffect(() => () => recognition.current?.abort(), []);
+  useEffect(
+    () => () => {
+      if (watchdog.current !== null) window.clearTimeout(watchdog.current);
+      recognition.current?.abort();
+    },
+    [],
+  );
+
+  const clearWatchdog = useCallback(() => {
+    if (watchdog.current !== null) window.clearTimeout(watchdog.current);
+    watchdog.current = null;
+  }, []);
 
   const start = useCallback(() => {
     const Speech = recognitionClass();
     if (!Speech) return;
-    // Une seule dictée à la fois : l'ancienne est coupée net. La nouvelle démarre tout de suite,
-    // dans le geste même : sur iPhone, une dictée lancée après coup (minuteur, événement de fin)
-    // est refusée en silence, et rappuyer sur « Dicter » ne faisait plus rien.
+    clearWatchdog();
+    // Une seule dictée à la fois : l'ancienne est coupée net, la nouvelle démarre tout de suite.
     const previous = recognition.current;
     recognition.current = null;
     if (previous && !ended.has(previous)) previous.abort();
-    const instance = new Speech();
-    instance.lang = locale === "en" ? "en-US" : "fr-FR";
-    instance.interimResults = true;
-    instance.continuous = false;
-    instance.onresult = (event) => {
-      // Un résultat tardif d'une dictée arrêtée ne doit pas écraser la nouvelle.
-      if (recognition.current !== instance) return;
-      const text = Array.from(event.results, (result) => result[0]?.transcript ?? "").join(" ");
-      callback.current(text.trim());
+
+    const launch = (retriesLeft: number) => {
+      const instance = new Speech();
+      instance.lang = locale === "en" ? "en-US" : "fr-FR";
+      instance.interimResults = true;
+      instance.continuous = false;
+      instance.onresult = (event) => {
+        // Un résultat tardif d'une dictée arrêtée ne doit pas écraser la nouvelle.
+        if (recognition.current !== instance) return;
+        clearWatchdog();
+        const text = Array.from(event.results, (result) => result[0]?.transcript ?? "").join(" ");
+        callback.current(text.trim());
+      };
+      instance.onerror = (event) => {
+        if (recognition.current !== instance) return;
+        clearWatchdog();
+        setError(speechErrorKey(event.error));
+      };
+      instance.onend = () => {
+        ended.add(instance);
+        if (recognition.current !== instance) return;
+        clearWatchdog();
+        setListening(false);
+      };
+      recognition.current = instance;
+      setError(null);
+      try {
+        instance.start();
+        setListening(true);
+      } catch {
+        recognition.current = null;
+        setListening(false);
+        setError("speech_failed");
+        return;
+      }
+      // Sur iPhone (app installée), une dictée relancée peu après la précédente reste muette : micro
+      // ouvert, mais ni texte, ni erreur, ni fin. Sans aucun texte au bout de quelques secondes, on la
+      // remplace par une nouvelle, quelques fois au plus ; plus tard, l'iPhone l'accepte.
+      if (retriesLeft > 0) {
+        watchdog.current = window.setTimeout(() => {
+          watchdog.current = null;
+          if (recognition.current !== instance) return;
+          // Le bouton reste sur « Arrêter » pendant la relance ; « Arrêter » annule aussi la pause.
+          recognition.current = null;
+          instance.abort();
+          // Une pause après l'arrêt : relancée aussitôt, la dictée resterait muette elle aussi.
+          watchdog.current = window.setTimeout(() => {
+            watchdog.current = null;
+            launch(retriesLeft - 1);
+          }, RESTART_PAUSE_MS);
+        }, SILENT_RESTART_MS);
+      }
     };
-    instance.onerror = (event) => {
-      if (recognition.current === instance) setError(speechErrorKey(event.error));
-    };
-    instance.onend = () => {
-      ended.add(instance);
-      if (recognition.current === instance) setListening(false);
-    };
-    recognition.current = instance;
-    setError(null);
-    try {
-      instance.start();
-      setListening(true);
-    } catch {
-      recognition.current = null;
-      setListening(false);
-      setError("speech_failed");
-    }
-  }, [locale, ended]);
+    launch(SILENT_RESTARTS);
+  }, [locale, ended, clearWatchdog]);
 
   /**
    * Arrêt demandé : le bouton repasse tout de suite en « Dicter » et la dictée est coupée net
-   * (le texte déjà reconnu est déjà dans le champ). Safari sur iPhone ne termine pas toujours une
-   * dictée simplement « arrêtée » : elle restait ouverte et bloquait la suivante.
+   * (le texte déjà reconnu est déjà dans le champ).
    */
   const stop = useCallback(() => {
+    clearWatchdog();
     const instance = recognition.current;
     recognition.current = null;
     setListening(false);
     if (instance && !ended.has(instance)) instance.abort();
-  }, [ended]);
+  }, [ended, clearWatchdog]);
 
   return { supported, listening, error, start, stop };
 }
