@@ -15,7 +15,7 @@ import { resetDatabase } from "./helpers";
 
 async function adminHousehold() {
   await setupFirstAdmin({
-    setupToken: "integration-setup-token",
+    setupToken: process.env.SETUP_TOKEN!,
     householdName: "Famille",
     name: "Adel",
     email: "adel@example.com",
