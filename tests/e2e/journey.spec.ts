@@ -213,7 +213,7 @@ test("ajout manuel d'un repas depuis la base Ciqual", async ({ page }) => {
   await lunch.getByRole("button", { name: "Enregistrer", exact: true }).click();
   await expect(lunch.getByText(/^100 g · 5\d kcal/)).toBeVisible();
 
-  await page.getByRole("link", { name: "Aujourd'hui" }).click();
+  await page.getByRole("link", { name: "Accueil" }).click();
   await expect(page.getByRole("progressbar", { name: /kcal consommées/ })).not.toHaveAttribute("aria-valuenow", "0");
   // L'anneau du déjeuner affiche les calories du créneau sur sa part de l'objectif et ouvre son détail.
   await expect(page.getByRole("link", { name: "Voir le déjeuner" })).toContainText(/^Déjeuner5\d \/ \d/);
@@ -364,7 +364,7 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await expect(page.getByText("Grand petit-déj")).toBeVisible();
   await expect(page.getByText("424 kcal")).toBeVisible();
 
-  await page.getByRole("link", { name: "Aujourd'hui" }).click();
+  await page.getByRole("link", { name: "Accueil" }).click();
   // Sur l'accueil comme dans le journal, toucher un verre fixe le total du jour.
   const glass = (n: number) => page.getByRole("button", { name: `Verre ${n}`, exact: true });
   await withServerAction(page, () => glass(3).click());
@@ -389,7 +389,7 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await expect(page.getByRole("region", { name: "Déjeuner" }).getByText(/^Eau du robinet/)).toBeVisible();
   await expect(page.getByText("5 / 8 verres")).toBeVisible();
   await expect(page.getByText("dont 2 verres dans tes repas")).toBeVisible();
-  await page.getByRole("link", { name: "Aujourd'hui" }).click();
+  await page.getByRole("link", { name: "Accueil" }).click();
   await expect(page.getByText("5 / 8 verres")).toBeVisible();
   // Retirer un verre ne touche qu'aux verres ajoutés au compteur, pas à l'eau du repas.
   await withServerAction(page, () => glass(5).click());

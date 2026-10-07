@@ -10,7 +10,7 @@ type TabKey = "home" | "kitchen" | "add" | "progress" | "profile";
 
 /**
  * Quatre onglets et le bouton d'ajout au centre. Les pages secondaires allument l'onglet
- * dont elles dépendent (le journal sous « Aujourd'hui », le menu sous « Cuisine »…).
+ * dont elles dépendent (le journal sous « Accueil », le menu sous « Cuisine »…).
  */
 const TABS: { href: string; key: TabKey; icon: keyof typeof ICONS; sections?: string[] }[] = [
   { href: "/", key: "home", icon: "home", sections: ["/journal"] },
