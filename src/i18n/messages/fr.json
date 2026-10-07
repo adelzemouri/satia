@@ -1070,6 +1070,8 @@
     "ask": "Ton message",
     "askHint": "Une question sur ton repas du soir, une envie, un doute…",
     "send": "Envoyer",
+    "dictate": "Dicter",
+    "stopDictation": "Arrêter la dictée",
     "clear": "Effacer la conversation",
     "styleTitle": "Personnalité du coach",
     "styles": {

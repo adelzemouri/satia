@@ -1070,6 +1070,8 @@
     "ask": "Your message",
     "askHint": "A question about dinner, a craving, a doubt…",
     "send": "Send",
+    "dictate": "Dictate",
+    "stopDictation": "Stop dictation",
     "clear": "Clear the conversation",
     "styleTitle": "Coach personality",
     "styles": {
