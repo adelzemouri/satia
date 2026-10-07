@@ -21,9 +21,12 @@ export default async function InvitePage({ params }: PageProps<"/[locale]/invite
       </AuthShell>
     );
   }
-  const [household] = await db().select().from(households).where(eq(households.id, link.householdId));
+  const [household] = link.separateHousehold
+    ? []
+    : await db().select().from(households).where(eq(households.id, link.householdId));
+  const title = link.separateHousehold ? t("titleSeparate") : t("title", { household: household?.name ?? "" });
   return (
-    <AuthShell title={t("title", { household: household?.name ?? "" })} intro={t("intro")}>
+    <AuthShell title={title} intro={t("intro")}>
       <InviteForm token={token} defaultName={link.label ?? ""} />
     </AuthShell>
   );

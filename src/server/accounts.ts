@@ -93,7 +93,15 @@ export async function setupFirstAdmin(input: {
 }
 
 type LinkInput =
-  | { kind: "invite"; householdId: string; createdBy: string; role: Role; label: string }
+  | {
+      kind: "invite";
+      householdId: string;
+      createdBy: string;
+      role: Role;
+      label: string;
+      /** Foyer à part : la personne arrive seule dans un nouveau foyer, toujours en simple membre. */
+      separateHousehold?: boolean;
+    }
   | { kind: "password_reset"; householdId: string; createdBy: string; userId: string };
 
 /** Crée un lien à usage unique et renvoie le jeton en clair (jamais stocké). */
@@ -107,7 +115,8 @@ export async function createAccessLink(input: LinkInput): Promise<string> {
       tokenHash: hashToken(token),
       householdId: input.householdId,
       createdBy: input.createdBy,
-      role: input.kind === "invite" ? input.role : null,
+      role: input.kind === "invite" ? (input.separateHousehold ? "member" : input.role) : null,
+      separateHousehold: input.kind === "invite" && input.separateHousehold === true,
       label: input.kind === "invite" ? input.label.trim() : null,
       userId: input.kind === "password_reset" ? input.userId : null,
       expiresAt: new Date(Date.now() + ttlMs),
@@ -152,6 +161,15 @@ async function consumeLink(tx: Tx, token: string, kind: AccessLinkKind) {
 export async function acceptInvite(input: { token: string; name: string; email: string; password: string }) {
   await db().transaction(async (tx) => {
     const link = await consumeLink(tx, input.token, "invite");
+    if (link.separateHousehold) {
+      // Jamais admin : l'administration (budget IA, planchers, clés) vaut pour toute l'instance.
+      const [household] = await tx
+        .insert(households)
+        .values({ name: input.name.trim(), managedBy: link.householdId })
+        .returning({ id: households.id });
+      await insertUserWithPassword(tx, { ...input, householdId: household!.id, role: "member" });
+      return;
+    }
     await insertUserWithPassword(tx, { ...input, householdId: link.householdId, role: link.role ?? "member" });
   });
 }
@@ -186,7 +204,13 @@ export async function listMembers(householdId: string) {
 
 export async function listPendingInvites(householdId: string) {
   return db()
-    .select({ id: accessLinks.id, label: accessLinks.label, role: accessLinks.role, expiresAt: accessLinks.expiresAt })
+    .select({
+      id: accessLinks.id,
+      label: accessLinks.label,
+      role: accessLinks.role,
+      separateHousehold: accessLinks.separateHousehold,
+      expiresAt: accessLinks.expiresAt,
+    })
     .from(accessLinks)
     .where(
       and(
@@ -197,6 +221,23 @@ export async function listPendingInvites(householdId: string) {
       ),
     )
     .orderBy(accessLinks.createdAt);
+}
+
+/** Comptes invités dans un foyer à part, gérés par l'admin de `householdId`. */
+export async function listGuests(householdId: string) {
+  return db()
+    .select({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      householdId: user.householdId,
+      twoFactorEnabled: user.twoFactorEnabled,
+      createdAt: user.createdAt,
+    })
+    .from(user)
+    .innerJoin(households, eq(households.id, user.householdId))
+    .where(eq(households.managedBy, householdId))
+    .orderBy(user.createdAt);
 }
 
 export async function revokeInvite(householdId: string, linkId: string) {
@@ -239,8 +280,36 @@ export async function deleteUser(userId: string): Promise<void> {
   await deleteObjects(photoKeys).catch((error: unknown) => console.error("Suppression des photos échouée", error));
 }
 
-/** Garde-fou : un admin n'agit que sur les membres de son propre foyer. */
-export async function assertSameHousehold(householdId: string, userId: string): Promise<void> {
-  const [target] = await db().select({ householdId: user.householdId }).from(user).where(eq(user.id, userId));
-  if (!target || target.householdId !== householdId) throw new DomainError("not_found");
+/**
+ * Garde-fou : un admin n'agit que sur les membres de son propre foyer et sur les invités
+ * des foyers à part qu'il gère. Renvoie le foyer à part concerné, le cas échéant.
+ */
+export async function assertManagedUser(
+  householdId: string,
+  userId: string,
+): Promise<{ guestHouseholdId: string | null }> {
+  const [target] = await db()
+    .select({ householdId: user.householdId, managedBy: households.managedBy })
+    .from(user)
+    .innerJoin(households, eq(households.id, user.householdId))
+    .where(eq(user.id, userId));
+  if (target?.householdId === householdId) return { guestHouseholdId: null };
+  if (target?.managedBy === householdId) return { guestHouseholdId: target.householdId };
+  throw new DomainError("not_found");
+}
+
+/** Supprime un foyer à part une fois vide (ses recettes, menus et courses partent avec). */
+export async function deleteGuestHouseholdIfEmpty(guestHouseholdId: string): Promise<void> {
+  const [row] = await db().select({ n: count() }).from(user).where(eq(user.householdId, guestHouseholdId));
+  if ((row?.n ?? 0) > 0) return;
+  const recipes = await db()
+    .select({ key: foods.photoKey })
+    .from(foods)
+    .where(and(eq(foods.householdId, guestHouseholdId), isNotNull(foods.photoKey)));
+  await db()
+    .delete(households)
+    .where(and(eq(households.id, guestHouseholdId), isNotNull(households.managedBy)));
+  await deleteObjects(recipes.flatMap((r) => r.key ?? [])).catch((error: unknown) =>
+    console.error("Suppression des photos échouée", error),
+  );
 }

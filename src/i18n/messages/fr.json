@@ -188,7 +188,8 @@
     "intro": "Tu as été invité·e. Crée ton compte pour commencer.",
     "submit": "Créer mon compte",
     "invalid": "Ce lien n'est plus valable. Demandes-en un nouveau à l'administrateur du foyer.",
-    "expiredTitle": "Lien expiré"
+    "expiredTitle": "Lien expiré",
+    "titleSeparate": "Bienvenue sur Pommelia"
   },
   "reset": {
     "title": "Nouveau mot de passe",
@@ -423,7 +424,23 @@
     "demoAddress": "Adresse",
     "demoEmail": "Email",
     "demoPassword": "Mot de passe",
-    "demoCopyText": "Pommelia (démo)\nAdresse : {url}\nEmail : {email}\nMot de passe : {password}"
+    "demoCopyText": "Pommelia (démo)\nAdresse : {url}\nEmail : {email}\nMot de passe : {password}",
+    "inviteWhere": "Où l'ajouter",
+    "where": {
+      "household": "Dans mon foyer",
+      "householdHint": "Partage les recettes de famille, le menu et la liste de courses.",
+      "separate": "Foyer à part",
+      "separateHint": "Son propre espace. Elle ne voit rien du tien, et toi non plus du sien."
+    },
+    "guestBudgetTitle": "Bon à savoir",
+    "guestBudgetHint": "Le budget IA mensuel est commun à toute l'appli. Ses photos et son coach Pépin le consomment aussi.",
+    "guests": "Invités hors foyer",
+    "guestsHint": "Chacun a son propre foyer. Tu ne vois ni ses repas ni son poids, seulement sa dépense IA.",
+    "guestRole": "Foyer à part",
+    "guestRemoveConfirm": "Supprimer le compte de {name} et toutes ses données ?",
+    "aiThisMonth": "IA ce mois-ci : {spent} sur {budget}",
+    "aiAllAccounts": "Tous les comptes confondus.",
+    "monthCost": "Dépense IA du mois : {cost}"
   },
   "errors": {
     "generic": "Une erreur est survenue. Réessaie dans un instant.",

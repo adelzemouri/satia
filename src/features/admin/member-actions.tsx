@@ -11,7 +11,17 @@ import { Button } from "@/ui/button";
 import { createResetLinkAction, removeMemberAction } from "./actions";
 import { CopyLink } from "./copy-link";
 
-export function MemberActions({ userId, name, isSelf }: { userId: string; name: string; isSelf: boolean }) {
+export function MemberActions({
+  userId,
+  name,
+  isSelf,
+  guest = false,
+}: {
+  userId: string;
+  name: string;
+  isSelf: boolean;
+  guest?: boolean;
+}) {
   const t = useTranslations("admin");
   const errorText = useErrorText();
   const [url, setUrl] = useState<string | null>(null);
@@ -39,7 +49,7 @@ export function MemberActions({ userId, name, isSelf }: { userId: string; name: 
             variant="ghost"
             disabled={pending}
             onClick={() => {
-              if (!window.confirm(t("removeConfirm", { name }))) return;
+              if (!window.confirm(t(guest ? "guestRemoveConfirm" : "removeConfirm", { name }))) return;
               startTransition(async () => {
                 const result = await removeMemberAction(userId);
                 setError(result?.error ?? null);

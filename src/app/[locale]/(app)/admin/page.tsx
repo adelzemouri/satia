@@ -4,12 +4,16 @@ import { revokeInviteAction } from "@/features/admin/actions";
 import { DemoAccount } from "@/features/admin/demo-account";
 import { FloorsForm } from "@/features/admin/floors-form";
 import { InviteForm } from "@/features/admin/invite-form";
+import { formatUsd } from "@/features/admin/format-usd";
 import { MemberActions } from "@/features/admin/member-actions";
 import { VapidKeys } from "@/features/admin/vapid-keys";
 import { Link } from "@/i18n/navigation";
 import { DEMO_EMAIL } from "@/domain/demo";
 import { toLocale } from "@/i18n/routing";
-import { listMembers, listPendingInvites } from "@/server/accounts";
+import { llmConfig } from "@/llm/config";
+import { aiStatus } from "@/llm/guard";
+import { currentMonthCostByUser } from "@/llm/usage";
+import { listGuests, listMembers, listPendingInvites } from "@/server/accounts";
 import { vapidPublicKey } from "@/server/notifications";
 import { demoAccountStatus } from "@/server/demo";
 import { requireAdmin } from "@/server/session";
@@ -21,14 +25,18 @@ export default async function AdminPage({ params }: PageProps<"/[locale]/admin">
   const locale = toLocale((await params).locale);
   setRequestLocale(locale);
   const admin = await requireAdmin(locale);
-  const [members, invites, floors, demo] = await Promise.all([
+  const [members, guests, invites, floors, demo, costs, ai] = await Promise.all([
     listMembers(admin.householdId),
+    listGuests(admin.householdId),
     listPendingInvites(admin.householdId),
     getCalorieFloors(),
     demoAccountStatus(),
+    currentMonthCostByUser(),
+    aiStatus(llmConfig()),
   ]);
   const t = await getTranslations("admin");
   const format = await getFormatter();
+  const monthCost = (userId: string) => t("monthCost", { cost: formatUsd(format, costs.get(userId) ?? 0) });
 
   return (
     <>
@@ -52,11 +60,48 @@ export default async function AdminPage({ params }: PageProps<"/[locale]/admin">
                   <span className="rounded-full bg-primary-soft px-3 py-1">{t("twoFactor")}</span>
                 )}
               </div>
+              <p className="text-sm text-text-muted tabular-nums">{monthCost(member.id)}</p>
               <MemberActions userId={member.id} name={member.name} isSelf={member.id === admin.id} />
             </li>
           ))}
         </ul>
       </Card>
+
+      {guests.length > 0 && (
+        <Card aria-labelledby="guests">
+          <h2 id="guests" className="text-xl font-semibold">
+            {t("guests")}
+          </h2>
+          <p className="text-text-muted">{t("guestsHint")}</p>
+          <ul className="flex flex-col divide-y divide-border">
+            {guests.map((guest) => (
+              <li key={guest.id} className="flex flex-col gap-2 py-3">
+                <div className="flex flex-wrap items-baseline gap-x-2">
+                  <span className="font-semibold">{guest.name}</span>
+                  <span className="text-sm text-text-muted">{guest.email}</span>
+                </div>
+                <div className="flex gap-2 text-sm">
+                  <span className="rounded-full bg-pomme-soft px-3 py-1">{t("guestRole")}</span>
+                  {guest.twoFactorEnabled && (
+                    <span className="rounded-full bg-primary-soft px-3 py-1">{t("twoFactor")}</span>
+                  )}
+                </div>
+                <p className="text-sm text-text-muted tabular-nums">{monthCost(guest.id)}</p>
+                <MemberActions userId={guest.id} name={guest.name} isSelf={false} guest />
+              </li>
+            ))}
+          </ul>
+          <p className="rounded-2xl bg-surface-muted px-4 py-3 text-sm text-text-muted tabular-nums">
+            <span className="block font-semibold text-text">
+              {t("aiThisMonth", {
+                spent: formatUsd(format, ai.spentUsdMicros),
+                budget: formatUsd(format, ai.budgetUsd * 1_000_000),
+              })}
+            </span>
+            {t("aiAllAccounts")}
+          </p>
+        </Card>
+      )}
 
       <Card aria-labelledby="invite">
         <h2 id="invite" className="text-xl font-semibold">
@@ -73,7 +118,8 @@ export default async function AdminPage({ params }: PageProps<"/[locale]/admin">
                   className="flex items-center justify-between gap-3 rounded-2xl bg-surface-muted px-4 py-2"
                 >
                   <span>
-                    {invite.label} · {t(`role.${invite.role ?? "member"}`)} ·{" "}
+                    {invite.label} · {invite.separateHousehold ? t("guestRole") : t(`role.${invite.role ?? "member"}`)}{" "}
+                    ·{" "}
                     <span className="text-sm text-text-muted">
                       {t("expires", { date: format.dateTime(invite.expiresAt, { dateStyle: "medium" }) })}
                     </span>

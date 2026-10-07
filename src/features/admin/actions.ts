@@ -6,7 +6,13 @@ import { z } from "zod";
 
 import { ROLES } from "@/db/schema";
 import { getPathname } from "@/i18n/navigation";
-import { assertSameHousehold, createAccessLink, deleteUser, revokeInvite } from "@/server/accounts";
+import {
+  assertManagedUser,
+  createAccessLink,
+  deleteGuestHouseholdIfEmpty,
+  deleteUser,
+  revokeInvite,
+} from "@/server/accounts";
 import { type ActionState, toActionState } from "@/server/action-result";
 import { deleteDemoAccount, resetDemoAccount } from "@/server/demo";
 import { DomainError } from "@/server/errors";
@@ -27,17 +33,26 @@ async function linkUrl(kind: "invite" | "reset", token: string): Promise<string>
   return `${await publicOrigin()}${path}`;
 }
 
-const inviteInput = z.object({ label: z.string().trim().min(1, "required").max(40), role: z.enum(ROLES) });
+const inviteInput = z.object({
+  label: z.string().trim().min(1, "required").max(40),
+  role: z.enum(ROLES),
+  where: z.enum(["household", "separate"]).default("household"),
+});
 
 export async function createInviteAction(_prev: LinkState, formData: FormData): Promise<LinkState> {
   try {
     const admin = await requireAdminUser();
-    const input = inviteInput.parse({ label: formData.get("label"), role: formData.get("role") });
+    const { where, ...input } = inviteInput.parse({
+      label: formData.get("label"),
+      role: formData.get("role") ?? "member",
+      where: formData.get("where") ?? undefined,
+    });
     const token = await createAccessLink({
       kind: "invite",
       householdId: admin.householdId,
       createdBy: admin.id,
       ...input,
+      separateHousehold: where === "separate",
     });
     revalidatePath("/[locale]/admin", "page");
     return { url: await linkUrl("invite", token) };
@@ -49,7 +64,7 @@ export async function createInviteAction(_prev: LinkState, formData: FormData): 
 export async function createResetLinkAction(userId: string): Promise<LinkState> {
   try {
     const admin = await requireAdminUser();
-    await assertSameHousehold(admin.householdId, userId);
+    await assertManagedUser(admin.householdId, userId);
     const token = await createAccessLink({
       kind: "password_reset",
       householdId: admin.householdId,
@@ -72,8 +87,9 @@ export async function removeMemberAction(userId: string): Promise<ActionState> {
   try {
     const admin = await requireAdminUser();
     if (userId === admin.id) throw new DomainError("not_found");
-    await assertSameHousehold(admin.householdId, userId);
+    const { guestHouseholdId } = await assertManagedUser(admin.householdId, userId);
     await deleteUser(userId);
+    if (guestHouseholdId) await deleteGuestHouseholdIfEmpty(guestHouseholdId);
     revalidatePath("/[locale]/admin", "page");
     return { ok: true };
   } catch (error) {
