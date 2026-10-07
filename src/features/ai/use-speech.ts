@@ -78,71 +78,51 @@ export function useSpeech(locale: string, onText: (text: string) => void) {
   const start = useCallback(() => {
     const Speech = recognitionClass();
     if (!Speech) return;
-    // Une seule dictée à la fois : l'ancienne est coupée net. Sur iPhone, lancer la nouvelle
-    // avant que l'ancienne soit vraiment terminée la fait échouer en silence : on attend sa fin
-    // (au plus une demi-seconde).
+    // Une seule dictée à la fois : l'ancienne est coupée net. La nouvelle démarre tout de suite,
+    // dans le geste même : sur iPhone, une dictée lancée après coup (minuteur, événement de fin)
+    // est refusée en silence, et rappuyer sur « Dicter » ne faisait plus rien.
     const previous = recognition.current;
     recognition.current = null;
-    const launch = () => {
-      const instance = new Speech();
-      instance.lang = locale === "en" ? "en-US" : "fr-FR";
-      instance.interimResults = true;
-      instance.continuous = false;
-      instance.onresult = (event) => {
-        // Un résultat tardif d'une dictée arrêtée ne doit pas écraser la nouvelle.
-        if (recognition.current !== instance) return;
-        const text = Array.from(event.results, (result) => result[0]?.transcript ?? "").join(" ");
-        callback.current(text.trim());
-      };
-      instance.onerror = (event) => {
-        if (recognition.current === instance) setError(speechErrorKey(event.error));
-      };
-      instance.onend = () => {
-        ended.add(instance);
-        if (recognition.current === instance) setListening(false);
-      };
-      recognition.current = instance;
-      setError(null);
-      try {
-        instance.start();
-        setListening(true);
-      } catch {
-        setListening(false);
-        setError("speech_failed");
-      }
+    if (previous && !ended.has(previous)) previous.abort();
+    const instance = new Speech();
+    instance.lang = locale === "en" ? "en-US" : "fr-FR";
+    instance.interimResults = true;
+    instance.continuous = false;
+    instance.onresult = (event) => {
+      // Un résultat tardif d'une dictée arrêtée ne doit pas écraser la nouvelle.
+      if (recognition.current !== instance) return;
+      const text = Array.from(event.results, (result) => result[0]?.transcript ?? "").join(" ");
+      callback.current(text.trim());
     };
-    if (!previous || ended.has(previous)) {
-      launch();
-      return;
+    instance.onerror = (event) => {
+      if (recognition.current === instance) setError(speechErrorKey(event.error));
+    };
+    instance.onend = () => {
+      ended.add(instance);
+      if (recognition.current === instance) setListening(false);
+    };
+    recognition.current = instance;
+    setError(null);
+    try {
+      instance.start();
+      setListening(true);
+    } catch {
+      recognition.current = null;
+      setListening(false);
+      setError("speech_failed");
     }
-    let done = false;
-    const go = () => {
-      if (done) return;
-      done = true;
-      launch();
-    };
-    const previousEnd = previous.onend;
-    previous.onend = () => {
-      previousEnd?.();
-      go();
-    };
-    previous.abort();
-    window.setTimeout(go, 500);
   }, [locale, ended]);
 
   /**
-   * Arrêt demandé : le bouton repasse tout de suite en « Dicter ». Safari sur iPhone ne
-   * signale pas toujours la fin de la dictée ; sans cela le bouton restait bloqué sur « Arrêter »
-   * et une nouvelle dictée devenait impossible.
+   * Arrêt demandé : le bouton repasse tout de suite en « Dicter » et la dictée est coupée net
+   * (le texte déjà reconnu est déjà dans le champ). Safari sur iPhone ne termine pas toujours une
+   * dictée simplement « arrêtée » : elle restait ouverte et bloquait la suivante.
    */
   const stop = useCallback(() => {
     const instance = recognition.current;
+    recognition.current = null;
     setListening(false);
-    if (!instance) return;
-    instance.stop();
-    window.setTimeout(() => {
-      if (!ended.has(instance)) instance.abort();
-    }, 1500);
+    if (instance && !ended.has(instance)) instance.abort();
   }, [ended]);
 
   return { supported, listening, error, start, stop };
