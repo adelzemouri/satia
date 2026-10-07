@@ -188,7 +188,8 @@
     "intro": "You've been invited. Create your account to get started.",
     "submit": "Create my account",
     "invalid": "This link is no longer valid. Ask the household admin for a new one.",
-    "expiredTitle": "Link expired"
+    "expiredTitle": "Link expired",
+    "titleSeparate": "Welcome to Pommelia"
   },
   "reset": {
     "title": "New password",
@@ -423,7 +424,23 @@
     "demoAddress": "Address",
     "demoEmail": "Email",
     "demoPassword": "Password",
-    "demoCopyText": "Pommelia (demo)\nAddress: {url}\nEmail: {email}\nPassword: {password}"
+    "demoCopyText": "Pommelia (demo)\nAddress: {url}\nEmail: {email}\nPassword: {password}",
+    "inviteWhere": "Where to add them",
+    "where": {
+      "household": "In my household",
+      "householdHint": "Shares family recipes, the meal plan and the shopping list.",
+      "separate": "Separate household",
+      "separateHint": "Their own space. They see nothing of yours, and you see nothing of theirs."
+    },
+    "guestBudgetTitle": "Good to know",
+    "guestBudgetHint": "The monthly AI budget is shared by the whole app. Their photos and coach Pépin use it too.",
+    "guests": "Guests outside the household",
+    "guestsHint": "Each one has their own household. You don't see their meals or weight, only their AI spending.",
+    "guestRole": "Separate household",
+    "guestRemoveConfirm": "Delete {name}'s account and all their data?",
+    "aiThisMonth": "AI this month: {spent} of {budget}",
+    "aiAllAccounts": "All accounts combined.",
+    "monthCost": "AI spending this month: {cost}"
   },
   "errors": {
     "generic": "Something went wrong. Please try again in a moment.",

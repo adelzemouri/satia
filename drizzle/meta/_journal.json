@@ -148,6 +148,13 @@
       "when": 1791213151892,
       "tag": "0020_shared_saved_meal",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1791362066156,
+      "tag": "0021_guest_households",
+      "breakpoints": true
     }
   ]
 }

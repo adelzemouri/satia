@@ -2,13 +2,16 @@ import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { db } from "@/db/client";
-import { account, accessLinks, user } from "@/db/schema";
+import { account, accessLinks, households, user } from "@/db/schema";
 import {
   acceptInvite,
+  assertManagedUser,
   createAccessLink,
+  deleteGuestHouseholdIfEmpty,
   deleteUser,
   findValidLink,
   hasAnyUser,
+  listGuests,
   listMembers,
   resetPassword,
   setupFirstAdmin,
@@ -129,5 +132,40 @@ describe("comptes", () => {
     const [leo] = await db().select().from(user).where(eq(user.email, "leo@example.com"));
     await deleteUser(leo!.id);
     expect(await db().select().from(account).where(eq(account.userId, leo!.id))).toEqual([]);
+  });
+
+  it("une invitation « foyer à part » crée un foyer séparé, géré par l'admin, avec un simple membre", async () => {
+    await setupFirstAdmin(admin);
+    const owner = await adminUser();
+    const token = await createAccessLink({
+      kind: "invite",
+      householdId: owner.householdId,
+      createdBy: owner.id,
+      role: "admin",
+      label: "Camille",
+      separateHousehold: true,
+    });
+    await acceptInvite({ token, name: "Camille", email: "camille@example.com", password: "mot-de-passe-camille" });
+
+    const [camille] = await db().select().from(user).where(eq(user.email, "camille@example.com"));
+    expect(camille!.role).toBe("member");
+    expect(camille!.householdId).not.toBe(owner.householdId);
+    expect((await listMembers(owner.householdId)).map((m) => m.name)).toEqual(["Adel"]);
+    expect((await listGuests(owner.householdId)).map((g) => g.name)).toEqual(["Camille"]);
+    const [guestHousehold] = await db().select().from(households).where(eq(households.id, camille!.householdId));
+    expect(guestHousehold!.managedBy).toBe(owner.householdId);
+
+    // L'admin gère l'invité ; l'invité, lui, ne voit pas le foyer de l'admin.
+    expect(await assertManagedUser(owner.householdId, camille!.id)).toEqual({
+      guestHouseholdId: camille!.householdId,
+    });
+    await expect(assertManagedUser(camille!.householdId, owner.id)).rejects.toThrow("not_found");
+
+    await deleteUser(camille!.id);
+    await deleteGuestHouseholdIfEmpty(camille!.householdId);
+    expect(await db().select().from(households).where(eq(households.id, camille!.householdId))).toEqual([]);
+    // Le foyer de l'admin n'est jamais supprimé par ce chemin.
+    await deleteGuestHouseholdIfEmpty(owner.householdId);
+    expect(await db().select().from(households).where(eq(households.id, owner.householdId))).toHaveLength(1);
   });
 });

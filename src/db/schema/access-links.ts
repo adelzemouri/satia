@@ -1,4 +1,4 @@
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 import { ROLES, user } from "./auth";
 import { households } from "./households";
@@ -21,6 +21,8 @@ export const accessLinks = pgTable(
       .references(() => households.id, { onDelete: "cascade" }),
     /** Invitation : rôle attribué. */
     role: text({ enum: ROLES }),
+    /** Invitation : crée un foyer à part (géré par `householdId`) au lieu de rejoindre celui-ci. */
+    separateHousehold: boolean().notNull().default(false),
     /** Invitation : libellé libre (« Maman », « Léo ») pour s'y retrouver. */
     label: text(),
     /** Réinitialisation : compte concerné. */

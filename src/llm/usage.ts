@@ -35,6 +35,16 @@ export async function currentMonthCostMicros(): Promise<number> {
   return Number(row?.total ?? 0);
 }
 
+/** Coût du mois en cours par utilisateur (micro-dollars). */
+export async function currentMonthCostByUser(): Promise<Map<string, number>> {
+  const rows = await db()
+    .select({ userId: llmCalls.userId, total: sql<string>`sum(${llmCalls.costUsdMicros})` })
+    .from(llmCalls)
+    .where(gte(llmCalls.createdAt, monthStart))
+    .groupBy(llmCalls.userId);
+  return new Map(rows.flatMap((row) => (row.userId ? [[row.userId, Number(row.total)] as const] : [])));
+}
+
 export type MonthlyUserCost = {
   month: string;
   userId: string | null;
