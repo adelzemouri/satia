@@ -11,7 +11,7 @@ import { Card } from "@/ui/card";
 export default async function AccountPage({ params }: PageProps<"/[locale]/profile/account">) {
   const locale = toLocale((await params).locale);
   setRequestLocale(locale);
-  await requireUser(locale);
+  const user = await requireUser(locale);
   const t = await getTranslations("profile");
 
   return (
@@ -35,7 +35,7 @@ export default async function AccountPage({ params }: PageProps<"/[locale]/profi
         <h2 id="delete" className="text-xl font-semibold">
           {t("deleteTitle")}
         </h2>
-        <DeleteAccountForm />
+        <DeleteAccountForm email={user.email} />
       </Card>
       <p className="text-sm text-text-muted">{t("disclaimer", { appName: APP_NAME })}</p>
     </>

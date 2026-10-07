@@ -6,13 +6,14 @@ import { Link } from "@/i18n/navigation";
 import { Alert } from "@/ui/alert";
 import { Button, buttonClass } from "@/ui/button";
 import { Field } from "@/ui/field";
+import { UsernameField } from "@/ui/username-field";
 import { useFormAction } from "@/ui/use-form-action";
 
 import { resetPasswordAction } from "./actions";
 import { PASSWORD_MIN } from "./schemas";
 import { useErrorText } from "./use-error-text";
 
-export function ResetForm({ token }: { token: string }) {
+export function ResetForm({ token, email }: { token: string; email: string }) {
   const t = useTranslations();
   const errorText = useErrorText();
   const [state, action, pending] = useFormAction(resetPasswordAction, null);
@@ -31,6 +32,7 @@ export function ResetForm({ token }: { token: string }) {
     <form {...action} className="flex flex-col gap-4" noValidate>
       {state?.error && state.error !== "invalid_form" && <Alert>{errorText(state.error)}</Alert>}
       <input type="hidden" name="token" value={token} />
+      <UsernameField value={email} />
       <Field
         label={t("fields.newPassword")}
         hint={t("fields.passwordHint", { min: PASSWORD_MIN })}

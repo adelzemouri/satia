@@ -15,7 +15,7 @@ export default async function SecurityPage({ params }: PageProps<"/[locale]/prof
     <>
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("security")}</h1>
       <Card>
-        <TwoFactorSection enabled={user.twoFactorEnabled} />
+        <TwoFactorSection enabled={user.twoFactorEnabled} email={user.email} />
       </Card>
     </>
   );
