@@ -1,6 +1,6 @@
 /**
  * Génère les icônes PNG de la PWA à partir des SVG de `public/icons`.
- * Génère aussi le favicon (`src/app/favicon.ico`) et les écrans de lancement iOS dans `public/splash`.
+ * Génère aussi le favicon (`src/app/favicon.ico`), l'image d'aperçu de lien et les écrans de lancement iOS.
  * Usage : pnpm icons (nécessite un Chromium Playwright).
  */
 import { readdir, readFile, writeFile } from "node:fs/promises";
@@ -81,4 +81,21 @@ for (const screen of SPLASH_SCREENS) {
     console.log(`✓ ${out}`);
   }
 }
+
+// --- Aperçu de lien (Open Graph) -----------------------------------------------------------
+// Image montrée par Messenger, WhatsApp, iMessage… quand on partage un lien vers l'app.
+// Next.js ajoute un hash à son URL : un nouveau logo donne une nouvelle URL, que les messageries rechargent.
+const slice = icon.replace(/<rect[^>]*\/>/, "");
+await splash.setViewportSize({ width: 1200, height: 630 });
+await splash.setContent(`<html><head><style>
+  ${font ? `@font-face{font-family:Brand;src:url(data:font/woff2;base64,${font}) format("woff2");font-weight:100 900}` : ""}
+  body{margin:0;height:100vh;display:flex;align-items:center;justify-content:center;gap:40px;background:#FCE3DC;
+    font-family:Brand,Georgia,serif;color:#14201D}
+  svg{width:360px;height:360px}
+  h1{margin:0;font-size:112px;font-weight:700;letter-spacing:-0.02em;font-variation-settings:"SOFT" 100,"opsz" 144}
+  p{margin:8px 0 0;font-size:38px;font-weight:500;color:#56625D;font-variation-settings:"SOFT" 100,"opsz" 36}
+</style></head><body>${slice}<div><h1>Pommelia</h1><p>Suivi nutritionnel familial</p></div></body></html>`);
+await splash.evaluate(() => document.fonts.ready);
+await writeFile("src/app/[locale]/opengraph-image.png", await splash.screenshot());
+console.log("✓ src/app/[locale]/opengraph-image.png");
 await splashBrowser.close();

@@ -25,6 +25,9 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
     applicationName: APP_NAME,
     title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
     description: t("description"),
+    // L'image vient de `opengraph-image.png` (générée par `pnpm icons`).
+    openGraph: { type: "website", siteName: APP_NAME, title: APP_NAME, description: t("description"), locale },
+    twitter: { card: "summary_large_image" },
     appleWebApp: { capable: true, statusBarStyle: "default", title: APP_NAME, startupImage: splashStartupImages() },
     formatDetection: { telephone: false },
     icons: { apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }] },
