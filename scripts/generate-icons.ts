@@ -1,6 +1,6 @@
 /**
  * Génère les icônes PNG de la PWA à partir des SVG de `public/icons`.
- * Génère aussi les écrans de lancement iOS dans `public/splash`.
+ * Génère aussi le favicon (`src/app/favicon.ico`) et les écrans de lancement iOS dans `public/splash`.
  * Usage : pnpm icons (nécessite un Chromium Playwright).
  */
 import { readdir, readFile, writeFile } from "node:fs/promises";
@@ -28,15 +28,38 @@ for (const { src, out, size } of targets) {
   await writeFile(out, await page.screenshot({ omitBackground: true }));
   console.log(`✓ ${out}`);
 }
+
+// Favicon : un fichier .ico qui embarque simplement un PNG 48 × 48 (lu par tous les navigateurs).
+await page.setViewportSize({ width: 48, height: 48 });
+await page.setContent(
+  `<html><body style="margin:0;background:transparent">${(await readFile("public/icons/icon.svg", "utf8")).replace("<svg ", '<svg width="48" height="48" ')}</body></html>`,
+);
+const favicon = await page.screenshot({ omitBackground: true });
+const header = Buffer.alloc(22);
+header.writeUInt16LE(1, 2); // type : icône
+header.writeUInt16LE(1, 4); // une image
+header.writeUInt8(48, 6);
+header.writeUInt8(48, 7);
+header.writeUInt16LE(1, 10); // plans de couleur
+header.writeUInt16LE(32, 12); // bits par pixel
+header.writeUInt32LE(favicon.length, 14);
+header.writeUInt32LE(22, 18); // position de l'image
+await writeFile("src/app/favicon.ico", Buffer.concat([header, favicon]));
+console.log("✓ src/app/favicon.ico");
 await browser.close();
 
 // --- Écrans de lancement iOS -------------------------------------------------------------
 // Sans eux, l'app installée sur iPhone affiche un écran blanc le temps du premier chargement.
 // Une image par taille d'écran (portrait), en clair et en sombre. Le nom est écrit avec la police
-// de l'app, prise dans la build (`pnpm build` avant `pnpm icons`), sinon une police système.
+// des titres (Fraunces), prise dans la build (`pnpm build` avant `pnpm icons`), sinon une serif système.
 
-const media = await readdir(".next/static/media").catch(() => [] as string[]);
-const fontFile = media.find((name) => name.includes(".p.") && name.endsWith(".woff2"));
+const chunks = await readdir(".next/static/chunks").catch(() => [] as string[]);
+const css = (
+  await Promise.all(
+    chunks.filter((name) => name.endsWith(".css")).map((name) => readFile(`.next/static/chunks/${name}`, "utf8")),
+  )
+).join("\n");
+const fontFile = /font-family:Fraunces;[^}]*?url\(\.\.\/media\/([^)]+\.p\.[^)]+\.woff2)\)/.exec(css)?.[1];
 const font = fontFile ? (await readFile(`.next/static/media/${fontFile}`)).toString("base64") : null;
 const icon = await readFile("public/icons/icon.svg", "utf8");
 
@@ -46,11 +69,11 @@ for (const screen of SPLASH_SCREENS) {
   for (const theme of ["light", "dark"] as const) {
     await splash.setViewportSize({ width: screen.width, height: screen.height });
     await splash.setContent(`<html><head><style>
-      ${font ? `@font-face{font-family:Brand;src:url(data:font/woff2;base64,${font}) format("woff2");font-weight:200 800}` : ""}
+      ${font ? `@font-face{font-family:Brand;src:url(data:font/woff2;base64,${font}) format("woff2");font-weight:100 900}` : ""}
       body{margin:0;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:${screen.dpr * 16}px;
-        background:${BRAND_COLORS[theme]};font-family:Brand,system-ui,sans-serif}
+        background:${BRAND_COLORS[theme]};font-family:Brand,Georgia,serif}
       svg{width:${screen.dpr * 104}px;height:${screen.dpr * 104}px}
-      p{margin:0;font-size:${screen.dpr * 30}px;font-weight:800;letter-spacing:-0.02em;color:${theme === "light" ? "#14201D" : "#EEF3F1"}}
+      p{margin:0;font-size:${screen.dpr * 32}px;font-weight:700;letter-spacing:-0.02em;font-variation-settings:"SOFT" 100,"opsz" 72;color:${theme === "light" ? "#14201D" : "#EEF3F1"}}
     </style></head><body>${icon}<p>Pommelia</p></body></html>`);
     await splash.evaluate(() => document.fonts.ready);
     const out = `public/splash/${theme}-${screen.width}x${screen.height}.png`;

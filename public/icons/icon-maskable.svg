@@ -1,9 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#0B6E66"/>
+  <rect width="512" height="512" fill="#FCE3DC"/>
   <g transform="translate(76.8 76.8) scale(0.7)">
-    <path d="M112 268h288a144 144 0 0 1-288 0z" fill="#FFFFFF"/>
-    <path d="M136 268h240" stroke="#D7ECE9" stroke-width="16" stroke-linecap="round"/>
-    <path d="M256 236c0-56 28-96 84-108-2 58-30 98-84 108z" fill="#F4A58E"/>
-    <path d="M248 236c-6-44-34-72-80-78 4 46 32 74 80 78z" fill="#9BE0D6"/>
+  <g transform="rotate(-8 256 300) translate(0 -22)">
+    <path d="M112 236Q256 282 400 236A144 144 0 0 1 112 236z" fill="#FFF6E6"/>
+    <path d="M400 236A144 144 0 0 1 112 236" stroke="#C94E35" stroke-width="32" fill="none" stroke-linecap="round"/>
+    <ellipse cx="228" cy="296" rx="11" ry="21" fill="#6B3F24" transform="rotate(-18 228 296)"/>
+    <ellipse cx="284" cy="296" rx="11" ry="21" fill="#6B3F24" transform="rotate(18 284 296)"/>
+    <path d="M392 230c10-44 44-68 92-66-10 46-44 68-92 66z" fill="#4FA06E"/>
+  </g>
   </g>
 </svg>
