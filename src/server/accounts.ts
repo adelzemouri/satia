@@ -140,6 +140,13 @@ export async function findValidLink(token: string, kind: AccessLinkKind) {
   return link ?? null;
 }
 
+/** Adresse du compte visé par un lien de nouveau mot de passe (pour le gestionnaire de mots de passe). */
+export async function resetLinkEmail(link: { userId: string | null }): Promise<string> {
+  if (!link.userId) return "";
+  const [row] = await db().select({ email: user.email }).from(user).where(eq(user.id, link.userId));
+  return row?.email ?? "";
+}
+
 /** Marque le lien comme utilisé ; échoue si un autre onglet l'a déjà consommé. */
 async function consumeLink(tx: Tx, token: string, kind: AccessLinkKind) {
   const [link] = await tx

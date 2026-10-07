@@ -6,11 +6,12 @@ import { useErrorText } from "@/features/auth/use-error-text";
 import { Alert } from "@/ui/alert";
 import { Button } from "@/ui/button";
 import { Field } from "@/ui/field";
+import { UsernameField } from "@/ui/username-field";
 import { useFormAction } from "@/ui/use-form-action";
 
 import { confirmTwoFactorAction, disableTwoFactorAction, enableTwoFactorAction } from "./actions";
 
-export function TwoFactorSection({ enabled }: { enabled: boolean }) {
+export function TwoFactorSection({ enabled, email }: { enabled: boolean; email: string }) {
   const t = useTranslations();
   const errorText = useErrorText();
   const [enableState, enable, enabling] = useFormAction(enableTwoFactorAction, null);
@@ -22,6 +23,7 @@ export function TwoFactorSection({ enabled }: { enabled: boolean }) {
       <form {...disable} className="flex flex-col gap-3">
         <Alert tone="success">{t("profile.twoFactorOn")}</Alert>
         {disableState?.error && <Alert>{errorText(disableState.error)}</Alert>}
+        <UsernameField value={email} />
         <Field label={t("fields.password")} name="password" type="password" autoComplete="current-password" required />
         <Button type="submit" variant="secondary" disabled={disabling}>
           {t("profile.disable2fa")}
@@ -78,6 +80,7 @@ export function TwoFactorSection({ enabled }: { enabled: boolean }) {
     <form {...enable} className="flex flex-col gap-3">
       <p>{t("profile.twoFactorOff")}</p>
       {enableState?.error && <Alert>{errorText(enableState.error)}</Alert>}
+      <UsernameField value={email} />
       <Field label={t("fields.password")} name="password" type="password" autoComplete="current-password" required />
       <Button type="submit" disabled={enabling}>
         {t("profile.enable2fa")}

@@ -1725,5 +1725,10 @@
     "recovering": "Mise à jour de l'app, un instant…",
     "reload": "Recharger",
     "retry": "Réessayer"
+  },
+  "notFound": {
+    "title": "Cette page n'existe pas",
+    "body": "Le lien est peut-être ancien ou incomplet.",
+    "home": "Revenir à l'accueil"
   }
 }
