@@ -643,12 +643,14 @@ test("saisie en texte libre, puis par le dictionnaire personnel sans appel à l'
 });
 
 test("dictée : arrêter puis relancer, même quand le navigateur ne signale pas la fin", async ({ page }) => {
-  // Reconnaissance vocale simulée comme Safari sur iPhone : après « stop », pas d'événement de fin,
-  // et une nouvelle dictée échoue tant que la précédente n'est pas terminée.
+  // Reconnaissance vocale simulée comme l'app installée sur iPhone : après « stop », pas d'événement
+  // de fin ; une nouvelle dictée échoue tant que la précédente n'est pas terminée, et reste muette
+  // (ni texte, ni erreur, ni fin) si elle démarre moins de 0,8 s après l'arrêt de la précédente.
   await page.addInitScript(() => {
     let count = 0;
     // Numéro de la dictée en cours (0 : aucune).
     let active = 0;
+    let abortedAt = 0;
     class FakeRecognition {
       id = 0;
       lang = "";
@@ -662,13 +664,14 @@ test("dictée : arrêter puis relancer, même quand le navigateur ne signale pas
         count += 1;
         this.id = count;
         active = this.id;
+        if (Date.now() - abortedAt < 800) return;
         const words = count === 1 ? "deux œufs" : "et du pain";
         setTimeout(() => this.onresult?.({ results: [Object.assign([{ transcript: words }], { isFinal: true })] }), 50);
       }
       stop() {}
       abort() {
         if (active === this.id) active = 0;
-        setTimeout(() => this.onend?.(), 10);
+        abortedAt = Date.now();
       }
     }
     (window as unknown as { SpeechRecognition: unknown }).SpeechRecognition = FakeRecognition;
@@ -681,7 +684,8 @@ test("dictée : arrêter puis relancer, même quand le navigateur ne signale pas
   await expect(field).toHaveValue("deux œufs");
   await page.getByRole("button", { name: "Arrêter la dictée" }).click();
   await page.getByRole("button", { name: "Dicter" }).click();
-  await expect(field).toHaveValue("deux œufs et du pain");
+  // La dictée restée muette est relancée d'elle-même après quelques secondes.
+  await expect(field).toHaveValue("deux œufs et du pain", { timeout: 10_000 });
 });
 
 test("coach : dicter un message puis l'envoyer avec Entrée", async ({ page }) => {
