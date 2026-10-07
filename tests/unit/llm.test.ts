@@ -6,7 +6,7 @@ import { parseJsonText, toJsonSchema } from "@/llm/json";
 import { costUsdMicros } from "@/llm/pricing";
 import { anthropicProvider } from "@/llm/providers/anthropic";
 import { mockProvider } from "@/llm/providers/mock";
-import { openAiCompatibleProvider } from "@/llm/providers/openai-compatible";
+import { openAiCompatibleProvider, reasoningFields } from "@/llm/providers/openai-compatible";
 import { mealItemsSchema } from "@/llm/schemas";
 import { LlmProviderError, type LlmRequest } from "@/llm/types";
 
@@ -124,6 +124,33 @@ describe("fournisseurs", () => {
     expect(error).toMatchObject({ kind: "invalid_json", usage: { inputTokens: 50, outputTokens: 0 } });
     const body = JSON.parse(String(vi.mocked(fetch).mock.calls[0]![1]!.body));
     expect(body).toMatchObject({ reasoning_effort: "low", response_format: { type: "json_object" } });
+  });
+
+  it("Gemini : la réflexion passe par thinking_level, sans paramètre d'échantillonnage", async () => {
+    const fetchMock = vi.fn(async (_url: string, _init: RequestInit) =>
+      Response.json({ choices: [{ message: { content: '{"ok":true}' } }] }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const provider = openAiCompatibleProvider({
+      baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
+      apiKey: "k",
+      jsonMode: "json_schema",
+      reasoningEffort: "low",
+    });
+    await provider.complete(request);
+    const body = JSON.parse(String(fetchMock.mock.calls[0]![1].body));
+    expect(body.extra_body).toEqual({ google: { thinking_config: { thinking_level: "low" } } });
+    for (const key of ["reasoning_effort", "thinking_budget", "temperature", "top_p", "top_k"]) {
+      expect(body).not.toHaveProperty(key);
+    }
+  });
+
+  it("Gemini : « none » devient le niveau minimal", () => {
+    expect(reasoningFields("https://generativelanguage.googleapis.com/v1beta/openai", "none")).toEqual({
+      extra_body: { google: { thinking_config: { thinking_level: "minimal" } } },
+    });
+    expect(reasoningFields("https://llm.test/v1", "none")).toEqual({ reasoning_effort: "none" });
+    expect(reasoningFields("https://llm.test/v1", undefined)).toEqual({});
   });
 
   it("API compatible OpenAI : une erreur HTTP devient une erreur fournisseur", async () => {
