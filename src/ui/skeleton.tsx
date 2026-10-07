@@ -28,9 +28,12 @@ export function TitleBone({ className = "w-2/3" }: { className?: string }) {
 /** Liste de liens vers des pages secondaires, comme `HubLinks` (« Progrès », « Moi »). */
 export function HubLinksBone({ count, hints = false }: { count: number; hints?: boolean }) {
   return (
-    <div className="flex flex-col divide-y divide-border rounded-[var(--radius-card)] bg-surface px-2">
+    <div className="flex flex-col rounded-[var(--radius-card)] bg-surface">
       {Array.from({ length: count }, (_, index) => (
-        <div key={index} className="flex min-h-16 items-center gap-4 px-3 py-2">
+        <div
+          key={index}
+          className="relative flex min-h-16 items-center gap-4 px-5 py-2 [&+&]:before:absolute [&+&]:before:start-[4.75rem] [&+&]:before:end-0 [&+&]:before:top-0 [&+&]:before:h-px [&+&]:before:bg-border"
+        >
           <Bone className="size-10 shrink-0 rounded-full" />
           <div className="flex flex-1 flex-col gap-1.5">
             <Bone className="h-5 w-2/5" />
