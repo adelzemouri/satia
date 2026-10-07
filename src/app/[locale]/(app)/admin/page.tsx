@@ -1,14 +1,17 @@
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 
 import { revokeInviteAction } from "@/features/admin/actions";
+import { DemoAccount } from "@/features/admin/demo-account";
 import { FloorsForm } from "@/features/admin/floors-form";
 import { InviteForm } from "@/features/admin/invite-form";
 import { MemberActions } from "@/features/admin/member-actions";
 import { VapidKeys } from "@/features/admin/vapid-keys";
 import { Link } from "@/i18n/navigation";
+import { DEMO_EMAIL } from "@/domain/demo";
 import { toLocale } from "@/i18n/routing";
 import { listMembers, listPendingInvites } from "@/server/accounts";
 import { vapidPublicKey } from "@/server/notifications";
+import { demoAccountStatus } from "@/server/demo";
 import { requireAdmin } from "@/server/session";
 import { getCalorieFloors } from "@/server/settings";
 import { buttonClass } from "@/ui/button";
@@ -18,10 +21,11 @@ export default async function AdminPage({ params }: PageProps<"/[locale]/admin">
   const locale = toLocale((await params).locale);
   setRequestLocale(locale);
   const admin = await requireAdmin(locale);
-  const [members, invites, floors] = await Promise.all([
+  const [members, invites, floors, demo] = await Promise.all([
     listMembers(admin.householdId),
     listPendingInvites(admin.householdId),
     getCalorieFloors(),
+    demoAccountStatus(),
   ]);
   const t = await getTranslations("admin");
   const format = await getFormatter();
@@ -84,6 +88,16 @@ export default async function AdminPage({ params }: PageProps<"/[locale]/admin">
             </ul>
           </div>
         )}
+      </Card>
+
+      <Card aria-labelledby="demo">
+        <h2 id="demo" className="text-xl font-semibold">
+          {t("demo")}
+        </h2>
+        <DemoAccount
+          email={DEMO_EMAIL}
+          createdOn={demo ? format.dateTime(demo.createdAt, { dateStyle: "medium" }) : null}
+        />
       </Card>
 
       <Card aria-labelledby="ai">

@@ -8,6 +8,7 @@ import { ROLES } from "@/db/schema";
 import { getPathname } from "@/i18n/navigation";
 import { assertSameHousehold, createAccessLink, deleteUser, revokeInvite } from "@/server/accounts";
 import { type ActionState, toActionState } from "@/server/action-result";
+import { deleteDemoAccount, resetDemoAccount } from "@/server/demo";
 import { DomainError } from "@/server/errors";
 import { publicOrigin } from "@/server/request";
 import { type CurrentUser, getCurrentUser } from "@/server/session";
@@ -88,6 +89,32 @@ export async function saveFloorsAction(_prev: ActionState, formData: FormData): 
       male: Number(formData.get("male")),
     });
     await setCalorieFloors(floors);
+    revalidatePath("/[locale]/admin", "page");
+    return { ok: true };
+  } catch (error) {
+    return toActionState(error);
+  }
+}
+
+export type DemoState = (ActionState & { email?: string; password?: string; loginUrl?: string }) | null;
+
+/** (Re)crée le compte démo : nouvelles données et nouveau mot de passe, à transmettre au visiteur. */
+export async function resetDemoAction(): Promise<DemoState> {
+  try {
+    await requireAdminUser();
+    const credentials = await resetDemoAccount();
+    revalidatePath("/[locale]/admin", "page");
+    const path = getPathname({ href: "/login", locale: await getLocale() });
+    return { ...credentials, loginUrl: `${await publicOrigin()}${path}` };
+  } catch (error) {
+    return toActionState(error);
+  }
+}
+
+export async function deleteDemoAction(): Promise<ActionState> {
+  try {
+    await requireAdminUser();
+    await deleteDemoAccount();
     revalidatePath("/[locale]/admin", "page");
     return { ok: true };
   } catch (error) {

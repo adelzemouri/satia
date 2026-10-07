@@ -409,7 +409,21 @@
     "pushMissing": "Pour activer les notifications, ajoute ces deux variables dans Vercel (Production), puis redéploie :",
     "pushGenerate": "Générer une paire de clés",
     "pushPrivateWarning": "Garde la clé privée secrète : colle-la uniquement dans Vercel.",
-    "pushSchedule": "L'envoi des rappels passe par la tâche planifiée « Notifications » de GitHub Actions (toutes les 15 minutes)."
+    "pushSchedule": "L'envoi des rappels passe par la tâche planifiée « Notifications » de GitHub Actions (toutes les 15 minutes).",
+    "demo": "Compte démo",
+    "demoHint": "Pour faire essayer Pommelia : un compte fictif (Camille) avec cinq semaines de repas, de pesées et d'activité, dans un foyer à part. Le visiteur ne voit rien de ta famille et n'a pas accès à l'administration.",
+    "demoNone": "Aucun compte démo pour l'instant.",
+    "demoStatus": "Compte {email}, données créées le {date}.",
+    "demoCreate": "Créer le compte démo",
+    "demoReset": "Réinitialiser",
+    "demoResetConfirm": "Effacer ce que le visiteur a saisi, recréer les données d'exemple et changer le mot de passe ?",
+    "demoDelete": "Supprimer",
+    "demoDeleteConfirm": "Supprimer le compte démo et toutes ses données ?",
+    "demoReady": "À transmettre au visiteur (le mot de passe ne sera plus affiché) :",
+    "demoAddress": "Adresse",
+    "demoEmail": "Email",
+    "demoPassword": "Mot de passe",
+    "demoCopyText": "Pommelia (démo)\nAdresse : {url}\nEmail : {email}\nMot de passe : {password}"
   },
   "errors": {
     "generic": "Une erreur est survenue. Réessaie dans un instant.",
