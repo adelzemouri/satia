@@ -684,6 +684,40 @@ test("dictée : arrêter puis relancer, même quand le navigateur ne signale pas
   await expect(field).toHaveValue("deux œufs et du pain");
 });
 
+test("coach : dicter un message puis l'envoyer avec Entrée", async ({ page }) => {
+  await page.addInitScript(() => {
+    class FakeRecognition {
+      lang = "";
+      interimResults = false;
+      continuous = false;
+      onresult: ((event: unknown) => void) | null = null;
+      onerror: ((event: unknown) => void) | null = null;
+      onend: (() => void) | null = null;
+      start() {
+        setTimeout(() => {
+          this.onresult?.({ results: [Object.assign([{ transcript: "que manger ce soir" }], { isFinal: true })] });
+          this.onend?.();
+        }, 50);
+      }
+      stop() {}
+      abort() {}
+    }
+    (window as unknown as { SpeechRecognition: unknown }).SpeechRecognition = FakeRecognition;
+  });
+  await signIn(page, ADMIN);
+  await page.goto("/coach");
+  const field = page.getByLabel("Ton message");
+  await field.fill("Bonjour,");
+  await page.getByRole("button", { name: "Dicter" }).click();
+  await expect(field).toHaveValue("Bonjour, que manger ce soir");
+  await field.press("Enter");
+  await expect(field).toHaveValue("");
+  const conversation = page.getByRole("list", { name: "Conversation avec le coach" });
+  await expect(conversation.getByText(/Tu me demandais : « Bonjour, que manger ce soir »/)).toBeVisible();
+  await page.getByRole("button", { name: "Effacer la conversation" }).click();
+  await expect(page.getByText(/Aucun message pour l'instant/)).toBeVisible();
+});
+
 test("activation de la double authentification puis connexion avec un code", async ({ page }) => {
   await signIn(page, ADMIN);
   await page.goto("/profile/security");

@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useLayoutEffect, useRef, useState, useTransition } from "react";
 
 import type { CoachQuestion } from "@/domain/coach-questions";
@@ -8,6 +8,8 @@ import type { CoachQuestion } from "@/domain/coach-questions";
 import { useErrorText } from "@/features/auth/use-error-text";
 import { Alert } from "@/ui/alert";
 import { Button } from "@/ui/button";
+import { Icon } from "@/ui/icon";
+import { useSpeech } from "@/features/ai/use-speech";
 
 import { clearCoachMessagesAction, sendCoachMessageAction } from "./actions";
 import { EmptyState } from "@/ui/empty-state";
@@ -38,6 +40,7 @@ export function CoachChat({
   ask: CoachQuestion | null;
 }) {
   const t = useTranslations("coach");
+  const locale = useLocale();
   const errorText = useErrorText();
   const [text, setText] = useState("");
   const [sent, setSent] = useState<string | null>(null);
@@ -70,9 +73,22 @@ export function CoachChat({
   const visible = messages.slice(-shown);
   const hidden = messages.length - visible.length;
 
+  // Une nouvelle dictée complète le texte déjà là au lieu de l'effacer.
+  const before = useRef("");
+  const speech = useSpeech(locale, (spoken) => setText(`${before.current}${spoken}`));
+  const dictate = () => {
+    before.current = text.trim() ? `${text.trim()} ` : "";
+    speech.start();
+  };
+
   const send = (value = text) => {
     const message = value.trim();
-    if (!message) return;
+    if (!message || pending) return;
+    speech.stop();
+    // Le champ se vide tout de suite : le message part dans le fil pendant que Pépin répond.
+    // En cas d'échec, le texte revient dans le champ pour être renvoyé.
+    const typed = value === text;
+    if (typed) setText("");
     setSent(message);
     setError(null);
     startTransition(async () => {
@@ -80,8 +96,7 @@ export function CoachChat({
       setSent(null);
       if (result?.error) {
         setError(result.error);
-      } else {
-        setText("");
+        if (typed) setText((current) => current || message);
       }
     });
   };
@@ -173,21 +188,35 @@ export function CoachChat({
             value={text}
             onChange={(event) => setText(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === "Enter" && !event.shiftKey) {
+              // Entrée envoie, Maj+Entrée va à la ligne ; rien pendant la saisie d'un caractère composé.
+              if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
                 event.preventDefault();
                 send();
               }
             }}
             rows={2}
+            enterKeyHint="send"
             maxLength={MAX_LENGTH}
             placeholder={t("askHint")}
             className="rounded-2xl border border-border bg-surface px-3 py-2 text-base"
           />
         </label>
+        {speech.error && <p className="text-sm text-text-muted">{errorText(speech.error)}</p>}
         <div className="flex flex-wrap gap-2">
           <Button type="submit" disabled={pending || text.trim().length === 0}>
             {t("send")}
           </Button>
+          {speech.supported && (
+            <Button
+              variant="secondary"
+              onClick={speech.listening ? speech.stop : dictate}
+              aria-pressed={speech.listening}
+              disabled={pending}
+            >
+              <Icon name="mic" />
+              {speech.listening ? t("stopDictation") : t("dictate")}
+            </Button>
+          )}
           {messages.length > 0 && (
             <Button variant="ghost" onClick={clear} disabled={pending}>
               {t("clear")}
