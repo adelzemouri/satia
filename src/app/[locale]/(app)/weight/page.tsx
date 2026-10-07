@@ -16,6 +16,7 @@ import { Card } from "@/ui/card";
 import { PrivateBlock } from "@/ui/private";
 import { formatDay } from "@/ui/format-date";
 import { EmptyState } from "@/ui/empty-state";
+import { Columns } from "@/ui/columns";
 
 /** Nombre de jours affichés sur la courbe. */
 const CHART_DAYS = 90;
@@ -31,7 +32,7 @@ export default async function WeightPage({ params }: PageProps<"/[locale]/weight
   const history = overview.entries.slice(-10).reverse();
 
   return (
-    <>
+    <Columns>
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
 
       <Card aria-labelledby="add-weight">
@@ -106,15 +107,17 @@ export default async function WeightPage({ params }: PageProps<"/[locale]/weight
         )}
       </Card>
 
-      <Link href="/body" className="font-semibold text-primary underline-offset-4 hover:underline">
-        {t("bodyLink")}
-      </Link>
-      <Link href="/activity" className="font-semibold text-primary underline-offset-4 hover:underline">
-        {t("activityLink")}
-      </Link>
-      <Link href="/metabolism" className="font-semibold text-primary underline-offset-4 hover:underline">
-        {t("metabolismLink")}
-      </Link>
-    </>
+      <nav className="flex flex-col gap-6">
+        <Link href="/body" className="font-semibold text-primary underline-offset-4 hover:underline">
+          {t("bodyLink")}
+        </Link>
+        <Link href="/activity" className="font-semibold text-primary underline-offset-4 hover:underline">
+          {t("activityLink")}
+        </Link>
+        <Link href="/metabolism" className="font-semibold text-primary underline-offset-4 hover:underline">
+          {t("metabolismLink")}
+        </Link>
+      </nav>
+    </Columns>
   );
 }

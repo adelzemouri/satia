@@ -136,7 +136,7 @@ export function FoodPicker({
   const barcodeHref = { pathname: "/scan", query: { date, slot } };
 
   return (
-    <div className="flex flex-col gap-5">
+    <div data-wide className="flex flex-col gap-5">
       <label className="focus-within:outline-focus flex min-h-14 items-center gap-3 rounded-2xl border border-border bg-surface px-4 focus-within:outline-3">
         <span className="text-text-muted">
           <Icon name="search" />
@@ -210,22 +210,25 @@ export function FoodPicker({
           )}
         </section>
       ) : (
-        <>
-          {ai ? (
-            <AiEntry
-              availability={ai.availability}
-              containers={ai.containers}
-              barcodeHref={barcodeHref}
-              onDraft={(value, preview) => setDraft({ draft: value, preview })}
-            />
-          ) : (
-            <Link href={barcodeHref} className={buttonClass("secondary")}>
-              <Icon name="barcode" />
-              {t("scan")}
-            </Link>
-          )}
+        // Sur ordinateur : la photo, la voix et les idées à gauche, les listes d'aliments à droite.
+        <div className="contents lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
+          <div className="contents lg:flex lg:flex-col lg:gap-5">
+            {ai ? (
+              <AiEntry
+                availability={ai.availability}
+                containers={ai.containers}
+                barcodeHref={barcodeHref}
+                onDraft={(value, preview) => setDraft({ draft: value, preview })}
+              />
+            ) : (
+              <Link href={barcodeHref} className={buttonClass("secondary")}>
+                <Icon name="barcode" />
+                {t("scan")}
+              </Link>
+            )}
 
-          {suggestions}
+            {suggestions}
+          </div>
 
           <section aria-label={t("listsTitle")} className="flex flex-col gap-3">
             <div
@@ -290,10 +293,13 @@ export function FoodPicker({
             </div>
             <p className="text-sm text-text-muted">{t("quickAddHint")}</p>
           </section>
-        </>
+        </div>
       )}
 
-      <Link href={{ pathname: "/family/share", query: { date, slot } }} className={buttonClass("secondary")}>
+      <Link
+        href={{ pathname: "/family/share", query: { date, slot } }}
+        className={buttonClass("secondary", "lg:self-start")}
+      >
         <Icon name="family" />
         {t("shareWithFamily")}
       </Link>

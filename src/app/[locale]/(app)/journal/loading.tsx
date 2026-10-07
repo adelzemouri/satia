@@ -3,7 +3,7 @@ import { Bone, SkeletonCard, SkeletonPage, TitleBone } from "@/ui/skeleton";
 /** Squelette du journal : titre, semaine et ses liens, bilan du jour, puis une carte par repas. */
 export default function JournalLoading() {
   return (
-    <SkeletonPage>
+    <SkeletonPage wide className="desktop-columns">
       <TitleBone className="w-36" />
       <div className="grid grid-cols-7 gap-1.5">
         {[0, 1, 2, 3, 4, 5, 6].map((index) => (

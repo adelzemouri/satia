@@ -35,6 +35,26 @@ html {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Pages en cartes sur ordinateur (`Columns`) : deux colonnes façon journal, les cartes ne se
+   coupent pas, et les titres, introductions et mentions passent sur toute la largeur. Hors des
+   couches Tailwind pour l'emporter sur la mise en colonne unique du téléphone. */
+@media (min-width: 64rem) {
+  .desktop-columns {
+    display: block;
+    columns: 2;
+    column-gap: 1.5rem;
+  }
+  .desktop-columns > * {
+    margin-bottom: 1.5rem;
+  }
+  .desktop-columns > :is(section, [data-col]) {
+    break-inside: avoid;
+  }
+  .desktop-columns > :not(section, [data-col]) {
+    column-span: all;
+  }
+}
+
 /* Sur ordinateur, plus de barre du bas à contourner. */
 @media (min-width: 64rem) {
   html {

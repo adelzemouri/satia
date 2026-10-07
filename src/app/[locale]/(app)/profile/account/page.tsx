@@ -6,6 +6,7 @@ import { toLocale } from "@/i18n/routing";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
 import { Card } from "@/ui/card";
+import { Columns } from "@/ui/columns";
 
 /** Mes données : export complet, puis, à part et en bas, la suppression du compte. */
 export default async function AccountPage({ params }: PageProps<"/[locale]/profile/account">) {
@@ -15,7 +16,7 @@ export default async function AccountPage({ params }: PageProps<"/[locale]/profi
   const t = await getTranslations("profile");
 
   return (
-    <>
+    <Columns>
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("data")}</h1>
       <Card aria-labelledby="export">
         <h2 id="export" className="text-xl font-semibold">
@@ -38,6 +39,6 @@ export default async function AccountPage({ params }: PageProps<"/[locale]/profi
         <DeleteAccountForm />
       </Card>
       <p className="text-sm text-text-muted">{t("disclaimer", { appName: APP_NAME })}</p>
-    </>
+    </Columns>
   );
 }

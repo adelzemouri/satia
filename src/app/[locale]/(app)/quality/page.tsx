@@ -7,6 +7,7 @@ import { requireUser } from "@/server/session";
 import { Card } from "@/ui/card";
 import { formatDay } from "@/ui/format-date";
 import { EmptyState } from "@/ui/empty-state";
+import { Columns } from "@/ui/columns";
 
 export default async function QualityPage({ params }: PageProps<"/[locale]/quality">) {
   const locale = toLocale((await params).locale);
@@ -18,7 +19,7 @@ export default async function QualityPage({ params }: PageProps<"/[locale]/quali
   const percent = (value: number) => Math.round(value * 100);
 
   return (
-    <>
+    <Columns>
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
       <p className="text-text-muted">
         {t("period", { from: formatDay(report.from, locale, "short"), to: formatDay(report.to, locale, "short") })}
@@ -93,6 +94,6 @@ export default async function QualityPage({ params }: PageProps<"/[locale]/quali
         </>
       )}
       <p className="text-sm text-text-muted">{t("sources")}</p>
-    </>
+    </Columns>
   );
 }

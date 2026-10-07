@@ -35,6 +35,7 @@ export default async function TrainingLibraryPage({ params, searchParams }: Page
 
   return (
     <>
+      <span data-wide hidden />
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("library.title")}</h1>
       <p className="text-text-muted">{t("library.intro")}</p>
 
@@ -84,7 +85,7 @@ export default async function TrainingLibraryPage({ params, searchParams }: Page
       <p className="font-semibold" role="status">
         {t("library.count", { count: list.length })}
       </p>
-      <ul className="flex flex-col gap-2">
+      <ul className="flex flex-col gap-2 lg:grid lg:grid-cols-2 xl:grid-cols-3">
         {list.map((exercise) => (
           <li key={exercise.id}>
             <Link

@@ -23,6 +23,7 @@ export default async function SavedMealsPage({ params }: PageProps<"/[locale]/me
 
   return (
     <>
+      <span data-wide hidden />
       <KitchenTabs current="meals" />
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("savedMeals.title")}</h1>
       <p className="text-text-muted">{t("savedMeals.intro")}</p>
@@ -40,7 +41,7 @@ export default async function SavedMealsPage({ params }: PageProps<"/[locale]/me
           </EmptyState>
         </Card>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="flex flex-col gap-3 lg:grid lg:grid-cols-2">
           {meals.map((meal) => (
             <SavedMealItem key={meal.id} id={meal.id} name={meal.name} canShare={members.length > 0}>
               <span className="font-bold">{meal.name}</span>

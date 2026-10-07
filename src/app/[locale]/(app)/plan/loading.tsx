@@ -3,7 +3,7 @@ import { Bone, KitchenTabsBone, SkeletonCard, SkeletonPage, TitleBone } from "@/
 /** Squelette du menu : onglets Cuisine, titre, raccourcis (courses, frigo, partage), semaine et jours. */
 export default function PlanLoading() {
   return (
-    <SkeletonPage>
+    <SkeletonPage wide className="desktop-columns">
       <KitchenTabsBone />
       <TitleBone className="w-1/2" />
       <Bone className="h-5 w-4/5" />
@@ -17,12 +17,19 @@ export default function PlanLoading() {
         <Bone className="h-6 w-40" />
         <Bone className="size-12 rounded-full" />
       </div>
-      {[0, 1, 2].map((index) => (
-        <SkeletonCard key={index}>
-          <Bone className="h-5 w-32" />
-          <Bone className="h-4 w-3/5" />
-        </SkeletonCard>
-      ))}
+      <div data-col className="flex flex-col gap-3">
+        {[0, 1, 2].map((index) => (
+          <SkeletonCard key={index}>
+            <Bone className="h-5 w-32" />
+            <Bone className="h-4 w-3/5" />
+          </SkeletonCard>
+        ))}
+      </div>
+      <SkeletonCard>
+        <Bone className="h-6 w-1/3" />
+        <Bone className="h-12 w-full rounded-2xl" />
+        <Bone className="h-12 w-full rounded-full" />
+      </SkeletonCard>
     </SkeletonPage>
   );
 }

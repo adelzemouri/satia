@@ -29,17 +29,18 @@ export default async function CoachPage({ params, searchParams }: PageProps<"/[l
   const questions = suggestedQuestions(hour, `${user.id}:${todayIso()}`, 4);
 
   return (
-    <>
-      <header className="flex items-center gap-4">
+    // Sur ordinateur, la conversation occupe la grande colonne ; le bilan et le style de Pépin à côté.
+    <div data-wide className="flex flex-col gap-6 lg:grid lg:grid-cols-[1.6fr_1fr] lg:items-start">
+      <header className="flex items-center gap-4 lg:col-span-2">
         <CoachAvatar size={64} />
         <div className="flex flex-col">
           <h1 className="font-display text-3xl font-extrabold tracking-tight">{COACH_NAME}</h1>
           <p className="font-semibold text-text-muted">{t("subtitle")}</p>
         </div>
       </header>
-      <p className="text-text-muted">{t("intro")}</p>
+      <p className="text-text-muted lg:col-span-2">{t("intro")}</p>
 
-      <Card aria-labelledby="review-title">
+      <Card aria-labelledby="review-title" className="lg:col-start-2 lg:row-start-3">
         <h2 id="review-title" className="text-xl font-semibold">
           {t("reviewTitle")}
         </h2>
@@ -72,7 +73,7 @@ export default async function CoachPage({ params, searchParams }: PageProps<"/[l
         )}
       </Card>
 
-      <Card aria-labelledby="chat-title">
+      <Card aria-labelledby="chat-title" className="lg:col-start-1 lg:row-span-2 lg:row-start-3">
         <h2 id="chat-title" className="text-xl font-semibold">
           {t("chatTitle")}
         </h2>
@@ -84,14 +85,14 @@ export default async function CoachPage({ params, searchParams }: PageProps<"/[l
         />
       </Card>
 
-      <Card aria-labelledby="style-title">
+      <Card aria-labelledby="style-title" className="lg:col-start-2 lg:row-start-4">
         <h2 id="style-title" className="text-xl font-semibold">
           {t("styleTitle")}
         </h2>
         <CoachStyleForm style={profile.coachStyle} />
       </Card>
 
-      <p className="text-sm text-text-muted">{t("disclaimer", { appName: APP_NAME })}</p>
-    </>
+      <p className="text-sm text-text-muted lg:col-span-2">{t("disclaimer", { appName: APP_NAME })}</p>
+    </div>
   );
 }

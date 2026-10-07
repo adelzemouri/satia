@@ -16,7 +16,10 @@ export function RingBone({ className }: { className: string }) {
 /** Carte vide de la forme des cartes de l'app (même marge et même espacement que `Card`). */
 export function SkeletonCard({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`flex flex-col gap-4 rounded-[var(--radius-card)] bg-surface p-5 ${className}`}>{children}</div>
+    // `data-col` : dans une page en colonnes (`Columns`), la carte se range dans une colonne.
+    <div data-col className={`flex flex-col gap-4 rounded-[var(--radius-card)] bg-surface p-5 ${className}`}>
+      {children}
+    </div>
   );
 }
 
