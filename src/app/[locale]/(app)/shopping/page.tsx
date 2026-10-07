@@ -8,6 +8,7 @@ import { toLocale } from "@/i18n/routing";
 import { listShopping } from "@/server/planning";
 import { requireUser } from "@/server/session";
 import { Card } from "@/ui/card";
+import { Columns } from "@/ui/columns";
 
 export default async function ShoppingPage({ params }: PageProps<"/[locale]/shopping">) {
   const locale = toLocale((await params).locale);
@@ -17,7 +18,7 @@ export default async function ShoppingPage({ params }: PageProps<"/[locale]/shop
   const t = await getTranslations("shopping");
 
   return (
-    <>
+    <Columns>
       <AutoRefresh />
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
       <p className="text-text-muted">{t("intro")}</p>
@@ -40,6 +41,6 @@ export default async function ShoppingPage({ params }: PageProps<"/[locale]/shop
         </h2>
         <AddShoppingItemForm />
       </Card>
-    </>
+    </Columns>
   );
 }

@@ -22,6 +22,7 @@ import {
 import { buttonClass } from "@/ui/button";
 import { Card } from "@/ui/card";
 import { Icon } from "@/ui/icon";
+import { Columns } from "@/ui/columns";
 
 const selectClass = "min-h-12 rounded-2xl border border-border bg-surface px-3 text-base";
 
@@ -57,7 +58,7 @@ export default async function TrainingPage({ params, searchParams }: PageProps<"
   const plant = nutrition?.diet === "vegan";
 
   return (
-    <>
+    <Columns>
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
       <nav aria-label={t("title")} className="flex flex-wrap gap-3">
         {(
@@ -227,6 +228,6 @@ export default async function TrainingPage({ params, searchParams }: PageProps<"
       </Card>
 
       <p className="text-sm text-text-muted">{t("disclaimer")}</p>
-    </>
+    </Columns>
   );
 }

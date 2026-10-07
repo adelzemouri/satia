@@ -5,6 +5,7 @@ import { toLocale } from "@/i18n/routing";
 import { listExpressions } from "@/server/personal";
 import { requireUser } from "@/server/session";
 import { Card } from "@/ui/card";
+import { Columns } from "@/ui/columns";
 
 export default async function DictionaryPage({ params }: PageProps<"/[locale]/dictionary">) {
   const locale = toLocale((await params).locale);
@@ -14,7 +15,7 @@ export default async function DictionaryPage({ params }: PageProps<"/[locale]/di
   const t = await getTranslations();
 
   return (
-    <>
+    <Columns>
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("personal.dictionaryTitle")}</h1>
       <p className="text-text-muted">{t("personal.dictionaryIntro")}</p>
       <Card>
@@ -39,6 +40,6 @@ export default async function DictionaryPage({ params }: PageProps<"/[locale]/di
       <Card>
         <ExpressionForm />
       </Card>
-    </>
+    </Columns>
   );
 }

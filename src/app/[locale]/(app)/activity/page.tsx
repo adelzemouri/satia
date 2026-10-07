@@ -16,6 +16,7 @@ import { requireUser } from "@/server/session";
 import { Card } from "@/ui/card";
 import { formatDay } from "@/ui/format-date";
 import { EmptyState } from "@/ui/empty-state";
+import { Columns } from "@/ui/columns";
 
 export default async function ActivityPage({ params }: PageProps<"/[locale]/activity">) {
   const locale = toLocale((await params).locale);
@@ -32,7 +33,7 @@ export default async function ActivityPage({ params }: PageProps<"/[locale]/acti
   const baseline = profile ? STEP_BASELINES[profile.activityLevel] : null;
 
   return (
-    <>
+    <Columns>
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
 
       <Card aria-labelledby="today-activity">
@@ -112,6 +113,6 @@ export default async function ActivityPage({ params }: PageProps<"/[locale]/acti
         </h2>
         <ImportForm />
       </Card>
-    </>
+    </Columns>
   );
 }

@@ -5,6 +5,7 @@ import { toLocale } from "@/i18n/routing";
 import { listContainers } from "@/server/personal";
 import { requireUser } from "@/server/session";
 import { Card } from "@/ui/card";
+import { Columns } from "@/ui/columns";
 
 export default async function ContainersPage({ params }: PageProps<"/[locale]/containers">) {
   const locale = toLocale((await params).locale);
@@ -14,7 +15,7 @@ export default async function ContainersPage({ params }: PageProps<"/[locale]/co
   const t = await getTranslations("personal");
 
   return (
-    <>
+    <Columns>
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("containersTitle")}</h1>
       <p className="text-text-muted">{t("containersIntro")}</p>
       <Card>
@@ -45,6 +46,6 @@ export default async function ContainersPage({ params }: PageProps<"/[locale]/co
       <Card>
         <ContainerForm />
       </Card>
-    </>
+    </Columns>
   );
 }

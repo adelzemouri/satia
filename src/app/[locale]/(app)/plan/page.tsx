@@ -20,6 +20,7 @@ import { requireUser } from "@/server/session";
 import { Card } from "@/ui/card";
 import { formatDay } from "@/ui/format-date";
 import { Icon } from "@/ui/icon";
+import { Columns } from "@/ui/columns";
 
 /** Semaine affichée : celle du lundi demandé, ou la semaine en cours. */
 function weekParam(value: unknown, today: string): string {
@@ -45,7 +46,7 @@ export default async function PlanPage({ params, searchParams }: PageProps<"/[lo
   const linkClass = "font-semibold text-primary underline-offset-4 hover:underline";
 
   return (
-    <>
+    <Columns>
       <AutoRefresh />
       <KitchenTabs current="menu" />
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("plan.title")}</h1>
@@ -98,7 +99,7 @@ export default async function PlanPage({ params, searchParams }: PageProps<"/[lo
         </Link>
       </div>
 
-      <ol className="flex flex-col gap-3">
+      <ol data-col className="flex flex-col gap-3">
         {days.map((date) => {
           const dayItems = items.filter((item) => item.date === date);
           const label = formatDay(date, locale);
@@ -163,6 +164,6 @@ export default async function PlanPage({ params, searchParams }: PageProps<"/[lo
           <GenerateMenuForm weekStart={weekStart} disabledReason={ai.available ? null : ai.reason} />
         </Card>
       )}
-    </>
+    </Columns>
   );
 }

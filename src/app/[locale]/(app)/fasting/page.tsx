@@ -10,6 +10,7 @@ import { requireUser } from "@/server/session";
 import { Alert } from "@/ui/alert";
 import { Card } from "@/ui/card";
 import { EmptyState } from "@/ui/empty-state";
+import { Columns } from "@/ui/columns";
 
 function duration(minutes: number) {
   return { h: Math.floor(minutes / 60), m: minutes % 60 };
@@ -25,7 +26,7 @@ export default async function FastingPage({ params }: PageProps<"/[locale]/fasti
   const format = await getFormatter();
 
   return (
-    <>
+    <Columns>
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
 
       {!overview.allowed ? (
@@ -96,6 +97,6 @@ export default async function FastingPage({ params }: PageProps<"/[locale]/fasti
       )}
 
       <p className="text-sm text-text-muted">{t("disclaimer")}</p>
-    </>
+    </Columns>
   );
 }

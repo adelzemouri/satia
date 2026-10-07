@@ -26,6 +26,7 @@ import { EmptyState } from "@/ui/empty-state";
 import { formatDay, formatWeekday } from "@/ui/format-date";
 import { Icon } from "@/ui/icon";
 import { ScrollToHash } from "@/ui/scroll-to-hash";
+import { Columns } from "@/ui/columns";
 
 export default async function JournalPage({ params, searchParams }: PageProps<"/[locale]/journal">) {
   const locale = toLocale((await params).locale);
@@ -65,7 +66,7 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
     date === today ? t("journal.today") : date === yesterday ? t("journal.yesterday") : formatDay(date, locale);
 
   return (
-    <>
+    <Columns>
       <ScrollToHash />
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("journal.title")}</h1>
 
@@ -248,6 +249,6 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
         </h2>
         <WaterTracker date={date} {...summary.water} />
       </Card>
-    </>
+    </Columns>
   );
 }

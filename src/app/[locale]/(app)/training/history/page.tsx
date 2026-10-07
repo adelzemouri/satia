@@ -15,6 +15,7 @@ import { buttonClass } from "@/ui/button";
 import { Card } from "@/ui/card";
 import { EmptyState } from "@/ui/empty-state";
 import { formatDay } from "@/ui/format-date";
+import { Columns } from "@/ui/columns";
 
 export default async function TrainingHistoryPage({ params }: PageProps<"/[locale]/training/history">) {
   const locale = toLocale((await params).locale);
@@ -37,7 +38,7 @@ export default async function TrainingHistoryPage({ params }: PageProps<"/[local
   const records = personalRecords(sessions).filter((record) => exerciseById(record.exerciseId)?.phase === "main");
 
   return (
-    <>
+    <Columns>
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("history.title")}</h1>
       <p className="text-lg font-semibold">{t("home.streak", { count: trainingStreak(weeks, isoWeekStart(today)) })}</p>
 
@@ -156,6 +157,6 @@ export default async function TrainingHistoryPage({ params }: PageProps<"/[local
           </ul>
         )}
       </Card>
-    </>
+    </Columns>
   );
 }
