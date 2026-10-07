@@ -29,6 +29,24 @@ export function geminiNativeBase(baseUrl: string, model: string): string | null 
   return match ? match[1]! : null;
 }
 
+/** Vrai quand le fournisseur est le point d'accès compatible OpenAI de Gemini. */
+export function isGeminiOpenAi(baseUrl: string): boolean {
+  return /^https:\/\/generativelanguage\.googleapis\.com\/v1\w*\/openai$/.test(baseUrl);
+}
+
+/**
+ * Réglage de réflexion envoyé avec la requête. Gemini reçoit directement son `thinking_level`
+ * (Google déconseille `thinking_budget`, que `reasoning_effort` peut produire) ; « none »
+ * devient « minimal », le plus bas niveau des modèles Gemini 3. Les autres fournisseurs
+ * gardent `reasoning_effort`.
+ */
+export function reasoningFields(baseUrl: string, effort: string | undefined): Record<string, unknown> {
+  if (!effort) return {};
+  if (!isGeminiOpenAi(baseUrl)) return { reasoning_effort: effort };
+  const level = effort === "none" ? "minimal" : effort;
+  return { extra_body: { google: { thinking_config: { thinking_level: level } } } };
+}
+
 /** Une image se génère en quelques secondes, parfois plus : délai plus large que le texte. */
 const IMAGE_TIMEOUT_MS = 60_000;
 
@@ -72,7 +90,7 @@ export function openAiCompatibleProvider(options: {
             { role: "user", content },
           ],
           max_tokens: request.maxOutputTokens,
-          ...(options.reasoningEffort && { reasoning_effort: options.reasoningEffort }),
+          ...reasoningFields(options.baseUrl, options.reasoningEffort),
           response_format:
             options.jsonMode === "json_schema"
               ? { type: "json_schema", json_schema: { name: request.schemaName, schema: request.jsonSchema } }
