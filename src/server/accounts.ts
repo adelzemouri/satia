@@ -25,7 +25,7 @@ import { hashPassword } from "./password";
 import { deleteObjects } from "./storage";
 import { generateToken, hashToken } from "./tokens";
 
-type Tx = Parameters<Parameters<ReturnType<typeof db>["transaction"]>[0]>[0];
+export type Tx = Parameters<Parameters<ReturnType<typeof db>["transaction"]>[0]>[0];
 
 export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
@@ -42,7 +42,7 @@ function safeEqual(a: string, b: string): boolean {
   return left.length === right.length && timingSafeEqual(left, right);
 }
 
-async function insertUserWithPassword(
+export async function insertUserWithPassword(
   tx: Tx,
   input: { householdId: string; role: Role; name: string; email: string; password: string },
 ): Promise<string> {

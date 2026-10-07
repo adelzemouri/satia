@@ -409,7 +409,21 @@
     "pushMissing": "To turn on notifications, add these two variables in Vercel (Production), then redeploy:",
     "pushGenerate": "Generate a key pair",
     "pushPrivateWarning": "Keep the private key secret: paste it only into Vercel.",
-    "pushSchedule": "Reminders are sent by the “Notifications” scheduled task in GitHub Actions (every 15 minutes)."
+    "pushSchedule": "Reminders are sent by the “Notifications” scheduled task in GitHub Actions (every 15 minutes).",
+    "demo": "Demo account",
+    "demoHint": "To let someone try Pommelia: a fictional account (Camille) with five weeks of meals, weigh-ins and activity, in a separate household. The visitor sees nothing of your family and has no access to administration.",
+    "demoNone": "No demo account yet.",
+    "demoStatus": "Account {email}, data created on {date}.",
+    "demoCreate": "Create the demo account",
+    "demoReset": "Reset",
+    "demoResetConfirm": "Erase what the visitor entered, recreate the sample data and change the password?",
+    "demoDelete": "Delete",
+    "demoDeleteConfirm": "Delete the demo account and all its data?",
+    "demoReady": "To hand over to the visitor (the password won't be shown again):",
+    "demoAddress": "Address",
+    "demoEmail": "Email",
+    "demoPassword": "Password",
+    "demoCopyText": "Pommelia (demo)\nAddress: {url}\nEmail: {email}\nPassword: {password}"
   },
   "errors": {
     "generic": "Something went wrong. Please try again in a moment.",
