@@ -1,7 +1,7 @@
 # Pommelia
 
 Application web de suivi nutritionnel familial (PWA). Spécification : `docs/PRD.md`,
-plan : `docs/PLAN.md`, architecture : `docs/ARCHITECTURE.md`.
+plan : `docs/PLAN.md`, architecture : `docs/ARCHITECTURE.md`, décisions : `docs/DECISIONS.md`.
 
 ## Développement local
 

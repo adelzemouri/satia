@@ -1,21 +1,108 @@
 # Architecture — Pommelia
 
-Ce document couvre la **v1** (phases 0 à 5 de `docs/PLAN.md`). Les versions
-suivantes viendront compléter le modèle de données à leur phase ; seule la notion
-de foyer est posée dès maintenant pour ne pas bloquer la v2.
+Ce document décrit l'application telle qu'elle tourne en production : les phases 0 à 15
+de `docs/PLAN.md`, puis les évolutions faites après le plan (§7). Les choix
+structurants et leurs raisons sont résumés dans `docs/DECISIONS.md` ; la mise en place,
+les variables d'environnement et la restauration des sauvegardes sont dans `README.md`.
+
+Mis à jour le 2026-10-10.
+
+## 0. Vue d'ensemble (modèle C4)
+
+Deux niveaux du modèle C4 suffisent pour une app de cette taille : le **contexte**
+(qui utilise Pommelia et avec quels services elle parle) et les **conteneurs** (ce qui
+tourne, où, et comment les morceaux communiquent). Le niveau composants est couvert par
+l'arborescence (§2) et la couche LLM (§4).
+
+### Niveau 1 : contexte
+
+```mermaid
+flowchart TB
+    membre["👤 Membre du foyer<br/><i>suit repas, poids, activité<br/>depuis son téléphone ou son ordinateur</i>"]
+    admin["👤 Admin du foyer<br/><i>invite les membres, règle l'IA,<br/>le budget et les planchers</i>"]
+    invite["👤 Invité hors foyer<br/><i>compte dans un foyer à part,<br/>géré par l'admin</i>"]
+
+    app["<b>Pommelia</b><br/>PWA de suivi nutritionnel familial"]
+
+    llm["Google Gemini<br/><i>API compatible OpenAI :<br/>vision, texte, images</i>"]
+    off["Open Food Facts<br/><i>produits de marque, code-barres (ODbL)</i>"]
+    ciqual["Ciqual (Anses)<br/><i>table de composition, licence ouverte</i>"]
+    push["Services Web Push<br/><i>Apple, Google, Mozilla</i>"]
+    github["GitHub<br/><i>code, CI, tâches planifiées</i>"]
+
+    membre --> app
+    admin --> app
+    invite --> app
+    app -->|"aliments et quantités vus sur une photo,<br/>coach, saisie libre"| llm
+    app -->|"recherche et fiche produit"| off
+    ciqual -.->|"CSV importé au build"| app
+    app -->|"rappels"| push
+    github -->|"déploie, sauvegarde,<br/>déclenche les rappels"| app
+```
+
+Le navigateur ne parle qu'à Pommelia : Gemini et Open Food Facts sont appelés côté
+serveur (la CSP l'impose avec `connect-src 'self'`). La transcription de la voix se fait
+dans le navigateur (Web Speech API), sans service payant.
+
+### Niveau 2 : conteneurs
+
+```mermaid
+flowchart TB
+    subgraph tel["Téléphone ou ordinateur"]
+        pwa["<b>PWA</b><br/>React 19, service worker Serwist<br/><i>pages en cache, file de saisie hors ligne,<br/>compression des photos, dictée</i>"]
+    end
+
+    subgraph vercel["Vercel Hobby, région fra1"]
+        next["<b>Application Next.js</b><br/>Server Components, actions serveur,<br/>route handlers /api<br/><i>auth, calculs, couche LLM, autorisation</i>"]
+        vcron["Cron Vercel<br/><i>purge des photos, 3 h 30 UTC</i>"]
+    end
+
+    subgraph gha["GitHub Actions"]
+        ci["CI<br/><i>lint, tests, build</i>"]
+        notify["notify.yml<br/><i>toutes les 15 min</i>"]
+        backup["backup.yml<br/><i>pg_dump chiffré, 2 h 17 UTC</i>"]
+        ciqualwf["Données Ciqual<br/><i>à la demande</i>"]
+    end
+
+    neon[("<b>Neon Postgres</b><br/>Francfort<br/><i>comptes, journal, aliments,<br/>coûts IA, réglages</i>")]
+    r2[("<b>Cloudflare R2</b><br/>bucket privé UE<br/><i>photos de repas, de progression,<br/>de recettes ; sauvegardes</i>")]
+
+    gemini["Gemini"]
+    offapi["Open Food Facts"]
+    pushsvc["Services Web Push"]
+
+    pwa -->|"HTTPS, cookie de session,<br/>actions serveur"| next
+    pwa -->|"lecture des photos<br/>par URL signée de 5 min"| r2
+    next -->|"Drizzle, SQL"| neon
+    next -->|"SDK S3"| r2
+    next -->|"JSON court validé par Zod"| gemini
+    next --> offapi
+    next -->|"web-push, clés VAPID"| pushsvc
+    pushsvc --> pwa
+    vcron -->|"Bearer CRON_SECRET"| next
+    notify -->|"Bearer CRON_SECRET<br/>/api/cron/notify"| next
+    backup -->|"pg_dump"| neon
+    backup -->|"dump chiffré, 30 jours"| r2
+    ciqualwf -->|"commite data/ciqual-2020.csv"| ci
+```
+
+Chaque fusion sur `main` est déployée par l'intégration GitHub de Vercel ; `pnpm
+vercel-build` applique les migrations Drizzle et met à jour la table Ciqual avant le
+build. Localement, `docker compose up` remplace Vercel, Neon et R2 par l'app en
+conteneur, un Postgres et RustFS (S3 local).
 
 ## 1. Stack et hébergement
 
 | Couche | Choix |
 |---|---|
 | Langage | TypeScript strict (`strict`, `noUncheckedIndexedAccess`), Node.js 24 LTS, pnpm |
-| Application | Next.js (App Router), Server Components + Route Handlers, sortie `standalone` |
+| Application | Next.js 16 (App Router), React 19, Server Components, actions serveur + Route Handlers, sortie `standalone` |
 | Base | PostgreSQL 16 + Drizzle ORM / drizzle-kit, extensions `pg_trgm` et `unaccent` |
 | Validation | Zod (entrées API, formulaires, sorties LLM) |
 | Auth | Better Auth (bibliothèque) : email + mot de passe argon2, sessions en base, TOTP |
-| UI | Tailwind CSS v4, primitives Radix, design tokens en variables CSS |
+| UI | Tailwind CSS v4, composants maison (`src/ui`), design tokens en variables CSS, Fraunces (titres) et Plus Jakarta Sans auto-hébergées par `next/font` |
 | i18n | next-intl, `fr` par défaut, `en` en second |
-| PWA | Serwist (service worker), IndexedDB via Dexie pour le hors-ligne |
+| PWA | Serwist (service worker) ; file de saisie hors ligne en `localStorage` (§ Finitions) |
 | Photos | Stockage objet S3 (SDK AWS v3), bucket privé, URL signées de 5 min |
 | Tests | Vitest (unitaires, intégration sur un vrai Postgres), Playwright (e2e) |
 | Qualité | ESLint (+ jsx-a11y), Prettier, `tsc --noEmit` |
@@ -32,7 +119,7 @@ en UE, sans surcoût.
 | App + previews par PR | Vercel Hobby | fonctions en `fra1` (Francfort) | 0 € | Usage personnel non commercial ; 4 h de CPU actif / mois ; fonctions ≤ 300 s ; cron 1×/jour max |
 | PostgreSQL | Neon Free | `aws-eu-central-1` (Francfort) | 0 € | 1 Go ; 100 CU-h / mois ; mise en veille après 5 min ; restauration sur 6 h seulement |
 | Photos + sauvegardes | Cloudflare R2 | juridiction `eu` | 0 € | 10 Go ; 1 M écritures et 10 M lectures / mois ; sortie gratuite |
-| Tâches planifiées | Vercel Cron (quotidien) + GitHub Actions `schedule` (plus fréquent) | — | 0 € | Actions : 2 000 min / mois sur dépôt privé |
+| Tâches planifiées | Vercel Cron (quotidien) + GitHub Actions `schedule` (plus fréquent) | — | 0 € | Minutes Actions gratuites depuis que le dépôt est public (2026-10-10) |
 
 Compensations des limites :
 - **Sauvegardes** : la restauration Neon gratuite ne couvre que 6 h. Un workflow
@@ -46,55 +133,59 @@ Compensations des limites :
 - **Si les quotas gratuits sont dépassés** : Vercel Pro (20 $/mois) ou bascule du
   conteneur chez Scaleway (≈ 5 à 10 €/mois). Le code ne change pas.
 
-Environnements : local (`docker compose up`), preview par PR (Vercel, branche Neon
-dédiée créée par la CI et supprimée à la fermeture), production sur `main`
-(`https://<projet>.vercel.app` pour l'instant).
+Environnements : local (`docker compose up`), preview par PR (Vercel, avec sa propre
+branche de base Neon ; l'URL demande une connexion Vercel), production sur `main`
+(`https://satia-delta.vercel.app` ; le domaine `pommelia.fr` est réservé chez OVH et
+pointé vers Vercel, voir `docs/DECISIONS.md`).
 
 ## 2. Arborescence
 
 ```
-satia/
+satia/                      # le dépôt garde son nom d'origine
 ├── .github/workflows/
-│   ├── ci.yml              # lint, format, typecheck, tests, build ; déploiement prod sur main
-│   ├── preview.yml         # branche Neon + déploiement Vercel par PR
-│   └── backup.yml          # pg_dump quotidien → R2
+│   ├── ci.yml              # lint, format, typecheck, tests unitaires, intégration, e2e, build
+│   ├── backup.yml          # pg_dump chiffré quotidien → R2
+│   ├── notify.yml          # appelle /api/cron/notify toutes les 15 min
+│   ├── ciqual-data.yml     # régénère data/ciqual-2020.csv depuis le XML officiel
+│   └── docker.yml          # vérifie que l'image Docker se construit
 ├── docker-compose.yml      # app, postgres, rustfs (S3 local)
 ├── Dockerfile
+├── vercel.json             # région fra1, commande de build, cron de purge
 ├── .env.example
-├── drizzle/                # migrations SQL générées
-├── public/                 # icônes PWA, polices auto-hébergées, illustrations SVG
-├── scripts/
-│   ├── import-ciqual.ts    # import de la table Ciqual (phase 2)
-│   └── seed-dev.ts
+├── data/                   # table Ciqual convertie (CSV)
+├── drizzle/                # migrations SQL générées (0000 à 0021)
+├── public/                 # icônes PWA, écrans de démarrage iOS, photos des recettes du catalogue
+├── scripts/                # migrate, import-ciqual, import-recipes, ciqual/, icônes, bucket local
 ├── src/
 │   ├── app/
 │   │   ├── [locale]/
-│   │   │   ├── (public)/   # connexion, invitation/[token]
-│   │   │   ├── (app)/      # accueil, journal, ajout, profil, onboarding
-│   │   │   └── admin/      # membres, LLM, coûts
-│   │   ├── api/            # route handlers (repas, aliments, ia, cron, export)
-│   │   └── sw.ts           # service worker Serwist
-│   ├── config/app.ts       # APP_NAME et constantes produit
-│   ├── db/
-│   │   ├── schema/         # un fichier par domaine
-│   │   └── client.ts
+│   │   │   ├── (public)/   # setup, connexion, 2FA, invitation/[token], reset/[token]
+│   │   │   ├── (app)/      # toutes les pages connectées, dont admin/
+│   │   │   ├── [...rest]/  # 404 localisée
+│   │   │   └── ~offline/   # page de repli hors ligne
+│   │   └── api/            # auth/[...all], cron/{notify,purge-photos}, foods, health, me/export
+│   ├── proxy.ts            # locale (next-intl), en-têtes de sécurité et nonce CSP des pages
+│   ├── config/app.ts       # APP_NAME (« Pommelia »), COACH_NAME (« Pépin »), constantes produit
+│   ├── db/schema/          # un fichier par domaine (§3)
 │   ├── domain/             # calcul pur, sans I/O, testé unitairement
 │   │   ├── energy.ts       # BMR Mifflin-St Jeor, TDEE, planchers, rythme
-│   │   ├── macros.ts
-│   │   ├── units.ts        # conversions g/ml/c. à soupe/pièce…
-│   │   ├── streak.ts       # streak + gel hebdomadaire
-│   │   └── weight-trend.ts # moyenne lissée
+│   │   ├── search.ts       # variantes de recherche et choix de l'aliment pour un libellé IA
+│   │   ├── coach*.ts       # contexte, garde-fous et historique long du coach
+│   │   ├── training/       # bibliothèque d'exercices et moteur de programme
+│   │   ├── recipes/        # catalogue des recettes illustrées
+│   │   └── …               # streak, water, fasting, quality, adaptive, notifications…
 │   ├── llm/                # unique point d'accès au LLM (§4)
-│   ├── server/             # auth, autorisation, stockage S3, limitation de débit, budget
+│   ├── server/             # accès base, autorisation, stockage S3, débit, budget, cron
 │   ├── features/           # composants et logique client par fonctionnalité
-│   ├── ui/                 # composants génériques, tokens.css
+│   ├── ui/                 # composants génériques (squelettes, colonnes, anneaux, toast…), tokens.css
 │   └── i18n/messages/{fr,en}.json
 └── tests/
-    ├── integration/
-    └── e2e/
+    ├── unit/
+    ├── integration/        # vrai Postgres, LLM simulé
+    └── e2e/                # Playwright, LLM mock et serveur Open Food Facts simulé
 ```
 
-## 3. Modèle de données (v1)
+## 3. Modèle de données
 
 Conventions : identifiants UUID (générés par Postgres, `gen_random_uuid()`), `created_at`/`updated_at` partout, valeurs
 nutritionnelles en grammes et kcal pour 100 g, poids en kg, tailles en cm. Toute
@@ -143,6 +234,29 @@ app_settings, rate_limits
 Le streak n'a pas de table : il se calcule depuis `meal_entries`, avec un jour de gel
 appliqué automatiquement par semaine civile.
 
+Le tableau ci-dessus détaille les tables de la v1. Les phases suivantes ont ajouté les
+tables ci-dessous ; leur rôle est décrit dans la section de la phase indiquée.
+
+| Fichier `src/db/schema/` | Tables | Phase |
+|---|---|---|
+| `family.ts` | `shared_meals`, `shared_meal_shares` | 6 |
+| `adaptive.ts` | `metabolism_checks`, `larger_days` | 7 |
+| `journal.ts` | `daily_checkins` (8), `saved_meals` (« Mes repas », §7) | 8, après le plan |
+| `coach.ts` | `coach_messages`, `coach_reviews` | 9 |
+| `notifications.ts` | `push_subscriptions`, `notification_log` | 10 |
+| `planning.ts` | `meal_plan_items`, `shopping_items` | 11 |
+| `training.ts` | `training_profiles`, `training_programs`, `training_sessions`, `custom_exercises` | 12 |
+| `body.ts` | `body_measurements`, `progress_photos`, `activities`, `daily_steps` | 13 |
+| `fasting.ts` | `fasting_plans`, `fasts`, `treatments`, `treatment_logs` | 14 |
+
+Colonnes ajoutées en cours de route : `foods.image_url` (photo d'un produit OFF ou d'une
+recette du catalogue), `foods.photo_key` et `foods.recipe_steps` (photo et étapes des
+recettes du foyer), `meal_entries.dish` (lignes regroupées par plat),
+`shared_meals.name` et `items` (partage d'un repas enregistré),
+`households.managed_by` et `access_links.separate_household` (invités hors foyer).
+`profiles.budget_mode` a été remis à `daily` pour tout le monde (migration 0019) :
+l'interface ne propose plus le budget hebdomadaire.
+
 ## Décisions produit (2026-10-02)
 
 - Onboarding v1 sans les écrans mode de budget, coach et jeûne : ils arrivent à
@@ -176,33 +290,45 @@ appliqué automatiquement par semaine civile.
 
 ```
 src/llm/
-├── index.ts            # API publique : analyzeMealPhoto, parseMealText, estimateFoods
-├── types.ts            # LlmProvider, LlmRequest, LlmResponse, LlmUsage
+├── index.ts            # API publique : callLlm + une fonction par usage (ci-dessous)
+├── types.ts            # LlmProvider, LlmRequest, LlmResponse, LlmUsage, AiUnavailableError
 ├── config.ts           # lecture et validation Zod des variables d'env
 ├── providers/
 │   ├── openai-compatible.ts   # OpenRouter, Gemini, Mistral, DeepSeek, Ollama…
 │   ├── anthropic.ts
+│   ├── http.ts                # délai, erreurs réseau
 │   └── mock.ts                # déterministe, utilisé par tous les tests
-├── prompts/            # prompts système courts, versionnés, fr/en
+├── prompts/            # meal, coach, planning, training, recipe-image, connection-test
 ├── schemas.ts          # schémas Zod des sorties JSON
+├── json.ts             # schéma JSON simplifié envoyé au fournisseur, lecture tolérante
 ├── pricing.ts          # prix par million de tokens (env) → coût estimé
-└── guard.ts            # session, débit, plafond mensuel, IA activée
+├── usage.ts            # journal `llm_calls`, coût du mois (total et par membre)
+└── guard.ts            # IA activée, configuration, plafond mensuel, débit
 ```
+
+Fonctions publiques et `feature` journalisée : `analyzeMealPhoto` (`meal_photo`),
+`parseMealText` (`meal_text`), `estimateFoods` (`estimate`), `coachReply` (`coach`),
+`writeWeeklyReview` (`weekly_review`), `proposeMenu` (`menu_plan`), `writeRecipeSteps`
+(`recipe_steps`), `scanFridge` (`fridge`), `personalizeTrainingPlan` (`training_plan`),
+`generateRecipeImage` (`recipe_image`) et `testConnection` (`connection_test`).
 
 ```ts
 interface LlmProvider {
+  readonly name: string;
   complete(req: LlmRequest): Promise<LlmResponse>;
+  generateImage?(req: { model: string; prompt: string }): Promise<{ base64: string }>; // absent chez Anthropic
 }
 type LlmRequest = {
   model: string;               // LLM_MODEL_VISION ou LLM_MODEL_TEXT
-  system: string;              // court, marqué cacheable si le provider le permet
+  system: string;              // court, mis en cache par le provider quand il le permet
   user: string;
   images?: { mime: 'image/webp' | 'image/jpeg'; base64: string }[];
-  jsonSchema: object;          // dérivé du schéma Zod
+  schemaName: string;
+  jsonSchema: Record<string, unknown>; // dérivé du schéma Zod
   maxOutputTokens: number;
   lowDetail?: boolean;         // `detail: "low"` côté OpenAI-compatible
 };
-type LlmResponse = { json: unknown; usage: { inputTokens: number; outputTokens: number }; latencyMs: number };
+type LlmResponse = { json: unknown; usage: { inputTokens: number; outputTokens: number } };
 ```
 
 Chaque fonction publique suit la même chaîne :
@@ -231,7 +357,9 @@ Mise en œuvre (phase 4) :
   `none` sinon (IA désactivée proprement). Tarifs `LLM_PRICE_{VISION,TEXT}_{INPUT,OUTPUT}`
   en dollars par million de tokens ; `LLM_JSON_MODE=json_object` pour les fournisseurs
   sans schéma JSON. `LLM_REASONING_EFFORT` (`low` conseillé pour Gemini 3, dont la réflexion
-  ne se désactive pas) limite les tokens de réflexion, facturés en sortie. `/api/health` renvoie `llm` : `ok`, `disabled` ou les noms des
+  ne se désactive pas) limite les tokens de réflexion, facturés en sortie. Gemini le reçoit
+  sous forme de `thinking_level` (`extra_body.google.thinking_config`, `none` devient
+  `minimal`), les autres fournisseurs sous forme de `reasoning_effort`. `/api/health` renvoie `llm` : `ok`, `disabled` ou les noms des
   variables en défaut.
 - **Schéma envoyé** : réduit à la structure (types, champs, listes) pour être accepté par
   tous les fournisseurs ; les bornes sont vérifiées par Zod à la réception.
@@ -374,9 +502,9 @@ Téléphone                                     Serveur (Vercel fra1)           
   les règles (tutoiement, 120 mots, pas d'avis médical, jamais sous le plancher ni plus de
   1 % du poids par semaine, aucun chiffre inventé) sont communes (`src/llm/prompts/coach.ts`).
 - **Chat** (`coach_messages`, feature LLM `coach`, modèle texte) : chaque message part avec
-  un contexte compact du jour (6 lignes au plus : calories et reste, plancher, macros, fibres
-  et fruits/légumes, semaine en budget hebdo, tendance de poids, régime, ressenti) et les
-  6 derniers messages. Sortie JSON `{reply}` validée par Zod. Le message n'est enregistré
+  un contexte compact du jour (calories et reste, plancher, macros, fibres et
+  fruits/légumes, tendance de poids, régime, ressenti) et les derniers messages. Après le
+  plan, le contexte s'est enrichi de tout l'historique de la personne (§7). Sortie JSON `{reply}` validée par Zod. Le message n'est enregistré
   qu'avec sa réponse ; on garde les 100 derniers par personne.
 - **Garde-fous locaux, sans appel au LLM** : une demande chiffrée sous le plancher
   (« 900 kcal par jour ») ou une question de dose ou de médicament reçoit une réponse
@@ -579,12 +707,32 @@ Téléphone                                     Serveur (Vercel fra1)           
 - **Exploitation** : `README.md` décrit la mise en place, les variables et secrets, les
   tâches planifiées, la sauvegarde et sa restauration (d'abord sur une branche Neon).
 
-## 6. Sécurité (rappel des points structurants)
+## 6. Sécurité
 
-HTTPS imposé par l'hébergeur, en-têtes CSP/HSTS via le middleware Next.js, jeton
-CSRF sur les mutations (Better Auth + vérification de l'origine), limitation de débit
-sur la connexion et les routes `/api/ai/*`, autorisation systématique par `user_id`
-de session, secrets uniquement en variables d'env (`.env.example` fourni).
+- **Transport et en-têtes** : HTTPS imposé par Vercel ; HSTS (2 ans, preload),
+  `nosniff`, `X-Frame-Options: DENY`, `Permissions-Policy` (caméra et micro pour l'app
+  seulement) sur toutes les réponses (`src/server/security-headers.ts`). Les pages ont une
+  CSP à nonce généré par requête dans `src/proxy.ts` (`script-src 'nonce-…'
+  'strict-dynamic'`, `connect-src 'self'`) ; les réponses d'API ont `default-src 'none'`.
+- **Authentification** : Better Auth, argon2id, sessions en base, TOTP facultatif.
+  Connexion, 2FA et changement de mot de passe passent uniquement par les actions serveur
+  de l'app, qui comptent les échecs par compte ; les routes `POST /api/auth/*` de Better Auth
+  répondent 404 pour qu'on ne puisse pas contourner ce compteur. Débit en plus côté Better
+  Auth (5 essais par minute sur ces routes), hôtes autorisés limités à l'app
+  (`APP_HOSTS`).
+- **Pas d'inscription publique** : invitation par lien à usage unique (hash SHA-256 en base).
+- **Autorisation** : toute lecture ou écriture filtre sur l'utilisateur de la session côté
+  serveur ; les données du foyer (menu, courses, recettes communes) sur son foyer.
+- **CSRF** : actions serveur Next.js (vérification de l'origine) et Better Auth.
+- **IA** : session obligatoire, 20 appels par 10 minutes et par personne, plafond de
+  dépense mensuel du foyer ; le texte des membres est aplati avant d'entrer dans un prompt.
+- **Notifications** : un abonnement push n'est accepté que vers les services connus
+  (Google, Apple, Mozilla, Microsoft), pour que le serveur ne puisse pas être utilisé
+  pour appeler une adresse arbitraire.
+- **Santé de l'app** : `/api/health` ne donne le détail (variables en défaut, état de la
+  base, du stockage et du LLM) qu'à l'admin connecté ou à un appel portant `CRON_SECRET`.
+- **Secrets** uniquement en variables d'env (`.env.example` fourni) ; aucun secret dans le
+  dépôt, vérifié avant son passage en public le 2026-10-10.
 
 ## Base d'aliments (phase 2)
 
@@ -611,5 +759,74 @@ de session, secrets uniquement en variables d'env (`.env.example` fourni).
 - **Unités** : g, kg, volumes (ml, cl, l, c. à café 5 ml, c. à soupe 15 ml, tasse 250 ml)
   si la masse volumique est connue, portion / pièce / tranche si le poids unitaire l'est.
 
-En attendant l'espace Training (phase 12), l'onglet « Training » de la barre inférieure
-est remplacé par « Poids ».
+## 7. Après le plan (2026-10-03 au 2026-10-10)
+
+Le plan s'est terminé avec la phase 15. Les changements suivants sont venus de l'usage ;
+le pourquoi de chacun est dans `docs/DECISIONS.md`.
+
+### Identité et navigation
+
+- **Nom** : l'app s'appelle Pommelia (`APP_NAME`), le coach Pépin (`COACH_NAME`). Le dépôt,
+  le projet Vercel et le bucket R2 gardent le nom « satia ».
+- **Identité « gourmande »** : titres en Fraunces, couleur pomme, logo « quartier qui
+  sourit » (icônes PWA, favicon, écrans de démarrage iOS générés par
+  `scripts/generate-icons.ts`). Onboarding en 6 écrans sans barre de navigation.
+- **Mobile** (< 1024 px) : barre inférieure Accueil, Cuisine, +, Progrès, Moi ; balayage
+  latéral entre onglets (`tab-swipe.tsx`) ; bouton retour (Navigation API, sinon page
+  parente, `parent-path.ts`). Le Journal est accessible depuis Moi et l'accueil.
+- **Ordinateur** (≥ 1024 px) : barre latérale (`side-nav.tsx`, réduite aux icônes jusqu'à
+  1279 px), pages en deux colonnes (`src/ui/columns.tsx`), sous-menu Cuisine en rail
+  vertical, pas de bouton retour. La version mobile n'a pas changé.
+- **Chargement** : un `loading.tsx` par page avec des squelettes qui reprennent sa mise en
+  page (`src/ui/skeleton.tsx`) ; à mettre à jour quand la page change.
+- **Confidentialité à l'écran** : le poids est masqué par défaut sur Progrès et Poids
+  (`src/ui/private.tsx`, choix gardé pour la session du navigateur).
+
+### Repas et recettes
+
+- **Recettes du catalogue** : 43 recettes illustrées rédigées pour l'app
+  (`src/domain/recipes/catalog.ts`, `foods.source = recipe`, `source_ref = catalog:<slug>`),
+  photos générées une fois et servies depuis `public/recipes/<slug>-480|960.webp`. Une
+  recette sans photo n'est jamais proposée.
+- **Recettes du foyer** : étapes (`recipe_steps`, rédigeables par le LLM), ingrédients
+  réordonnables, photo prise par la famille ou générée (§4) et servie par
+  `/api/foods/<id>/photo` après contrôle d'accès.
+- **Mes repas** (`saved_meals`) : un repas enregistré se rajoute en un geste, se modifie et
+  se partage au foyer.
+- **Reconnaissance par l'IA** : les libellés renvoyés par le LLM sont rapprochés de Ciqual
+  par `src/domain/search.ts` (variantes du nom, féculents comptés cuits, tous les mots
+  d'abord) ; une recette qui contient seulement l'aliment n'est pas retenue. L'écran de
+  confirmation signale les lignes douteuses (`meal-checks.ts` : aliment sans rapport,
+  aliment sec, portion lourde) et les quantités irréalistes sont bornées (assaisonnements,
+  dose de protéine en poudre). Les lignes d'un même plat sont regroupées (`dish`).
+- **Noms courts** (`food-name.ts`) : les longs noms Ciqual sont raccourcis à l'affichage.
+- **Eau** : l'eau notée dans un repas compte dans le compteur d'eau (`water.ts`).
+- **Dictée** : bouton « Dicter » aussi dans le chat de Pépin. Sur iPhone, la dictée
+  démarre dans le geste même et se relance si elle reste muette (`use-speech.ts`).
+
+### Pépin, le coach
+
+- **Historique complet** : en plus du jour, le prompt reçoit les repas récents détaillés
+  (`mealHistoryLines`) et jusqu'à 365 jours résumés semaine par semaine puis mois par mois
+  (`coach-history.ts` : calories, protéines, poids, ressenti, activité, pas), ainsi que les
+  10 derniers messages.
+- **Garde-fous** (`src/domain/coach.ts`), vérifiés sans appel au LLM : demande sous le
+  plancher, question de médicament ou de dose (traitements GLP-1 compris) et pratiques à
+  risque (laxatifs, vomissements, jeûnes de plus de 24 h) reçoivent une réponse fixe ; une
+  réponse du LLM qui proposerait un apport quotidien sous le plancher est remplacée par le
+  rappel du plancher. Le prompt lui interdit de sortir de l'alimentation et des habitudes,
+  et traite les messages comme des données.
+- **Chat** : il défile dans son propre cadre ; la page s'ouvre en haut avec les 10 derniers
+  messages et un bouton « Messages précédents ».
+
+### Comptes et administration
+
+- **Invités hors foyer** : l'admin peut inviter quelqu'un « dans mon foyer » ou « dans un
+  foyer à part » (`access_links.separate_household`). L'invité reçoit son propre foyer
+  (`households.managed_by` pointe vers celui de l'admin), ne peut pas devenir admin, et sa
+  dépense IA du mois apparaît dans `/admin`. Le plafond IA reste commun.
+- **Compte démo** : `demo@pommelia.fr`, créé ou réinitialisé depuis `/admin` avec 35 jours
+  de données d'exemple générées par graine (`src/domain/demo.ts`).
+- **Pages d'erreur** : 404 localisée (`[locale]/[...rest]` + `not-found.tsx`) pour que ses
+  scripts portent le nonce CSP ; `error.tsx` et un script de récupération des fichiers
+  JavaScript manquants après un déploiement.
