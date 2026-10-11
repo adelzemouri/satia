@@ -10,7 +10,7 @@ export default function HomeLoading() {
     <SkeletonPage wide className="lg:grid lg:grid-cols-[1.45fr_1fr] lg:items-start">
       <div className="flex flex-col gap-4 lg:col-span-2">
         <div className="flex items-center gap-3">
-          <Bone className="h-12 w-44 rounded-full" />
+          <Bone className="h-12 w-40 rounded-full min-[430px]:w-56" />
           <Bone className="ml-auto h-12 w-16 rounded-full" />
           <Bone className="size-12 shrink-0 rounded-full" />
         </div>

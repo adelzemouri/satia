@@ -97,17 +97,21 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         <div className="flex items-center justify-between gap-3">
           <Link
             href="/journal"
-            className="flex min-h-12 items-center gap-2 rounded-full bg-surface px-4 font-semibold first-letter:uppercase"
+            className="flex min-h-12 min-w-0 items-center gap-2 rounded-full bg-surface px-4 font-semibold"
           >
-            <span className="text-primary">
+            <span className="shrink-0 text-primary">
               <Icon name="calendar" size={20} />
             </span>
-            <span className="first-letter:uppercase">{formatDay(today, locale)}</span>
+            {/* Une seule ligne : date abrégée (« dim. 11 oct. ») sur les téléphones étroits. */}
+            <span className="truncate first-letter:uppercase min-[430px]:hidden">
+              {formatDay(today, locale, "compact")}
+            </span>
+            <span className="hidden truncate first-letter:uppercase min-[430px]:block">{formatDay(today, locale)}</span>
           </Link>
           <Link
             href="/progress"
             aria-label={t("home.streak", { days: streak.days })}
-            className={`ml-auto flex min-h-12 items-center gap-1.5 rounded-full px-3.5 font-bold ${milestone ? "celebrate bg-pomme text-on-pomme" : "bg-pomme-soft text-text"}`}
+            className={`ml-auto flex min-h-12 shrink-0 items-center gap-1.5 rounded-full px-3.5 font-bold whitespace-nowrap ${milestone ? "celebrate bg-pomme text-on-pomme" : "bg-pomme-soft text-text"}`}
           >
             <Icon name="sprout" size={20} />
             {t("home.streakShort", { days: streak.days })}
