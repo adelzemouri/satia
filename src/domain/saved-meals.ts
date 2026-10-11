@@ -36,3 +36,36 @@ export function scaleSavedItem<T extends ScalableItem>(item: T, quantity: number
     fatG: round(item.fatG * factor),
   };
 }
+
+export type MacroSplit = {
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+  /** Part des calories apportée par chaque macro, en % entiers dont la somme fait 100 (0 partout si vide). */
+  percent: { protein: number; carbs: number; fat: number };
+};
+
+/** Grammes de chaque macro d'un repas et leur part dans ses calories (4/4/9 kcal par gramme). */
+export function macroSplit(items: { proteinG: number; carbsG: number; fatG: number }[]): MacroSplit {
+  const sum = (pick: (item: (typeof items)[number]) => number) => items.reduce((total, item) => total + pick(item), 0);
+  const grams = {
+    protein: sum((item) => item.proteinG),
+    carbs: sum((item) => item.carbsG),
+    fat: sum((item) => item.fatG),
+  };
+  const kcal = { protein: grams.protein * 4, carbs: grams.carbs * 4, fat: grams.fat * 9 };
+  const total = kcal.protein + kcal.carbs + kcal.fat;
+  const keys = ["protein", "carbs", "fat"] as const;
+  const percent = { protein: 0, carbs: 0, fat: 0 };
+  if (total > 0) {
+    // Plus forts restes : les pourcentages arrondis font toujours 100.
+    const exact = keys.map((key) => ({ key, value: (kcal[key] / total) * 100 }));
+    for (const { key, value } of exact) percent[key] = Math.floor(value);
+    let missing = 100 - keys.reduce((acc, key) => acc + percent[key], 0);
+    for (const { key } of [...exact].sort((a, b) => (b.value % 1) - (a.value % 1))) {
+      if (missing-- <= 0) break;
+      percent[key] += 1;
+    }
+  }
+  return { proteinG: Math.round(grams.protein), carbsG: Math.round(grams.carbs), fatG: Math.round(grams.fat), percent };
+}

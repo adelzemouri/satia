@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { savedMealKcal, scaleSavedItem, suggestedMealName } from "@/domain/saved-meals";
+import { macroSplit, savedMealKcal, scaleSavedItem, suggestedMealName } from "@/domain/saved-meals";
 
 describe("suggestedMealName", () => {
   it("reprend les deux premiers aliments et compte les autres", () => {
@@ -47,5 +47,28 @@ describe("scaleSavedItem", () => {
       fatG: 10.4,
     });
     expect(scaleSavedItem(item, 1)).toEqual(item);
+  });
+});
+
+describe("macroSplit", () => {
+  it("donne les grammes et la part des calories de chaque macro, total 100 %", () => {
+    const split = macroSplit([
+      { proteinG: 20.4, carbsG: 50, fatG: 10 },
+      { proteinG: 7.8, carbsG: 2.2, fatG: 11.1 },
+    ]);
+    expect(split).toMatchObject({ proteinG: 28, carbsG: 52, fatG: 21 });
+    expect(split.percent).toEqual({ protein: 22, carbs: 41, fat: 37 });
+  });
+
+  it("arrondit sans perdre ni ajouter de point", () => {
+    const { percent } = macroSplit([
+      { proteinG: 1, carbsG: 1, fatG: 0 },
+      { proteinG: 0, carbsG: 0, fatG: 4 / 9 },
+    ]);
+    expect(percent.protein + percent.carbs + percent.fat).toBe(100);
+  });
+
+  it("reste à zéro sans macros", () => {
+    expect(macroSplit([]).percent).toEqual({ protein: 0, carbs: 0, fat: 0 });
   });
 });

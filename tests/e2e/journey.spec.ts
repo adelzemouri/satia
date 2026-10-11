@@ -362,7 +362,12 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await withServerAction(page, () => page.getByRole("button", { name: "Enregistrer les modifications" }).click());
   await expect(page).toHaveURL(/\/meals$/);
   await expect(page.getByText("Grand petit-déj")).toBeVisible();
-  await expect(page.getByText("424 kcal")).toBeVisible();
+  // Chaque carte montre ses calories dans l'anneau et la répartition des macros.
+  await expect(
+    page.getByRole("img", { name: /^424 kcal : protéines \d+ %, glucides \d+ %, lipides \d+ %$/ }),
+  ).toBeVisible();
+  await expect(page.getByRole("list", { name: "Répartition des macros" }).getByText("Protéines")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Ajouter Grand petit-déj" })).toBeVisible();
 
   await page.getByRole("link", { name: "Accueil" }).click();
   // Sur l'accueil comme dans le journal, toucher un verre fixe le total du jour.

@@ -1,7 +1,11 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { APP_TIMEZONE } from "@/config/app";
+import { todayIso } from "@/domain/dates";
 import { shortFoodName } from "@/domain/food-name";
-import { savedMealKcal } from "@/domain/saved-meals";
+import { slotAt } from "@/domain/meals";
+import { macroSplit, savedMealKcal } from "@/domain/saved-meals";
+import { MacroRing } from "@/features/saved-meals/macro-ring";
 import { KitchenTabs } from "@/features/planning/kitchen-tabs";
 import { SavedMealItem } from "@/features/saved-meals/saved-meal-item";
 import { Link } from "@/i18n/navigation";
@@ -20,6 +24,8 @@ export default async function SavedMealsPage({ params }: PageProps<"/[locale]/me
   const user = await requireUser(locale);
   const [meals, members] = await Promise.all([listSavedMeals(user.id), otherMembers(user.id, user.householdId)]);
   const t = await getTranslations();
+  const date = todayIso();
+  const slot = slotAt(new Date(), APP_TIMEZONE);
 
   return (
     <>
@@ -42,17 +48,48 @@ export default async function SavedMealsPage({ params }: PageProps<"/[locale]/me
         </Card>
       ) : (
         <ul className="flex flex-col gap-3 lg:grid lg:grid-cols-2">
-          {meals.map((meal) => (
-            <SavedMealItem key={meal.id} id={meal.id} name={meal.name} canShare={members.length > 0}>
-              <span className="font-bold">{meal.name}</span>
-              <span className="text-sm text-text-muted">
-                {meal.items.map((item) => shortFoodName(item.label)).join(" · ")}
-              </span>
-              <span className="text-sm font-semibold">{t("common.kcal", { value: savedMealKcal(meal.items) })}</span>
-            </SavedMealItem>
-          ))}
+          {meals.map((meal) => {
+            const kcal = savedMealKcal(meal.items);
+            const split = macroSplit(meal.items);
+            return (
+              <SavedMealItem
+                key={meal.id}
+                id={meal.id}
+                name={meal.name}
+                canShare={members.length > 0}
+                date={date}
+                slot={slot}
+                foods={meal.items.map((item) => ({
+                  label: shortFoodName(item.label),
+                  amount: t("common.grams", { value: Math.round(item.grams) }),
+                }))}
+              >
+                <div className="flex items-center gap-4">
+                  <MacroRing split={split} kcal={kcal} label={t("savedMeals.ringLabel", { kcal, ...split.percent })} />
+                  <ul className="flex min-w-0 flex-1 flex-col gap-1.5 text-sm" aria-label={t("savedMeals.macros")}>
+                    {MACROS.map(([key, field, color]) => (
+                      <li key={key} className="flex items-center gap-2">
+                        <span aria-hidden="true" className={`size-2.5 shrink-0 rounded-full ${color}`} />
+                        <span className="min-w-0 flex-1 text-text-muted">{t(`home.${key}`)}</span>
+                        <span className="font-bold tabular-nums">{t("common.grams", { value: split[field] })}</span>
+                        <span className="w-10 text-right text-text-muted tabular-nums">
+                          {t("savedMeals.percent", { value: split.percent[key] })}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </SavedMealItem>
+            );
+          })}
         </ul>
       )}
     </>
   );
 }
+
+const MACROS = [
+  ["protein", "proteinG", "bg-protein"],
+  ["carbs", "carbsG", "bg-carbs"],
+  ["fat", "fatG", "bg-fat"],
+] as const;

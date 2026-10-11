@@ -1021,6 +1021,11 @@
     "add": "Add it"
   },
   "savedMeals": {
+    "percent": "{value}%",
+    "addShort": "Add",
+    "addedShort": "Added",
+    "macros": "Macro breakdown",
+    "ringLabel": "{kcal, number} kcal: protein {protein}%, carbs {carbs}%, fat {fat}%",
     "title": "My meals",
     "intro": "Your usual meals, ready to add in one tap. Save them from the journal.",
     "sectionTitle": "My meals",
