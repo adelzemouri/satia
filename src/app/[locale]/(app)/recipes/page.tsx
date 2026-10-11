@@ -45,7 +45,7 @@ export default async function RecipesPage({ params, searchParams }: PageProps<"/
     key: entry.id,
     category: entry.recipe.category,
     text: [entry.recipe.name, ...entry.recipe.ingredients.map(([, , label]) => label)].join(" "),
-    card: <RecipeCard id={entry.id} recipe={entry.recipe} portionKcal={entry.portionKcal} />,
+    card: <RecipeCard id={entry.id} recipe={entry.recipe} portionKcal={entry.portionKcal} imageUrl={entry.imageUrl} />,
   }));
   const categories = RECIPE_CATEGORIES.map((value) => ({ value, label: t(`categories.${value}`) }));
 

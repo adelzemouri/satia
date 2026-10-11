@@ -526,6 +526,9 @@ export async function recipePhotoUrl(userId: string, foodId: string): Promise<st
   return food?.photoKey ? signedGetUrl(food.photoKey) : null;
 }
 
+/** Dossier des photos refaites pour les recettes du catalogue, communes à tous les foyers. */
+const CATALOG_FOLDER = "catalog";
+
 /** Début du nom de fichier d'une photo générée par l'IA, pour la légender comme telle. */
 const AI_PHOTO_PREFIX = "ai-";
 
@@ -540,6 +543,7 @@ type GeneratedPhoto = { photoKey: string; imageUrl: string };
 async function generatePhoto(
   userId: string,
   recipe: { id: string; name: string; householdId: string | null },
+  folder: string = recipe.householdId ?? userId,
 ): Promise<GeneratedPhoto | null> {
   const ingredients = await db()
     .select({ name: foods.nameFr })
@@ -555,29 +559,45 @@ async function generatePhoto(
   const mime = imageMime(bytes);
   if (!mime) return null;
   const id = randomUUID();
-  const photoKey = `recipes/${recipe.householdId ?? userId}/${AI_PHOTO_PREFIX}${id}.${mime.slice("image/".length).replace("jpeg", "jpg")}`;
+  const photoKey = `recipes/${folder}/${AI_PHOTO_PREFIX}${id}.${mime.slice("image/".length).replace("jpeg", "jpg")}`;
   await putObject(photoKey, bytes, mime);
   return { photoKey, imageUrl: recipePhotoPath(recipe.id, id.slice(0, 8)) };
 }
 
+/** Seul l'admin refait les photos : chaque image générée est payée sur le budget IA du foyer. */
+async function isAdmin(userId: string): Promise<boolean> {
+  const [row] = await db().select({ role: user.role }).from(user).where(eq(user.id, userId));
+  return row?.role === "admin";
+}
+
 /**
- * Refait la photo générée d'une recette qui ne ressemble pas au plat. Une photo prise par la
- * famille n'est jamais remplacée ainsi (elle se change avec « Changer la photo »).
+ * Refait par l'IA la photo d'une recette qui ne ressemble pas au plat, ou lui en donne une :
+ * recette du foyer ou du catalogue, réservé à l'admin. Une photo prise par la famille est
+ * remplacée aussi, puisque l'admin le demande explicitement.
  */
 export async function regenerateRecipePhoto(userId: string, foodId: string): Promise<void> {
+  if (!(await isAdmin(userId))) throw new DomainError("forbidden");
   const [food] = await db()
-    .select({ id: foods.id, name: foods.nameFr, photoKey: foods.photoKey, householdId: foods.householdId })
+    .select({
+      id: foods.id,
+      name: foods.nameFr,
+      photoKey: foods.photoKey,
+      householdId: foods.householdId,
+      ownerUserId: foods.ownerUserId,
+    })
     .from(foods)
-    .where(and(eq(foods.id, z.uuid().parse(foodId)), eq(foods.source, "recipe"), editableBy(userId)));
-  if (!food || (food.photoKey && !isGeneratedRecipePhoto(food.photoKey))) throw new DomainError("not_found");
-  const photo = await generatePhoto(userId, food);
+    .where(and(eq(foods.id, z.uuid().parse(foodId)), eq(foods.source, "recipe"), visibleTo(userId)));
+  if (!food) throw new DomainError("not_found");
+  // Recette du catalogue (commune à tous) : sa photo est rangée à part, hors de tout foyer.
+  const folder = food.householdId ?? (food.ownerUserId ? userId : CATALOG_FOLDER);
+  const photo = await generatePhoto(userId, food, folder);
   if (!photo) throw new AiUnavailableError("provider_error");
   const [saved] = await db()
     .update(foods)
     .set({ ...photo, photoAttemptedAt: new Date(), updatedAt: new Date() })
     .where(and(eq(foods.id, food.id), food.photoKey ? eq(foods.photoKey, food.photoKey) : isNull(foods.photoKey)))
     .returning({ id: foods.id });
-  // Photo changée entre-temps (par la famille) : la nouvelle image n'est pas gardée.
+  // Photo changée entre-temps : la nouvelle image n'est pas gardée.
   const obsolete = saved ? food.photoKey : photo.photoKey;
   if (obsolete) await deleteObjects([obsolete]).catch(logPhotoError);
 }

@@ -73,7 +73,10 @@ try {
               kcal = excluded.kcal, protein_g = excluded.protein_g, carbs_g = excluded.carbs_g, fat_g = excluded.fat_g,
               fiber_g = excluded.fiber_g, sugars_g = excluded.sugars_g, salt_g = excluded.salt_g,
               fruit_veg_share = excluded.fruit_veg_share, servings = excluded.servings,
-              unit_weights = excluded.unit_weights, image_url = excluded.image_url, updated_at = now()
+              unit_weights = excluded.unit_weights,
+              -- Une photo refaite par l'admin (rangée dans le stockage) est gardée.
+              image_url = case when foods.photo_key is null then excluded.image_url else foods.image_url end,
+              updated_at = now()
             returning id
           `;
           await tx`delete from recipe_items where recipe_id = ${saved!.id}`;

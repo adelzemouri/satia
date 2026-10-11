@@ -51,9 +51,15 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
   const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
   // Recette du foyer ou personnelle : ses ingrédients et sa préparation, comme une fiche du catalogue.
   const ownRecipe = food.source === "recipe" && !catalog;
-  const [ingredients, ai] = ownRecipe
-    ? await Promise.all([recipeIngredients(user.id, food.id), editableRecipe ? aiAvailability() : null])
-    : [[], null];
+  // L'admin peut refaire par l'IA la photo de n'importe quelle recette, catalogue compris.
+  const adminRecipe = food.source === "recipe" && user.role === "admin";
+  const [ingredients, ai] = await Promise.all([
+    ownRecipe ? recipeIngredients(user.id, food.id) : [],
+    adminRecipe && llmConfig().imageModel ? aiAvailability() : null,
+  ]);
+  const canRegenerate = Boolean(ai?.available);
+  // Photo rangée dans le stockage (prise par la famille ou refaite par l'IA), servie par URL signée.
+  const storedPhoto = food.photoKey && food.imageUrl ? { key: food.photoKey, url: food.imageUrl } : null;
   const steps = food.recipeSteps ?? [];
   const rows: { label: string; value: number | null; unit: string; indent?: boolean }[] = [
     { label: t("product.energy"), value: food.kcal, unit: "kcal" },
@@ -72,23 +78,29 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
       {catalog && (
         <figure className="-mx-4 flex flex-col gap-1 sm:mx-0">
           <div className="overflow-hidden sm:rounded-[var(--radius-card)]">
-            <RecipeVisual recipe={catalog} sizes="(min-width: 640px) 640px, 100vw" priority morph />
+            <RecipeVisual
+              recipe={catalog}
+              imageUrl={food.imageUrl}
+              sizes="(min-width: 640px) 640px, 100vw"
+              priority
+              morph
+            />
           </div>
-          {RECIPE_PHOTOS.has(catalog.slug) && (
+          {(storedPhoto || RECIPE_PHOTOS.has(catalog.slug)) && (
             <figcaption className="px-4 text-xs text-text-muted sm:px-0">{t("recipes.photoCaption")}</figcaption>
           )}
         </figure>
       )}
-      {!catalog && food.photoKey && food.imageUrl && (
+      {!catalog && storedPhoto && (
         <figure className="-mx-4 flex flex-col gap-1 sm:mx-0">
           {/* eslint-disable-next-line @next/next/no-img-element -- photo privée servie par URL signée */}
           <img
-            src={food.imageUrl}
+            src={storedPhoto.url}
             alt=""
             className="aspect-[4/3] w-full object-cover sm:rounded-[var(--radius-card)]"
           />
           <figcaption className="px-4 text-xs text-text-muted sm:px-0">
-            {t(isGeneratedRecipePhoto(food.photoKey) ? "recipes.photoCaption" : "foods.photo.caption")}
+            {t(isGeneratedRecipePhoto(storedPhoto.key) ? "recipes.photoCaption" : "foods.photo.caption")}
           </figcaption>
         </figure>
       )}
@@ -113,13 +125,12 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
       >
         {t("product.add")}
       </Link>
-      {editableRecipe && (
+      {(editableRecipe || canRegenerate) && (
         <RecipePhotoForm
           foodId={food.id}
+          canUpload={editableRecipe}
           hasPhoto={Boolean(food.photoKey && !isGeneratedRecipePhoto(food.photoKey))}
-          canRegenerate={Boolean(
-            food.photoKey && isGeneratedRecipePhoto(food.photoKey) && ai?.available && llmConfig().imageModel,
-          )}
+          canRegenerate={canRegenerate}
         />
       )}
       {editableRecipe && (

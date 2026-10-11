@@ -98,12 +98,31 @@ describe("espace famille", () => {
       expect(redone!.photoKey).not.toBe(row!.photoKey);
       expect(redone!.imageUrl).not.toBe(row!.imageUrl);
 
-      // La photo de la famille remplace celle de l'IA, et n'est jamais remplacée à son tour.
-      await setRecipePhoto(admin.id, { foodId: lasagnaId, imageBase64: JPEG_BASE64, mime: "image/jpeg" });
+      // La photo de la famille remplace celle de l'IA, et n'est jamais remplacée automatiquement.
+      await setRecipePhoto(member.id, { foodId: lasagnaId, imageBase64: JPEG_BASE64, mime: "image/jpeg" });
       const [mine] = await db().select().from(foods).where(eq(foods.id, lasagnaId));
       expect(isGeneratedRecipePhoto(mine!.photoKey!)).toBe(false);
       expect(await fillRecipePhotos(admin.id)).toBe(0);
-      await expect(regenerateRecipePhoto(member.id, lasagnaId)).rejects.toThrow();
+      // Refaire la photo est réservé à l'admin (chaque image coûte), qui peut le faire sur toutes les recettes.
+      await expect(regenerateRecipePhoto(member.id, lasagnaId)).rejects.toThrow("forbidden");
+      await regenerateRecipePhoto(admin.id, lasagnaId);
+      const [again] = await db().select().from(foods).where(eq(foods.id, lasagnaId));
+      expect(isGeneratedRecipePhoto(again!.photoKey!)).toBe(true);
+    });
+
+    it("l'admin refait la photo d'une recette du catalogue, vue par toute la famille", async () => {
+      const { admin, member } = await setupFamily();
+      const [recipe] = await db()
+        .select()
+        .from(foods)
+        .where(and(eq(foods.source, "recipe"), eq(foods.sourceRef, "catalog:minestrone")));
+      expect(recipe!.imageUrl).toBe("/recipes/minestrone-480.webp");
+      await expect(regenerateRecipePhoto(member.id, recipe!.id)).rejects.toThrow("forbidden");
+      await regenerateRecipePhoto(admin.id, recipe!.id);
+      const [redone] = await db().select().from(foods).where(eq(foods.id, recipe!.id));
+      expect(redone!.photoKey).toMatch(/^recipes\/catalog\/ai-/);
+      expect(redone!.imageUrl).toMatch(new RegExp(`^/api/foods/${recipe!.id}/photo\\?v=`));
+      expect(await recipePhotoUrl(member.id, recipe!.id)).toMatch(/^https?:\/\//);
     });
 
     it("IA en pause : pas de photo, nouvel essai plus tard", async () => {

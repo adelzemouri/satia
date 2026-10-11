@@ -15,7 +15,7 @@ export function DishThumb({
   imageUrl?: string | null;
   sizes?: string;
 }) {
-  if (catalog) return <RecipeVisual recipe={catalog} sizes={sizes} />;
+  if (catalog) return <RecipeVisual recipe={catalog} imageUrl={imageUrl} sizes={sizes} />;
   if (imageUrl) {
     return (
       // eslint-disable-next-line @next/next/no-img-element -- image du plat (Open Food Facts ou stockage privé)
