@@ -465,6 +465,7 @@
     "disclaimer_required": "Please confirm you have read this message.",
     "invalid_time": "Invalid time.",
     "not_found": "Not found.",
+    "forbidden": "Only the household admin can do this.",
     "future_date": "You can't log for a day that hasn't happened yet.",
     "unit_not_available": "This unit isn't available for this food.",
     "quantity_too_large": "This quantity looks too large.",

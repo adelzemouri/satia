@@ -14,6 +14,12 @@ export async function resetDatabase(): Promise<void> {
   `);
   // Les recettes du catalogue (et leurs ingrédients) restent, comme en production.
   const catalog = sql`source = 'recipe' and source_ref like 'catalog:%'`;
+  // Photo d'une recette du catalogue refaite par l'admin : on revient à celle livrée avec l'app.
+  await db().execute(sql`
+    update foods set photo_key = null, photo_attempted_at = null,
+      image_url = '/recipes/' || substring(source_ref from ${"catalog:".length + 1}::int) || '-480.webp'
+    where ${catalog} and photo_key is not null
+  `);
   await db().execute(sql`delete from recipe_items where recipe_id not in (select id from foods where ${catalog})`);
   await db().execute(sql`delete from foods where source <> 'ciqual' and not (${catalog})`);
   await db().execute(sql`delete from users`);

@@ -15,15 +15,19 @@ const RECIPE_PHOTO_MAX_SIDE = 1080;
 
 /**
  * Prendre ou choisir la photo d'une recette du foyer, ou remplacer celle générée par l'IA ;
- * une photo IA qui ne ressemble pas au plat peut aussi être refaite.
+ * l'admin peut aussi faire refaire la photo de n'importe quelle recette par l'IA.
  */
 export function RecipePhotoForm({
   foodId,
   hasPhoto,
+  canUpload = true,
   canRegenerate = false,
 }: {
   foodId: string;
   hasPhoto: boolean;
+  /** Recette du foyer : la famille peut poser sa propre photo (pas sur le catalogue). */
+  canUpload?: boolean;
+  /** Réservé à l'admin : chaque image générée est payée sur le budget IA. */
   canRegenerate?: boolean;
 }) {
   const t = useTranslations("foods.photo");
@@ -61,18 +65,20 @@ export function RecipePhotoForm({
     <div className="flex flex-col gap-3">
       {error && <Alert>{errorText(error)}</Alert>}
       <div className="flex flex-wrap gap-3">
-        <label className={`${buttonClass("secondary")} cursor-pointer ${pending ? "opacity-60" : ""}`}>
-          <Icon name="camera" />
-          {hasPhoto ? t("change") : t("add")}
-          <input
-            ref={input}
-            type="file"
-            accept="image/*"
-            className="sr-only"
-            disabled={pending}
-            onChange={(event) => upload(event.target.files?.[0])}
-          />
-        </label>
+        {canUpload && (
+          <label className={`${buttonClass("secondary")} cursor-pointer ${pending ? "opacity-60" : ""}`}>
+            <Icon name="camera" />
+            {hasPhoto ? t("change") : t("add")}
+            <input
+              ref={input}
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              disabled={pending}
+              onChange={(event) => upload(event.target.files?.[0])}
+            />
+          </label>
+        )}
         {canRegenerate && (
           <button type="button" className={buttonClass("secondary")} disabled={pending} onClick={regenerate}>
             <Icon name="refresh" />

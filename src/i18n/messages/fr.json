@@ -465,6 +465,7 @@
     "disclaimer_required": "Merci de confirmer avoir lu ce message.",
     "invalid_time": "Heure invalide.",
     "not_found": "Introuvable.",
+    "forbidden": "Réservé à l'administrateur du foyer.",
     "future_date": "On ne peut pas saisir pour un jour à venir.",
     "unit_not_available": "Cette unité n'est pas disponible pour cet aliment.",
     "quantity_too_large": "Cette quantité semble trop grande.",

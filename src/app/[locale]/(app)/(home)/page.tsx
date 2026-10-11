@@ -196,6 +196,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
                     id={entry.id}
                     recipe={entry.recipe}
                     portionKcal={entry.portionKcal}
+                    imageUrl={entry.imageUrl}
                     query={{ slot: current, date: today }}
                   />
                 </li>

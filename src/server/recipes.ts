@@ -11,6 +11,8 @@ export type CatalogEntry = {
   recipe: CatalogRecipe;
   portionKcal: number;
   portionProteinG: number;
+  /** Pointe vers la photo refaite par l'admin quand il y en a une. */
+  imageUrl: string | null;
 };
 
 /** Recettes du catalogue présentes en base, dans l'ordre du catalogue. */
@@ -22,6 +24,7 @@ export async function catalogEntries(): Promise<CatalogEntry[]> {
       kcal: foods.kcal,
       proteinG: foods.proteinG,
       unitWeights: foods.unitWeights,
+      imageUrl: foods.imageUrl,
     })
     .from(foods)
     .where(and(eq(foods.source, "recipe"), like(foods.sourceRef, `${CATALOG_PREFIX}%`)));
@@ -37,6 +40,7 @@ export async function catalogEntries(): Promise<CatalogEntry[]> {
           recipe,
           portionKcal: Math.round((row.kcal * portion) / 100),
           portionProteinG: Math.round((row.proteinG * portion) / 100),
+          imageUrl: row.imageUrl,
         },
       ];
     })
