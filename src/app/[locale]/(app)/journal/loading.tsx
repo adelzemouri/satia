@@ -13,8 +13,11 @@ export default function JournalLoading() {
       <div className="-mt-2 flex min-h-11 items-center">
         <Bone className="h-4 w-36" />
       </div>
-      <SkeletonCard>
-        <Bone className="h-7 w-32" />
+      <SkeletonCard tone="highlight">
+        <div className="flex flex-col gap-1.5">
+          <Bone className="h-3 w-24" />
+          <Bone className="h-8 w-36" />
+        </div>
         <div className="flex flex-col gap-2">
           <Bone className="h-5 w-48" />
           <Bone className="h-3 w-full rounded-full" />

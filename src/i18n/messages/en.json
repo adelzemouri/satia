@@ -539,6 +539,7 @@
     "slice": "slice"
   },
   "journal": {
+    "dayBalance": "Day summary",
     "title": "Diary",
     "previousWeek": "Previous week",
     "nextWeek": "Next week",
