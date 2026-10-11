@@ -48,16 +48,20 @@ export function SavedMealList({ meals, date, slot }: { meals: SavedMealView[]; d
   );
 }
 
-function ServeButton({
+/** Sert un repas enregistré dans le journal, avec « Annuler » dans le toast. */
+export function ServeButton({
   meal,
   date,
   slot,
   onError,
+  variant = "round",
 }: {
-  meal: SavedMealView;
+  meal: Pick<SavedMealView, "id" | "name">;
   date: string;
   slot: MealSlot;
   onError: (code: string | null) => void;
+  /** « round » : bouton rond « + » de l'écran d'ajout ; « pill » : bouton « Ajouter » des cartes de « Mes repas ». */
+  variant?: "round" | "pill";
 }) {
   const t = useTranslations();
   const toast = useToast();
@@ -81,12 +85,30 @@ function ServeButton({
       });
     });
 
+  const label = added ? t("savedMeals.addedButton", { name: meal.name }) : t("savedMeals.add", { name: meal.name });
+  if (variant === "pill") {
+    return (
+      <button
+        type="button"
+        onClick={serve}
+        disabled={pending}
+        aria-label={label}
+        className={`flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border px-4 font-semibold ${
+          added ? "border-primary bg-primary text-on-primary" : "border-border text-primary hover:bg-surface-muted"
+        }`}
+      >
+        <Icon name={added ? "check" : "plus"} size={18} />
+        {added ? t("savedMeals.addedShort") : t("savedMeals.addShort")}
+      </button>
+    );
+  }
+
   return (
     <button
       type="button"
       onClick={serve}
       disabled={pending}
-      aria-label={added ? t("savedMeals.addedButton", { name: meal.name }) : t("savedMeals.add", { name: meal.name })}
+      aria-label={label}
       className={`flex size-12 shrink-0 items-center justify-center rounded-full border ${
         added ? "border-primary bg-primary text-on-primary" : "border-border text-text"
       }`}

@@ -1021,6 +1021,11 @@
     "add": "L'ajouter"
   },
   "savedMeals": {
+    "percent": "{value} %",
+    "addShort": "Ajouter",
+    "addedShort": "Ajouté",
+    "macros": "Répartition des macros",
+    "ringLabel": "{kcal, number} kcal : protéines {protein} %, glucides {carbs} %, lipides {fat} %",
     "title": "Mes repas",
     "intro": "Tes repas habituels, prêts à ajouter d'un geste. Tu les enregistres depuis le journal.",
     "sectionTitle": "Mes repas",
