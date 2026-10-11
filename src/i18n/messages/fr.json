@@ -539,6 +539,7 @@
     "slice": "tranche"
   },
   "journal": {
+    "dayBalance": "Bilan du jour",
     "title": "Journal",
     "previousWeek": "Semaine précédente",
     "nextWeek": "Semaine suivante",

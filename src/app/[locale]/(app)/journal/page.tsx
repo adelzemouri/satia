@@ -126,11 +126,19 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
         )}
       </nav>
 
-      <Card aria-labelledby="day-total">
-        <div className="flex items-baseline justify-between gap-3">
-          <h2 id="day-total" className="text-xl font-bold first-letter:uppercase" aria-live="polite">
-            {dayTitle}
-          </h2>
+      {/* Le bilan du jour se distingue des repas : fond vert pâle, étiquette et titre en Fraunces. */}
+      <Card aria-labelledby="day-total" tone="highlight">
+        <div className="flex items-end justify-between gap-3">
+          <div className="flex flex-col gap-0.5">
+            <p className="text-xs font-bold tracking-wider text-primary uppercase">{t("journal.dayBalance")}</p>
+            <h2
+              id="day-total"
+              className="font-display text-2xl font-extrabold tracking-tight first-letter:uppercase"
+              aria-live="polite"
+            >
+              {dayTitle}
+            </h2>
+          </div>
           {date === today && yesterdayEntries.length > 0 && summary.entries.length === 0 && (
             <CopyButton
               fromDate={yesterday}
