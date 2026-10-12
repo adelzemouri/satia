@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { type ReactNode, useState } from "react";
 
 import { normalizeForSearch } from "@/domain/search";
@@ -7,7 +8,9 @@ import { Icon } from "@/ui/icon";
 
 /**
  * Recettes cherchées par nom ou ingrédient et filtrées par catégorie sur place : pas de rechargement ni de retour en haut
- * de page. L'adresse garde le filtre (?cat=) pour le retour arrière et le partage.
+ * de page. L'adresse garde le filtre (?cat=) et la recherche (?q=) pour le retour arrière et le partage : on les relit
+ * dans l'adresse plutôt que dans les props, car au retour depuis une fiche Next.js réaffiche la page telle qu'elle était
+ * rendue à l'arrivée, avant le choix du filtre.
  */
 export function RecipeFilter<C extends string>({
   label,
@@ -16,7 +19,6 @@ export function RecipeFilter<C extends string>({
   noMatch,
   categories,
   items,
-  initial,
 }: {
   label: string;
   allLabel: string;
@@ -25,22 +27,27 @@ export function RecipeFilter<C extends string>({
   categories: readonly { value: C; label: string }[];
   /** `text` : nom et ingrédients, ce sur quoi porte la recherche. */
   items: readonly { key: string; category: C; text: string; card: ReactNode }[];
-  initial: C | null;
 }) {
-  const [category, setCategory] = useState<C | null>(initial);
-  const [query, setQuery] = useState("");
+  const params = useSearchParams();
+  const [category, setCategory] = useState<C | null>(
+    () => categories.find((option) => option.value === params.get("cat"))?.value ?? null,
+  );
+  const [query, setQuery] = useState(() => params.get("q") ?? "");
   const words = normalizeForSearch(query).split(" ").filter(Boolean);
   const shown = items.filter((item) => {
     if (category && item.category !== category) return false;
     const text = normalizeForSearch(item.text);
     return words.every((word) => text.includes(word));
   });
+  const remember = (key: "cat" | "q", value: string | null) => {
+    const url = new URL(window.location.href);
+    if (value) url.searchParams.set(key, value);
+    else url.searchParams.delete(key);
+    window.history.replaceState(window.history.state, "", url);
+  };
   const choose = (value: C | null) => {
     setCategory(value);
-    const url = new URL(window.location.href);
-    if (value) url.searchParams.set("cat", value);
-    else url.searchParams.delete("cat");
-    window.history.replaceState(null, "", url);
+    remember("cat", value);
   };
   const chip = (active: boolean) =>
     `flex min-h-11 items-center whitespace-nowrap rounded-full px-4 font-semibold ${
@@ -56,7 +63,10 @@ export function RecipeFilter<C extends string>({
         <input
           type="search"
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            remember("q", event.target.value.trim() || null);
+          }}
           placeholder={searchLabel}
           className="min-w-0 flex-1 bg-transparent text-base outline-none"
         />

@@ -16,12 +16,10 @@ import { buttonClass } from "@/ui/button";
 /** Les recettes de la famille n'ont pas de catégorie : elles s'affichent sous « Toutes », en tête. */
 const OURS = "ours";
 
-export default async function RecipesPage({ params, searchParams }: PageProps<"/[locale]/recipes">) {
+export default async function RecipesPage({ params }: PageProps<"/[locale]/recipes">) {
   const locale = toLocale((await params).locale);
   setRequestLocale(locale);
   const user = await requireUser(locale);
-  const { cat } = await searchParams;
-  const category = RECIPE_CATEGORIES.find((value) => value === cat);
   const [recipes, catalog] = await Promise.all([recipeLibrary(user.id, user.householdId), catalogEntries()]);
   // Recettes du foyer encore sans photo : l'IA en prépare quelques-unes après l'affichage.
   fillRecipePhotosLater(user.id);
@@ -70,7 +68,6 @@ export default async function RecipesPage({ params, searchParams }: PageProps<"/
           searchLabel={t("search")}
           noMatch={t("noMatch")}
           categories={categories}
-          initial={category ?? null}
           items={[...ours, ...ideas]}
         />
       )}
