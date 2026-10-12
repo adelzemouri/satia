@@ -22,7 +22,7 @@ export type Diet = (typeof DIETS)[number];
 export const BUDGET_MODES = ["daily", "weekly"] as const;
 export type BudgetMode = (typeof BUDGET_MODES)[number];
 
-/** Personnalités du coach : seul le ton change. */
+/** Anciennes personnalités du coach, gardées pour la colonne `profiles.coach_style` (DECISIONS 029). */
 export const COACH_STYLES = ["teacher", "cheerleader", "zen", "chef"] as const;
 export type CoachStyle = (typeof COACH_STYLES)[number];
 

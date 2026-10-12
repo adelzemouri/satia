@@ -496,10 +496,10 @@ Téléphone                                     Serveur (Vercel fra1)           
 
 ## Coach (phase 9)
 
-- **Personnalités** : `profiles.coach_style` (pédagogue, enthousiaste, serein, gourmand),
-  choisie à l'onboarding et modifiable sur `/coach`. Seul le ton du prompt système change ;
+- **Ton** : un seul, bienveillant et concret (les 4 personnalités ont été retirées,
+  DECISIONS 029 ; la colonne `profiles.coach_style` reste en base sans être lue) ;
   les règles (tutoiement, 120 mots, pas d'avis médical, jamais sous le plancher ni plus de
-  1 % du poids par semaine, aucun chiffre inventé) sont communes (`src/llm/prompts/coach.ts`).
+  1 % du poids par semaine, aucun chiffre inventé) sont dans `src/llm/prompts/coach.ts`.
 - **Chat** (`coach_messages`, feature LLM `coach`, modèle texte) : chaque message part avec
   un contexte compact du jour (calories et reste, plancher, macros, fibres et
   fruits/légumes, tendance de poids, régime, ressenti) et les derniers messages. Après le

@@ -17,13 +17,12 @@ import {
   lastWeekReview,
   listCoachMessages,
   sendCoachMessage,
-  setCoachStyle,
   suggestedDish,
 } from "@/server/coach";
 import { collectUserData } from "@/server/data-export";
 import { createRecipe, searchFoods } from "@/server/foods";
 import { addEntry } from "@/server/journal";
-import { getProfile, saveOnboarding } from "@/server/profile";
+import { saveOnboarding } from "@/server/profile";
 import { setAiSettings } from "@/server/settings";
 
 import { resetDatabase } from "./helpers";
@@ -42,7 +41,6 @@ const answers: OnboardingInput = {
   foodsToAvoid: "",
   mealTimes: { breakfast: "07:30", lunch: "12:30", dinner: "20:00" },
   budgetMode: "daily",
-  coachStyle: "zen",
   disclaimerAccepted: true,
 };
 
@@ -76,7 +74,6 @@ describe("coach", () => {
 
   it("répond avec le contexte du jour et garde la conversation", async () => {
     const userId = await setupUser();
-    expect((await getProfile(userId))?.coachStyle).toBe("zen");
     const reply = await sendCoachMessage(userId, "  Que manger ce soir ?  ");
     expect(reply.role).toBe("coach");
     expect(reply.content).toContain("« Que manger ce soir ? »");
@@ -217,12 +214,6 @@ describe("coach", () => {
     expect(breakfast?.id).not.toBe(id);
     expect(catalogRecipe(breakfast!.catalogSlug!)?.category).toBe("breakfast");
     expect(await db().select().from(llmCalls)).toEqual([]);
-  });
-
-  it("change la personnalité du coach", async () => {
-    const userId = await setupUser();
-    await setCoachStyle(userId, "chef");
-    expect((await getProfile(userId))?.coachStyle).toBe("chef");
   });
 
   it("décrit le sujet d'une question posée depuis une page, sans voir les données des autres", async () => {

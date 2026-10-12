@@ -43,6 +43,7 @@ export const profiles = pgTable("profiles", {
   budgetMode: text({ enum: BUDGET_MODES }).notNull().default("daily"),
   /** L'utilisateur a figé son objectif : le bilan hebdomadaire ne le modifie plus. */
   goalLocked: boolean().notNull().default(false),
+  /** Plus lue depuis le retrait des personnalités du coach (DECISIONS 029), gardée pour l'historique. */
   coachStyle: text({ enum: COACH_STYLES }).notNull().default("teacher"),
   /** Types de rappels activés et plage silencieuse (les abonnements sont par appareil). */
   notificationPrefs: jsonb().$type<NotificationPrefs>().notNull().default(DEFAULT_NOTIFICATION_PREFS),

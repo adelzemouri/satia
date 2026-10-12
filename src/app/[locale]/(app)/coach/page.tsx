@@ -5,7 +5,6 @@ import { todayIso } from "@/domain/dates";
 import { isCoachQuestion, suggestedQuestions } from "@/domain/coach-questions";
 import { CoachAvatar } from "@/features/coach/coach-avatar";
 import { CoachChat } from "@/features/coach/coach-chat";
-import { CoachStyleForm } from "@/features/coach/coach-style-form";
 import { WeeklyReviewLoader } from "@/features/coach/weekly-review-loader";
 import { redirect } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
@@ -83,13 +82,6 @@ export default async function CoachPage({ params, searchParams }: PageProps<"/[l
           questions={questions}
           ask={isCoachQuestion(ask) ? ask : null}
         />
-      </Card>
-
-      <Card aria-labelledby="style-title" className="lg:col-start-2 lg:row-start-4">
-        <h2 id="style-title" className="text-xl font-semibold">
-          {t("styleTitle")}
-        </h2>
-        <CoachStyleForm style={profile.coachStyle} />
       </Card>
 
       <p className="text-sm text-text-muted lg:col-span-2">{t("disclaimer", { appName: APP_NAME })}</p>

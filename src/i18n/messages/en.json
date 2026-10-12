@@ -357,10 +357,6 @@
       "capped": "To keep it sustainable and safe, weight loss is limited to about 1% of your weight per week.",
       "start": "Let's go!"
     },
-    "coach": {
-      "title": "Which coach suits you?",
-      "hint": "You can change it at any time."
-    },
     "pages": {
       "you": {
         "title": "Let's get to know you",
@@ -382,9 +378,9 @@
         "title": "Your habits",
         "pepin": "Tell me how you eat: I adapt to you, not the other way round."
       },
-      "coach": {
-        "title": "Your coach",
-        "pepin": "Last step: how would you like me to talk to you?"
+      "care": {
+        "title": "Before we start",
+        "pepin": "Last step: one important note before we start."
       },
       "summary": {
         "title": "Your starting plan",
@@ -1108,25 +1104,6 @@
     "dictate": "Dictate",
     "stopDictation": "Stop dictation",
     "clear": "Clear the conversation",
-    "styleTitle": "Coach personality",
-    "styles": {
-      "teacher": {
-        "label": "Teacher",
-        "hint": "Explains the why, with simple guidelines."
-      },
-      "cheerleader": {
-        "label": "Cheerleader",
-        "hint": "Celebrates every bit of progress and keeps you going."
-      },
-      "zen": {
-        "label": "Calm",
-        "hint": "Calm and reassuring, no pressure."
-      },
-      "chef": {
-        "label": "Foodie",
-        "hint": "Talks cooking and gives you dish ideas."
-      }
-    },
     "notices": {
       "floor": "I'd rather not help you go below your daily minimum: it would be too little for your body. We can look together at making your meals more filling for the same calories.",
       "medical": "Questions about doses or medication are for your doctor or pharmacist. I can help with your meals and habits.",

@@ -132,9 +132,8 @@ unitaire est connu.
 ## 6. Coach IA
 - Chat contextuel : le coach connaît l'objectif, le journal du jour, le budget restant,
   les préférences et les données de poids/activité (contexte compact injecté).
-- 4 personnalités de coach au choix, originales (exemples : "le pédagogue" factuel,
-  "la motivante" énergique, "le zen" axé habitudes, "la cheffe" axée recettes).
-  Elles ne diffèrent que par le ton du prompt système.
+- Un seul ton de coach, bienveillant et concret (les 4 personnalités au choix ont été
+  retirées en 2026-10 pour simplifier, voir DECISIONS 029).
 - Suggestions : idées de repas qui rentrent dans le budget, recettes à partir des
   préférences, ajustements de fenêtres alimentaires.
 - Bilan hebdomadaire automatique (1 appel LLM / utilisateur / semaine), intégrant

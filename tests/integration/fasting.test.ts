@@ -41,7 +41,6 @@ const answers: OnboardingInput = {
   foodsToAvoid: "",
   mealTimes: { breakfast: "07:30", lunch: "12:30", dinner: "20:00" },
   budgetMode: "daily",
-  coachStyle: "zen",
   disclaimerAccepted: true,
 };
 

@@ -111,8 +111,6 @@ test("onboarding complet d'un adulte avec plan expliqué", async ({ page }) => {
   await page.getByLabel("Sans porc").check();
   await page.getByLabel("Aliments que tu préfères éviter").fill("coriandre");
   await next.click(); // horaires par défaut
-  await expect(page.getByLabel("Pédagogue")).toBeChecked();
-  await page.getByLabel("Serein").check();
   await next.click();
   await expect(alertIn(page)).toHaveText("Merci de confirmer avoir lu ce message.");
   await page.getByLabel("J'ai compris").check();
@@ -899,14 +897,13 @@ test("bilan qualité de la semaine", async ({ page }) => {
   await expectNoA11yViolations(page);
 });
 
-test("coach : bilan, conversation (LLM simulé), garde-fou et personnalité", async ({ page }) => {
+test("coach : bilan, conversation (LLM simulé), garde-fou", async ({ page }) => {
   await signInWithTotp(page);
   await page.getByRole("link", { name: "Moi", exact: true }).click();
   await page.getByRole("link", { name: "Coach", exact: true }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pépin");
   // Le foyer de test vient d'être créé : pas assez de jours la semaine dernière pour un bilan.
   await expect(page.getByText(/Pas encore de bilan/)).toBeVisible();
-  await expect(page.getByLabel("Serein")).toBeChecked();
   await expectNoA11yViolations(page);
 
   await page.getByLabel("Ton message").fill("Que manger ce soir ?");
@@ -920,9 +917,7 @@ test("coach : bilan, conversation (LLM simulé), garde-fou et personnalité", as
   await expect(conversation.getByText(/en dessous de ton minimum journalier/)).toBeVisible();
   await expectNoA11yViolations(page);
 
-  await withServerAction(page, () => page.getByLabel("Gourmand").check());
   await page.reload();
-  await expect(page.getByLabel("Gourmand")).toBeChecked();
   await expect(conversation.getByText(/Tu me demandais/)).toBeVisible();
 
   await page.getByRole("button", { name: "Effacer la conversation" }).click();

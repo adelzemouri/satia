@@ -13,7 +13,6 @@ import {
   dailySteps,
   mealEntries,
   metabolismChecks,
-  profiles,
   trainingSessions,
   weightEntries,
 } from "@/db/schema";
@@ -37,7 +36,6 @@ import { type CoachTopic, coachTopicSchema, dayTopicLine, foodTopicLine, mealTop
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
 import { type MealSlot, slotAt } from "@/domain/meals";
-import { COACH_STYLES, type CoachStyle } from "@/domain/profile";
 import { weekQuality } from "@/domain/quality";
 import { CATEGORY_SLOTS, catalogRecipeFor } from "@/domain/recipes/catalog";
 import { isoWeekStart } from "@/domain/streak";
@@ -245,7 +243,7 @@ export async function sendCoachMessage(userId: string, text: string, topic?: Coa
     const prompt = [`Contexte :\n${context}`, workoutLine, ...conversation, topicLine, `Moi : ${promptLine(message)}`]
       .filter(Boolean)
       .join("\n");
-    const content = await coachReply(userId, profile.coachStyle, prompt);
+    const content = await coachReply(userId, prompt);
     // Dernier filet : une réponse qui proposerait un apport sous le plancher n'est pas montrée.
     reply = suggestsDailyBelowFloor(content, floors[profile.sex])
       ? { content: "", notice: "floor" }
@@ -273,13 +271,6 @@ export async function sendCoachMessage(userId: string, text: string, topic?: Coa
 
 export async function clearCoachMessages(userId: string): Promise<void> {
   await db().delete(coachMessages).where(eq(coachMessages.userId, userId));
-}
-
-export async function setCoachStyle(userId: string, style: CoachStyle): Promise<void> {
-  await db()
-    .update(profiles)
-    .set({ coachStyle: z.enum(COACH_STYLES).parse(style), updatedAt: new Date() })
-    .where(eq(profiles.userId, userId));
 }
 
 // --- Bilan hebdomadaire ------------------------------------------------------------
@@ -375,7 +366,7 @@ export async function ensureWeeklyReview(userId: string, today: string = todayIs
   const [profile, data] = await Promise.all([getProfile(userId), weeklyReviewData(userId, today)]);
   if (!profile || !data) return null;
   try {
-    const content = await writeWeeklyReview(userId, profile.coachStyle, data);
+    const content = await writeWeeklyReview(userId, data);
     await db()
       .insert(coachReviews)
       .values({ userId, weekStart: addDays(isoWeekStart(today), -7), content })
