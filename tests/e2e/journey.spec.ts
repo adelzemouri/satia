@@ -943,7 +943,10 @@ test("coach : bilan, conversation (LLM simulé), garde-fou et personnalité", as
 
   // Depuis un repas du journal, Pépin s'ouvre par-dessus la page avec le repas joint.
   await page.goto("/journal");
-  await page.getByRole("region", { name: "Déjeuner" }).getByRole("button", { name: "Demander à Pépin" }).click();
+  await page
+    .getByRole("region", { name: "Déjeuner", exact: true })
+    .getByRole("button", { name: "Demander à Pépin" })
+    .click();
   const panel = page.getByRole("dialog", { name: "Pépin" });
   await expect(panel.getByText(/^À propos de : Déjeuner · \d+ kcal$/)).toBeVisible();
   await expectNoA11yViolations(page);
