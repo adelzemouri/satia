@@ -18,6 +18,9 @@ export function normalizeForSearch(text: string): string {
  * « crème fraîche » « crème … épaisse ». Les règles portent sur le texte déjà normalisé,
  * de la plus précise à la plus générale.
  */
+/** Eau sans précision, ou un verre dont la boisson n'est pas nommée. */
+const PLAIN_WATER = /^(?:(?:petit |grand )?verre(?: d eau)?|eau(?: plate| fraiche)?)$/;
+
 const SYNONYMS: readonly [RegExp, string][] = [
   [/\bcreme fraiche (?:liquide|fluide)\b/, "creme fluide"],
   [/\bcreme (?:liquide|cuisine|de cuisine)\b/, "creme fluide"],
@@ -25,6 +28,8 @@ const SYNONYMS: readonly [RegExp, string][] = [
   [/\bcreme entiere\b/, "creme 30"],
   [/\bcreme allegee\b/, "creme legere"],
   // Ciqual ne connaît pas les formes de pâtes : des linguine sont des « pâtes sèches ».
+  // « Un verre » seul se cherche aussi comme de l'eau.
+  [PLAIN_WATER, "eau du robinet"],
   [
     /\b(?:linguine|spaghetti|tagliatelle|penne|fusilli|macaroni|coquillette|farfalle|rigatoni|torsade|papillon)s?\b/,
     "pates seches",
@@ -58,6 +63,10 @@ export function isCookedStarchLabel(label: string): boolean {
 export function pickForLabel<T extends { nameFr: string }>(label: string, results: readonly T[]): T | null {
   const normalized = normalizeForSearch(label);
   const starch = [normalized, ...searchVariants(normalized)].some((text) => STARCH.test(text));
+  if (PLAIN_WATER.test(normalized)) {
+    const water = results.find((food) => normalizeForSearch(food.nameFr).startsWith("eau du robinet"));
+    if (water) return water;
+  }
   const wantsCooked = COOKED.test(normalized) || (starch && !RAW.test(normalized));
   if (wantsCooked) {
     // Pour un féculent, la version cuite doit en être un aussi : « linguine » ressemble à

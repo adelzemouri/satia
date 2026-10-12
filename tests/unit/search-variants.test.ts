@@ -49,3 +49,33 @@ describe("aliment proposé pour un nom reconnu par l'IA", () => {
     expect(pickForLabel("linguine", [])).toBeNull();
   });
 });
+
+describe("eau sans précision", () => {
+  const results = [
+    { nameFr: "Eau de vie" },
+    { nameFr: "Eau de coco" },
+    { nameFr: "Eau minérale (aliment moyen)" },
+    { nameFr: "Eau du robinet" },
+  ];
+
+  it("propose de l'eau du robinet, pas de l'eau-de-vie", () => {
+    expect(pickForLabel("eau", results)).toEqual({ nameFr: "Eau du robinet" });
+    expect(pickForLabel("Verre d'eau", results)).toEqual({ nameFr: "Eau du robinet" });
+  });
+
+  const variants = (text: string) => searchVariants(normalizeForSearch(text));
+
+  it("cherche un verre seul comme de l'eau", () => {
+    expect(variants("verre")).toEqual(["eau du robinet"]);
+    expect(variants("grand verre")).toEqual(["eau du robinet"]);
+    expect(variants("verre de vin rouge")).toEqual([]);
+    expect(pickForLabel("verre", results)).toEqual({ nameFr: "Eau du robinet" });
+  });
+
+  it("garde l'eau-de-vie quand elle est nommée", () => {
+    expect(pickForLabel("eau de vie", results)).toEqual({ nameFr: "Eau de vie" });
+    expect(pickForLabel("eau gazeuse", [{ nameFr: "Eau minérale, gazeuse (aliment moyen)" }, ...results])).toEqual({
+      nameFr: "Eau minérale, gazeuse (aliment moyen)",
+    });
+  });
+});
