@@ -823,6 +823,22 @@ le pourquoi de chacun est dans `docs/DECISIONS.md`.
   l'utilisateur et ajoute une ligne « Sujet de la question » au prompt. Les échanges
   rejoignent la conversation de `/coach`.
 
+### Rituels de suivi
+
+- **Rendez-vous de Pépin** (`src/domain/rituals.ts`, `src/features/home/rituals.tsx`) : en
+  haut de l'accueil, une carte par rituel dû, un à la fois (on glisse pour le suivant) :
+  pesée une fois par semaine au jour choisi (proposée ce jour-là et les deux suivants),
+  mensurations et photo de progrès quatre semaines après la dernière fois. La pesée se
+  saisit sans quitter l'accueil ; « Plus tard » est gardé dans le cookie `pommelia.later`
+  (demain pour la pesée, une semaine pour le reste).
+- **Victoires de régularité** : 4, 8, 12, 26, 52 semaines de pesée d'affilée ; 1, 3, 6, 12
+  mois de mensurations ; 1, 3, 6 mois de photos. Les grandes en plein écran, les premières
+  en simple message, une seule fois par appareil. Jamais liées aux kilos perdus.
+- **Réglages et notifications** : quatre préférences de plus dans `notification_prefs`
+  (`weighIn`, `weighDay`, `measurements`, `progressPhoto`, sans migration) ; une
+  notification `ritual` part entre 8 h 30 et 11 h 30 le jour de pesée, ou le jour où un
+  rituel du mois revient.
+
 ### Comptes et administration
 
 - **Invités hors foyer** : l'admin peut inviter quelqu'un « dans mon foyer » ou « dans un

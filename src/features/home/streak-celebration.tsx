@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 
 import { CoachAvatar } from "@/features/coach/coach-avatar";
 import { haptic } from "@/ui/motion";
@@ -22,9 +22,37 @@ const STORAGE_PREFIX = "pommelia:celebrated:";
  */
 export function StreakCelebration({ days, date }: { days: number; date: string }) {
   const t = useTranslations("home.celebration");
+  return (
+    <Celebration
+      storageKey={`${days}:${date}`}
+      hero={<p className="font-display text-[9rem] leading-[0.8] font-extrabold tracking-tight">{days}</p>}
+      title={t("title", { days })}
+      body={t("body")}
+    />
+  );
+}
+
+/**
+ * Célébration plein écran (série, victoire de régularité) : montrée une seule fois par clé sur
+ * cet appareil, fermée par le bouton ou Échap.
+ */
+export function Celebration({
+  storageKey,
+  hero,
+  eyebrow,
+  title,
+  body,
+}: {
+  storageKey: string;
+  hero?: ReactNode;
+  eyebrow?: string;
+  title: string;
+  body: string;
+}) {
+  const t = useTranslations("home.celebration");
   const [open, setOpen] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
-  const key = `${STORAGE_PREFIX}${days}:${date}`;
+  const key = `${STORAGE_PREFIX}${storageKey}`;
 
   useEffect(() => {
     let seen = false;
@@ -76,11 +104,12 @@ export function StreakCelebration({ days, date }: { days: number; date: string }
         <span className="rounded-full bg-on-pomme/90 p-1">
           <CoachAvatar size={64} />
         </span>
-        <p className="font-display text-[9rem] leading-[0.8] font-extrabold tracking-tight">{days}</p>
-        <h2 id="celebration-title" className="font-display text-3xl font-extrabold tracking-tight">
-          {t("title", { days })}
+        {hero}
+        {eyebrow && <p className="text-sm font-extrabold tracking-wider uppercase opacity-90">{eyebrow}</p>}
+        <h2 id="celebration-title" className="font-display text-3xl font-extrabold tracking-tight text-balance">
+          {title}
         </h2>
-        <p className="max-w-xs">{t("body")}</p>
+        <p className="max-w-xs">{body}</p>
       </div>
       <button
         ref={button}

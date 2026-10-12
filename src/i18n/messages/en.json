@@ -129,6 +129,56 @@
       "title": "{days, plural, one {day} other {days}} in a row",
       "body": "Well done! Consistency is what makes the difference, not perfection.",
       "continue": "Continue"
+    },
+    "rituals": {
+      "label": "Today's check-ins",
+      "later": "Later",
+      "pager": "Reminder {index} of {count}",
+      "weeksLabel": "Weigh-ins over the last {count} weeks",
+      "weekToday": "Today",
+      "weekDone": "Week of {date}: weighed in",
+      "weekMissing": "Week of {date}: no weigh-in",
+      "weighEyebrow": "Your {day} check-in",
+      "weighTitle": "Time to weigh in",
+      "weighBody": "Once a week is enough. Today's number matters little, the trend tells the story.",
+      "weighStreak": "With this one, you'll have {weeks} weeks in a row. Today's number matters little, the trend tells the story.",
+      "weighAction": "Weigh in",
+      "measureEyebrow": "This month",
+      "measureTitle": "Your monthly measurements",
+      "measureFirstTitle": "Your first measurements",
+      "measureBody": "Last taken on {date}. A tape measure and two minutes are enough.",
+      "measureFirstBody": "They often show progress the scale can't see.",
+      "measureAction": "Measure",
+      "photoEyebrow": "This month",
+      "photoTitle": "Your progress photo",
+      "photoFirstTitle": "Your first progress photo",
+      "photoBody": "Last one on {date}. It stays private, just for comparing.",
+      "photoFirstBody": "Optional and private: in a few months, you'll see how far you've come.",
+      "photoAction": "Take the photo",
+      "doneEyebrow": "Weighed in",
+      "doneTitle": "See you {date}",
+      "doneBody": "Thanks! Your curve gets more reliable every week.",
+      "sheetTitle": "Your weight today",
+      "weightLabel": "Weight in kilograms",
+      "placeholder": "00.0",
+      "less": "Minus 100 grams",
+      "more": "Plus 100 grams",
+      "sheetHint": "Preferably in the morning, before breakfast.",
+      "save": "Save",
+      "close": "Close",
+      "weighSaved": "Weigh-in saved. Next check-in {date}."
+    },
+    "victory": {
+      "eyebrow": "New milestone",
+      "weighTitle": "{count} weeks of weigh-ins in a row",
+      "weighBody": "You've made a real appointment with yourself. Your curve gets more reliable every week.",
+      "measureTitle": "{count} months of measurements",
+      "measureBody": "You're tracking what the scale doesn't show, month after month.",
+      "photoTitle": "{count} months of progress photos",
+      "photoBody": "Enough to see how far you've come, just for you.",
+      "measureFirst": "First measurements saved. See you in a month to compare.",
+      "photoFirst": "First progress photo saved. See you in a month.",
+      "weighFirst": "Weigh-in saved."
     }
   },
   "theme": {
@@ -1185,12 +1235,35 @@
       "treatment": {
         "title": "Your treatment",
         "body": "A gentle reminder for {name}. Remember to log your intake in Pommelia."
+      },
+      "ritual": {
+        "weigh": {
+          "title": "It's your weigh-in day",
+          "body": "A quick step on the scale? The trend matters, not today's number."
+        },
+        "measure": {
+          "title": "Your monthly measurements",
+          "body": "A tape measure and two minutes: they show what the scale can't."
+        },
+        "photo": {
+          "title": "Your progress photo",
+          "body": "A month has gone by. A private photo to compare later?"
+        }
       }
     },
     "fasting": "Fasting",
     "fastingHint": "At the start and end of each window in your schedule.",
     "treatment": "Treatment",
-    "treatmentHint": "On the chosen days and time, if the intake isn't logged yet."
+    "treatmentHint": "On the chosen days and time, if the intake isn't logged yet.",
+    "rituals": "Tracking rituals",
+    "ritualsHint": "A card on the home screen on the day, and a morning notification.",
+    "weighIn": "Weekly weigh-in",
+    "weighInHint": "Once a week, on the day you choose.",
+    "weighDay": "Weigh-in day",
+    "measurements": "Measurements",
+    "measurementsHint": "Once a month.",
+    "progressPhoto": "Progress photo",
+    "progressPhotoHint": "Once a month, optional and private."
   },
   "plan": {
     "title": "Weekly menu",

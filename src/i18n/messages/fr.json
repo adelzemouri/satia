@@ -129,6 +129,56 @@
       "title": "{days, plural, one {jour} other {jours}} d'affilée",
       "body": "Bravo ! C'est la régularité qui fait la différence, pas la perfection.",
       "continue": "Continuer"
+    },
+    "rituals": {
+      "label": "Tes rendez-vous du jour",
+      "later": "Plus tard",
+      "pager": "Rappel {index} sur {count}",
+      "weeksLabel": "Pesées des {count} dernières semaines",
+      "weekToday": "Auj.",
+      "weekDone": "Semaine du {date} : pesée faite",
+      "weekMissing": "Semaine du {date} : pas de pesée",
+      "weighEyebrow": "Ton rendez-vous du {day}",
+      "weighTitle": "C'est l'heure de la pesée",
+      "weighBody": "Une pesée par semaine suffit. Le chiffre du jour compte peu, c'est la tendance qui parle.",
+      "weighStreak": "Avec celle-ci, tu tiens {weeks} semaines d'affilée. Le chiffre du jour compte peu, c'est la tendance qui parle.",
+      "weighAction": "Me peser",
+      "measureEyebrow": "Ce mois-ci",
+      "measureTitle": "Tes mensurations du mois",
+      "measureFirstTitle": "Tes premières mensurations",
+      "measureBody": "Dernières le {date}. Un mètre ruban et deux minutes suffisent.",
+      "measureFirstBody": "Elles montrent souvent des progrès que la balance ne voit pas.",
+      "measureAction": "Mesurer",
+      "photoEyebrow": "Ce mois-ci",
+      "photoTitle": "Ta photo de progrès",
+      "photoFirstTitle": "Ta première photo de progrès",
+      "photoBody": "Dernière le {date}. Elle reste privée, rien que pour comparer.",
+      "photoFirstBody": "Facultative et privée : dans quelques mois, tu pourras voir le chemin parcouru.",
+      "photoAction": "Prendre la photo",
+      "doneEyebrow": "Pesée faite",
+      "doneTitle": "Rendez-vous {date}",
+      "doneBody": "Merci ! Ta courbe devient plus fiable chaque semaine.",
+      "sheetTitle": "Ton poids aujourd'hui",
+      "weightLabel": "Poids en kilos",
+      "placeholder": "00,0",
+      "less": "Moins 100 grammes",
+      "more": "Plus 100 grammes",
+      "sheetHint": "De préférence le matin, avant le petit-déjeuner.",
+      "save": "Enregistrer",
+      "close": "Fermer",
+      "weighSaved": "Pesée notée. Prochain rendez-vous {date}."
+    },
+    "victory": {
+      "eyebrow": "Nouvelle victoire",
+      "weighTitle": "{count} semaines de pesée d'affilée",
+      "weighBody": "Tu as pris un vrai rendez-vous avec toi-même. Ta courbe devient plus fiable chaque semaine.",
+      "measureTitle": "{count} mois de mensurations",
+      "measureBody": "Tu suis ce que la balance ne montre pas, mois après mois.",
+      "photoTitle": "{count} mois de photos de progrès",
+      "photoBody": "De quoi voir le chemin parcouru, rien que pour toi.",
+      "measureFirst": "Premières mensurations notées. Rendez-vous dans un mois pour comparer.",
+      "photoFirst": "Première photo de progrès enregistrée. Rendez-vous dans un mois.",
+      "weighFirst": "Pesée notée."
     }
   },
   "theme": {
@@ -1185,12 +1235,35 @@
       "treatment": {
         "title": "Ton traitement",
         "body": "Petit rappel pour {name}. Pense à noter ta prise dans Pommelia."
+      },
+      "ritual": {
+        "weigh": {
+          "title": "C'est ton jour de pesée",
+          "body": "Un petit passage sur la balance ? C'est la tendance qui compte, pas le chiffre du jour."
+        },
+        "measure": {
+          "title": "Tes mensurations du mois",
+          "body": "Un mètre ruban et deux minutes : elles montrent ce que la balance ne voit pas."
+        },
+        "photo": {
+          "title": "Ta photo de progrès",
+          "body": "Un mois a passé. Une photo, privée, pour comparer plus tard ?"
+        }
       }
     },
     "fasting": "Jeûne",
     "fastingHint": "Au début et à la fin de chaque fenêtre de ton planning.",
     "treatment": "Traitement",
-    "treatmentHint": "Aux jours et heures choisis, si la prise n'est pas encore notée."
+    "treatmentHint": "Aux jours et heures choisis, si la prise n'est pas encore notée.",
+    "rituals": "Rituels de suivi",
+    "ritualsHint": "Une carte sur l'accueil le jour venu, et une notification le matin.",
+    "weighIn": "Pesée de la semaine",
+    "weighInHint": "Une fois par semaine, le jour choisi.",
+    "weighDay": "Jour de pesée",
+    "measurements": "Mensurations",
+    "measurementsHint": "Une fois par mois.",
+    "progressPhoto": "Photo de progrès",
+    "progressPhotoHint": "Une fois par mois, facultative et privée."
   },
   "plan": {
     "title": "Menu de la semaine",

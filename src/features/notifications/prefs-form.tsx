@@ -1,10 +1,11 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
 import type { NotificationPrefs } from "@/domain/notifications";
 import { useErrorText } from "@/features/auth/use-error-text";
+import { SelectField } from "@/features/body/select-field";
 import { Alert } from "@/ui/alert";
 import { Button } from "@/ui/button";
 import { Field } from "@/ui/field";
@@ -19,9 +20,46 @@ const TYPES = [
   ["treatment", "treatmentHint"],
 ] as const;
 
+const RITUALS = [
+  ["weighIn", "weighInHint"],
+  ["measurements", "measurementsHint"],
+  ["progressPhoto", "progressPhotoHint"],
+] as const;
+
+function Toggle({ name, label, hint, checked }: { name: string; label: string; hint: string; checked: boolean }) {
+  return (
+    <div className="flex min-h-12 items-start gap-3 py-1">
+      <input
+        id={`notify-${name}`}
+        type="checkbox"
+        name={name}
+        defaultChecked={checked}
+        aria-describedby={`notify-${name}-hint`}
+        className="mt-1 size-5 shrink-0 accent-primary"
+      />
+      <span className="flex flex-col">
+        <label htmlFor={`notify-${name}`} className="cursor-pointer font-semibold">
+          {label}
+        </label>
+        <span id={`notify-${name}-hint`} className="text-sm text-text-muted">
+          {hint}
+        </span>
+      </span>
+    </div>
+  );
+}
+
 /** Types de rappels et plage silencieuse (communs à tous les appareils). */
 export function NotificationPrefsForm({ prefs }: { prefs: NotificationPrefs }) {
   const t = useTranslations("notifications");
+  const locale = useLocale();
+  // Lundi 1er janvier 2024 : les sept jours suivants donnent les noms des jours dans la langue.
+  const weekdays = Array.from({ length: 7 }, (_, index) => ({
+    value: String(index + 1),
+    label: new Intl.DateTimeFormat(locale, { weekday: "long", timeZone: "UTC" }).format(
+      new Date(Date.UTC(2024, 0, 1 + index)),
+    ),
+  }));
   const errorText = useErrorText();
   const [state, setState] = useState<{ ok?: boolean; error?: string } | null>(null);
   const [pending, startTransition] = useTransition();
@@ -37,6 +75,10 @@ export function NotificationPrefsForm({ prefs }: { prefs: NotificationPrefs }) {
               weeklyReview: formData.get("weeklyReview") === "on",
               fasting: formData.get("fasting") === "on",
               treatment: formData.get("treatment") === "on",
+              weighIn: formData.get("weighIn") === "on",
+              weighDay: Number(formData.get("weighDay")),
+              measurements: formData.get("measurements") === "on",
+              progressPhoto: formData.get("progressPhoto") === "on",
               quietStart: String(formData.get("quietStart")),
               quietEnd: String(formData.get("quietEnd")),
             }),
@@ -48,25 +90,16 @@ export function NotificationPrefsForm({ prefs }: { prefs: NotificationPrefs }) {
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1 font-semibold">{t("types")}</legend>
         {TYPES.map(([name, hint]) => (
-          <div key={name} className="flex min-h-12 items-start gap-3 py-1">
-            <input
-              id={`notify-${name}`}
-              type="checkbox"
-              name={name}
-              defaultChecked={prefs[name]}
-              aria-describedby={`notify-${name}-hint`}
-              className="mt-1 size-5 shrink-0 accent-primary"
-            />
-            <span className="flex flex-col">
-              <label htmlFor={`notify-${name}`} className="cursor-pointer font-semibold">
-                {t(name)}
-              </label>
-              <span id={`notify-${name}-hint`} className="text-sm text-text-muted">
-                {t(hint)}
-              </span>
-            </span>
-          </div>
+          <Toggle key={name} name={name} label={t(name)} hint={t(hint)} checked={prefs[name]} />
         ))}
+      </fieldset>
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-1 font-semibold">{t("rituals")}</legend>
+        <p className="text-sm text-text-muted">{t("ritualsHint")}</p>
+        {RITUALS.map(([name, hint]) => (
+          <Toggle key={name} name={name} label={t(name)} hint={t(hint)} checked={prefs[name]} />
+        ))}
+        <SelectField label={t("weighDay")} name="weighDay" options={weekdays} defaultValue={String(prefs.weighDay)} />
       </fieldset>
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1 font-semibold">{t("quiet")}</legend>

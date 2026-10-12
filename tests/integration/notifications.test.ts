@@ -8,7 +8,7 @@ import type { OnboardingInput } from "@/features/onboarding/schema";
 import { setupFirstAdmin } from "@/server/accounts";
 import { collectUserData } from "@/server/data-export";
 import { searchFoods } from "@/server/foods";
-import { addEntry } from "@/server/journal";
+import { addEntry, setWeight } from "@/server/journal";
 import {
   getNotificationPrefs,
   type PushPayload,
@@ -151,11 +151,29 @@ describe("notifications", () => {
       await addEntry(userId, { date, slot: "breakfast", foodId: bread!.id, quantity: 60, unit: "g" });
     }
     await runNotifications(monday("11:10"), "https://pommelia.example");
-    expect(sent.map((entry) => entry.payload.tag).sort()).toEqual(["water", "weekly-review"]);
+    // Lundi : c'est aussi le jour de pesée par défaut.
+    expect(sent.map((entry) => entry.payload.tag).sort()).toEqual(["ritual-weigh", "water", "weekly-review"]);
     expect(sent.find((entry) => entry.payload.tag === "water")!.payload.body).toBe(
       "0 verre(s) sur 8 pour l'instant. Un petit verre maintenant ?",
     );
     expect(sent.find((entry) => entry.payload.tag === "weekly-review")!.payload.url).toBe("/coach");
+  });
+
+  it("rappelle la pesée le jour choisi, une fois, sauf si elle est faite", async () => {
+    const userId = await setupUser();
+    await saveSubscription(userId, subscription("a"), null);
+    const rituals = () => sent.map((entry) => entry.payload).filter((payload) => payload.tag.startsWith("ritual"));
+    await runNotifications(monday("09:00"), "https://pommelia.example");
+    expect(rituals()).toEqual([
+      expect.objectContaining({ title: "C'est ton jour de pesée", url: "/", tag: "ritual-weigh" }),
+    ]);
+    await runNotifications(monday("10:00"), "https://pommelia.example");
+    expect(rituals()).toHaveLength(1);
+
+    // Le lundi suivant, déjà pesé : pas de rappel.
+    await setWeight(userId, { date: "2026-10-05", weightKg: 70 });
+    await runNotifications(new Date("2026-10-05T09:00:00+02:00"), "https://pommelia.example");
+    expect(rituals()).toHaveLength(1);
   });
 
   it("supprime un abonnement expiré et purge le journal après 30 jours", async () => {

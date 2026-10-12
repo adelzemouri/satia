@@ -160,6 +160,14 @@ describe("rappels de jeûne et de traitement", () => {
     expect(dueReminders({ ...base, prefs, time: "09:10" })).toEqual([]);
     expect(dueReminders({ ...base, prefs, time: "12:20" })).toEqual([]);
     const old = { meals: false, water: true, weeklyReview: true, quietStart: "22:00", quietEnd: "07:30" };
-    expect(withDefaultPrefs(old)).toEqual({ ...old, fasting: true, treatment: true });
+    expect(withDefaultPrefs(old)).toEqual({
+      ...old,
+      fasting: true,
+      treatment: true,
+      weighIn: true,
+      weighDay: 1,
+      measurements: true,
+      progressPhoto: true,
+    });
   });
 });
