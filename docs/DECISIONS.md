@@ -268,7 +268,7 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ## 026 — Plus de « Comment tu te sens ? » dans Progrès
 
-- **Date** : 2026-10-12 · **Statut** : proposée
+- **Date** : 2026-10-12 · **Statut** : adoptée
 - **Contexte** : la carte de ressenti (faim, énergie, humeur de 1 à 5) et la courbe
   « Mes 4 dernières semaines » de l'onglet Progrès ne sont pas remplies ; Adel juge
   qu'elles n'apportent rien.
