@@ -1152,7 +1152,25 @@
       "weekSoFar": "How is my week going?",
       "hydration": "Tips to drink more water?"
     },
-    "subtitle": "Your nutrition coach"
+    "subtitle": "Your nutrition coach",
+    "askCoach": "Ask {name}",
+    "about": "About: {label}",
+    "closePanel": "Close",
+    "askTopicHint": "Your question…",
+    "openFull": "See the whole conversation",
+    "topicQuestions": {
+      "goodChoice": "Is this a good choice for me?",
+      "lighter": "A lighter version?",
+      "pairWith": "What goes well with it?",
+      "mealBalanced": "Is this meal balanced?",
+      "whatNext": "What should I eat next?",
+      "mealProtein": "Enough protein in this meal?",
+      "dayReview": "What do you think of my day?",
+      "dayMissing": "What was missing that day?"
+    },
+    "topic": {
+      "label": "{name} · {kcal} kcal"
+    }
   },
   "notifications": {
     "title": "Notifications",

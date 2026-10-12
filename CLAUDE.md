@@ -102,6 +102,14 @@ Le choix précis te revient, mais il doit respecter :
   déploiement automatique en production sur la branche `main`).
 - Accessibilité : contrastes WCAG AA, navigation clavier, labels ARIA.
 
+## Façon de travailler avec Adel
+- Challenger chacune de ses remarques avant d'agir : dire en quelques lignes ce qui
+  ne tient pas ou pourrait mieux marcher (besoin réel derrière la demande, solution
+  déjà présente dans l'app, coût IA, santé, complexité, effets sur d'autres écrans).
+- Ne pas acquiescer par défaut : si une meilleure option existe, la proposer avec
+  sa raison et laisser Adel trancher. Si la demande tient, le dire simplement.
+- Pour une nouvelle fonctionnalité visible, montrer une maquette avant le code.
+
 ## Commits
 - Format Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `test:`, `refactor:`…).
 - Un commit (ou une petite série) par phase du plan, proposé à la fin de la phase
