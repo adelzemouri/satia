@@ -1271,6 +1271,13 @@ test("recettes du catalogue : bibliothèque illustrée, fiche et ajout", async (
   await expect(page.getByRole("heading", { name: "Ingrédients" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Préparation" })).toBeVisible();
   await expectNoA11yViolations(page);
+  // Retour à la liste : le filtre choisi est toujours là.
+  await page.getByRole("link", { name: "Retour" }).click();
+  await expect(page).toHaveURL(/\/recipes\?cat=soup/);
+  await expect(page.getByRole("button", { name: "Soupes" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("link", { name: /^Taboulé aux herbes/ })).toHaveCount(0);
+  await page.getByRole("link", { name: /^Minestrone/ }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Minestrone");
   await page.getByRole("link", { name: "Ajouter au journal" }).click();
   await expect(page.getByLabel("Unité")).toHaveValue("portion");
   // La photo de la recette accompagne l'écran de quantité.
