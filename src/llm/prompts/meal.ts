@@ -28,6 +28,7 @@ export const MEAL_TEXT_SYSTEM = [
   "name : nom générique français, comme dans la table Ciqual, avec la cuisson (ex. « œuf brouillé »).",
   "Sépare les composants d'un plat cité (« pâtes au saumon » : pâtes cuites, saumon, crème).",
   "grams : poids comestible, celui indiqué sinon une portion habituelle. confidence : de 0 à 1.",
+  "« Un verre » sans boisson nommée : eau, 250 g.",
   DISH_RULE,
   PORTION_RULE,
   COUNT_RULE,
