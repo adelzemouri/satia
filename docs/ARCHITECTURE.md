@@ -492,8 +492,9 @@ Téléphone                                     Serveur (Vercel fra1)           
 - **Repas habituel** : sur l'écran d'ajout, le même ensemble d'aliments saisi au moins
   3 fois sur ce créneau en 6 semaines est proposé, sauf si le créneau est déjà rempli.
   L'ajout recopie le jour le plus récent.
-- **Ressenti du jour** (`daily_checkins`) : faim, énergie, humeur de 1 à 5, chaque réponse
-  enregistrée seule. Privé, inclus dans l'export.
+- **Ressenti du jour** (`daily_checkins`) : faim, énergie, humeur de 1 à 5. Saisie retirée
+  de l'interface le 2026-10-12 (DECISIONS 026) ; les réponses déjà notées restent en base,
+  lues par le coach et incluses dans l'export.
 
 ## Coach (phase 9)
 

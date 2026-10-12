@@ -266,6 +266,18 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
   a été généré avec Veo Lite.
 - **Piste** : 113 exercices pour environ 25 à 55 $ au total. Adel n'a pas encore décidé.
 
+## 026 — Plus de « Comment tu te sens ? » dans Progrès
+
+- **Date** : 2026-10-12 · **Statut** : proposée
+- **Contexte** : la carte de ressenti (faim, énergie, humeur de 1 à 5) et la courbe
+  « Mes 4 dernières semaines » de l'onglet Progrès ne sont pas remplies ; Adel juge
+  qu'elles n'apportent rien.
+- **Décision** : retirer la carte et l'historique de l'interface. La table
+  `daily_checkins` et les réponses déjà saisies restent en base (aucune migration).
+- **Conséquences** : Pépin et le bilan hebdo lisent encore les anciennes réponses,
+  qui s'effacent d'elles-mêmes de son contexte avec le temps ; l'export les inclut
+  toujours. Le ressenti de fin de séance d'entraînement n'est pas concerné.
+
 ---
 
 ## Modèle

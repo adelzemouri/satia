@@ -7,12 +7,11 @@ import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
 import type { OnboardingInput } from "@/features/onboarding/schema";
 import { setupFirstAdmin } from "@/server/accounts";
-import { collectUserData } from "@/server/data-export";
 import { createRecipe, getFoodDetails, searchFoods } from "@/server/foods";
 import { addEntry, copyEntries, entriesOn } from "@/server/journal";
 import { cacheProduct } from "@/server/open-food-facts";
 import { saveOnboarding } from "@/server/profile";
-import { checkinOn, dayQualityFor, habitualMeal, setCheckin, weekQualityReport } from "@/server/quality";
+import { dayQualityFor, habitualMeal, weekQualityReport } from "@/server/quality";
 
 import { resetDatabase } from "./helpers";
 
@@ -115,19 +114,6 @@ describe("qualité nutritionnelle", () => {
     const recipe = await getFoodDetails(userId, id);
     expect(recipe.fruitVegShare).toBe(0.5);
     expect(recipe.fiberG).not.toBeNull();
-  });
-
-  it("enregistre le ressenti du jour, question par question", async () => {
-    const userId = await setupUser();
-    expect(await checkinOn(userId, today)).toEqual({ hunger: null, energy: null, mood: null });
-    await setCheckin(userId, { date: today, energy: 4 });
-    await setCheckin(userId, { date: today, mood: 5 });
-    expect(await checkinOn(userId, today)).toEqual({ hunger: null, energy: 4, mood: 5 });
-    await expect(setCheckin(userId, { date: today, hunger: 6 })).rejects.toThrow();
-    await expect(setCheckin(userId, { date: addDays(today, 1), hunger: 3 })).rejects.toMatchObject({
-      code: "future_date",
-    });
-    expect((await collectUserData(userId)).checkins).toHaveLength(1);
   });
 
   it("propose le repas habituel d'un créneau après 3 répétitions", async () => {
