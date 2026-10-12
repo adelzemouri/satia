@@ -16,6 +16,7 @@ import {
   type Reminder,
   withDefaultPrefs,
 } from "@/domain/notifications";
+import { ritualsToNotify } from "@/domain/rituals";
 import { isoWeekStart } from "@/domain/streak";
 import en from "@/i18n/messages/en.json";
 import fr from "@/i18n/messages/fr.json";
@@ -23,6 +24,7 @@ import fr from "@/i18n/messages/fr.json";
 import { env } from "./env";
 import { DomainError } from "./errors";
 import { fastingAllowed, getFastingPlan } from "./fasting";
+import { ritualDates } from "./rituals";
 import { mealWaterGlasses, waterOn } from "./journal";
 import { treatmentRemindersOn } from "./treatment";
 
@@ -33,6 +35,10 @@ export const notificationPrefsSchema = z.object({
   weeklyReview: z.boolean(),
   fasting: z.boolean(),
   treatment: z.boolean(),
+  weighIn: z.boolean(),
+  weighDay: z.number().int().min(1).max(7),
+  measurements: z.boolean(),
+  progressPhoto: z.boolean(),
   quietStart: time,
   quietEnd: time,
 });
@@ -202,6 +208,13 @@ export function reminderPayload(reminder: Reminder, locale: Locale): PushPayload
         url: "/treatment",
         tag: `treatment-${reminder.key}`,
       };
+    case "ritual":
+      return {
+        title: m.ritual[reminder.ritual].title,
+        body: m.ritual[reminder.ritual].body,
+        url: "/",
+        tag: `ritual-${reminder.ritual}`,
+      };
   }
 }
 
@@ -247,7 +260,8 @@ export async function runNotifications(now: Date, origin: string): Promise<{ sen
   let sent = 0;
   for (const person of people) {
     const prefs = withDefaultPrefs(person.prefs);
-    const [slots, water, reviewDays, fastEvents, treatments] = await Promise.all([
+    const wantsRituals = prefs.weighIn || prefs.measurements || prefs.progressPhoto;
+    const [slots, water, reviewDays, fastEvents, treatments, rituals] = await Promise.all([
       db()
         .selectDistinct({ slot: mealEntries.slot })
         .from(mealEntries)
@@ -270,6 +284,9 @@ export async function runNotifications(now: Date, origin: string): Promise<{ sen
           )
         : [],
       prefs.treatment ? treatmentRemindersOn(person.userId, date, weekday - 1) : [],
+      wantsRituals
+        ? ritualDates(person.userId, date).then((dates) => ritualsToNotify({ today: date, prefs, ...dates }))
+        : [],
     ]);
     const due = dueReminders({
       date,
@@ -284,6 +301,7 @@ export async function runNotifications(now: Date, origin: string): Promise<{ sen
       reviewReady: (reviewDays[0]?.count ?? 0) >= REVIEW_MIN_DAYS,
       fastEvents,
       treatments,
+      rituals,
     });
     for (const reminder of due) {
       // Le journal est écrit avant l'envoi : deux passages simultanés n'envoient qu'une fois.

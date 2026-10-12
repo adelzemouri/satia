@@ -1,10 +1,13 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { cookies } from "next/headers";
 import { after } from "next/server";
 
 import { APP_TIMEZONE, COACH_NAME } from "@/config/app";
 import { todayIso } from "@/domain/dates";
 import { dailyMessage, STREAK_MILESTONES } from "@/domain/daily-message";
 import { slotAt } from "@/domain/meals";
+import { withDefaultPrefs } from "@/domain/notifications";
+import { dueRituals, freshVictory, nextWeighDay, parseSnoozes, SNOOZE_COOKIE, weighStatus } from "@/domain/rituals";
 import { suggestedQuestions } from "@/domain/coach-questions";
 import { ideasForSlot } from "@/domain/recipes/catalog";
 import { CalorieSummary, MacroBars } from "@/features/journal/day-overview";
@@ -15,6 +18,7 @@ import { CoachAvatar } from "@/features/coach/coach-avatar";
 import { StreakCelebration } from "@/features/home/streak-celebration";
 import { ActivityTiles, FastingTile, TreatmentTile } from "@/features/home/day-cards";
 import { MealRings } from "@/features/home/meal-rings";
+import { RitualCards, VictoryAnnouncement } from "@/features/home/rituals";
 import { WeekStrip } from "@/features/home/week-strip";
 import { PendingShares } from "@/features/family/pending-shares";
 import { RecipeCard } from "@/features/recipes/recipe-card";
@@ -24,11 +28,12 @@ import { ensureWeeklyCheck } from "@/server/adaptive";
 import { pendingShares } from "@/server/family";
 import { purgePhotosIfDue } from "@/server/photos";
 import { currentFast, fastingAllowed, getFastingPlan } from "@/server/fasting";
-import { daySummary, streakFor, recentIntake } from "@/server/journal";
+import { daySummary, latestWeight, streakFor, recentIntake } from "@/server/journal";
 import { dayQualityFor } from "@/server/quality";
 import { treatmentRemindersOn } from "@/server/treatment";
 import { getProfile } from "@/server/profile";
 import { catalogEntries } from "@/server/recipes";
+import { ritualDates } from "@/server/rituals";
 import { requireUser } from "@/server/session";
 import { Card } from "@/ui/card";
 import { formatDay } from "@/ui/format-date";
@@ -47,18 +52,21 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   await ensureWeeklyCheck(user.id, today);
   const now = new Date();
   const weekday = (new Date(`${today}T00:00:00Z`).getUTCDay() + 6) % 7;
-  const [summary, streak, shares, fast, fastingPlan, canFast, catalog, days, quality, reminders] = await Promise.all([
-    daySummary(user.id, today),
-    streakFor(user.id, today),
-    pendingShares(user.id),
-    currentFast(user.id, now),
-    getFastingPlan(user.id),
-    fastingAllowed(user.id),
-    catalogEntries(),
-    recentIntake(user.id, today),
-    dayQualityFor(user.id, today),
-    treatmentRemindersOn(user.id, today, weekday),
-  ]);
+  const [summary, streak, shares, fast, fastingPlan, canFast, catalog, days, quality, reminders, dates, lastWeight] =
+    await Promise.all([
+      daySummary(user.id, today),
+      streakFor(user.id, today),
+      pendingShares(user.id),
+      currentFast(user.id, now),
+      getFastingPlan(user.id),
+      fastingAllowed(user.id),
+      catalogEntries(),
+      recentIntake(user.id, today),
+      dayQualityFor(user.id, today),
+      treatmentRemindersOn(user.id, today, weekday),
+      ritualDates(user.id, today),
+      latestWeight(user.id, today),
+    ]);
   // Le repas du moment est mis en avant : c'est le plus probable à saisir maintenant.
   const current = slotAt(now, APP_TIMEZONE);
   const ideas = ideasForSlot(catalog, current, `${user.id}:${today}`, 4);
@@ -87,6 +95,18 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   };
   const showFasting = canFast && (fast !== null || fastingPlan.enabled);
   const questions = suggestedQuestions(hour, `${user.id}:${today}`);
+  // Rendez-vous de Pépin : pesée de la semaine, mensurations et photo du mois.
+  const prefs = withDefaultPrefs(profile.notificationPrefs);
+  const rituals = dueRituals({
+    today,
+    prefs,
+    ...dates,
+    snoozedUntil: parseSnoozes((await cookies()).get(SNOOZE_COOKIE)?.value),
+  });
+  const weigh = weighStatus(dates.weighDates, today, prefs.weighDay);
+  const weighedToday = prefs.weighIn && dates.weighDates.includes(today);
+  const nextWeigh = nextWeighDay(today, prefs.weighDay);
+  const victory = freshVictory({ today, weighDay: prefs.weighDay, ...dates });
   const milestone = summary.entries.length > 0 && (STREAK_MILESTONES as readonly number[]).includes(streak.days);
 
   return (
@@ -146,6 +166,13 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       </header>
 
       <div className="contents lg:flex lg:min-w-0 lg:flex-col lg:gap-6">
+        <RitualCards
+          rituals={rituals}
+          done={weighedToday ? { weeks: weigh.weeks, nextWeigh } : null}
+          today={today}
+          lastWeight={lastWeight}
+          nextWeigh={nextWeigh}
+        />
         {shares.length > 0 && (
           <Card aria-labelledby="pending-title">
             <h2 id="pending-title" className="text-xl font-bold">
@@ -221,6 +248,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       </div>
 
       {milestone && <StreakCelebration days={streak.days} date={today} />}
+      {!milestone && victory && <VictoryAnnouncement victory={victory} />}
     </div>
   );
 }

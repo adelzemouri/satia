@@ -1,9 +1,20 @@
 /** Notifications (calcul pur) : préférences, plages silencieuses et rappels dus. */
 
-export const NOTIFICATION_KINDS = ["meal", "water", "weekly_review", "fast_start", "fast_end", "treatment"] as const;
+import type { RitualKind, RitualPrefs } from "./rituals";
+
+export const NOTIFICATION_KINDS = [
+  "meal",
+  "water",
+  "weekly_review",
+  "fast_start",
+  "fast_end",
+  "treatment",
+  "ritual",
+] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
-export type NotificationPrefs = {
+/** Les rituels (pesée, mensurations, photo) servent aussi à la carte de l'accueil. */
+export type NotificationPrefs = RitualPrefs & {
   meals: boolean;
   water: boolean;
   weeklyReview: boolean;
@@ -22,6 +33,10 @@ export const DEFAULT_NOTIFICATION_PREFS: NotificationPrefs = {
   weeklyReview: true,
   fasting: true,
   treatment: true,
+  weighIn: true,
+  weighDay: 1,
+  measurements: true,
+  progressPhoto: true,
   quietStart: "22:00",
   quietEnd: "07:30",
 };
@@ -79,6 +94,9 @@ const REVIEW_FROM = "09:00";
 const REVIEW_UNTIL = "13:00";
 /** Un rappel de jeûne ou de traitement reste valable une heure après l'heure prévue. */
 const EVENT_WINDOW = 60;
+/** Les rituels du jour (pesée, mensurations, photo) sont rappelés en matinée. */
+const RITUAL_FROM = "08:30";
+const RITUAL_WINDOW = 180;
 
 export type ReminderSlot = "breakfast" | "lunch" | "dinner";
 
@@ -87,7 +105,8 @@ export type Reminder =
   | { kind: "water"; key: string; glasses: number; goal: number }
   | { kind: "weekly_review"; key: string }
   | { kind: "fast_start" | "fast_end"; key: string }
-  | { kind: "treatment"; key: string; name: string };
+  | { kind: "treatment"; key: string; name: string }
+  | { kind: "ritual"; key: string; ritual: RitualKind };
 
 export type ReminderInput = {
   date: string;
@@ -106,6 +125,8 @@ export type ReminderInput = {
   fastEvents?: readonly { kind: "fast_start" | "fast_end"; time: string; key: string }[];
   /** Traitements à rappeler aujourd'hui, avec leur heure, s'ils n'ont pas encore été notés. */
   treatments?: readonly { id: string; name: string; time: string; taken: boolean }[];
+  /** Rituels qui tombent aujourd'hui et ne sont pas encore faits (préférences déjà appliquées). */
+  rituals?: readonly RitualKind[];
 };
 
 const within = (time: string, from: number, length: number) => {
@@ -163,6 +184,11 @@ export function dueReminders(input: ReminderInput): Reminder[] {
       if (!treatment.taken && within(time, minutesOf(treatment.time), EVENT_WINDOW)) {
         due.push({ kind: "treatment", key: `${input.date}:${treatment.id}`, name: treatment.name });
       }
+    }
+  }
+  for (const ritual of input.rituals ?? []) {
+    if (within(time, minutesOf(RITUAL_FROM), RITUAL_WINDOW)) {
+      due.push({ kind: "ritual", key: `${input.date}:${ritual}`, ritual });
     }
   }
   return due;

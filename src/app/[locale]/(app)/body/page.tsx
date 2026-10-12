@@ -12,6 +12,7 @@ import { Card } from "@/ui/card";
 import { formatDay } from "@/ui/format-date";
 import { EmptyState } from "@/ui/empty-state";
 import { Columns } from "@/ui/columns";
+import { ScrollToHash } from "@/ui/scroll-to-hash";
 
 export default async function BodyPage({ params }: PageProps<"/[locale]/body">) {
   const locale = toLocale((await params).locale);
@@ -24,6 +25,7 @@ export default async function BodyPage({ params }: PageProps<"/[locale]/body">) 
 
   return (
     <Columns>
+      <ScrollToHash />
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
       <p className="text-text-muted">{t("intro")}</p>
 

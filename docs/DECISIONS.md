@@ -280,6 +280,22 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 027 — Rappels de pesée, mensurations et photo, avec des victoires
+
+- **Date** : 2026-10-12 · **Statut** : adoptée
+- **Contexte** : Adel veut une app plus vivante qui fidélise, avec des rappels à
+  l'ouverture (se peser, prendre ses mensurations). Rien ne les rappelait. Dans une app de
+  nutrition, la pression (série qu'on perd, pesée quotidienne) peut nuire.
+- **Décision** : option « rendez-vous de Pépin » (maquettes
+  https://claude.ai/artifact/WsPoimfdpRuvFjoMNtb8K9) : une carte par rituel dû sur
+  l'accueil, pesée hebdomadaire par défaut, rituels du mois toutes les quatre semaines,
+  saisie du poids sur place et annonce des étapes de régularité.
+- **Conséquences** : les victoires ne récompensent que la régularité, jamais les kilos
+  perdus ; une semaine manquée n'efface rien. Chaque rituel se coupe dans Moi ›
+  Notifications. « Plus tard » et « déjà annoncé » sont gardés par appareil.
+
+---
+
 ## Modèle
 
 ```markdown
