@@ -292,7 +292,7 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
-## 027 — Rappels de pesée, mensurations et photo, avec des victoires
+## 028 — Rappels de pesée, mensurations et photo, avec des victoires
 
 - **Date** : 2026-10-12 · **Statut** : adoptée
 - **Contexte** : Adel veut une app plus vivante qui fidélise, avec des rappels à
