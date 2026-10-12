@@ -995,28 +995,6 @@
     "nutriscore": "Nutri-Score {grade}",
     "nova": "NOVA {group}"
   },
-  "checkin": {
-    "title": "Comment tu te sens ?",
-    "hint": "Facultatif, et visible seulement par toi.",
-    "hunger": {
-      "label": "Faim",
-      "low": "Pas faim",
-      "high": "Très faim"
-    },
-    "energy": {
-      "label": "Énergie",
-      "low": "À plat",
-      "high": "En pleine forme"
-    },
-    "mood": {
-      "label": "Humeur",
-      "low": "Morose",
-      "high": "Au top"
-    },
-    "scaleValue": "{question} : {value} sur 5",
-    "thanks": "Merci, c'est noté pour aujourd'hui.",
-    "scaleHint": "De 1 ({low}) à 5 ({high})."
-  },
   "habitual": {
     "title": "{slot, select, breakfast {Ton petit-déj habituel ?} lunch {Ton déjeuner habituel ?} dinner {Ton dîner habituel ?} other {Ta collation habituelle ?}}",
     "add": "L'ajouter"
@@ -1705,21 +1683,7 @@
     "weightOpen": "Pesées et objectif",
     "weightValue": "{value, number} kg",
     "weightEmpty": "Note une première pesée pour voir ta courbe ici.",
-    "lastWeighIn": "Dernière pesée : {date}",
-    "history": {
-      "title": "Mes 4 dernières semaines",
-      "intro": "Ton ressenti, jour par jour, à côté des calories saisies.",
-      "average": "moyenne {value, number} sur 5",
-      "kcal": "Calories",
-      "kcalAverage": "moyenne {value, number} kcal les jours saisis",
-      "empty": "Ton historique apparaîtra ici dès que tu auras noté ton ressenti quelques jours.",
-      "table": "Voir le détail jour par jour",
-      "day": "Jour",
-      "today": "aujourd'hui",
-      "point": "{date} : {value} sur 5",
-      "bar": "{date} : {value, number} kcal",
-      "none": "non noté"
-    }
+    "lastWeighIn": "Dernière pesée : {date}"
   },
   "kitchen": {
     "title": "Cuisine",

@@ -38,7 +38,7 @@ Questionnaire en plusieurs écrans, une question par écran, barre de progressio
 - En mode budget hebdomadaire : jauge de la semaine (consommé / total) en plus
   de l'objectif du jour recalculé.
 - Suivi de l'eau : verres cliquables, objectif quotidien réglable.
-- Ressenti du jour facultatif : faim, énergie, humeur (échelle de 1 à 5, 3 taps).
+- ~~Ressenti du jour facultatif : faim, énergie, humeur (échelle de 1 à 5, 3 taps).~~ Retiré le 2026-10-12 (DECISIONS 026).
 - Carte "plat suggéré" : une idée de repas qui tient dans le budget restant.
 - Streak (jours consécutifs avec au moins un repas saisi), avec rattrapage
   bienveillant (1 jour de "gel" par semaine).

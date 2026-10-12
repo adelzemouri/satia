@@ -995,28 +995,6 @@
     "nutriscore": "Nutri-Score {grade}",
     "nova": "NOVA {group}"
   },
-  "checkin": {
-    "title": "How are you feeling?",
-    "hint": "Optional and only visible to you.",
-    "hunger": {
-      "label": "Hunger",
-      "low": "Not hungry",
-      "high": "Very hungry"
-    },
-    "energy": {
-      "label": "Energy",
-      "low": "Drained",
-      "high": "Full of energy"
-    },
-    "mood": {
-      "label": "Mood",
-      "low": "Low",
-      "high": "Great"
-    },
-    "scaleValue": "{question}: {value} out of 5",
-    "thanks": "Thanks, today is noted.",
-    "scaleHint": "From 1 ({low}) to 5 ({high})."
-  },
   "habitual": {
     "title": "{slot, select, breakfast {Your usual breakfast?} lunch {Your usual lunch?} dinner {Your usual dinner?} other {Your usual snack?}}",
     "add": "Add it"
@@ -1705,21 +1683,7 @@
     "weightOpen": "Weigh-ins and goal",
     "weightValue": "{value, number} kg",
     "weightEmpty": "Log a first weigh-in to see your curve here.",
-    "lastWeighIn": "Last weigh-in: {date}",
-    "history": {
-      "title": "My last 4 weeks",
-      "intro": "How you felt each day, next to the calories you logged.",
-      "average": "average {value, number} out of 5",
-      "kcal": "Calories",
-      "kcalAverage": "average {value, number} kcal on logged days",
-      "empty": "Your history will show up here once you've noted how you feel for a few days.",
-      "table": "See day-by-day details",
-      "day": "Day",
-      "today": "today",
-      "point": "{date}: {value} out of 5",
-      "bar": "{date}: {value, number} kcal",
-      "none": "not noted"
-    }
+    "lastWeighIn": "Last weigh-in: {date}"
   },
   "kitchen": {
     "title": "Kitchen",

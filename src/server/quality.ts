@@ -1,16 +1,13 @@
 import "server-only";
 
-import { and, asc, desc, eq, gte, lte, sum } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lte } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db/client";
 import { dailyCheckins, foods, MEAL_SLOTS, type MealSlot, mealEntries } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
-import { type FeelingDay, feelingDays } from "@/domain/feelings";
 import { dayQuality, type DayQuality, type QualityItem, weekQuality, type WeekQuality } from "@/domain/quality";
-
-import { assertNotFuture } from "./journal";
 
 /** Lignes de journal sur [from, to] avec les valeurs de qualité de leur aliment. */
 export async function qualityItems(userId: string, from: string, to: string): Promise<QualityItem[]> {
@@ -45,14 +42,9 @@ export async function weekQualityReport(userId: string, today: string = todayIso
 }
 
 // --- Ressenti du jour -----------------------------------------------------------
+// La saisie a été retirée de l'interface (voir docs/DECISIONS.md) ; les réponses déjà
+// enregistrées restent lues par le coach et incluses dans l'export.
 
-const score = z.number().int().min(1).max(5).nullable();
-export const checkinSchema = z.object({
-  date: z.iso.date(),
-  hunger: score.optional(),
-  energy: score.optional(),
-  mood: score.optional(),
-});
 export type Checkin = { hunger: number | null; energy: number | null; mood: number | null };
 
 export async function checkinOn(userId: string, date: string): Promise<Checkin> {
@@ -61,42 +53,6 @@ export async function checkinOn(userId: string, date: string): Promise<Checkin> 
     .from(dailyCheckins)
     .where(and(eq(dailyCheckins.userId, userId), eq(dailyCheckins.date, date)));
   return row ?? { hunger: null, energy: null, mood: null };
-}
-
-/** Enregistre une ou plusieurs réponses du ressenti (les autres restent inchangées). */
-export async function setCheckin(userId: string, input: z.input<typeof checkinSchema>): Promise<void> {
-  const { date, ...values } = checkinSchema.parse(input);
-  assertNotFuture(date);
-  await db()
-    .insert(dailyCheckins)
-    .values({ userId, date, ...values })
-    .onConflictDoUpdate({
-      target: [dailyCheckins.userId, dailyCheckins.date],
-      set: { ...values, updatedAt: new Date() },
-    });
-}
-
-/** Ressentis et calories des `days` derniers jours (aujourd'hui compris). */
-export async function feelingHistory(userId: string, today: string = todayIso(), days = 28): Promise<FeelingDay[]> {
-  const from = addDays(today, -(days - 1));
-  const [checkins, intakes] = await Promise.all([
-    db()
-      .select({
-        date: dailyCheckins.date,
-        hunger: dailyCheckins.hunger,
-        energy: dailyCheckins.energy,
-        mood: dailyCheckins.mood,
-      })
-      .from(dailyCheckins)
-      .where(and(eq(dailyCheckins.userId, userId), gte(dailyCheckins.date, from), lte(dailyCheckins.date, today))),
-    db()
-      .select({ date: mealEntries.date, kcal: sum(mealEntries.kcal).mapWith(Number) })
-      .from(mealEntries)
-      .where(and(eq(mealEntries.userId, userId), gte(mealEntries.date, from), lte(mealEntries.date, today)))
-      .groupBy(mealEntries.date),
-  ]);
-  const dates = Array.from({ length: days }, (_, i) => addDays(from, i));
-  return feelingDays(dates, checkins, intakes);
 }
 
 // --- Repas habituel ---------------------------------------------------------------
