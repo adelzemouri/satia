@@ -816,6 +816,12 @@ le pourquoi de chacun est dans `docs/DECISIONS.md`.
   et traite les messages comme des données.
 - **Chat** : il défile dans son propre cadre ; la page s'ouvre en haut avec les 10 derniers
   messages et un bouton « Messages précédents ».
+- **« Demander à Pépin »** (`src/features/coach/ask-coach.tsx`) : sur une fiche aliment ou
+  recette, sur chaque repas du journal et sur le bilan du jour, un panneau monte par-dessus
+  la page (sur le côté sur ordinateur). Seul un identifiant de sujet circule
+  (`coach-topic.ts` : aliment, repas d'un jour, journée) ; le serveur relit les données de
+  l'utilisateur et ajoute une ligne « Sujet de la question » au prompt. Les échanges
+  rejoignent la conversation de `/coach`.
 
 ### Comptes et administration
 

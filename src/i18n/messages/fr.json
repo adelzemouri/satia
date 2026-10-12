@@ -1102,7 +1102,25 @@
       "weekSoFar": "Comment se passe ma semaine ?",
       "hydration": "Des astuces pour boire plus d'eau ?"
     },
-    "subtitle": "Ton coach nutrition"
+    "subtitle": "Ton coach nutrition",
+    "askCoach": "Demander à {name}",
+    "about": "À propos de : {label}",
+    "closePanel": "Fermer",
+    "askTopicHint": "Ta question…",
+    "openFull": "Voir toute la conversation",
+    "topicQuestions": {
+      "goodChoice": "Est-ce un bon choix pour moi ?",
+      "lighter": "Une version plus légère ?",
+      "pairWith": "Avec quoi l'accompagner ?",
+      "mealBalanced": "Ce repas est-il équilibré ?",
+      "whatNext": "Que manger ensuite ?",
+      "mealProtein": "Assez de protéines dans ce repas ?",
+      "dayReview": "Que penses-tu de ma journée ?",
+      "dayMissing": "Qu'est-ce qui m'a manqué ce jour-là ?"
+    },
+    "topic": {
+      "label": "{name} · {kcal} kcal"
+    }
   },
   "notifications": {
     "title": "Notifications",

@@ -940,6 +940,22 @@ test("coach : bilan, conversation (LLM simulé), garde-fou et personnalité", as
   // Le rechargement ne repose pas la question.
   await expect(conversation.getByText(/Tu me demandais/)).toHaveCount(1);
   await page.getByRole("button", { name: "Effacer la conversation" }).click();
+
+  // Depuis un repas du journal, Pépin s'ouvre par-dessus la page avec le repas joint.
+  await page.goto("/journal");
+  await page.getByRole("region", { name: "Déjeuner" }).getByRole("button", { name: "Demander à Pépin" }).click();
+  const panel = page.getByRole("dialog", { name: "Pépin" });
+  await expect(panel.getByText(/^À propos de : Déjeuner · \d+ kcal$/)).toBeVisible();
+  await expectNoA11yViolations(page);
+  await panel.getByRole("button", { name: "Ce repas est-il équilibré ?" }).click();
+  await expect(panel.getByText("Tu me demandais : « Ce repas est-il équilibré ? »", { exact: false })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(panel).toBeHidden();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Journal");
+  // L'échange rejoint la conversation du coach.
+  await page.goto("/coach");
+  await expect(conversation.getByText(/Ce repas est-il équilibré/).first()).toBeVisible();
+  await page.getByRole("button", { name: "Effacer la conversation" }).click();
 });
 
 test("menu de la semaine, liste de courses commune, recettes et scanner de frigo (LLM simulé)", async ({ page }) => {
