@@ -11,6 +11,7 @@ import { llmConfig } from "@/llm/config";
 import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { DomainError } from "@/server/errors";
+import { AskCoach } from "@/features/coach/ask-coach";
 import { ProductThumb } from "@/features/foods/product-thumb";
 import { RecipePhotoForm } from "@/features/foods/recipe-photo-form";
 import { RecipeStepsButton } from "@/features/planning/recipe-steps-button";
@@ -125,6 +126,12 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
       >
         {t("product.add")}
       </Link>
+      <AskCoach
+        topic={{ kind: "food", id: food.id }}
+        label={shortFoodName(food.nameFr)}
+        coachName={COACH_NAME}
+        className="self-start"
+      />
       {(editableRecipe || canRegenerate) && (
         <RecipePhotoForm
           foodId={food.id}

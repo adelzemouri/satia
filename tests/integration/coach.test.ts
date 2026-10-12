@@ -11,6 +11,7 @@ import type { OnboardingInput } from "@/features/onboarding/schema";
 import { setupFirstAdmin } from "@/server/accounts";
 import {
   clearCoachMessages,
+  coachTopicLine,
   coachContextFor,
   ensureWeeklyReview,
   lastWeekReview,
@@ -222,5 +223,31 @@ describe("coach", () => {
     const userId = await setupUser();
     await setCoachStyle(userId, "chef");
     expect((await getProfile(userId))?.coachStyle).toBe("chef");
+  });
+
+  it("décrit le sujet d'une question posée depuis une page, sans voir les données des autres", async () => {
+    const userId = await setupUser();
+    const pasta = await firstFood(userId, "pâtes cuites");
+    const today = todayIso();
+    await addEntry(userId, { date: today, slot: "lunch", foodId: pasta.id, quantity: 200, unit: "g" });
+
+    expect(await coachTopicLine(userId, { kind: "food", id: pasta.id })).toMatch(
+      /^Sujet de la question : l'aliment « .*[Pp]âtes.* » \(\d+ kcal, protéines/,
+    );
+    expect(await coachTopicLine(userId, { kind: "meal", date: today, slot: "lunch" })).toMatch(
+      new RegExp(
+        `^Sujet de la question : son déjeuner du ${today} : .+ 200 g \\(\\d+ kcal, \\d+ g de protéines\\)\\.$`,
+      ),
+    );
+    expect(await coachTopicLine(userId, { kind: "day", date: today })).toMatch(/Total \d+ kcal sur \d+/);
+    await expect(coachTopicLine(userId, { kind: "food", id: crypto.randomUUID() })).rejects.toThrow();
+
+    const reply = await sendCoachMessage(userId, "Ce repas est-il équilibré ?", {
+      kind: "meal",
+      date: today,
+      slot: "lunch",
+    });
+    expect(reply.role).toBe("coach");
+    expect((await listCoachMessages(userId)).at(-2)!.content).toBe("Ce repas est-il équilibré ?");
   });
 });

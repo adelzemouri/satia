@@ -6,6 +6,8 @@ import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
 import { isoWeekStart } from "@/domain/streak";
 import { availableUnits, type Unit } from "@/domain/units";
+import { COACH_NAME } from "@/config/app";
+import { AskCoach } from "@/features/coach/ask-coach";
 import { CopyButton } from "@/features/journal/copy-button";
 import { CalorieSummary, MacroBars, MacroLine, MacroSplit } from "@/features/journal/day-overview";
 import { EntryRow } from "@/features/journal/entry-row";
@@ -154,6 +156,15 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
         {summary.entries.length > 0 && <MacroSplit bySlot={summary.bySlot} totals={summary.totals} />}
         <QualityBars quality={quality} />
         {summary.zone && <p className="text-sm text-text-muted">{t(`home.zone.${summary.zone}`)}</p>}
+        {summary.entries.length > 0 && (
+          <AskCoach
+            topic={{ kind: "day", date }}
+            label={t("coach.topic.label", { name: dayTitle, kcal: Math.round(summary.totals.kcal) })}
+            coachName={COACH_NAME}
+            compact
+            className="self-start"
+          />
+        )}
         {summary.entries.length === 0 && (
           <EmptyState
             scene="plate"
@@ -245,6 +256,13 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
               )}
               {entries.length > 0 && (
                 <SaveMealButton date={date} slot={slot} labels={entries.map((entry) => entry.label)} />
+              )}
+              {entries.length > 0 && (
+                <AskCoach
+                  topic={{ kind: "meal", date, slot }}
+                  label={t("coach.topic.label", { name: t(`slots.${slot}`), kcal: Math.round(totals.kcal) })}
+                  coachName={COACH_NAME}
+                />
               )}
             </div>
           </Card>

@@ -33,6 +33,7 @@ import {
 } from "@/domain/coach";
 import { APP_TIMEZONE } from "@/config/app";
 import { longHistoryLines } from "@/domain/coach-history";
+import { type CoachTopic, coachTopicSchema, dayTopicLine, foodTopicLine, mealTopicLine } from "@/domain/coach-topic";
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
 import { type MealSlot, slotAt } from "@/domain/meals";
@@ -45,8 +46,8 @@ import { RECIPE_PHOTOS } from "@/features/recipes/recipe-photos";
 import { AiUnavailableError, coachReply, writeWeeklyReview } from "@/llm";
 
 import { weekBudget } from "./adaptive";
-import { dishPool } from "./foods";
-import { daySummary } from "./journal";
+import { dishPool, getFoodDetails } from "./foods";
+import { daySummary, entriesOn } from "./journal";
 import { getGoalOn, getProfile } from "./profile";
 import { checkinOn, dayQualityFor, qualityItems } from "./quality";
 import { getCalorieFloors } from "./settings";
@@ -192,12 +193,32 @@ export async function coachContextFor(userId: string, today: string = todayIso()
 
 export const coachMessageSchema = z.string().trim().min(1).max(500);
 
+/** Ligne qui dit au coach de quoi parle la question posée depuis une page (relue côté serveur). */
+export async function coachTopicLine(userId: string, input: CoachTopic): Promise<string> {
+  const topic = coachTopicSchema.parse(input);
+  if (topic.kind === "food") {
+    const food = await getFoodDetails(userId, topic.id);
+    return foodTopicLine({
+      name: food.nameFr,
+      recipe: food.source === "recipe",
+      kcal: food.kcal,
+      proteinG: food.proteinG,
+      carbsG: food.carbsG,
+      fatG: food.fatG,
+      portionG: food.unitWeights?.portion ?? null,
+    });
+  }
+  if (topic.kind === "meal") return mealTopicLine(topic.date, topic.slot, await entriesOn(userId, topic.date));
+  const summary = await daySummary(userId, topic.date);
+  return dayTopicLine(topic.date, summary.goal?.kcal ?? null, summary.entries);
+}
+
 /**
  * Envoie un message au coach. Une demande sous le plancher, une pratique à risque ou une
  * question de dosage reçoit une réponse locale, sans appel au LLM. Le message n'est enregistré qu'avec sa réponse :
  * si l'IA est indisponible, rien n'est perdu côté formulaire et rien n'est stocké.
  */
-export async function sendCoachMessage(userId: string, text: string): Promise<CoachMessage> {
+export async function sendCoachMessage(userId: string, text: string, topic?: CoachTopic): Promise<CoachMessage> {
   const message = coachMessageSchema.parse(text);
   const profile = await getProfile(userId);
   if (!profile) throw new AiUnavailableError("not_configured");
@@ -212,15 +233,16 @@ export async function sendCoachMessage(userId: string, text: string): Promise<Co
     reply = { content: "", notice: "medical" };
   } else {
     const workout = workoutRequest(message);
-    const [context, history, workoutLine] = await Promise.all([
+    const [context, history, workoutLine, topicLine] = await Promise.all([
       coachContextFor(userId),
       listCoachMessages(userId, PROMPT_HISTORY),
       workout ? coachWorkoutLine(userId, workout) : null,
+      topic ? coachTopicLine(userId, topic) : null,
     ]);
     const conversation = history
       .filter((entry) => entry.notice === null)
       .map((entry) => `${entry.role === "user" ? "Moi" : "Coach"} : ${promptLine(entry.content)}`);
-    const prompt = [`Contexte :\n${context}`, workoutLine, ...conversation, `Moi : ${promptLine(message)}`]
+    const prompt = [`Contexte :\n${context}`, workoutLine, ...conversation, topicLine, `Moi : ${promptLine(message)}`]
       .filter(Boolean)
       .join("\n");
     const content = await coachReply(userId, profile.coachStyle, prompt);

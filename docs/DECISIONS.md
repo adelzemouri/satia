@@ -278,6 +278,18 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
   qui s'effacent d'elles-mêmes de son contexte avec le temps ; l'export les inclut
   toujours. Le ressenti de fin de séance d'entraînement n'est pas concerné.
 
+## 027 — Pépin depuis les fiches, pas une bulle partout
+
+- **Date** : 2026-10-12 · **Statut** : adoptée
+- **Contexte** : Adel trouve le chemin vers Pépin (Moi puis Coach) trop long quand il
+  regarde un repas, et Pépin ne sait pas de quel repas il parle.
+- **Décision** : un bouton « Demander à Pépin » sur les fiches aliment et recette, les
+  repas du journal et le bilan du jour, qui ouvre un panneau par-dessus la page avec le
+  sujet joint (option A de la maquette). Pas de bulle flottante ni d'avatar dans l'en-tête.
+- **Conséquences** : rien de plus dans la barre du bas ; une ligne de plus dans le prompt
+  quand la question vient d'une fiche. Si Pépin manque ailleurs, l'avatar d'en-tête
+  pourra réutiliser le même panneau.
+
 ---
 
 ## Modèle
