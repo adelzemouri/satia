@@ -11,8 +11,6 @@ import {
   type ActivityLevel,
   allowedGoals,
   type BudgetMode,
-  COACH_STYLES,
-  type CoachStyle,
   type Diet,
   DIETS,
   type Goal,
@@ -48,7 +46,6 @@ type Draft = {
   foodsToAvoid: string;
   mealTimes: { breakfast: string; lunch: string; dinner: string };
   budgetMode: BudgetMode;
-  coachStyle: CoachStyle;
   disclaimerAccepted: boolean;
 };
 
@@ -64,12 +61,11 @@ type Step =
   | "pace"
   | "diet"
   | "meals"
-  | "coach"
   | "disclaimer"
   | "summary";
 
 /** Écrans de l'onboarding : chacun regroupe quelques questions, présentées par Pépin. */
-type PageKey = "you" | "body" | "goal" | "rhythm" | "habits" | "coach" | "summary";
+type PageKey = "you" | "body" | "goal" | "rhythm" | "habits" | "care" | "summary";
 type Page = { key: PageKey; steps: Step[] };
 
 /** Étapes dont l'erreur s'affiche sous le champ lui-même plutôt qu'en message. */
@@ -90,7 +86,6 @@ const INITIAL: Draft = {
   foodsToAvoid: "",
   mealTimes: { breakfast: "07:30", lunch: "12:30", dinner: "19:30" },
   budgetMode: "daily",
-  coachStyle: "teacher",
   disclaimerAccepted: false,
 };
 
@@ -114,7 +109,6 @@ function toInput(draft: Draft): OnboardingInput {
     foodsToAvoid: draft.foodsToAvoid,
     mealTimes: draft.mealTimes,
     budgetMode: draft.budgetMode,
-    coachStyle: draft.coachStyle,
     disclaimerAccepted: draft.disclaimerAccepted as true,
   };
 }
@@ -164,7 +158,6 @@ function validateStep(step: Step, draft: Draft, today: string): string | null {
 export function OnboardingWizard({ defaultFirstName }: { defaultFirstName: string }) {
   const t = useTranslations("onboarding");
   const tc = useTranslations("common");
-  const tcoach = useTranslations("coach");
   const format = useFormatter();
   const errorText = useErrorText();
   const today = todayIso();
@@ -185,7 +178,7 @@ export function OnboardingWizard({ defaultFirstName }: { defaultFirstName: strin
       { key: "goal", steps: changesWeight ? ["goal", "targetWeight"] : ["goal"] },
       { key: "rhythm", steps: changesWeight ? ["activity", "pace"] : ["activity"] },
       { key: "habits", steps: ["diet", "meals"] },
-      { key: "coach", steps: ["coach", "disclaimer"] },
+      { key: "care", steps: ["disclaimer"] },
       { key: "summary", steps: ["summary"] },
     ];
   }, [draft.goal]);
@@ -386,20 +379,6 @@ export function OnboardingWizard({ defaultFirstName }: { defaultFirstName: strin
               ))}
             </div>
           </fieldset>
-        );
-      case "coach":
-        return (
-          <OptionList
-            legend={t("coach.title")}
-            name="coachStyle"
-            value={draft.coachStyle}
-            onChange={(coachStyle) => update({ coachStyle })}
-            options={COACH_STYLES.map((value) => ({
-              value,
-              label: tcoach(`styles.${value}.label`),
-              hint: tcoach(`styles.${value}.hint`),
-            }))}
-          />
         );
       case "disclaimer":
         return (

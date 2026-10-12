@@ -308,6 +308,19 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 029 — Un seul ton pour Pépin
+
+- **Date** : 2026-10-12 · **Statut** : adoptée
+- **Contexte** : Adel trouve le choix entre 4 personnalités du coach (pédagogue,
+  enthousiaste, serein, gourmand) superflu et veut simplifier l'app.
+- **Décision** : un seul ton, bienveillant et concret (explique le pourquoi, propose des
+  idées de plats). Le choix disparaît de l'onboarding et de la page Coach.
+- **Conséquences** : l'onboarding garde six écrans, le dernier ne porte plus que l'avis
+  « pas un avis médical ». La colonne `profiles.coach_style` reste en base, plus lue,
+  pour éviter une migration destructive. Prompts un peu plus courts.
+
+---
+
 ## Modèle
 
 ```markdown

@@ -173,7 +173,7 @@ export async function personalizeProgram(
 ): Promise<boolean> {
   const program = await ensureProgram(userId, weekStart);
   if (program.personalized || program.sessions.length === 0) return false;
-  const [profile, nutrition] = await Promise.all([requireTrainingProfile(userId), getProfile(userId)]);
+  const profile = await requireTrainingProfile(userId);
   const prompt = [
     `Niveau : ${LEVEL_NAMES[profile.level]}. Objectif : ${GOAL_NAMES[profile.goal]}.`,
     profile.avoidZones.length > 0 ? `Zones à ménager : ${profile.avoidZones.join(", ")}.` : null,
@@ -189,7 +189,7 @@ export async function personalizeProgram(
 
   let text;
   try {
-    text = await personalizeTrainingPlan(userId, nutrition?.coachStyle ?? "teacher", prompt);
+    text = await personalizeTrainingPlan(userId, prompt);
   } catch (error) {
     if (!(error instanceof AiUnavailableError)) throw error;
     // Panne du fournisseur : on n'insiste pas cette semaine. IA coupée ou plafond : on réessaiera.

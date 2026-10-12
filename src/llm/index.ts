@@ -3,7 +3,6 @@ import "server-only";
 import type { z } from "zod";
 
 import type { LlmFeature } from "@/db/schema";
-import type { CoachStyle } from "@/domain/profile";
 
 import { llmConfig, type ModelKind } from "./config";
 import { assertAiAvailable } from "./guard";
@@ -19,9 +18,9 @@ import {
 } from "./prompts/meal";
 import { providerFor } from "./providers";
 import { recipeImagePrompt } from "./prompts/recipe-image";
-import { coachSystem, weeklyReviewSystem } from "./prompts/coach";
+import { COACH_SYSTEM, WEEKLY_REVIEW_SYSTEM } from "./prompts/coach";
 import { FRIDGE_SYSTEM, MENU_PLAN_SYSTEM, RECIPE_STEPS_SYSTEM } from "./prompts/planning";
-import { trainingPlanSystem } from "./prompts/training";
+import { TRAINING_PLAN_SYSTEM } from "./prompts/training";
 import {
   coachReplySchema,
   connectionTestSchema,
@@ -235,12 +234,12 @@ export async function estimateFoods(userId: string, names: readonly string[]): P
 const COACH_OUTPUT_TOKENS = 2048;
 
 /** Réponse du coach : contexte compact, derniers échanges et nouveau message dans `user`. */
-export async function coachReply(userId: string, style: CoachStyle, user: string): Promise<string> {
+export async function coachReply(userId: string, user: string): Promise<string> {
   const result = await callLlm({
     userId,
     feature: "coach",
     kind: "text",
-    system: coachSystem(style),
+    system: COACH_SYSTEM,
     user,
     schemaName: "coach_reply",
     schema: coachReplySchema,
@@ -252,12 +251,12 @@ export async function coachReply(userId: string, style: CoachStyle, user: string
 export type WeeklyReview = z.infer<typeof weeklyReviewSchema>;
 
 /** Bilan de la semaine écoulée : un seul appel par utilisateur et par semaine. */
-export async function writeWeeklyReview(userId: string, style: CoachStyle, data: string): Promise<WeeklyReview> {
+export async function writeWeeklyReview(userId: string, data: string): Promise<WeeklyReview> {
   const result = await callLlm({
     userId,
     feature: "weekly_review",
     kind: "text",
-    system: weeklyReviewSystem(style),
+    system: WEEKLY_REVIEW_SYSTEM,
     user: data,
     schemaName: "weekly_review",
     schema: weeklyReviewSchema,
@@ -319,16 +318,12 @@ export async function scanFridge(userId: string, image: LlmImage, user: string):
 export type TrainingPlanText = z.infer<typeof trainingPlanSchema>;
 
 /** Titres, conseils et ordre des exercices du programme de la semaine (un appel, modèle texte). */
-export async function personalizeTrainingPlan(
-  userId: string,
-  style: CoachStyle,
-  user: string,
-): Promise<TrainingPlanText> {
+export async function personalizeTrainingPlan(userId: string, user: string): Promise<TrainingPlanText> {
   const result = await callLlm({
     userId,
     feature: "training_plan",
     kind: "text",
-    system: trainingPlanSystem(style),
+    system: TRAINING_PLAN_SYSTEM,
     user,
     schemaName: "training_plan",
     schema: trainingPlanSchema,

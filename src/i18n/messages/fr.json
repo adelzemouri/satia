@@ -357,10 +357,6 @@
       "capped": "Pour que ce soit tenable et sans risque, on limite la perte à environ 1 % de ton poids par semaine.",
       "start": "C'est parti !"
     },
-    "coach": {
-      "title": "Quel coach te ressemble ?",
-      "hint": "Tu pourras en changer à tout moment."
-    },
     "pages": {
       "you": {
         "title": "Faisons connaissance",
@@ -382,9 +378,9 @@
         "title": "Tes habitudes",
         "pepin": "Dis-moi comment tu manges : c'est moi qui m'adapte, pas l'inverse."
       },
-      "coach": {
-        "title": "Ton coach",
-        "pepin": "Dernière étape : comment veux-tu que je te parle ?"
+      "care": {
+        "title": "Avant de commencer",
+        "pepin": "Dernière étape : un mot important avant de commencer."
       },
       "summary": {
         "title": "Ton plan de départ",
@@ -1108,25 +1104,6 @@
     "dictate": "Dicter",
     "stopDictation": "Arrêter la dictée",
     "clear": "Effacer la conversation",
-    "styleTitle": "Personnalité du coach",
-    "styles": {
-      "teacher": {
-        "label": "Pédagogue",
-        "hint": "Explique le pourquoi, avec des repères simples."
-      },
-      "cheerleader": {
-        "label": "Enthousiaste",
-        "hint": "Souligne chaque progrès et te motive."
-      },
-      "zen": {
-        "label": "Serein",
-        "hint": "Calme et rassurant, sans pression."
-      },
-      "chef": {
-        "label": "Gourmand",
-        "hint": "Parle cuisine et te donne des idées de plats."
-      }
-    },
     "notices": {
       "floor": "Je préfère ne pas t'accompagner en dessous de ton minimum journalier : ce serait trop peu pour ton corps. On peut regarder ensemble comment rendre tes repas plus rassasiants à calories égales.",
       "medical": "Les questions de dose ou de médicament relèvent de ton médecin ou de ton pharmacien. Je peux t'aider sur tes repas et tes habitudes.",

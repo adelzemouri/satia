@@ -69,7 +69,6 @@ export async function saveOnboarding(userId: string, input: OnboardingInput): Pr
     foodsToAvoid: data.foodsToAvoid,
     mealTimes: data.mealTimes,
     budgetMode: data.budgetMode,
-    coachStyle: data.coachStyle,
     disclaimerAcceptedAt: new Date(),
     updatedAt: new Date(),
   };
