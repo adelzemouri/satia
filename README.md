@@ -101,7 +101,6 @@ connecté en admin, ou avec `Authorization: Bearer $CRON_SECRET` ; en public, se
 
 | Secret                                                   | Workflow                | Rôle                                                    |
 | -------------------------------------------------------- | ----------------------- | ------------------------------------------------------- |
-| `APP_URL`, `CRON_SECRET`                                 | `Notifications`         | Adresse de prod et même secret que sur Vercel           |
 | `BACKUP_DATABASE_URL`                                    | `Sauvegarde de la base` | URL **directe** (non « pooled ») de Neon pour `pg_dump` |
 | `BACKUP_S3_ENDPOINT`, `BACKUP_S3_BUCKET`                 | `Sauvegarde de la base` | Peut être le bucket des photos (préfixe `backups/`)     |
 | `BACKUP_S3_ACCESS_KEY_ID`, `BACKUP_S3_SECRET_ACCESS_KEY` | `Sauvegarde de la base` | Jeton R2 avec droit d'écriture                          |
@@ -115,7 +114,7 @@ Un workflow dont les secrets manquent se termine sans erreur avec un avertisseme
 | ------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Purge des photos    | Cron Vercel à 3 h 30 UTC (`vercel.json`)        | Supprime les photos de repas après la durée choisie dans Administration > IA (90 jours par défaut) et celles jamais ajoutées au journal après 24 h |
 | Purge (filet)       | Ouverture de l'accueil, au plus toutes les 20 h | Même purge, pour qu'elle tourne même sans `CRON_SECRET` ; bouton « Purger maintenant » côté admin                                                  |
-| Rappels             | GitHub Actions toutes les 15 min (`notify.yml`) | Envoie les notifications dues (repas, eau, jeûne, traitement, bilan) ; Vercel Hobby n'a qu'un cron par jour                                        |
+| Rappels             | cron-job.org toutes les 15 min                  | Appelle `/api/cron/notify` (en-tête `Authorization: Bearer <CRON_SECRET>`) ; Vercel Hobby n'a qu'un cron par jour, GitHub en saute beaucoup        |
 | Sauvegarde          | GitHub Actions à 2 h 17 UTC (`backup.yml`)      | `pg_dump` chiffré dans `backups/`, gardé 30 jours                                                                                                  |
 | Bilan hebdo, jeûnes | À la première visite concernée                  | Calculés au besoin, sans tâche planifiée                                                                                                           |
 
@@ -164,7 +163,7 @@ Conseils :
   plafond ; au-delà du plafond, les fonctions IA se mettent en pause et la saisie
   manuelle reste disponible. « Tester la connexion » vérifie la clé et le modèle.
 - **Changer un secret** : modifier la variable sur Vercel puis redéployer (Deployments >
-  ⋯ > Redeploy). `CRON_SECRET` doit rester identique sur Vercel et dans GitHub.
+  ⋯ > Redeploy). `CRON_SECRET` doit rester identique sur Vercel et dans le job cron-job.org.
 - **Mises à jour** : une pull request par changement ; la CI (lint, types, tests
   unitaires, d'intégration et e2e) doit être verte avant la fusion. L'image Docker
   n'est reconstruite que si `Dockerfile`, les dépendances ou `next.config.ts` changent,

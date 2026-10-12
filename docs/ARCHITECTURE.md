@@ -59,7 +59,6 @@ flowchart TB
 
     subgraph gha["GitHub Actions"]
         ci["CI<br/><i>lint, tests, build</i>"]
-        notify["notify.yml<br/><i>toutes les 15 min</i>"]
         backup["backup.yml<br/><i>pg_dump chiffré, 2 h 17 UTC</i>"]
         ciqualwf["Données Ciqual<br/><i>à la demande</i>"]
     end
@@ -80,7 +79,7 @@ flowchart TB
     next -->|"web-push, clés VAPID"| pushsvc
     pushsvc --> pwa
     vcron -->|"Bearer CRON_SECRET"| next
-    notify -->|"Bearer CRON_SECRET<br/>/api/cron/notify"| next
+    cronjob["cron-job.org<br/><i>toutes les 15 min</i>"] -->|"Bearer CRON_SECRET<br/>/api/cron/notify"| next
     backup -->|"pg_dump"| neon
     backup -->|"dump chiffré, 30 jours"| r2
     ciqualwf -->|"commite data/ciqual-2020.csv"| ci
@@ -145,7 +144,6 @@ satia/                      # le dépôt garde son nom d'origine
 ├── .github/workflows/
 │   ├── ci.yml              # lint, format, typecheck, tests unitaires, intégration, e2e, build
 │   ├── backup.yml          # pg_dump chiffré quotidien → R2
-│   ├── notify.yml          # appelle /api/cron/notify toutes les 15 min
 │   ├── ciqual-data.yml     # régénère data/ciqual-2020.csv depuis le XML officiel
 │   └── docker.yml          # vérifie que l'image Docker se construit
 ├── docker-compose.yml      # app, postgres, rustfs (S3 local)
@@ -539,13 +537,12 @@ Téléphone                                     Serveur (Vercel fra1)           
   - bilan : le lundi de 9 h à 13 h, si la semaine écoulée a au moins 3 jours saisis.
 - **Envoi une seule fois** : `notification_log` (clé unique utilisateur, type, clé du
   rappel) est écrit avant l'envoi ; purge après 30 jours.
-- **Déclenchement** : le cron de Vercel Hobby ne passe qu'une fois par jour, donc le
-  workflow GitHub Actions `notify.yml` appelle `/api/cron/notify` toutes les 15 minutes
-  (gratuit, le dépôt est public) avec `Authorization: Bearer $CRON_SECRET`. Secrets du
-  dépôt nécessaires : `APP_URL` et `CRON_SECRET` (le même que dans Vercel). GitHub peut
-  retarder un passage ; les fenêtres de plusieurs heures l'absorbent. GitHub suspend les
-  workflows planifiés après 60 jours sans activité sur le dépôt : il suffit alors de les
-  réactiver dans l'onglet Actions.
+- **Déclenchement** : le cron de Vercel Hobby ne passe qu'une fois par jour et GitHub
+  Actions ne tenait pas les 15 minutes (un passage toutes les 3 à 6 h en pratique) : un job
+  cron-job.org (gratuit) appelle `https://www.pommelia.fr/api/cron/notify` toutes les
+  15 minutes avec `Authorization: Bearer $CRON_SECRET` (le même que dans Vercel). L'adresse
+  doit être la finale : cron-job.org ne suit pas les redirections (`pommelia.fr` → `www`).
+  Les fenêtres de plusieurs heures absorbent un passage manqué.
 
 ## Planification (phase 11)
 

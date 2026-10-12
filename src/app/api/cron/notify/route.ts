@@ -4,8 +4,8 @@ import { runNotifications, vapidPublicKey } from "@/server/notifications";
 export const dynamic = "force-dynamic";
 
 /**
- * Rappels (repas, eau, bilan), appelée toutes les 15 minutes par le workflow GitHub Actions
- * « Notifications » (le cron de Vercel Hobby ne passe qu'une fois par jour).
+ * Rappels (repas, eau, bilan), appelée toutes les 15 minutes par cron-job.org
+ * (le cron de Vercel Hobby ne passe qu'une fois par jour, celui de GitHub Actions en saute beaucoup).
  */
 export async function GET(request: Request) {
   const rejected = rejectCron(request);
