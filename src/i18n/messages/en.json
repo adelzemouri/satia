@@ -1773,5 +1773,14 @@
     "title": "This page doesn't exist",
     "body": "The link may be old or incomplete.",
     "home": "Back to home"
+  },
+  "photoViewer": {
+    "open": "View full size: {name}",
+    "close": "Close",
+    "previous": "Previous photo",
+    "next": "Next photo",
+    "position": "{index} of {count}",
+    "hint": "Pinch or double-tap to zoom, swipe down to close",
+    "hintMany": "Swipe for the next photo, pinch to zoom, swipe down to close"
   }
 }
