@@ -1771,5 +1771,14 @@
     "title": "Cette page n'existe pas",
     "body": "Le lien est peut-être ancien ou incomplet.",
     "home": "Revenir à l'accueil"
+  },
+  "photoViewer": {
+    "open": "Voir en grand : {name}",
+    "close": "Fermer",
+    "previous": "Photo précédente",
+    "next": "Photo suivante",
+    "position": "{index} sur {count}",
+    "hint": "Pincez ou touchez deux fois pour zoomer, glissez vers le bas pour fermer",
+    "hintMany": "Glissez pour la photo suivante, pincez pour zoomer, glissez vers le bas pour fermer"
   }
 }

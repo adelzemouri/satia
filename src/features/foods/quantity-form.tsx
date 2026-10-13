@@ -15,6 +15,7 @@ import { useRouter } from "@/i18n/navigation";
 import { Alert } from "@/ui/alert";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
+import { ZoomablePhoto } from "@/ui/photo-viewer";
 import { haptic } from "@/ui/motion";
 import { useToast } from "@/ui/toast";
 
@@ -109,7 +110,7 @@ export function QuantityForm({
         <h2 id="quantity-title" className="text-xl font-semibold">
           {t("add.quantityTitle")}
         </h2>
-        {food.imageUrl && <FoodPhoto src={food.imageUrl} />}
+        {food.imageUrl && <FoodPhoto src={food.imageUrl} name={shortFoodName(food.nameFr)} />}
         <div className="flex items-center gap-3">
           <p className="font-semibold">
             {shortFoodName(food.nameFr)}
@@ -278,21 +279,23 @@ function UnitWeightForm({ foodId, onSaved }: { foodId: string; onSaved: (unit: C
   );
 }
 
-/** Grande photo de l'aliment : recadrée pour une recette de l'app, entière pour un produit. */
-function FoodPhoto({ src }: { src: string }) {
+/** Grande photo de l'aliment : recadrée pour une recette de l'app, entière pour un produit ; touchée, elle s'ouvre en grand. */
+function FoodPhoto({ src, name }: { src: string; name: string }) {
   const recipe = src.startsWith("/recipes/") && src.endsWith("-480.webp");
   const cover = recipe || src.startsWith("/api/foods/");
   return (
-    // eslint-disable-next-line @next/next/no-img-element -- photo Open Food Facts ou WebP déjà redimensionné
-    <img
-      src={src}
-      srcSet={recipe ? `${src} 480w, ${src.replace(/-480\.webp$/, "-960.webp")} 960w` : undefined}
-      sizes={recipe ? "(min-width: 640px) 600px, 100vw" : undefined}
-      alt=""
-      referrerPolicy="no-referrer"
-      className={`my-2 aspect-[4/3] w-full rounded-[var(--radius-card)] ${
-        cover ? "object-cover" : "bg-white object-contain p-2"
-      }`}
-    />
+    <ZoomablePhoto photo={{ src, alt: name }} caption={name} className="my-2 w-full">
+      {/* eslint-disable-next-line @next/next/no-img-element -- photo Open Food Facts ou WebP déjà redimensionné */}
+      <img
+        src={src}
+        srcSet={recipe ? `${src} 480w, ${src.replace(/-480\.webp$/, "-960.webp")} 960w` : undefined}
+        sizes={recipe ? "(min-width: 640px) 600px, 100vw" : undefined}
+        alt=""
+        referrerPolicy="no-referrer"
+        className={`block aspect-[4/3] w-full rounded-[var(--radius-card)] ${
+          cover ? "object-cover" : "bg-white object-contain p-2"
+        }`}
+      />
+    </ZoomablePhoto>
   );
 }
