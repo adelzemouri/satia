@@ -19,8 +19,12 @@ export default function JournalLoading() {
           <Bone className="h-8 w-36" />
         </div>
         <div className="flex flex-col gap-2">
-          <Bone className="h-5 w-48" />
+          <div className="flex justify-between gap-3">
+            <Bone className="h-5 w-40" />
+            <Bone className="h-5 w-28" />
+          </div>
           <Bone className="h-3 w-full rounded-full" />
+          <Bone className="h-4 w-32" />
         </div>
         <div className="grid grid-cols-3 gap-3">
           {[0, 1, 2].map((index) => (
