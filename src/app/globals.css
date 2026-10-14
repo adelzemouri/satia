@@ -273,3 +273,50 @@ fieldset {
     top: var(--rest);
   }
 }
+
+/* Dictée : le micro respire tant qu'il écoute, rebondit et lance une onde à chaque mot reçu. */
+.dictation-breathe {
+  animation: dictation-breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes dictation-breathe {
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.dictation-bump {
+  animation: dictation-bump 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes dictation-bump {
+  40% {
+    transform: scale(1.18);
+  }
+}
+
+.dictation-wave {
+  animation: dictation-wave 1.2s ease-out forwards;
+}
+
+@keyframes dictation-wave {
+  from {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2);
+  }
+}
+
+.dictation-word {
+  animation: dictation-word 350ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes dictation-word {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.9);
+  }
+}

@@ -19,6 +19,7 @@ import { Icon } from "@/ui/icon";
 
 import { analyzePhotoAction, analyzeTextAction, type DraftState } from "./actions";
 import { compressImage, toBase64 } from "./compress-image";
+import { DictationHalo } from "./dictation-halo";
 import { onQuickStart, type QuickStart } from "./quick-start";
 import type { MealDraft } from "./draft";
 import { useSpeech } from "./use-speech";
@@ -239,20 +240,26 @@ export function AiEntry({
 
       {!photo && describing && (
         <form action={analyzeText} className="flex flex-col gap-3 rounded-[var(--radius-card)] bg-surface p-4">
-          <label className="flex flex-col gap-1.5">
-            <span className="font-semibold">{t("describe")}</span>
-            <textarea
-              value={text}
-              onChange={(event) => {
-                setText(event.target.value);
-                if (!event.target.value) setDictated(false);
-              }}
-              rows={2}
-              maxLength={500}
-              placeholder={t("describeHint")}
-              className="rounded-2xl border border-border bg-surface px-3 py-2 text-base"
-            />
-          </label>
+          {/* Pendant la dictée, la phrase s'écrit en grand avec le micro animé ; le champ revient
+              à l'arrêt pour corriger le texte. */}
+          {speech.listening ? (
+            <DictationHalo text={text} />
+          ) : (
+            <label className="flex flex-col gap-1.5">
+              <span className="font-semibold">{t("describe")}</span>
+              <textarea
+                value={text}
+                onChange={(event) => {
+                  setText(event.target.value);
+                  if (!event.target.value) setDictated(false);
+                }}
+                rows={2}
+                maxLength={500}
+                placeholder={t("describeHint")}
+                className="rounded-2xl border border-border bg-surface px-3 py-2 text-base"
+              />
+            </label>
+          )}
           {speech.error && <p className="text-sm text-text-muted">{errorText(speech.error)}</p>}
           <div className="flex flex-wrap gap-2">
             <Button type="submit" disabled={pending || text.trim().length < 2}>

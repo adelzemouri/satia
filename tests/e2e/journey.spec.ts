@@ -716,10 +716,16 @@ test("dictée : arrêter puis relancer, même quand le navigateur ne signale pas
   await page.goto("/add?slot=dinner");
   await page.getByRole("button", { name: "Écrire mon repas" }).click();
   const field = page.getByLabel("Décris ton repas");
+  // Pendant la dictée, la phrase s'écrit en grand ; le champ revient à l'arrêt.
+  const listening = page.getByRole("group", { name: "Dictée en cours" });
   await page.getByRole("button", { name: "Dicter" }).click();
-  await expect(field).toHaveValue("deux œufs");
+  await expect(listening).toContainText("deux œufs");
+  await expectNoA11yViolations(page);
   await page.getByRole("button", { name: "Arrêter la dictée" }).click();
+  await expect(field).toHaveValue("deux œufs");
   await page.getByRole("button", { name: "Dicter" }).click();
+  await expect(listening).toContainText("deux œufs et du pain");
+  await page.getByRole("button", { name: "Arrêter la dictée" }).click();
   await expect(field).toHaveValue("deux œufs et du pain");
 });
 

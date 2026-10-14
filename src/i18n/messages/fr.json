@@ -875,7 +875,10 @@
     "voice": "Voix",
     "barcode": "Code-barres",
     "write": "Écrire mon repas",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "listening": "J'écoute…",
+    "listeningHint": "Dis ce que tu as mangé…",
+    "listeningLabel": "Dictée en cours"
   },
   "aiConfirm": {
     "title": "On vérifie ensemble ?",

@@ -875,7 +875,10 @@
     "voice": "Voice",
     "barcode": "Barcode",
     "write": "Type my meal",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "listening": "Listening…",
+    "listeningHint": "Say what you ate…",
+    "listeningLabel": "Dictation in progress"
   },
   "aiConfirm": {
     "title": "Shall we check together?",
