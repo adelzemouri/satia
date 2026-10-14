@@ -715,18 +715,69 @@ test("dictée : arrêter puis relancer, même quand le navigateur ne signale pas
   await signIn(page, ADMIN);
   await page.goto("/add?slot=dinner");
   await page.getByRole("button", { name: "Écrire mon repas" }).click();
-  const field = page.getByLabel("Décris ton repas");
-  // Pendant la dictée, la phrase s'écrit en grand ; le champ revient à l'arrêt.
+  // Pendant la dictée, la phrase s'écrit en grand ; à l'arrêt, elle reste en grand avec Analyser,
+  // et le micro permet de compléter. Le champ ne revient que pour corriger.
   const listening = page.getByRole("group", { name: "Dictée en cours" });
+  const dictation = page.getByRole("group", { name: "Dictée", exact: true });
   await page.getByRole("button", { name: "Dicter" }).click();
   await expect(listening).toContainText("deux œufs");
   await expectNoA11yViolations(page);
   await page.getByRole("button", { name: "Arrêter la dictée" }).click();
-  await expect(field).toHaveValue("deux œufs");
-  await page.getByRole("button", { name: "Dicter" }).click();
+  await expect(dictation).toContainText("deux œufs");
+  await expect(page.getByLabel("Décris ton repas")).toHaveCount(0);
+  await expectNoA11yViolations(page);
+  await page.getByRole("button", { name: "Compléter la dictée" }).click();
   await expect(listening).toContainText("deux œufs et du pain");
   await page.getByRole("button", { name: "Arrêter la dictée" }).click();
-  await expect(field).toHaveValue("deux œufs et du pain");
+  await expect(dictation).toContainText("deux œufs et du pain");
+  await page.getByRole("button", { name: "Corriger le texte" }).click();
+  await expect(page.getByLabel("Décris ton repas")).toHaveValue("deux œufs et du pain");
+});
+
+test("dictée : le micro qui décroche laisse réessayer d'un toucher, sans retomber sur le champ", async ({ page }) => {
+  // Première dictée : Safari renvoie « audio-capture » (micro pas encore libéré) ; la suivante marche.
+  await page.addInitScript(() => {
+    let count = 0;
+    class FakeRecognition {
+      lang = "";
+      interimResults = false;
+      continuous = false;
+      onresult: ((event: unknown) => void) | null = null;
+      onerror: ((event: unknown) => void) | null = null;
+      onend: (() => void) | null = null;
+      start() {
+        count += 1;
+        if (count === 1) {
+          setTimeout(() => {
+            this.onerror?.({ error: "audio-capture" });
+            this.onend?.();
+          }, 50);
+          return;
+        }
+        setTimeout(() => {
+          this.onresult?.({ results: [Object.assign([{ transcript: "un sandwich au fromage" }], { isFinal: true })] });
+          this.onend?.();
+        }, 50);
+      }
+      stop() {}
+      abort() {
+        setTimeout(() => this.onend?.(), 10);
+      }
+    }
+    (window as unknown as { SpeechRecognition: unknown }).SpeechRecognition = FakeRecognition;
+  });
+  await signIn(page, ADMIN);
+  await page.goto("/add?slot=lunch");
+  await page.getByRole("button", { name: "Voix" }).click();
+  const dictation = page.getByRole("group", { name: "Dictée", exact: true });
+  await expect(dictation).toContainText("Dictée interrompue");
+  await expect(dictation.getByRole("alert")).toContainText("Le micro est indisponible");
+  await expect(page.getByLabel("Décris ton repas")).toHaveCount(0);
+  await page.getByRole("button", { name: "Réessayer la dictée" }).click();
+  await expect(dictation).toContainText("un sandwich au fromage");
+  await expect(dictation).toContainText("C'est noté");
+  await expect(dictation.getByRole("alert")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Analyser", exact: true })).toBeEnabled();
 });
 
 test("coach : dicter un message puis l'envoyer avec Entrée", async ({ page }) => {

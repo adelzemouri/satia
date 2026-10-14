@@ -564,7 +564,7 @@
     "treatment_days_required": "Choisis au moins un jour pour le rappel.",
     "treatment_name_required": "Indique le nom du traitement.",
     "speech_unavailable": "La dictée est désactivée sur ce téléphone. Sur iPhone : Réglages > Général > Clavier > Activer la dictée. Tu peux aussi écrire ton repas.",
-    "speech_silent": "Je n'ai rien entendu. Touche « Dicter » et parle juste après.",
+    "speech_silent": "Je n'ai rien entendu. Touche le micro et parle juste après.",
     "speech_mic": "Le micro est indisponible (peut-être utilisé par une autre app). Réessaie dans un instant.",
     "speech_network": "La dictée a besoin d'une connexion internet. Réessaie, ou écris ton repas."
   },
@@ -878,7 +878,18 @@
     "cancel": "Annuler",
     "listening": "J'écoute…",
     "listeningHint": "Dis ce que tu as mangé…",
-    "listeningLabel": "Dictée en cours"
+    "listeningLabel": "Dictée en cours",
+    "dictationLabel": "Dictée",
+    "heard": "C'est noté",
+    "interrupted": "Dictée interrompue",
+    "ready": "Prêt à t'écouter",
+    "tapToAdd": "Touche le micro pour compléter",
+    "tapToSpeak": "Touche le micro pour parler",
+    "tapToRetry": "Touche le micro pour réessayer",
+    "micAdd": "Compléter la dictée",
+    "micStart": "Lancer la dictée",
+    "micRetry": "Réessayer la dictée",
+    "editText": "Corriger le texte"
   },
   "aiConfirm": {
     "title": "On vérifie ensemble ?",

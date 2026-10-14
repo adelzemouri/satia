@@ -564,7 +564,7 @@
     "treatment_days_required": "Choose at least one day for the reminder.",
     "treatment_name_required": "Enter the treatment's name.",
     "speech_unavailable": "Dictation is turned off on this phone. On iPhone: Settings > General > Keyboard > Enable Dictation. You can also type your meal.",
-    "speech_silent": "I didn't hear anything. Tap “Dictate” and speak right away.",
+    "speech_silent": "I didn't hear anything. Tap the mic and speak right away.",
     "speech_mic": "The microphone is unavailable (maybe used by another app). Try again in a moment.",
     "speech_network": "Dictation needs an internet connection. Try again, or type your meal."
   },
@@ -878,7 +878,18 @@
     "cancel": "Cancel",
     "listening": "Listening…",
     "listeningHint": "Say what you ate…",
-    "listeningLabel": "Dictation in progress"
+    "listeningLabel": "Dictation in progress",
+    "dictationLabel": "Dictation",
+    "heard": "Got it",
+    "interrupted": "Dictation interrupted",
+    "ready": "Ready to listen",
+    "tapToAdd": "Tap the mic to add more",
+    "tapToSpeak": "Tap the mic to speak",
+    "tapToRetry": "Tap the mic to try again",
+    "micAdd": "Add to the dictation",
+    "micStart": "Start dictation",
+    "micRetry": "Retry dictation",
+    "editText": "Edit the text"
   },
   "aiConfirm": {
     "title": "Shall we check together?",
