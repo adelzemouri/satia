@@ -27,6 +27,13 @@ const SYNONYMS: readonly [RegExp, string][] = [
   [/\bcreme fraiche\b/, "creme epaisse"],
   [/\bcreme entiere\b/, "creme 30"],
   [/\bcreme allegee\b/, "creme legere"],
+  // Un café du quotidien est une boisson prête à boire, pas du café moulu ou en poudre
+  // (60 fois plus calorique à poids égal), ni un café au lait.
+  [/^(?:un |une )?(?:cafe )?(?:expresso|espresso|ristretto)$|^(?:un )?cafe serre$/, "cafe expresso non instantane"],
+  [
+    /^(?:un )?(?:cafe(?: (?:allonge|long|filtre|noir|nature|americain|sans sucre|non sucre))?|americano)$/,
+    "cafe non instantane non sucre",
+  ],
   // « Un verre » seul se cherche aussi comme de l'eau.
   [PLAIN_WATER, "eau du robinet"],
   // Ciqual ne connaît pas les formes de pâtes : des linguine sont des « pâtes sèches ».
@@ -42,6 +49,21 @@ export function searchVariants(normalized: string): string[] {
   if (!rule) return [];
   const variant = normalized.replace(rule[0], rule[1]);
   return variant === normalized ? [] : [variant];
+}
+
+/** Petits mots qui ne disent rien de l'aliment : « jus d'orange » se cherche sur jus et orange. */
+const STOPWORDS = new Set(["a", "au", "aux", "d", "de", "des", "du", "en", "et", "l", "la", "le", "les", "un", "une"]);
+
+/**
+ * Débuts des mots qui désignent l'aliment, sans les petits mots ni les pluriels et coupés à six
+ * lettres pour couvrir les accords : « haricots verts surgelés » → harico, vert, surgel. Six au plus.
+ */
+export function searchStems(normalized: string): string[] {
+  return normalized
+    .split(" ")
+    .filter((word) => word.length > 1 && !STOPWORDS.has(word))
+    .map((word) => (word.length > 3 ? word.replace(/[sx]$/, "") : word).slice(0, 6))
+    .slice(0, 6);
 }
 
 const STARCH =

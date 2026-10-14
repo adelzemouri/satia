@@ -11,7 +11,7 @@ import { favorites, foods, mealEntries, recipeItems, user } from "@/db/schema";
 import { kcalFromMacros, type Nutrients, nutrientsFor, recipePer100g } from "@/domain/nutrition";
 import { recipeQuality } from "@/domain/quality";
 import { CATALOG_PREFIX } from "@/domain/recipes/catalog";
-import { normalizeForSearch, searchVariants } from "@/domain/search";
+import { normalizeForSearch, searchVariants, searchStems } from "@/domain/search";
 
 import { COUNT_UNITS, type Unit } from "@/domain/units";
 import { AiUnavailableError, generateRecipeImage } from "@/llm";
@@ -80,8 +80,11 @@ export const SEARCH_LIMIT = 25;
 
 /**
  * Recherche floue tolérante aux accents et aux fautes (trigrammes sur le nom normalisé).
- * Ordre : aliments personnels et recettes du foyer, puis les noms qui commencent par la recherche, puis par son
- * premier mot, puis ceux qui contiennent tous les mots, puis les plus proches et les plus courts.
+ * Ordre : aliments personnels et recettes du foyer, puis les noms qui commencent par la recherche, puis
+ * par sa formulation Ciqual (« café allongé » → café prêt à boire, pas moulu), puis ceux qui
+ * contiennent tous les mots, ceux qui en contiennent le plus, ceux qui commencent par le premier mot,
+ * puis les plus proches et les plus courts. Un nom qui ne contient que le premier mot reste trouvé :
+ * Ciqual ne connaît pas « bien mûre », la banane doit sortir quand même.
  */
 export async function searchFoods(userId: string, query: string): Promise<FoodSummary[]> {
   const q = normalizeForSearch(query);
@@ -101,6 +104,15 @@ export async function searchFoods(userId: string, query: string): Promise<FoodSu
     ),
     sql` or `,
   );
+  // Mots de la recherche par lesquels commence un mot du nom. Le premier, qui nomme d'ordinaire
+  // l'aliment, suffit à trouver : Ciqual ne dit ni « allongé » ni « bien mûre ».
+  const stems = searchStems(q);
+  const startsWord = (stem: string) => sql`(' ' || ${foods.searchName} like ${`% ${stem}%`})`;
+  const wordHits = sql.join(
+    stems.map((stem) => sql`${startsWord(stem)}::int`),
+    sql` + `,
+  );
+  const variants = searchVariants(q);
   return db()
     .select(foodSummaryColumns)
     .from(foods)
@@ -109,6 +121,7 @@ export async function searchFoods(userId: string, query: string): Promise<FoodSu
         visibleTo(userId),
         or(
           sql`(${allWords})`,
+          ...(stems.length >= 2 ? [startsWord(stems[0]!)] : []),
           sql`word_similarity(${q}, ${foods.searchName}) > 0.45`,
           sql`similarity(${foods.searchName}, ${q}) > 0.3`,
         ),
@@ -117,8 +130,10 @@ export async function searchFoods(userId: string, query: string): Promise<FoodSu
     .orderBy(
       sql`(${foods.ownerUserId} is not null or ${foods.householdId} is not null) desc`,
       sql`(${foods.searchName} like ${`${q}%`}) desc`,
+      ...variants.map((variant) => sql`(${foods.searchName} like ${`${variant}%`}) desc`),
       // Tous les mots avant le premier seul : « coulis de tomate » donne « Tomate, coulis », pas un coulis de fruits.
       sql`(${allWords}) desc`,
+      ...(stems.length >= 2 ? [sql`(${wordHits}) desc`] : []),
       sql`(${foods.searchName} like ${`${words[0]}%`}) desc`,
       sql`word_similarity(${q}, ${foods.searchName}) desc`,
       sql`length(${foods.searchName})`,

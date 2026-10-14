@@ -109,6 +109,13 @@ describe("base d'aliments", () => {
     // Tous les mots avant le premier : « coulis de tomate » n'est pas un coulis de fruits.
     expect((await searchFoods(userId, "coulis de tomate"))[0]?.nameFr).toMatch(/^Tomate, coulis/);
     expect((await searchFoods(userId, "crème fraîche"))[0]?.nameFr).toMatch(/^Crème de lait.*épaisse/);
+    // Un café du quotidien est une boisson, pas du café moulu à 400 kcal pour 100 g.
+    for (const query of ["café", "café allongé", "café long"]) {
+      expect((await searchFoods(userId, query))[0]?.nameFr).toBe("Café, non instantané, non sucré, prêt à boire");
+    }
+    expect((await searchFoods(userId, "café serré"))[0]?.nameFr).toMatch(/^Café expresso/);
+    // Un mot que Ciqual ne connaît pas n'empêche pas de trouver l'aliment.
+    expect((await searchFoods(userId, "banane bien mûre"))[0]?.nameFr).toMatch(/^Banane, pulpe, crue/);
     // Des linguine reconnues sur une photo se comptent cuites, pas comme un paquet sec.
     for (const label of ["linguine cuites", "linguine", "linguines"]) {
       expect(pickForLabel(label, await searchFoods(userId, label))?.nameFr).toBe(
