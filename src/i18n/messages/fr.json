@@ -30,7 +30,12 @@
     "progress": "Progrès",
     "back": "Retour",
     "kitchen": "Cuisine",
-    "addMeal": "Ajouter un repas"
+    "addMeal": "Ajouter un repas",
+    "addPhoto": "Photo",
+    "addVoice": "Voix",
+    "addBarcode": "Code-barres",
+    "addSearch": "Chercher",
+    "addClose": "Fermer les façons d'ajouter"
   },
   "home": {
     "greeting": "Bonjour {name}",

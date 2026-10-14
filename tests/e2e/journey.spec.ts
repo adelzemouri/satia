@@ -279,7 +279,8 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await expect(page).toHaveURL(/\/foods$/);
   await expect(page.getByText("Granola maison")).toBeVisible();
 
-  await page.getByRole("link", { name: "Ajouter", exact: true }).click();
+  await page.getByRole("button", { name: "Ajouter un repas" }).click();
+  await page.getByRole("link", { name: "Chercher", exact: true }).click();
   await page.getByRole("tab", { name: "Mes aliments" }).click();
   await page.getByRole("button", { name: "Ajouter Granola maison aux favoris" }).click();
   await page.getByRole("tab", { name: "Favoris" }).click();
@@ -292,7 +293,8 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await expect(page.getByRole("region", { name: "Petit-déjeuner" }).getByText("Granola maison")).toBeVisible();
 
   // Le + des récents rajoute la dernière portion d'un geste.
-  await page.getByRole("link", { name: "Ajouter", exact: true }).click();
+  await page.getByRole("button", { name: "Ajouter un repas" }).click();
+  await page.getByRole("link", { name: "Chercher", exact: true }).click();
   await expect(page.getByText("1 portion · 212 kcal")).toBeVisible();
   await withServerAction(page, () => page.getByRole("button", { name: "Ajouter Granola maison" }).click());
   await expect(page.getByRole("button", { name: "Granola maison ajouté" })).toBeVisible();
@@ -554,6 +556,24 @@ const MEAL_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEElEQVR4nGM4UWEDRAwQCgArzgXx0HrtWgAAAABJRU5ErkJggg==",
   "base64",
 );
+
+test("le + ouvre l'éventail et la photo prise part vers l'écran d'ajout", async ({ page }) => {
+  await signIn(page, ADMIN);
+  await page.goto("/journal");
+  const plus = page.getByRole("button", { name: "Ajouter un repas" });
+  // Le bouton peut être touché avant l'hydratation de la page : on recommence au besoin.
+  await expect(async () => {
+    await plus.click();
+    await expect(page.getByRole("button", { name: "Fermer les façons d'ajouter" })).toBeVisible({ timeout: 2000 });
+  }).toPass({ timeout: 20_000 });
+  await expect(page.getByRole("link", { name: "Code-barres" })).toBeVisible();
+  await expectNoA11yViolations(page);
+  await page
+    .getByLabel("Photo", { exact: true })
+    .setInputFiles({ name: "repas.png", mimeType: "image/png", buffer: MEAL_PNG });
+  await expect(page).toHaveURL(/\/add$/);
+  await expect(page.getByRole("img", { name: "Photo de ton repas" })).toBeVisible();
+});
 
 test("saisie d'un repas par photo (LLM simulé), avec contenant et écran de confirmation", async ({ page }) => {
   await signIn(page, ADMIN);

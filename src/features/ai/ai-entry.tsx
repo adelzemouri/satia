@@ -1,7 +1,15 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { type ChangeEvent, type ComponentProps, useEffect, useRef, useState, useTransition } from "react";
+import {
+  type ChangeEvent,
+  type ComponentProps,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 
 import { useErrorText } from "@/features/auth/use-error-text";
 import { Link } from "@/i18n/navigation";
@@ -11,6 +19,7 @@ import { Icon } from "@/ui/icon";
 
 import { analyzePhotoAction, analyzeTextAction, type DraftState } from "./actions";
 import { compressImage, toBase64 } from "./compress-image";
+import { onQuickStart, type QuickStart } from "./quick-start";
 import type { MealDraft } from "./draft";
 import { useSpeech } from "./use-speech";
 
@@ -62,6 +71,21 @@ export function AiEntry({
     before.current = text.trim() ? `${text.trim()} ` : "";
     speech.start();
   };
+
+  // Départ rapide depuis le + de la barre du bas : la photo déjà prise, ou la dictée à lancer.
+  const quickStart = useEffectEvent((start: QuickStart) => {
+    if (!availability.available) return;
+    setError(null);
+    if (start.kind === "photo") {
+      setDescribing(false);
+      setPhoto({ file: start.file, preview: URL.createObjectURL(start.file) });
+      return;
+    }
+    setPhoto(null);
+    setDescribing(true);
+    if (speech.supported && !speech.listening) dictate();
+  });
+  useEffect(() => onQuickStart(quickStart), []);
 
   // L'aperçu local est libéré quand on change de photo ou qu'on quitte l'écran.
   useEffect(() => () => (photo ? URL.revokeObjectURL(photo.preview) : undefined), [photo]);

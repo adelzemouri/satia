@@ -30,7 +30,12 @@
     "progress": "Progress",
     "back": "Back",
     "kitchen": "Kitchen",
-    "addMeal": "Add a meal"
+    "addMeal": "Add a meal",
+    "addPhoto": "Photo",
+    "addVoice": "Voice",
+    "addBarcode": "Barcode",
+    "addSearch": "Search",
+    "addClose": "Close the add options"
   },
   "home": {
     "greeting": "Hello {name}",
