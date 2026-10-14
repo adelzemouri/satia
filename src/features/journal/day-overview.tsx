@@ -5,6 +5,7 @@ import type { Nutrients } from "@/domain/nutrition";
 import { CountUp } from "@/ui/count-up";
 
 import { RingArc } from "./ring-arc";
+import { RingGain } from "./ring-gain";
 
 type Goal = { kcal: number; proteinG: number; carbsG: number; fatG: number };
 
@@ -79,10 +80,11 @@ export async function CalorieSummary({
         </svg>
         <span className="absolute inset-0 flex flex-col items-center justify-center leading-tight">
           <span className="font-display text-3xl font-extrabold tracking-tight">
-            <CountUp value={Math.abs(target - consumed)} />
+            <CountUp value={Math.abs(target - consumed)} memoryKey="ring-left" />
           </span>
           <span className="text-sm font-semibold text-text-muted">{over ? t("ringOver") : t("ringLeft")}</span>
         </span>
+        <RingGain key={consumed} consumed={consumed} />
       </div>
       <dl className="flex min-w-0 flex-col gap-2">
         <div className="flex flex-col">
