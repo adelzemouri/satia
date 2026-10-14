@@ -136,12 +136,12 @@ export function EntryRow({ entry, units, readOnly = false }: { entry: EntryView;
 
   return (
     <div
-      className={`grid transition-[grid-template-rows,opacity] ease-out-strong ${
+      className={`grid grid-cols-1 transition-[grid-template-rows,opacity] ease-out-strong ${
         collapsing ? "grid-rows-[0fr] opacity-0" : "grid-rows-[1fr]"
       }`}
       style={{ transitionDuration: `${COLLAPSE_MS}ms` }}
     >
-      <div className={`flex min-h-0 flex-col gap-3 py-2 ${collapsing ? "overflow-hidden" : ""}`}>
+      <div className={`flex min-h-0 min-w-0 flex-col gap-3 py-2 ${collapsing ? "overflow-hidden" : ""}`}>
         <SwipeRow
           key={restored}
           onSwipeLeft={remove}
