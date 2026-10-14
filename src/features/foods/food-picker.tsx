@@ -17,6 +17,7 @@ import { Icon } from "@/ui/icon";
 import { FoodList } from "./food-list";
 import type { FoodItem, OffItem, RecentItem } from "./food-types";
 import { QuickAddButton } from "./quick-add-button";
+import { SlotSelect } from "./slot-select";
 import { ProductThumb } from "./product-thumb";
 import { QuantityForm } from "./quantity-form";
 import { useFoodSearch } from "./use-food-search";
@@ -218,6 +219,12 @@ export function FoodPicker({
                 availability={ai.availability}
                 containers={ai.containers}
                 barcodeHref={barcodeHref}
+                dictationTitle={
+                  <header className="flex items-center justify-between gap-3">
+                    <h2 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h2>
+                    <SlotSelect date={date} slot={slot} />
+                  </header>
+                }
                 onDraft={(value, preview) => setDraft({ draft: value, preview })}
               />
             ) : (

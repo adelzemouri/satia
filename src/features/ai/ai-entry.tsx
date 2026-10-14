@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import {
   type ChangeEvent,
   type ComponentProps,
+  type ReactNode,
   useEffect,
   useEffectEvent,
   useRef,
@@ -19,7 +20,7 @@ import { Icon } from "@/ui/icon";
 
 import { analyzePhotoAction, analyzeTextAction, type DraftState } from "./actions";
 import { compressImage, toBase64 } from "./compress-image";
-import { DictationHalo } from "./dictation-halo";
+import { DictationScreen } from "./dictation-halo";
 import { onQuickStart, type QuickStart } from "./quick-start";
 import type { MealDraft } from "./draft";
 import { useSpeech } from "./use-speech";
@@ -43,12 +44,15 @@ export function AiEntry({
   availability,
   containers,
   barcodeHref,
+  dictationTitle,
   onDraft,
 }: {
   availability: AiAvailability;
   containers: { id: string; name: string }[];
   /** Le scan de code-barres complète les trois grandes entrées de l'écran d'ajout. */
   barcodeHref: ComponentProps<typeof Link>["href"];
+  /** En-tête de l'écran de dictée plein écran (titre et choix du repas). */
+  dictationTitle?: ReactNode;
   onDraft: (draft: MealDraft, photoPreview: string | null) => void;
 }) {
   const t = useTranslations("aiEntry");
@@ -252,79 +256,51 @@ export function AiEntry({
         )
       )}
 
-      {!photo && describing && (
+      {!photo && describing && voice && (
+        <DictationScreen
+          title={dictationTitle}
+          onClose={cancel}
+          action={analyzeText}
+          text={text}
+          listening={speech.listening}
+          error={speech.error ? errorText(speech.error) : null}
+          pending={pending}
+          onMic={dictate}
+          onStop={speech.stop}
+          onEdit={() => setVoice(false)}
+        />
+      )}
+      {!photo && describing && !voice && (
         <form action={analyzeText} className="flex flex-col gap-3 rounded-[var(--radius-card)] bg-surface p-4">
-          {voice ? (
-            <DictationHalo
-              text={text}
-              listening={speech.listening}
-              error={speech.error ? errorText(speech.error) : null}
-              onMic={dictate}
+          <label className="flex flex-col gap-1.5">
+            <span className="font-semibold">{t("describe")}</span>
+            <textarea
+              value={text}
+              onChange={(event) => {
+                setText(event.target.value);
+                if (!event.target.value) setDictated(false);
+              }}
+              rows={2}
+              maxLength={500}
+              placeholder={t("describeHint")}
+              className="rounded-2xl border border-border bg-surface px-3 py-2 text-base"
             />
-          ) : (
-            <>
-              <label className="flex flex-col gap-1.5">
-                <span className="font-semibold">{t("describe")}</span>
-                <textarea
-                  value={text}
-                  onChange={(event) => {
-                    setText(event.target.value);
-                    if (!event.target.value) setDictated(false);
-                  }}
-                  rows={2}
-                  maxLength={500}
-                  placeholder={t("describeHint")}
-                  className="rounded-2xl border border-border bg-surface px-3 py-2 text-base"
-                />
-              </label>
-              {speech.error && <p className="text-sm text-text-muted">{errorText(speech.error)}</p>}
-            </>
-          )}
-          {voice && !speech.listening ? (
-            <>
-              <Button type="submit" disabled={pending || text.trim().length < 2} className="w-full">
-                {pending ? t("analyzing") : t("analyzeText")}
+          </label>
+          {speech.error && <p className="text-sm text-text-muted">{errorText(speech.error)}</p>}
+          <div className="flex flex-wrap gap-2">
+            <Button type="submit" disabled={pending || text.trim().length < 2}>
+              {pending ? t("analyzing") : t("analyzeText")}
+            </Button>
+            {speech.supported && (
+              <Button variant="secondary" onClick={dictate} disabled={pending}>
+                <Icon name="mic" />
+                {t("dictate")}
               </Button>
-              <p className="flex justify-center gap-x-6 text-sm font-semibold text-primary">
-                <button
-                  type="button"
-                  onClick={() => setVoice(false)}
-                  disabled={pending}
-                  className="min-h-11 underline underline-offset-4"
-                >
-                  {t("editText")}
-                </button>
-                <button
-                  type="button"
-                  onClick={cancel}
-                  disabled={pending}
-                  className="min-h-11 underline-offset-4 hover:underline"
-                >
-                  {t("cancel")}
-                </button>
-              </p>
-            </>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              <Button type="submit" disabled={pending || text.trim().length < 2}>
-                {pending ? t("analyzing") : t("analyzeText")}
-              </Button>
-              {speech.supported && (
-                <Button
-                  variant="secondary"
-                  onClick={speech.listening ? speech.stop : dictate}
-                  aria-pressed={speech.listening}
-                  disabled={pending}
-                >
-                  <Icon name="mic" />
-                  {speech.listening ? t("stopDictation") : t("dictate")}
-                </Button>
-              )}
-              <Button variant="ghost" onClick={cancel} disabled={pending}>
-                {t("cancel")}
-              </Button>
-            </div>
-          )}
+            )}
+            <Button variant="ghost" onClick={cancel} disabled={pending}>
+              {t("cancel")}
+            </Button>
+          </div>
         </form>
       )}
       {(photo || describing) && (
