@@ -54,3 +54,42 @@ export function swipeAxis(dx: number, dy: number, slop = 10): "x" | "y" | null {
 
 /** Bord gauche de l'écran réservé au geste « retour » du téléphone. */
 export const EDGE_GUARD = 24;
+
+/**
+ * Dernière valeur affichée par un compteur ou un anneau depuis l'ouverture de l'app (navigateur
+ * seulement : côté serveur, rien n'est partagé entre les requêtes). Revenir sur l'accueil reprend
+ * de là au lieu de tout rejouer depuis zéro ; seul l'écart avec la nouvelle valeur s'anime.
+ */
+const shownValues = new Map<string, number>();
+
+export function lastShown(key: string): number | undefined {
+  return typeof window === "undefined" ? undefined : shownValues.get(key);
+}
+
+export function rememberShown(key: string, value: number): void {
+  shownValues.set(key, value);
+}
+
+/** Le remplissage des anneaux et jauges à l'ouverture de l'app est-il déjà passé ? */
+export function fillsDone(): boolean {
+  return typeof document !== "undefined" && document.documentElement.hasAttribute("data-fills-done");
+}
+
+/** Vitesse minimale (px/ms) d'un geste vif qui déclenche l'action sans atteindre le seuil. */
+export const FLICK_VELOCITY = 0.11;
+
+/** Distance minimale (px) d'un geste vif, pour qu'un tremblement du doigt ne compte pas. */
+export const FLICK_MIN_DISTANCE = 32;
+
+/**
+ * Action d'un glissement terminé, en tenant compte de la vitesse : un petit geste rapide suffit,
+ * comme sur les listes des applis natives ; un geste lent doit toujours atteindre le seuil.
+ */
+export function swipeRelease(dx: number, elapsedMs: number, threshold = SWIPE_THRESHOLD): "left" | "right" | null {
+  const outcome = swipeOutcome(dx, threshold);
+  if (outcome) return outcome;
+  if (Math.abs(dx) < FLICK_MIN_DISTANCE) return null;
+  const velocity = Math.abs(dx) / Math.max(1, elapsedMs);
+  if (velocity <= FLICK_VELOCITY) return null;
+  return dx < 0 ? "left" : "right";
+}

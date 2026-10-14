@@ -567,10 +567,12 @@ test("le + ouvre l'éventail et la photo prise part vers l'écran d'ajout", asyn
   await signIn(page, ADMIN);
   await page.goto("/journal");
   const plus = page.getByRole("button", { name: "Ajouter un repas" });
-  // Le bouton peut être touché avant l'hydratation de la page : on recommence au besoin.
+  const close = page.getByRole("button", { name: "Fermer les façons d'ajouter" });
+  // Le bouton peut être touché avant l'hydratation de la page : on recommence au besoin, sans
+  // retoucher un éventail déjà ouvert (le + s'appelle alors « Fermer »).
   await expect(async () => {
-    await plus.click();
-    await expect(page.getByRole("button", { name: "Fermer les façons d'ajouter" })).toBeVisible({ timeout: 2000 });
+    if (!(await close.isVisible())) await plus.click({ timeout: 2000 });
+    await expect(close).toBeVisible({ timeout: 2000 });
   }).toPass({ timeout: 20_000 });
   await expect(page.getByRole("link", { name: "Code-barres" })).toBeVisible();
   await expectNoA11yViolations(page);

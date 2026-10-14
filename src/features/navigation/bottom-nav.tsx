@@ -61,7 +61,7 @@ export function BottomNav({ ai }: { ai: boolean }) {
       <div
         aria-hidden="true"
         onClick={() => setFanOpen(false)}
-        className={`fixed inset-0 z-10 bg-bg/70 backdrop-blur-[3px] transition-opacity duration-200 lg:hidden ${fanOpen ? "opacity-100" : "pointer-events-none opacity-0"}`}
+        className={`fixed inset-0 z-10 bg-bg/70 backdrop-blur-[3px] transition-opacity ease-out-strong lg:hidden ${fanOpen ? "opacity-100 duration-200" : "pointer-events-none opacity-0 duration-150"}`}
       />
       <nav
         aria-label={t("main")}

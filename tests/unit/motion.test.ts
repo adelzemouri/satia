@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { easeOutCubic, SWIPE_THRESHOLD, swipeAxis, swipeOutcome, swipeThreshold, tween } from "@/ui/motion";
+import {
+  easeOutCubic,
+  FLICK_MIN_DISTANCE,
+  SWIPE_THRESHOLD,
+  swipeAxis,
+  swipeOutcome,
+  swipeRelease,
+  swipeThreshold,
+  tween,
+} from "@/ui/motion";
 
 describe("easeOutCubic", () => {
   it("part de 0, arrive à 1 et reste dans les bornes", () => {
@@ -32,6 +41,22 @@ describe("swipeOutcome", () => {
     expect(swipeOutcome(SWIPE_THRESHOLD + 10)).toBe("right");
     expect(swipeOutcome(-(SWIPE_THRESHOLD - 1))).toBeNull();
     expect(swipeOutcome(0)).toBeNull();
+  });
+});
+
+describe("swipeRelease", () => {
+  it("garde le seuil pour un geste lent", () => {
+    expect(swipeRelease(-SWIPE_THRESHOLD, 2000)).toBe("left");
+    expect(swipeRelease(-60, 1000)).toBeNull();
+  });
+
+  it("accepte un petit geste vif, dans son sens", () => {
+    expect(swipeRelease(-60, 120)).toBe("left");
+    expect(swipeRelease(60, 120)).toBe("right");
+  });
+
+  it("ignore un tremblement du doigt, même rapide", () => {
+    expect(swipeRelease(-(FLICK_MIN_DISTANCE - 1), 5)).toBeNull();
   });
 });
 

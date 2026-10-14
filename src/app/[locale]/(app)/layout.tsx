@@ -8,6 +8,7 @@ import { OfflineProvider, OfflineStatus } from "@/features/offline/offline-provi
 import { toLocale } from "@/i18n/routing";
 import { llmConfig } from "@/llm/config";
 import { requireUser } from "@/server/session";
+import { FillsGate } from "@/ui/fills-gate";
 import { ToastProvider } from "@/ui/toast";
 
 export default async function AppLayout({ children, params }: LayoutProps<"/[locale]">) {
@@ -16,6 +17,7 @@ export default async function AppLayout({ children, params }: LayoutProps<"/[loc
   return (
     <OfflineProvider userId={user.id}>
       <ToastProvider>
+        <FillsGate />
         {/* Premier arrêt au clavier : passer directement au contenu de la page. */}
         <a
           href="#contenu"

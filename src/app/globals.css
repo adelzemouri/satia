@@ -25,6 +25,9 @@
   --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-title), ui-serif, Georgia, serif;
   --radius-card: var(--radius-card);
+  /* Courbes partagées (utilitaires ease-out-strong, ease-pop) : sortie franche, petit rebond. */
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-pop: cubic-bezier(0.34, 1.3, 0.64, 1);
 }
 
 html {
@@ -106,10 +109,10 @@ fieldset {
   }
 }
 
-/* Jauges : elles se remplissent à l'affichage. */
+/* Jauges : elles se remplissent à l'ouverture de l'app, puis restent en place (data-fills-done). */
 .bar-grow {
   transform-origin: left;
-  animation: bar-grow 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: bar-grow 600ms var(--ease-out-strong);
 }
 
 @keyframes bar-grow {
@@ -119,7 +122,35 @@ fieldset {
 }
 
 .ring-fill {
-  animation: ring-fill 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: ring-fill 600ms var(--ease-out-strong);
+}
+
+/* Après l'ouverture de l'app, revenir sur une page ne rejoue plus le remplissage : seul ce qui
+   change s'anime (RingArc relance alors l'animation en style en ligne). */
+[data-fills-done] .ring-fill,
+[data-fills-done] .bar-grow {
+  animation: none;
+}
+
+/* « +120 » près de l'anneau après un ajout : il monte un peu et s'efface. */
+.gain-float {
+  animation: gain-float 1400ms var(--ease-out-strong) forwards;
+}
+
+@keyframes gain-float {
+  0% {
+    opacity: 0;
+    transform: translateY(0.375rem);
+  }
+  20%,
+  70% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
 }
 
 @keyframes ring-fill {

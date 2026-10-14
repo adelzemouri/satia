@@ -48,7 +48,7 @@ export async function BalanceCard({ quality }: { quality: DayQuality }) {
         </h2>
         <span className="shrink-0">
           <span className="font-display text-2xl font-extrabold text-primary">
-            <CountUp value={score} />
+            <CountUp value={score} memoryKey="balance-score" />
           </span>
           <span className="font-semibold text-text-muted">{t("home.balance.outOf")}</span>
           <span className="sr-only">{t("home.balance.score", { score })}</span>
