@@ -569,7 +569,8 @@ test("le + ouvre l'éventail et la photo prise part vers l'écran d'ajout", asyn
   await expect(page.getByRole("link", { name: "Code-barres" })).toBeVisible();
   await expectNoA11yViolations(page);
   await page
-    .getByLabel("Photo", { exact: true })
+    .getByRole("navigation", { name: "Navigation principale" })
+    .getByLabel("Prendre mon repas en photo")
     .setInputFiles({ name: "repas.png", mimeType: "image/png", buffer: MEAL_PNG });
   await expect(page).toHaveURL(/\/add$/);
   await expect(page.getByRole("img", { name: "Photo de ton repas" })).toBeVisible();

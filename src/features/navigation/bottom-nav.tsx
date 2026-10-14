@@ -46,7 +46,7 @@ function isActive(pathname: string, tab: (typeof TABS)[number]): boolean {
 }
 
 /** Barre de navigation inférieure ; le + central ouvre en éventail les façons d'ajouter un repas. */
-export function BottomNav() {
+export function BottomNav({ ai }: { ai: boolean }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
   // L'éventail du + est ouvert pour la page où on l'a ouvert : changer de page le referme.
@@ -74,7 +74,7 @@ export function BottomNav() {
             if (tab.key === "add")
               return (
                 <li key={tab.key} className="flex items-center justify-center">
-                  <AddFan open={fanOpen} onOpenChange={setFanOpen} />
+                  <AddFan open={fanOpen} onOpenChange={setFanOpen} ai={ai} />
                 </li>
               );
             return (

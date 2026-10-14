@@ -35,7 +35,8 @@
     "addVoice": "Voice",
     "addBarcode": "Barcode",
     "addSearch": "Search",
-    "addClose": "Close the add options"
+    "addClose": "Close the add options",
+    "addPhotoTake": "Take a photo of my meal"
   },
   "home": {
     "greeting": "Hello {name}",
