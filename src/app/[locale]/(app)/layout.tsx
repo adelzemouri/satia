@@ -6,6 +6,7 @@ import { SideNav } from "@/features/navigation/side-nav";
 import { TabSwipe } from "@/features/navigation/tab-swipe";
 import { OfflineProvider, OfflineStatus } from "@/features/offline/offline-provider";
 import { toLocale } from "@/i18n/routing";
+import { llmConfig } from "@/llm/config";
 import { requireUser } from "@/server/session";
 import { ToastProvider } from "@/ui/toast";
 
@@ -36,7 +37,7 @@ export default async function AppLayout({ children, params }: LayoutProps<"/[loc
           </main>
         </div>
         <SideNav />
-        <BottomNav />
+        <BottomNav ai={llmConfig().provider !== "none"} />
       </ToastProvider>
     </OfflineProvider>
   );

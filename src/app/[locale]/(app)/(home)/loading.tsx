@@ -1,8 +1,8 @@
-import { Bone, RingBone, SkeletonCard, SkeletonPage, TitleBone } from "@/ui/skeleton";
+import { Bone, RingBone, SkeletonCard, SkeletonPage } from "@/ui/skeleton";
 
 /**
- * Squelette de l'accueil, à la forme de la page : date, série et profil, bonjour et bulle de
- * Pépin, semaine ; puis la journée (anneau, macros, repas) et les idées ; enfin l'eau, l'activité
+ * Squelette de l'accueil, à la forme de la page : date, série et profil, bulle de Pépin avec le
+ * bonjour, semaine ; puis la journée (anneau, macros, repas) et les idées ; enfin l'eau, l'activité
  * et Pépin. Sur ordinateur, les mêmes deux colonnes que la page.
  */
 export default function HomeLoading() {
@@ -14,12 +14,9 @@ export default function HomeLoading() {
           <Bone className="ml-auto h-12 w-16 rounded-full" />
           <Bone className="size-12 shrink-0 rounded-full" />
         </div>
-        <div className="flex flex-col gap-1">
-          <TitleBone className="w-56" />
-          <div className="mt-1 flex items-end gap-2">
-            <Bone className="size-10 shrink-0 rounded-full" />
-            <Bone className="h-14 w-full max-w-sm rounded-2xl rounded-bl-md" />
-          </div>
+        <div className="flex items-end gap-2">
+          <Bone className="size-10 shrink-0 rounded-full" />
+          <Bone className="h-20 w-full max-w-sm rounded-2xl rounded-bl-md" />
         </div>
         <div className="grid grid-cols-7 gap-1">
           {[0, 1, 2, 3, 4, 5, 6].map((index) => (

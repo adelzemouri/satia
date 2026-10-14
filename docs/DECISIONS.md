@@ -321,6 +321,20 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 030 — Le + ouvre un éventail d'actions
+
+- **Date** : 2026-10-14 · **Statut** : adoptée
+- **Contexte** : Adel trouve le + de la barre du bas trop gros et voudrait qu'il s'anime. Il
+  ouvrait la page Ajouter, qui attend une dizaine de lectures en base avant de s'afficher.
+- **Décision** : un + plus petit qui tourne en × et fait jaillir en éventail la photo, la
+  voix, le code-barres et la recherche (variante A des maquettes
+  https://claude.ai/artifact/Q9FGcY9odM3WbyNy8CBfRD). Pas d'animation permanente.
+- **Conséquences** : la photo prise depuis l'éventail et la dictée sont remises à l'écran
+  d'ajout par `features/ai/quick-start.ts`. « Chercher » ouvre la page Ajouter, qui garde
+  les récents et les favoris. Sur ordinateur, la barre latérale ne change pas.
+
+---
+
 ## Modèle
 
 ```markdown
