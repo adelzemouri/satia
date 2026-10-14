@@ -60,6 +60,9 @@ export function AiEntry({
   const [text, setText] = useState("");
   const [dictated, setDictated] = useState(false);
   const [describing, setDescribing] = useState(false);
+  // Repas dicté : la phrase reste en grand (DictationHalo) jusqu'à l'analyse, même quand la
+  // dictée s'arrête ; le champ texte ne revient que pour corriger.
+  const [voice, setVoice] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   // Une nouvelle dictée complète le texte déjà là au lieu de l'effacer.
@@ -70,6 +73,7 @@ export function AiEntry({
   });
   const dictate = () => {
     before.current = text.trim() ? `${text.trim()} ` : "";
+    setVoice(true);
     speech.start();
   };
 
@@ -123,6 +127,12 @@ export function AiEntry({
     setPhoto({ file, preview: URL.createObjectURL(file) });
   };
 
+  const cancel = () => {
+    speech.stop();
+    setVoice(false);
+    setDescribing(false);
+  };
+
   const finish = (result: DraftState, preview: string | null) => {
     if ("error" in result) return setError(result.error);
     onDraft(result.draft, preview);
@@ -150,6 +160,7 @@ export function AiEntry({
   const analyzeText = () =>
     startTransition(async () => {
       setError(null);
+      if (speech.listening) speech.stop();
       finish(await analyzeTextAction({ text, method: dictated ? "voice" : "text" }), null);
     });
 
@@ -228,7 +239,10 @@ export function AiEntry({
               </label>
               <button
                 type="button"
-                onClick={() => setDescribing(true)}
+                onClick={() => {
+                  setVoice(false);
+                  setDescribing(true);
+                }}
                 className="min-h-11 underline-offset-4 hover:underline"
               >
                 {t("write")}
@@ -240,53 +254,77 @@ export function AiEntry({
 
       {!photo && describing && (
         <form action={analyzeText} className="flex flex-col gap-3 rounded-[var(--radius-card)] bg-surface p-4">
-          {/* Pendant la dictée, la phrase s'écrit en grand avec le micro animé ; le champ revient
-              à l'arrêt pour corriger le texte. */}
-          {speech.listening ? (
-            <DictationHalo text={text} />
+          {voice ? (
+            <DictationHalo
+              text={text}
+              listening={speech.listening}
+              error={speech.error ? errorText(speech.error) : null}
+              onMic={dictate}
+            />
           ) : (
-            <label className="flex flex-col gap-1.5">
-              <span className="font-semibold">{t("describe")}</span>
-              <textarea
-                value={text}
-                onChange={(event) => {
-                  setText(event.target.value);
-                  if (!event.target.value) setDictated(false);
-                }}
-                rows={2}
-                maxLength={500}
-                placeholder={t("describeHint")}
-                className="rounded-2xl border border-border bg-surface px-3 py-2 text-base"
-              />
-            </label>
+            <>
+              <label className="flex flex-col gap-1.5">
+                <span className="font-semibold">{t("describe")}</span>
+                <textarea
+                  value={text}
+                  onChange={(event) => {
+                    setText(event.target.value);
+                    if (!event.target.value) setDictated(false);
+                  }}
+                  rows={2}
+                  maxLength={500}
+                  placeholder={t("describeHint")}
+                  className="rounded-2xl border border-border bg-surface px-3 py-2 text-base"
+                />
+              </label>
+              {speech.error && <p className="text-sm text-text-muted">{errorText(speech.error)}</p>}
+            </>
           )}
-          {speech.error && <p className="text-sm text-text-muted">{errorText(speech.error)}</p>}
-          <div className="flex flex-wrap gap-2">
-            <Button type="submit" disabled={pending || text.trim().length < 2}>
-              {pending ? t("analyzing") : t("analyzeText")}
-            </Button>
-            {speech.supported && (
-              <Button
-                variant="secondary"
-                onClick={speech.listening ? speech.stop : dictate}
-                aria-pressed={speech.listening}
-                disabled={pending}
-              >
-                <Icon name="mic" />
-                {speech.listening ? t("stopDictation") : t("dictate")}
+          {voice && !speech.listening ? (
+            <>
+              <Button type="submit" disabled={pending || text.trim().length < 2} className="w-full">
+                {pending ? t("analyzing") : t("analyzeText")}
               </Button>
-            )}
-            <Button
-              variant="ghost"
-              onClick={() => {
-                speech.stop();
-                setDescribing(false);
-              }}
-              disabled={pending}
-            >
-              {t("cancel")}
-            </Button>
-          </div>
+              <p className="flex justify-center gap-x-6 text-sm font-semibold text-primary">
+                <button
+                  type="button"
+                  onClick={() => setVoice(false)}
+                  disabled={pending}
+                  className="min-h-11 underline underline-offset-4"
+                >
+                  {t("editText")}
+                </button>
+                <button
+                  type="button"
+                  onClick={cancel}
+                  disabled={pending}
+                  className="min-h-11 underline-offset-4 hover:underline"
+                >
+                  {t("cancel")}
+                </button>
+              </p>
+            </>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              <Button type="submit" disabled={pending || text.trim().length < 2}>
+                {pending ? t("analyzing") : t("analyzeText")}
+              </Button>
+              {speech.supported && (
+                <Button
+                  variant="secondary"
+                  onClick={speech.listening ? speech.stop : dictate}
+                  aria-pressed={speech.listening}
+                  disabled={pending}
+                >
+                  <Icon name="mic" />
+                  {speech.listening ? t("stopDictation") : t("dictate")}
+                </Button>
+              )}
+              <Button variant="ghost" onClick={cancel} disabled={pending}>
+                {t("cancel")}
+              </Button>
+            </div>
+          )}
         </form>
       )}
       {(photo || describing) && (
