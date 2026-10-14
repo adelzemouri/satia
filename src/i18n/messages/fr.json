@@ -889,7 +889,8 @@
     "micAdd": "Compléter la dictée",
     "micStart": "Lancer la dictée",
     "micRetry": "Réessayer la dictée",
-    "editText": "Corriger le texte"
+    "editText": "Corriger le texte",
+    "stop": "Arrêter"
   },
   "aiConfirm": {
     "title": "On vérifie ensemble ?",

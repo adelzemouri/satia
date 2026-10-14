@@ -889,7 +889,8 @@
     "micAdd": "Add to the dictation",
     "micStart": "Start dictation",
     "micRetry": "Retry dictation",
-    "editText": "Edit the text"
+    "editText": "Edit the text",
+    "stop": "Stop"
   },
   "aiConfirm": {
     "title": "Shall we check together?",
