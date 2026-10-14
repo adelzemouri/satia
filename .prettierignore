@@ -7,3 +7,4 @@ public/icons/*.svg
 CLAUDE.md
 AGENTS.md
 docs
+.claude/skills
