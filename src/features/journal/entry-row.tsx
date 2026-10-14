@@ -50,31 +50,45 @@ export function EntryRow({ entry, units, readOnly = false }: { entry: EntryView;
         <span className="truncate font-semibold" title={entry.label}>
           {shortFoodName(entry.label)}
         </span>
+        {/* Quantité seulement : les kcal sont à droite, les macros dans le détail de la ligne. */}
         <span className="text-sm text-text-muted">
           {entry.unit === "g"
-            ? t("journal.entryValues", { grams: entry.grams, kcal: Math.round(entry.kcal) })
-            : `${entry.quantity} ${t(`units.${entry.unit}`)} · ${t("journal.entryValues", { grams: entry.grams, kcal: Math.round(entry.kcal) })}`}
+            ? t("journal.grams", { value: entry.grams })
+            : `${entry.quantity} ${t(`units.${entry.unit}`)} · ${t("journal.grams", { value: entry.grams })}`}
           {entry.isEstimated && ` · ${t("journal.estimated")}`}
-        </span>
-        <span className="flex flex-wrap gap-x-3 text-sm text-text-muted">
-          {(
-            [
-              ["proteinShort", entry.proteinG, "bg-protein"],
-              ["carbsShort", entry.carbsG, "bg-carbs"],
-              ["fatShort", entry.fatG, "bg-fat"],
-            ] as const
-          ).map(([key, value, color]) => (
-            <span key={key} className="flex items-center gap-1">
-              <span aria-hidden="true" className={`size-2 rounded-full ${color}`} />
-              {t(`home.${key}`)} {t("journal.grams", { value: Math.round(value) })}
-            </span>
-          ))}
         </span>
       </span>
     </span>
   );
 
-  if (readOnly) return <div className="flex py-2">{summary}</div>;
+  // Le détail des macros de l'aliment, affiché quand la ligne est dépliée ou en lecture seule.
+  const macros = (
+    <span className="flex flex-wrap gap-x-3 text-sm text-text-muted">
+      {(
+        [
+          ["proteinShort", entry.proteinG, "bg-protein"],
+          ["carbsShort", entry.carbsG, "bg-carbs"],
+          ["fatShort", entry.fatG, "bg-fat"],
+        ] as const
+      ).map(([key, value, color]) => (
+        <span key={key} className="flex items-center gap-1">
+          <span aria-hidden="true" className={`size-2 rounded-full ${color}`} />
+          {t(`home.${key}`)} {t("journal.grams", { value: Math.round(value) })}
+        </span>
+      ))}
+    </span>
+  );
+
+  if (readOnly)
+    return (
+      <div className="flex flex-col gap-1 py-2">
+        <div className="flex items-center gap-3">
+          {summary}
+          <span className="font-semibold">{t("common.kcal", { value: Math.round(entry.kcal) })}</span>
+        </div>
+        {macros}
+      </div>
+    );
 
   const save = (formData: FormData) =>
     startTransition(async () => {
@@ -127,6 +141,7 @@ export function EntryRow({ entry, units, readOnly = false }: { entry: EntryView;
       {open && (
         <form action={save} className="flex flex-col gap-3 rounded-2xl bg-surface-muted p-3">
           {error && <Alert>{errorText(error)}</Alert>}
+          {macros}
           <div className="grid grid-cols-2 gap-3">
             <label className="flex flex-col gap-1.5">
               <span className="font-semibold">{t("journal.quantity")}</span>

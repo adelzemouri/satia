@@ -145,20 +145,23 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           </Link>
         </div>
         <div className="flex flex-col gap-1">
-          <h1 className="font-display text-3xl font-extrabold tracking-tight">
-            {t("home.greeting", { name: profile.firstName })}
-          </h1>
-          {/* Pépin signe le message du jour : c'est lui qui parle dans toute l'app. */}
-          <div className="mt-1 flex items-end gap-2">
+          {/* Pépin dit bonjour et signe le message du jour : le bonjour ne prend plus une ligne à
+              part, pour que l'anneau du jour tienne dans le premier écran du téléphone. */}
+          <div className="flex items-end gap-2">
             <CoachAvatar size={40} />
-            <p
-              className={`rounded-2xl rounded-bl-md px-3.5 py-2.5 text-sm ${message.key === "streak" ? "bg-pomme-soft font-semibold" : "bg-surface"}`}
+            <div
+              className={`min-w-0 rounded-2xl rounded-bl-md px-3.5 py-2.5 ${message.key === "streak" ? "bg-pomme-soft" : "bg-surface"}`}
             >
-              <span className="sr-only">{t("home.pepinSays", { name: COACH_NAME })} </span>
-              {message.key === "tip"
-                ? t(`home.daily.tips.${String(message.index) as "0"}`)
-                : t(`home.daily.${message.key}`, message)}
-            </p>
+              <h1 className="font-display text-xl leading-tight font-extrabold tracking-tight">
+                {t("home.greeting", { name: profile.firstName })}
+              </h1>
+              <p className={`text-sm ${message.key === "streak" ? "font-semibold" : ""}`}>
+                <span className="sr-only">{t("home.pepinSays", { name: COACH_NAME })} </span>
+                {message.key === "tip"
+                  ? t(`home.daily.tips.${String(message.index) as "0"}`)
+                  : t(`home.daily.${message.key}`, message)}
+              </p>
+            </div>
           </div>
           {streak.frozenDays.length > 0 && <p className="text-sm text-text-muted">{t("home.streakFrozen")}</p>}
         </div>
@@ -166,13 +169,6 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       </header>
 
       <div className="contents lg:flex lg:min-w-0 lg:flex-col lg:gap-6">
-        <RitualCards
-          rituals={rituals}
-          done={weighedToday ? { weeks: weigh.weeks, nextWeigh } : null}
-          today={today}
-          lastWeight={lastWeight}
-          nextWeigh={nextWeigh}
-        />
         {shares.length > 0 && (
           <Card aria-labelledby="pending-title">
             <h2 id="pending-title" className="text-xl font-bold">
@@ -202,6 +198,15 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           </div>
           <MealRings kcalBySlot={kcalBySlot} goalKcal={summary.goal?.kcal ?? null} current={current} date={today} />
         </Card>
+
+        {/* Les rendez-vous (pesée, mensurations) viennent sous l'anneau : ils ne servent qu'une fois par semaine. */}
+        <RitualCards
+          rituals={rituals}
+          done={weighedToday ? { weeks: weigh.weeks, nextWeigh } : null}
+          today={today}
+          lastWeight={lastWeight}
+          nextWeigh={nextWeigh}
+        />
 
         {ideas.length > 0 && (
           <section aria-labelledby="ideas-title" className="order-last flex flex-col gap-3 lg:order-none">

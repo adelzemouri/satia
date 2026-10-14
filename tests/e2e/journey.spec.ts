@@ -202,14 +202,16 @@ test("ajout manuel d'un repas depuis la base Ciqual", async ({ page }) => {
   await expect(page).toHaveURL(/\/journal\?date=/);
   const lunch = page.getByRole("region", { name: "Déjeuner" });
   await expect(lunch.getByText(/^Pomme, pulpe et peau, crue/)).toBeVisible();
-  await expect(lunch.getByText(/200 g ·/)).toBeVisible();
+  await expect(lunch.getByText("200 g", { exact: true })).toBeVisible();
   await expectNoA11yViolations(page);
 
   // Modifier la quantité met les valeurs à jour.
   await lunch.getByRole("button", { name: /^Modifier Pomme, pulpe et peau, crue/ }).click();
   await lunch.getByLabel("Quantité").fill("100");
   await lunch.getByRole("button", { name: "Enregistrer", exact: true }).click();
-  await expect(lunch.getByText(/^100 g · 5\d kcal/)).toBeVisible();
+  await expect(lunch.getByRole("button", { name: /^Modifier Pomme, pulpe et peau, crue/ })).toContainText(
+    /100 g5\d kcal/,
+  );
 
   await page.getByRole("link", { name: "Accueil" }).click();
   await expect(page.getByRole("progressbar", { name: /kcal consommées/ })).not.toHaveAttribute("aria-valuenow", "0");
@@ -597,9 +599,10 @@ test("saisie d'un repas par photo (LLM simulé), avec contenant et écran de con
   const lunch = page.getByRole("region", { name: "Déjeuner" });
   await expect(lunch.getByText(/^Riz basmati, cuit/)).toBeVisible();
   await expect(lunch.getByText("Riz au poulet", { exact: true })).toBeVisible();
-  await expect(lunch.getByText(/^150 g ·/)).toBeVisible();
+  await expect(lunch.getByText(/^150 g/).first()).toBeVisible();
   await expect(lunch.getByRole("img", { name: "Photo du déjeuner" })).toBeAttached();
-  // Macros de chaque aliment et répartition par repas.
+  // Macros d'un aliment en dépliant sa ligne, et répartition par repas.
+  await lunch.getByRole("button", { name: /^Modifier Riz basmati, cuit/ }).click();
   await expect(lunch.getByText(/^Prot\. \d+ g$/).first()).toBeVisible();
   await page.getByText("Répartition par repas").click();
   await expect(
@@ -848,7 +851,7 @@ test("repas partagé : l'admin partage un plat du foyer, le membre le valide ave
   await pending.getByRole("button", { name: "Ajouter à mon journal" }).click();
   await expect(teen.getByRole("region", { name: "Repas partagés à valider" })).toHaveCount(0);
   await teen.goto("/journal");
-  await expect(teen.getByRole("region", { name: "Dîner" }).getByText(/^75 g ·/)).toBeVisible();
+  await expect(teen.getByRole("region", { name: "Dîner" }).getByText(/^75 g/)).toBeVisible();
 
   // Léa met sa photo du gratin : la fiche l'affiche, légendée comme photo de la famille.
   await teen.goto("/recipes");
