@@ -29,6 +29,7 @@ import { formatDay, formatWeekday } from "@/ui/format-date";
 import { Icon } from "@/ui/icon";
 import { ScrollToHash } from "@/ui/scroll-to-hash";
 import { Columns } from "@/ui/columns";
+import { PhotoGallery } from "@/ui/photo-viewer";
 
 export default async function JournalPage({ params, searchParams }: PageProps<"/[locale]/journal">) {
   const locale = toLocale((await params).locale);
@@ -196,17 +197,13 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
             </div>
             {entries.length > 0 && <MacroLine totals={totals} />}
             {slotPhotos.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {slotPhotos.map((url) => (
-                  // eslint-disable-next-line @next/next/no-img-element -- URL signée du stockage privé, valable 5 min
-                  <img
-                    key={url}
-                    src={url}
-                    alt={t("journal.mealPhoto", { slot: t(`slotsLower.${slot}`) })}
-                    className="size-24 rounded-2xl object-cover"
-                  />
-                ))}
-              </div>
+              <PhotoGallery
+                photos={slotPhotos.map((url) => ({
+                  src: url,
+                  alt: t("journal.mealPhoto", { slot: t(`slotsLower.${slot}`) }),
+                }))}
+                caption={`${t(`slots.${slot}`)} · ${dayTitle}`}
+              />
             )}
             {entries.length === 0 ? (
               <p className="text-text-muted">{t("journal.empty")}</p>

@@ -13,6 +13,7 @@ import { toLocale } from "@/i18n/routing";
 import { DomainError } from "@/server/errors";
 import { AskCoach } from "@/features/coach/ask-coach";
 import { ProductThumb } from "@/features/foods/product-thumb";
+import { ZoomablePhoto } from "@/ui/photo-viewer";
 import { RecipePhotoForm } from "@/features/foods/recipe-photo-form";
 import { RecipeStepsButton } from "@/features/planning/recipe-steps-button";
 import { RecipeVisual } from "@/features/recipes/recipe-visual";
@@ -94,12 +95,14 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
       )}
       {!catalog && storedPhoto && (
         <figure className="-mx-4 flex flex-col gap-1 sm:mx-0">
-          {/* eslint-disable-next-line @next/next/no-img-element -- photo privée servie par URL signée */}
-          <img
-            src={storedPhoto.url}
-            alt=""
-            className="aspect-[4/3] w-full object-cover sm:rounded-[var(--radius-card)]"
-          />
+          <ZoomablePhoto
+            photo={{ src: storedPhoto.url, alt: shortFoodName(food.nameFr) }}
+            caption={shortFoodName(food.nameFr)}
+            className="w-full overflow-hidden sm:rounded-[var(--radius-card)]"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element -- photo privée servie par URL signée */}
+            <img src={storedPhoto.url} alt="" className="block aspect-[4/3] w-full object-cover" />
+          </ZoomablePhoto>
           <figcaption className="px-4 text-xs text-text-muted sm:px-0">
             {t(isGeneratedRecipePhoto(storedPhoto.key) ? "recipes.photoCaption" : "foods.photo.caption")}
           </figcaption>
@@ -117,7 +120,15 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
             <p className="text-sm text-text-muted">{t("product.barcode", { code: food.sourceRef })}</p>
           )}
         </div>
-        {food.imageUrl && !catalog && !food.photoKey && <ProductThumb src={food.imageUrl} size={112} />}
+        {food.imageUrl && !catalog && !food.photoKey && (
+          <ZoomablePhoto
+            photo={{ src: food.imageUrl, alt: shortFoodName(food.nameFr) }}
+            caption={shortFoodName(food.nameFr)}
+            className="shrink-0 rounded-lg"
+          >
+            <ProductThumb src={food.imageUrl} size={112} />
+          </ZoomablePhoto>
+        )}
       </div>
 
       <Link

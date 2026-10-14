@@ -850,3 +850,8 @@ le pourquoi de chacun est dans `docs/DECISIONS.md`.
 - **Pages d'erreur** : 404 localisée (`[locale]/[...rest]` + `not-found.tsx`) pour que ses
   scripts portent le nonce CSP ; `error.tsx` et un script de récupération des fichiers
   JavaScript manquants après un déploiement.
+- **Visionneuse de photos** (`src/ui/photo-viewer.tsx`) : les photos de repas du Journal, la
+  photo d'un produit ou d'une recette maison (fiche et écran de quantité) s'ouvrent en plein
+  écran dans un `<dialog>` modal (pincer ou toucher deux fois pour zoomer, glisser pour passer
+  à la suivante ou fermer). Pour Open Food Facts, elle charge l'image originale
+  (`fullSizeImageUrl`), la vignette gardée en base ne faisant qu'environ 200 px.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { normalizeForSearch, pickForLabel, searchVariants } from "@/domain/search";
+import { normalizeForSearch, pickForLabel, searchStems, searchVariants } from "@/domain/search";
 
 describe("formulations Ciqual d'une recherche", () => {
   const variants = (text: string) => searchVariants(normalizeForSearch(text));
@@ -10,6 +10,18 @@ describe("formulations Ciqual d'une recherche", () => {
     expect(variants("crème fraîche")).toEqual(["creme epaisse"]);
     expect(variants("crème fraîche liquide")).toEqual(["creme fluide"]);
     expect(variants("crème fraîche épaisse")).toEqual(["creme epaisse epaisse"]);
+  });
+
+  it("cherche un café du quotidien comme une boisson prête à boire", () => {
+    for (const text of ["café", "Un café", "café allongé", "café long", "café noir", "americano"]) {
+      expect(variants(text)).toEqual(["cafe non instantane non sucre"]);
+    }
+    for (const text of ["espresso", "un expresso", "café serré", "ristretto"]) {
+      expect(variants(text)).toEqual(["cafe expresso non instantane"]);
+    }
+    expect(variants("café au lait")).toEqual([]);
+    expect(variants("café moulu")).toEqual([]);
+    expect(variants("crème dessert au café")).toEqual([]);
   });
 
   it("ne change rien aux autres recherches", () => {
@@ -77,5 +89,13 @@ describe("eau sans précision", () => {
     expect(pickForLabel("eau gazeuse", [{ nameFr: "Eau minérale, gazeuse (aliment moyen)" }, ...results])).toEqual({
       nameFr: "Eau minérale, gazeuse (aliment moyen)",
     });
+  });
+});
+
+describe("mots qui désignent l'aliment", () => {
+  it("laisse les petits mots et couvre pluriels et accords", () => {
+    expect(searchStems(normalizeForSearch("Haricots verts surgelés"))).toEqual(["harico", "vert", "surgel"]);
+    expect(searchStems(normalizeForSearch("jus d'orange pressé"))).toEqual(["jus", "orange", "presse"]);
+    expect(searchStems(normalizeForSearch("coulis de tomate"))).toEqual(["couli", "tomate"]);
   });
 });

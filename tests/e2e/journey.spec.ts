@@ -498,6 +498,12 @@ test("ajout d'un produit par code-barres (Open Food Facts simulé)", async ({ pa
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pâte à tartiner noisettes");
   await expect(page.locator('img[src$="/images/front.png"]')).toBeVisible();
   await expect(page.getByText("Code-barres 3017620422003")).toBeVisible();
+  // La photo du produit s'ouvre en grand ; Échap la referme.
+  await page.getByRole("button", { name: "Voir en grand : Pâte à tartiner noisettes" }).click();
+  const viewer = page.getByRole("dialog", { name: "Pâte à tartiner noisettes" });
+  await expect(viewer.getByRole("img", { name: "Pâte à tartiner noisettes" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(viewer).toHaveCount(0);
   await expect(page.getByRole("columnheader", { name: "Par portion (15 g)" })).toBeVisible();
   const labels = page.getByRole("list", { name: "Indicateurs de qualité" });
   await expect(labels.getByText("Nutri-Score E")).toBeVisible();
@@ -621,7 +627,13 @@ test("saisie d'un repas par photo (LLM simulé), avec contenant et écran de con
   await expect(lunch.getByText(/^Riz basmati, cuit/)).toBeVisible();
   await expect(lunch.getByText("Riz au poulet", { exact: true })).toBeVisible();
   await expect(lunch.getByText(/^150 g/).first()).toBeVisible();
-  await expect(lunch.getByRole("img", { name: "Photo du déjeuner" })).toBeAttached();
+  // La photo du repas s'ouvre en grand, puis se referme.
+  await lunch.getByRole("button", { name: "Voir en grand : Photo du déjeuner" }).click();
+  const viewer = page.getByRole("dialog", { name: /^Déjeuner · / });
+  await expect(viewer.getByRole("img", { name: "Photo du déjeuner" })).toBeVisible();
+  await expectNoA11yViolations(page);
+  await viewer.getByRole("button", { name: "Fermer" }).click();
+  await expect(viewer).toHaveCount(0);
   // Macros d'un aliment en dépliant sa ligne, et répartition par repas.
   await lunch.getByRole("button", { name: /^Modifier Riz basmati, cuit/ }).click();
   await expect(lunch.getByText(/^Prot\. \d+ g$/).first()).toBeVisible();

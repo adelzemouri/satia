@@ -70,7 +70,9 @@
     "remainingLabel": "Il te reste",
     "overLabel": "Au-delà de ton objectif",
     "kcalValue": "{value, number} kcal",
-    "consumedOf": "{value, number} kcal sur {goal, number}",
+    "left": "{value, number} kcal restantes",
+    "leftOver": "{value, number} kcal en plus",
+    "goalKcal": "Objectif {goal, number} kcal",
     "slotSummary": "{kcal, number} kcal · {labels}",
     "slotEmpty": "Rien pour l'instant",
     "openProfile": "Mon profil et mes réglages",
@@ -1777,5 +1779,14 @@
     "title": "Cette page n'existe pas",
     "body": "Le lien est peut-être ancien ou incomplet.",
     "home": "Revenir à l'accueil"
+  },
+  "photoViewer": {
+    "open": "Voir en grand : {name}",
+    "close": "Fermer",
+    "previous": "Photo précédente",
+    "next": "Photo suivante",
+    "position": "{index} sur {count}",
+    "hint": "Pincez ou touchez deux fois pour zoomer, glissez vers le bas pour fermer",
+    "hintMany": "Glissez pour la photo suivante, pincez pour zoomer, glissez vers le bas pour fermer"
   }
 }

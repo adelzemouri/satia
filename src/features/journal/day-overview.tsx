@@ -10,7 +10,7 @@ type Goal = { kcal: number; proteinG: number; carbsG: number; fatG: number };
 
 /**
  * Les calories du jour en une phrase : ce qu'il reste à manger (ou le dépassement), puis une
- * barre de la part consommée. `compact` donne la version d'une ligne du journal.
+ * barre de la part consommée. `compact` donne la version en barre du journal.
  */
 export async function CalorieSummary({
   totals,
@@ -44,13 +44,19 @@ export async function CalorieSummary({
       />
     </span>
   );
-  if (compact || !goal) {
+  if (!goal) return <p className="font-semibold">{t("consumed", { value: consumed })}</p>;
+  if (compact) {
+    // Journal : consommé et restant côte à côte, pour retrouver le chiffre de l'anneau de l'accueil.
     return (
       <div className="flex flex-col gap-2">
-        <p className="font-semibold">
-          {goal ? t("consumedOf", { value: consumed, goal: target }) : t("consumed", { value: consumed })}
+        <p className="flex flex-wrap items-baseline justify-between gap-x-3 tabular-nums">
+          <span className="font-semibold">{t("consumed", { value: consumed })}</span>
+          <span className={`font-bold ${over ? "text-text-muted" : "text-primary"}`}>
+            {over ? t("leftOver", { value: consumed - target }) : t("left", { value: target - consumed })}
+          </span>
         </p>
         {bar}
+        <p className="text-sm text-text-muted">{t("goalKcal", { goal: target })}</p>
       </div>
     );
   }
