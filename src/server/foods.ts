@@ -2,7 +2,7 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 
-import { and, desc, eq, inArray, isNotNull, isNull, like, lt, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, isNull, like, lt, or, type SQL, sql } from "drizzle-orm";
 import { after } from "next/server";
 import { z } from "zod";
 
@@ -78,6 +78,10 @@ function editableBy(userId: string) {
 
 export const SEARCH_LIMIT = 25;
 
+/** Lettres accentuées des noms d'aliments et leur forme sans accent, pour `translate` en SQL. */
+const ACCENTED = "àâäáãåçéèêëíìîïñóòôöõúùûüýÿ";
+const UNACCENTED = "aaaaaaceeeeiiiinooooouuuuyy";
+
 /**
  * Recherche floue tolérante aux accents et aux fautes (trigrammes sur le nom normalisé).
  * Ordre : aliments personnels et recettes du foyer, puis les noms qui commencent par la recherche, puis
@@ -90,29 +94,34 @@ export async function searchFoods(userId: string, query: string): Promise<FoodSu
   const q = normalizeForSearch(query);
   if (q.length < 2) return [];
   const words = q.split(" ").slice(0, 6);
+  const variants = searchVariants(q);
   // Tous les mots de la recherche, ou d'une de ses formulations Ciqual (« crème liquide » → « crème fluide »).
-  const allWords = sql.join(
-    [q, ...searchVariants(q)].map(
-      (text) =>
-        sql`(${sql.join(
-          text
-            .split(" ")
-            .slice(0, 6)
-            .map((word) => sql`${foods.searchName} like ${`%${word}%`}`),
-          sql` and `,
-        )})`,
-    ),
-    sql` or `,
-  );
+  // Les mots sont pris en entier pour trouver, par leur début pour classer : « oignons » trouve « Oignon, cru ».
+  const allWordsIn = (name: SQL, split: (text: string) => string[]) =>
+    sql.join(
+      [q, ...variants].map(
+        (text) =>
+          sql`(${sql.join(
+            split(text).map((word) => sql`${name} like ${`%${word}%`}`),
+            sql` and `,
+          )})`,
+      ),
+      sql` or `,
+    );
+  const wholeWords = (text: string) => text.split(" ").slice(0, 6);
+  const wordStarts = (text: string) => (searchStems(text).length > 0 ? searchStems(text) : wholeWords(text));
   // Mots de la recherche par lesquels commence un mot du nom. Le premier, qui nomme d'ordinaire
   // l'aliment, suffit à trouver : Ciqual ne dit ni « allongé » ni « bien mûre ».
   const stems = searchStems(q);
-  const startsWord = (stem: string) => sql`(' ' || ${foods.searchName} like ${`% ${stem}%`})`;
+  const startsWord = (name: SQL, stem: string) => sql`(' ' || ${name} like ${`% ${stem}%`})`;
+  const searchName = sql`${foods.searchName}`;
+  // Pour classer, seul compte le nom avant la liste d'ingrédients entre parenthèses : « oignon vert »
+  // n'est pas une « Printanière de légumes (haricots verts, …, oignons) ».
+  const head = sql`regexp_replace(translate(replace(replace(lower(split_part(${foods.nameFr}, '(', 1)), 'œ', 'oe'), 'æ', 'ae'), ${ACCENTED}, ${UNACCENTED}), '[^a-z0-9]+', ' ', 'g')`;
   const wordHits = sql.join(
-    stems.map((stem) => sql`${startsWord(stem)}::int`),
+    stems.map((stem) => sql`${startsWord(head, stem)}::int`),
     sql` + `,
   );
-  const variants = searchVariants(q);
   return db()
     .select(foodSummaryColumns)
     .from(foods)
@@ -120,8 +129,8 @@ export async function searchFoods(userId: string, query: string): Promise<FoodSu
       and(
         visibleTo(userId),
         or(
-          sql`(${allWords})`,
-          ...(stems.length >= 2 ? [startsWord(stems[0]!)] : []),
+          sql`(${allWordsIn(searchName, wholeWords)})`,
+          ...(stems.length >= 2 ? [startsWord(searchName, stems[0]!)] : []),
           sql`word_similarity(${q}, ${foods.searchName}) > 0.45`,
           sql`similarity(${foods.searchName}, ${q}) > 0.3`,
         ),
@@ -132,9 +141,9 @@ export async function searchFoods(userId: string, query: string): Promise<FoodSu
       sql`(${foods.searchName} like ${`${q}%`}) desc`,
       ...variants.map((variant) => sql`(${foods.searchName} like ${`${variant}%`}) desc`),
       // Tous les mots avant le premier seul : « coulis de tomate » donne « Tomate, coulis », pas un coulis de fruits.
-      sql`(${allWords}) desc`,
+      sql`(${allWordsIn(head, wordStarts)}) desc`,
       ...(stems.length >= 2 ? [sql`(${wordHits}) desc`] : []),
-      sql`(${foods.searchName} like ${`${words[0]}%`}) desc`,
+      sql`(${foods.searchName} like ${`${stems[0] ?? words[0]}%`}) desc`,
       sql`word_similarity(${q}, ${foods.searchName}) desc`,
       sql`length(${foods.searchName})`,
     )

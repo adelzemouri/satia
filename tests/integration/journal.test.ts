@@ -116,6 +116,12 @@ describe("base d'aliments", () => {
     expect((await searchFoods(userId, "café serré"))[0]?.nameFr).toMatch(/^Café expresso/);
     // Un mot que Ciqual ne connaît pas n'empêche pas de trouver l'aliment.
     expect((await searchFoods(userId, "banane bien mûre"))[0]?.nameFr).toMatch(/^Banane, pulpe, crue/);
+    // La liste d'ingrédients entre parenthèses ne compte pas pour classer, et un pluriel retrouve le nom Ciqual.
+    for (const label of ["oignon vert", "oignons verts"]) {
+      expect(pickForLabel(label, await searchFoods(userId, label))?.nameFr).toBe("Ciboule ou Ciboulette, fraîche");
+    }
+    expect((await searchFoods(userId, "pommes de terre"))[0]?.nameFr).toMatch(/^Pomme de terre/);
+    expect((await searchFoods(userId, "oignons"))[0]?.nameFr).toMatch(/^Oignon, /);
     // Des linguine reconnues sur une photo se comptent cuites, pas comme un paquet sec.
     for (const label of ["linguine cuites", "linguine", "linguines"]) {
       expect(pickForLabel(label, await searchFoods(userId, label))?.nameFr).toBe(
