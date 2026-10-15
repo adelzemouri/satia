@@ -14,7 +14,8 @@
     "grams": "{value, number} g",
     "kg": "{value, number} kg",
     "loading": "Loading…",
-    "undo": "Undo"
+    "undo": "Undo",
+    "clearSearch": "Clear search"
   },
   "nav": {
     "home": "Home",

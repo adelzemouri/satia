@@ -5,6 +5,7 @@ import { type ReactNode, useState } from "react";
 
 import { normalizeForSearch } from "@/domain/search";
 import { Icon } from "@/ui/icon";
+import { SearchInput } from "@/ui/search-input";
 
 /**
  * Recettes cherchées par nom ou ingrédient et filtrées par catégorie sur place : pas de rechargement ni de retour en haut
@@ -60,15 +61,13 @@ export function RecipeFilter<C extends string>({
       <label className="flex min-h-12 items-center gap-2 rounded-full border border-border bg-surface px-4 focus-within:outline-2 focus-within:outline-[var(--color-focus)]">
         <Icon name="search" size={20} />
         <span className="sr-only">{searchLabel}</span>
-        <input
-          type="search"
+        <SearchInput
           value={query}
-          onChange={(event) => {
-            setQuery(event.target.value);
-            remember("q", event.target.value.trim() || null);
+          onValueChange={(value) => {
+            setQuery(value);
+            remember("q", value.trim() || null);
           }}
           placeholder={searchLabel}
-          className="min-w-0 flex-1 bg-transparent text-base outline-none"
         />
       </label>
       <div role="group" aria-label={label} className="-mx-4 overflow-x-auto px-4">
