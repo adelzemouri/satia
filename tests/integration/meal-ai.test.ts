@@ -9,7 +9,7 @@ import type { LlmProvider } from "@/llm/types";
 import { acceptInvite, createAccessLink, setupFirstAdmin } from "@/server/accounts";
 import { collectUserData } from "@/server/data-export";
 import { createRecipe, searchFoods, setUnitWeight } from "@/server/foods";
-import { analyzePhoto, analyzeText, saveMeal } from "@/server/meal-ai";
+import { analyzePhoto, analyzeText, foodCandidates, saveMeal } from "@/server/meal-ai";
 import { createContainer, listContainers, saveExpression } from "@/server/personal";
 import { lastPhotoPurge, purgePhotos, purgePhotosIfDue, runPhotoPurge } from "@/server/photos";
 import { setAiSettings, setPhotoSettings } from "@/server/settings";
@@ -72,6 +72,44 @@ describe("saisie IA", () => {
     expect(chicken!.food?.nameFr).toMatch(/poulet/i);
     const [call] = await db().select().from(llmCalls);
     expect(call).toMatchObject({ feature: "meal_text", model: "mock-text", status: "ok" });
+  });
+
+  it("l'IA choisit l'aliment parmi les résultats de la recherche, ou aucun", async () => {
+    const userId = await setupUser();
+    const reply = {
+      items: [
+        { name: "pomme", grams: 150, confidence: 0.9 },
+        { name: "thé", grams: 250, confidence: 0.9 },
+      ],
+    };
+    const { candidates } = await foodCandidates(userId, "pomme");
+    const fresh = candidates.findIndex((food) => /^Pomme, pulpe, crue/.test(food.nameFr));
+    expect(fresh).toBeGreaterThan(-1);
+    setProviderForTests(
+      scripted(
+        reply,
+        { choices: [fresh + 1, 0] },
+        { items: [{ name: "thé", kcal: 1, proteinG: 0, carbsG: 0, fatG: 0 }] },
+      ),
+    );
+    const [apple, tea] = (await analyzeText(userId, { text: "une pomme et un thé", method: "text" })).items;
+    expect(apple!.food?.nameFr).toMatch(/^Pomme, pulpe, crue/);
+    expect(apple!.proposal).toEqual({ foodId: apple!.food!.id, grams: 150 });
+    // Aucun résultat ne convient : valeurs estimées, et les résultats restent proposés pour changer.
+    expect(tea!.food).toBeNull();
+    expect(tea!.estimate).toMatchObject({ name: "thé", kcal: 1 });
+    expect(tea!.alternatives.length).toBeGreaterThan(0);
+    const features = (await db().select().from(llmCalls)).map((call) => call.feature);
+    expect(features).toEqual(["meal_text", "food_match", "estimate"]);
+  });
+
+  it("sans réponse de l'IA pour le choix, la recherche garde le sien", async () => {
+    const userId = await setupUser();
+    setProviderForTests(
+      scripted({ items: [{ name: "riz basmati cuit", grams: 180, confidence: 0.9 }] }, { choices: [] }),
+    );
+    const [rice] = (await analyzeText(userId, { text: "du riz", method: "text" })).items;
+    expect(rice!.food?.nameFr).toMatch(/^Riz basmati, cuit/);
   });
 
   it("enregistre le repas confirmé, puis les corrections répétées deviennent des habitudes", async () => {

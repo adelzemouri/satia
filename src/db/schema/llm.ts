@@ -7,6 +7,7 @@ export const LLM_FEATURES = [
   "meal_photo",
   "meal_text",
   "estimate",
+  "food_match",
   "coach",
   "weekly_review",
   "menu_plan",

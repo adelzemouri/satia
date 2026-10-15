@@ -349,6 +349,24 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
   foyer quand son auteur supprime son compte, et sort de son export personnel (comme le
   menu). Les aliments perso hors recette restent privés.
 
+## 032 — L'IA choisit l'aliment parmi les résultats de la recherche
+
+- **Date** : 2026-10-15 · **Statut** : adoptée
+- **Contexte** : sur un banc de 200 noms courants renvoyés par l'IA, la recherche par mots
+  choisissait le mauvais aliment Ciqual pour environ 40 d'entre eux (pomme séchée pour
+  « pomme », feuilles de thé pour « thé », courge pour « spaghetti »), et l'avertissement
+  n'en signalait que 6. Le bon aliment figurait pourtant presque toujours dans les 10
+  premiers résultats.
+- **Décision** : après la reconnaissance, un appel au modèle texte reçoit pour chaque
+  aliment les 10 premiers résultats numérotés et renvoie un numéro (0 si aucun ne
+  convient : valeurs estimées). Les habitudes apprises passent avant et ne sont pas
+  soumises. Sans IA, le premier résultat de la recherche reste proposé.
+- **Conséquences** : un appel texte de plus par repas analysé (moins de 0,001 $, une
+  seconde d'attente). Les valeurs nutritionnelles viennent toujours de Ciqual/OFF : la
+  règle du CLAUDE.md tient, l'IA désigne seulement l'aliment. Le banc d'essai
+  (`tests/integration/food-matching.test.ts`) protège la présence du bon aliment parmi les
+  10 ; la qualité du choix lui-même ne se teste pas sans vrai LLM.
+
 ---
 
 ## Modèle

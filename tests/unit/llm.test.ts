@@ -5,6 +5,7 @@ import { invalidLlmKeys, parseLlmConfig } from "@/llm/config";
 import { parseJsonText, toJsonSchema } from "@/llm/json";
 import { costUsdMicros } from "@/llm/pricing";
 import { anthropicProvider } from "@/llm/providers/anthropic";
+import { chosenIndexes, foodMatchPrompt } from "@/llm/prompts/meal";
 import { mockProvider } from "@/llm/providers/mock";
 import { openAiCompatibleProvider, reasoningFields } from "@/llm/providers/openai-compatible";
 import { mealItemsSchema } from "@/llm/schemas";
@@ -220,5 +221,24 @@ describe("fournisseurs", () => {
     const other = openAiCompatibleProvider({ baseUrl: "https://llm.test/v1", apiKey: "k", jsonMode: "json_schema" });
     expect(await other.generateImage!({ model: "gpt-image-1", prompt: "Gratin" })).toEqual({ base64: "SlBH" });
     expect(fetchMock.mock.calls[1]![0]).toBe("https://llm.test/v1/images/generations");
+  });
+});
+
+describe("choix de l'aliment par l'IA", () => {
+  const requests = [
+    { label: "pomme", candidates: ["Pomme, sèche", "Pomme, pulpe, crue"] },
+    { label: "thé", candidates: ["Thé, feuille", "Thé infusé, non sucré", "Thé vert, infusé, non sucré"] },
+  ];
+
+  it("numérote les aliments et leurs listes en une ligne chacun", () => {
+    expect(foodMatchPrompt(requests)).toBe(
+      "1. pomme : 1 Pomme, sèche | 2 Pomme, pulpe, crue\n2. thé : 1 Thé, feuille | 2 Thé infusé, non sucré | 3 Thé vert, infusé, non sucré",
+    );
+  });
+
+  it("garde le choix de l'IA, null quand aucun ne convient, rien si la réponse est incomplète", () => {
+    expect(chosenIndexes([2, 2], requests)).toEqual([1, 1]);
+    expect(chosenIndexes([0, 9], requests)).toEqual([null, null]);
+    expect(chosenIndexes([2], requests)).toBeNull();
   });
 });

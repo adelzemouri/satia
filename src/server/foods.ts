@@ -96,7 +96,7 @@ export async function searchFoods(userId: string, query: string): Promise<FoodSu
   const words = q.split(" ").slice(0, 6);
   const variants = searchVariants(q);
   // Tous les mots de la recherche, ou d'une de ses formulations Ciqual (« crème liquide » → « crème fluide »).
-  // Les mots sont pris en entier pour trouver, par leur début pour classer : « oignons » trouve « Oignon, cru ».
+  // Les mots sont pris par leur début : « oignons » trouve « Oignon, cru », « spaghetti cuits » des pâtes « cuites ».
   const allWordsIn = (name: SQL, split: (text: string) => string[]) =>
     sql.join(
       [q, ...variants].map(
@@ -129,7 +129,7 @@ export async function searchFoods(userId: string, query: string): Promise<FoodSu
       and(
         visibleTo(userId),
         or(
-          sql`(${allWordsIn(searchName, wholeWords)})`,
+          sql`(${allWordsIn(searchName, wordStarts)})`,
           ...(stems.length >= 2 ? [startsWord(searchName, stems[0]!)] : []),
           sql`word_similarity(${q}, ${foods.searchName}) > 0.45`,
           sql`similarity(${foods.searchName}, ${q}) > 0.3`,

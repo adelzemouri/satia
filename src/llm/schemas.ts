@@ -21,6 +21,9 @@ export const mealItemsSchema = z.object({
     .max(15),
 });
 
+/** Aliment de la base retenu pour chaque nom reconnu : numéro dans sa liste, 0 si aucun ne convient. */
+export const foodChoicesSchema = z.object({ choices: z.array(z.number().int().min(0).max(20)).max(15) });
+
 /** Valeurs moyennes pour 100 g, demandées seulement quand aucun aliment de la base ne correspond. */
 export const foodEstimatesSchema = z.object({
   items: z

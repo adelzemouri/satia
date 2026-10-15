@@ -35,6 +35,39 @@ export const MEAL_TEXT_SYSTEM = [
   "Aucune valeur nutritionnelle. Pas d'aliment : items vide.",
 ].join("\n");
 
+export const FOOD_MATCH_SYSTEM = [
+  "Pour chaque aliment reconnu dans un repas, choisis dans sa liste l'aliment de la table Ciqual qui correspond à ce qui est mangé.",
+  "Sans précision, prends la forme courante : fruit ou légume frais (pas sec, pas en purée), thé ou café infusé, viande ou plat nature plutôt qu'un plat composé, jamais un aliment d'une autre nature.",
+  'Réponds en JSON : {"choices":[number]}, un numéro par aliment, dans le même ordre ; 0 si aucun ne convient.',
+].join("\n");
+
+/** Aliment reconnu et aliments de la base qui pourraient lui correspondre, du plus probable au moins probable. */
+export type FoodChoiceRequest = { label: string; candidates: readonly string[] };
+
+/** Une ligne par aliment reconnu : « 1. pomme : 1 Pomme, sèche | 2 Pomme, pulpe, crue ». */
+export function foodMatchPrompt(requests: readonly FoodChoiceRequest[]): string {
+  return requests
+    .map(
+      (request, index) =>
+        `${index + 1}. ${request.label} : ${request.candidates.map((name, i) => `${i + 1} ${name}`).join(" | ")}`,
+    )
+    .join("\n");
+}
+
+/**
+ * Indices retenus dans chaque liste (null : aucun ne convient, ou numéro hors liste). Une réponse
+ * qui n'a pas un choix par aliment ne vaut rien : null.
+ */
+export function chosenIndexes(
+  choices: readonly number[],
+  requests: readonly FoodChoiceRequest[],
+): (number | null)[] | null {
+  if (choices.length !== requests.length) return null;
+  return choices.map((choice, index) =>
+    choice >= 1 && choice <= requests[index]!.candidates.length ? choice - 1 : null,
+  );
+}
+
 export const FOOD_ESTIMATE_SYSTEM = [
   "Donne les valeurs nutritionnelles moyennes pour 100 g de chaque aliment, dans le même ordre.",
   'Réponds en JSON : {"items":[{"name":string,"kcal":number,"proteinG":number,"carbsG":number,"fatG":number}]}.',
