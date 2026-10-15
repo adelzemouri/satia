@@ -11,10 +11,10 @@ import { AskCoach } from "@/features/coach/ask-coach";
 import { CopyButton } from "@/features/journal/copy-button";
 import { CalorieSummary, MacroBars, MacroLine, MacroSplit } from "@/features/journal/day-overview";
 import { EntryRow } from "@/features/journal/entry-row";
+import { MealActions } from "@/features/journal/meal-actions";
 import { groupByDish } from "@/domain/dishes";
 import { WaterTracker } from "@/features/journal/water-tracker";
 import { QualityBars } from "@/features/quality/quality-bars";
-import { SaveMealButton } from "@/features/saved-meals/save-meal-button";
 import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { getFoods } from "@/server/foods";
@@ -154,19 +154,29 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
         </div>
         <CalorieSummary totals={summary.totals} goal={summary.goal} compact />
         <MacroBars totals={summary.totals} goal={summary.goal} />
-        {summary.entries.length > 0 && <MacroSplit bySlot={summary.bySlot} totals={summary.totals} />}
-        <QualityBars quality={quality} />
-        {summary.zone && <p className="text-sm text-text-muted">{t(`home.zone.${summary.zone}`)}</p>}
-        {summary.entries.length > 0 && (
-          <AskCoach
-            topic={{ kind: "day", date }}
-            label={t("coach.topic.label", { name: dayTitle, kcal: Math.round(summary.totals.kcal) })}
-            coachName={COACH_NAME}
-            compact
-            className="self-start"
-          />
-        )}
-        {summary.entries.length === 0 && (
+        {summary.entries.length > 0 ? (
+          // Le détail (répartition, repères, Pépin) se déplie : le bilan reste court et les repas montent.
+          <details className="group -mt-2">
+            <summary className="flex min-h-11 w-fit cursor-pointer list-none items-center gap-1 font-semibold text-primary [&::-webkit-details-marker]:hidden">
+              {t("journal.showDetail")}
+              <span className="transition-transform duration-200 group-open:rotate-180">
+                <Icon name="down" size={18} />
+              </span>
+            </summary>
+            <div className="flex flex-col gap-4 pt-2">
+              <MacroSplit bySlot={summary.bySlot} totals={summary.totals} />
+              <QualityBars quality={quality} />
+              {summary.zone && <p className="text-sm text-text-muted">{t(`home.zone.${summary.zone}`)}</p>}
+              <AskCoach
+                topic={{ kind: "day", date }}
+                label={t("coach.topic.label", { name: dayTitle, kcal: Math.round(summary.totals.kcal) })}
+                coachName={COACH_NAME}
+                compact
+                className="self-start"
+              />
+            </div>
+          </details>
+        ) : (
           <EmptyState
             scene="plate"
             action={
@@ -182,20 +192,56 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
 
       {MEAL_SLOTS.map((slot) => {
         const { entries, totals } = summary.bySlot[slot];
-        const slotPhotos = [...new Set(entries.flatMap((entry) => (entry.photoId ? [entry.photoId] : [])))].flatMap(
-          (id) => photos.get(id) ?? [],
+        const addLink = (
+          <Link
+            href={{ pathname: "/add", query: { slot, date } }}
+            className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary transition active:scale-[0.94]"
+            aria-label={t("home.addTo", { slot, name: t(`slotsLower.${slot}`) })}
+          >
+            <Icon name="plus" />
+          </Link>
         );
-        return (
-          <Card key={slot} aria-labelledby={`slot-${slot}`}>
-            <div className="flex items-center justify-between gap-3">
+        // Un repas vide tient sur une ligne : son nom et « + ».
+        if (entries.length === 0) {
+          return (
+            <Card key={slot} aria-labelledby={`slot-${slot}`} className="flex-row items-center gap-3 py-2.5 pr-3">
               <h2 id={`slot-${slot}`} className="scroll-mt-24 text-lg font-bold">
                 {t(`slots.${slot}`)}
               </h2>
-              <span className="font-semibold text-text-muted">
-                {t("common.kcal", { value: Math.round(totals.kcal) })}
+              <p className="flex-1 text-sm text-text-muted">{t("journal.emptyShort")}</p>
+              {addLink}
+            </Card>
+          );
+        }
+        const slotPhotos = [...new Set(entries.flatMap((entry) => (entry.photoId ? [entry.photoId] : [])))].flatMap(
+          (id) => photos.get(id) ?? [],
+        );
+        const slotKcal = Math.round(totals.kcal);
+        return (
+          <Card key={slot} aria-labelledby={`slot-${slot}`} className="gap-3 pt-3 pr-3">
+            {/* « + » et « ⋯ » dans l'en-tête : plus de rangée de boutons sous chaque repas. */}
+            <div className="flex items-center gap-2">
+              <h2 id={`slot-${slot}`} className="flex-1 scroll-mt-24 text-lg font-bold">
+                {t(`slots.${slot}`)}
+              </h2>
+              <span className="mr-1 font-semibold text-text-muted tabular-nums">
+                {t("common.kcal", { value: slotKcal })}
               </span>
+              {addLink}
+              <MealActions
+                date={date}
+                slot={slot}
+                title={t(`slots.${slot}`)}
+                copyTo={date !== today ? today : null}
+                labels={entries.map((entry) => entry.label)}
+                coach={{
+                  topic: { kind: "meal", date, slot },
+                  label: t("coach.topic.label", { name: t(`slots.${slot}`), kcal: slotKcal }),
+                  name: COACH_NAME,
+                }}
+              />
             </div>
-            {entries.length > 0 && <MacroLine totals={totals} />}
+            <MacroLine totals={totals} />
             {slotPhotos.length > 0 && (
               <PhotoGallery
                 photos={slotPhotos.map((url) => ({
@@ -205,63 +251,36 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
                 caption={`${t(`slots.${slot}`)} · ${dayTitle}`}
               />
             )}
-            {entries.length === 0 ? (
-              <p className="text-text-muted">{t("journal.empty")}</p>
-            ) : (
-              <ul className="flex flex-col divide-y divide-border">
-                {groupByDish(entries).flatMap((group) => [
-                  group.dish && (
-                    <li key={`dish-${group.items[0]!.id}`} className="pt-3 pb-1 text-sm font-semibold text-text-muted">
-                      {group.dish}
-                    </li>
-                  ),
-                  ...group.items.map((entry) => (
-                    <li key={entry.id}>
-                      <EntryRow
-                        entry={{
-                          id: entry.id,
-                          label: entry.label,
-                          quantity: entry.quantity,
-                          unit: entry.unit,
-                          grams: entry.grams,
-                          kcal: entry.kcal,
-                          proteinG: entry.proteinG,
-                          carbsG: entry.carbsG,
-                          fatG: entry.fatG,
-                          slot: entry.slot,
-                          isEstimated: entry.isEstimated,
-                          imageUrl: (entry.foodId && foods.get(entry.foodId)?.imageUrl) || null,
-                        }}
-                        units={unitsFor(entry.foodId, entry.unit)}
-                      />
-                    </li>
-                  )),
-                ])}
-              </ul>
-            )}
-            <div className="flex flex-wrap gap-2">
-              <Link
-                href={{ pathname: "/add", query: { slot, date } }}
-                className={buttonClass("secondary")}
-                aria-label={t("home.addTo", { slot, name: t(`slotsLower.${slot}`) })}
-              >
-                <Icon name="plus" />
-                {t("journal.add")}
-              </Link>
-              {date !== today && entries.length > 0 && (
-                <CopyButton fromDate={date} fromSlot={slot} toDate={today} label={t("journal.copyToToday")} />
-              )}
-              {entries.length > 0 && (
-                <SaveMealButton date={date} slot={slot} labels={entries.map((entry) => entry.label)} />
-              )}
-              {entries.length > 0 && (
-                <AskCoach
-                  topic={{ kind: "meal", date, slot }}
-                  label={t("coach.topic.label", { name: t(`slots.${slot}`), kcal: Math.round(totals.kcal) })}
-                  coachName={COACH_NAME}
-                />
-              )}
-            </div>
+            <ul className="flex flex-col divide-y divide-border">
+              {groupByDish(entries).flatMap((group) => [
+                group.dish && (
+                  <li key={`dish-${group.items[0]!.id}`} className="pt-3 pb-1 text-sm font-semibold text-text-muted">
+                    {group.dish}
+                  </li>
+                ),
+                ...group.items.map((entry) => (
+                  <li key={entry.id}>
+                    <EntryRow
+                      entry={{
+                        id: entry.id,
+                        label: entry.label,
+                        quantity: entry.quantity,
+                        unit: entry.unit,
+                        grams: entry.grams,
+                        kcal: entry.kcal,
+                        proteinG: entry.proteinG,
+                        carbsG: entry.carbsG,
+                        fatG: entry.fatG,
+                        slot: entry.slot,
+                        isEstimated: entry.isEstimated,
+                        imageUrl: (entry.foodId && foods.get(entry.foodId)?.imageUrl) || null,
+                      }}
+                      units={unitsFor(entry.foodId, entry.unit)}
+                    />
+                  </li>
+                )),
+              ])}
+            </ul>
           </Card>
         );
       })}

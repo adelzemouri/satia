@@ -8,30 +8,31 @@ import { suggestedMealName } from "@/domain/saved-meals";
 import { useErrorText } from "@/features/auth/use-error-text";
 import { Alert } from "@/ui/alert";
 import { Button } from "@/ui/button";
-import { Icon } from "@/ui/icon";
 import { haptic } from "@/ui/motion";
 import { useToast } from "@/ui/toast";
 
 import { saveMealAction } from "./actions";
 
-/** Sous un repas du journal : l'enregistrer dans « Mes repas », avec un nom proposé. */
-export function SaveMealButton({ date, slot, labels }: { date: string; slot: MealSlot; labels: string[] }) {
+/** Depuis le menu d'un repas du journal : l'enregistrer dans « Mes repas », avec un nom proposé. */
+export function SaveMealForm({
+  date,
+  slot,
+  labels,
+  onDone,
+  onCancel,
+}: {
+  date: string;
+  slot: MealSlot;
+  labels: string[];
+  onDone: () => void;
+  onCancel: () => void;
+}) {
   const t = useTranslations("savedMeals");
   const errorText = useErrorText();
   const toast = useToast();
   const inputId = useId();
-  const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-
-  if (!open) {
-    return (
-      <Button variant="ghost" onClick={() => setOpen(true)}>
-        <Icon name="bookmark" />
-        {t("save")}
-      </Button>
-    );
-  }
 
   const save = (formData: FormData) =>
     startTransition(async () => {
@@ -40,11 +41,11 @@ export function SaveMealButton({ date, slot, labels }: { date: string; slot: Mea
       haptic();
       toast({ message: t("saved") });
       setError(null);
-      setOpen(false);
+      onDone();
     });
 
   return (
-    <form action={save} className="flex w-full flex-col gap-3 rounded-2xl bg-surface-muted p-3">
+    <form action={save} className="flex w-full flex-col gap-3">
       {error && <Alert>{errorText(error)}</Alert>}
       <label htmlFor={inputId} className="font-semibold">
         {t("nameLabel")}
@@ -61,7 +62,7 @@ export function SaveMealButton({ date, slot, labels }: { date: string; slot: Mea
         <Button type="submit" disabled={pending}>
           {t("confirm")}
         </Button>
-        <Button variant="ghost" onClick={() => setOpen(false)} disabled={pending}>
+        <Button variant="ghost" onClick={onCancel} disabled={pending}>
           {t("cancel")}
         </Button>
       </div>

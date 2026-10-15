@@ -625,7 +625,11 @@
     "emptyDay": "Nothing logged that day yet. One meal is enough to see your summary.",
     "splitTitle": "Split by meal",
     "splitCaption": "Calories and macronutrients of each meal, with their share of the day",
-    "grams": "{value, number} g"
+    "grams": "{value, number} g",
+    "mealActions": "More actions for {name}",
+    "closeActions": "Close",
+    "emptyShort": "Nothing yet",
+    "showDetail": "See details"
   },
   "add": {
     "title": "Add",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { type Ref, useEffect, useImperativeHandle, useRef, useState, useTransition } from "react";
 
 import { type CoachTopic, TOPIC_QUESTIONS } from "@/domain/coach-topic";
 import { useSpeech } from "@/features/ai/use-speech";
@@ -18,6 +18,9 @@ const MAX_LENGTH = 500;
 
 type Exchange = { id: number; question: string; answer: CoachAnswer | null };
 
+/** Pour ouvrir le panneau depuis un autre bouton (le menu « ⋯ » d'un repas du journal). */
+export type AskCoachHandle = { open: () => void };
+
 /**
  * « Demander à Pépin » depuis une page : un panneau monte par-dessus la page (sur le côté sur
  * ordinateur) avec le sujet déjà joint. Les échanges rejoignent la conversation de /coach.
@@ -28,6 +31,8 @@ export function AskCoach({
   coachName,
   compact = false,
   className = "",
+  showTrigger = true,
+  handle,
 }: {
   topic: CoachTopic;
   /** Ce dont on parle, en clair (« Déjeuner · 640 kcal »). */
@@ -36,6 +41,9 @@ export function AskCoach({
   /** Bouton discret, pour l'en-tête d'une carte. */
   compact?: boolean;
   className?: string;
+  /** Faux : pas de bouton, le panneau s'ouvre par `handle`. */
+  showTrigger?: boolean;
+  handle?: Ref<AskCoachHandle>;
 }) {
   const t = useTranslations("coach");
   const locale = useLocale();
@@ -47,6 +55,7 @@ export function AskCoach({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const nextId = useRef(0);
+  useImperativeHandle(handle, () => ({ open: () => dialog.current?.showModal() }), []);
 
   useEffect(() => {
     const box = scroller.current;
@@ -88,16 +97,18 @@ export function AskCoach({
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => dialog.current?.showModal()}
-        className={`flex shrink-0 items-center gap-2 rounded-full bg-primary-soft font-semibold text-primary transition active:scale-[0.97] ${
-          compact ? "min-h-11 py-1 pr-3 pl-1 text-sm" : "min-h-12 py-1.5 pr-5 pl-1.5"
-        } ${className}`}
-      >
-        <CoachAvatar size={compact ? 28 : 32} />
-        {t("askCoach", { name: coachName })}
-      </button>
+      {showTrigger && (
+        <button
+          type="button"
+          onClick={() => dialog.current?.showModal()}
+          className={`flex shrink-0 items-center gap-2 rounded-full bg-primary-soft font-semibold text-primary transition active:scale-[0.97] ${
+            compact ? "min-h-11 py-1 pr-3 pl-1 text-sm" : "min-h-12 py-1.5 pr-5 pl-1.5"
+          } ${className}`}
+        >
+          <CoachAvatar size={compact ? 28 : 32} />
+          {t("askCoach", { name: coachName })}
+        </button>
+      )}
 
       {/* Échap et le bouton Fermer ferment au clavier ; le clic sur le fond grisé est un raccourci tactile. */}
       {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions */}
