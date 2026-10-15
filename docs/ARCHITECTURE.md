@@ -855,3 +855,9 @@ le pourquoi de chacun est dans `docs/DECISIONS.md`.
   écran dans un `<dialog>` modal (pincer ou toucher deux fois pour zoomer, glisser pour passer
   à la suivante ou fermer). Pour Open Food Facts, elle charge l'image originale
   (`fullSizeImageUrl`), la vignette gardée en base ne faisant qu'environ 200 px.
+- **Badges Nutri-Score et NOVA expliqués** (`src/features/foods/quality-badges.tsx`) : sur la
+  fiche aliment, chaque badge ouvre une fiche courte (échelle, ce que mesure le badge, fibres,
+  sucres et sel pour 100 g ou ce qui classe le produit en NOVA 4). Une phrase résume les deux
+  badges quand ils semblent se contredire (`qualityVerdict`). Les marqueurs NOVA 4 viennent du
+  champ `nova_groups_markers` d'Open Food Facts, gardés dans `foods.nova_markers` ; un produit
+  enregistré avant ce champ est relu sur OFF après l'affichage de sa fiche.

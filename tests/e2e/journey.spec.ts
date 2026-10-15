@@ -517,6 +517,17 @@ test("ajout d'un produit par code-barres (Open Food Facts simulé)", async ({ pa
   await expect(labels.getByText("Nutri-Score E")).toBeVisible();
   await expect(labels.getByText("NOVA 4")).toBeVisible();
   await expectNoA11yViolations(page);
+  // Un toucher sur un badge explique ce qu'il mesure et ce qui compte pour ce produit.
+  await labels.getByRole("button", { name: "NOVA 4" }).click();
+  const novaSheet = page.getByRole("dialog", { name: "NOVA 4, ultra-transformé" });
+  await expect(novaSheet.getByText("Arôme", { exact: true })).toBeVisible();
+  await expect(novaSheet.getByText("E322", { exact: true })).toBeVisible();
+  await expectNoA11yViolations(page);
+  await page.keyboard.press("Escape");
+  await expect(novaSheet).toBeHidden();
+  await labels.getByRole("button", { name: "Nutri-Score E" }).click();
+  await expect(page.getByRole("dialog", { name: "Nutri-Score E" }).getByText("56 g · élevé")).toBeVisible();
+  await page.keyboard.press("Escape");
 
   await page.getByRole("link", { name: "Ajouter au journal" }).click();
   await expect(page.getByLabel("Unité")).toHaveValue("portion");

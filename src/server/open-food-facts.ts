@@ -9,7 +9,13 @@ import { db } from "@/db/client";
 import { foods } from "@/db/schema";
 import { normalizeBarcode } from "@/domain/barcode";
 import { kcalFromMacros } from "@/domain/nutrition";
-import { fruitVegShareForCategories, type NutriscoreGrade, toNovaGroup, toNutriscore } from "@/domain/quality";
+import {
+  fruitVegShareForCategories,
+  novaFourMarkers,
+  type NutriscoreGrade,
+  toNovaGroup,
+  toNutriscore,
+} from "@/domain/quality";
 import { normalizeForSearch } from "@/domain/search";
 import { type CountUnit, countUnitsFromServing } from "@/domain/units";
 
@@ -29,7 +35,7 @@ const CACHE_MAX_AGE_DAYS = 30;
 const USER_AGENT = `${APP_NAME}/0.1 (application familiale de suivi nutritionnel)`;
 const FIELDS =
   "code,product_name,product_name_fr,brands,nutriments,serving_quantity,serving_size,image_front_small_url,image_front_url," +
-  "nutriscore_grade,nova_group,categories_tags";
+  "nutriscore_grade,nova_group,nova_groups_markers,categories_tags";
 const TIMEOUT_MS = 8000;
 /** OFF demande de rester sous 10 recherches par minute. */
 const SEARCH_RULE = { window: 60, max: 8 };
@@ -60,6 +66,10 @@ const productSchema = z.object({
   image_front_url: z.string().optional(),
   nutriscore_grade: z.string().optional().catch(undefined),
   nova_group: z.coerce.number().optional().catch(undefined),
+  nova_groups_markers: z
+    .record(z.string(), z.array(z.array(z.string())))
+    .optional()
+    .catch(undefined),
   categories_tags: z.array(z.string()).optional().catch(undefined),
 });
 type OffProduct = z.infer<typeof productSchema>;
@@ -77,6 +87,8 @@ export type OffCandidate = {
   saltG: number | null;
   nutriscore: NutriscoreGrade | null;
   novaGroup: number | null;
+  /** Ce qui classe le produit en NOVA 4 ; null quand la réponse d'OFF ne contient pas ce champ. */
+  novaMarkers: string[] | null;
   fruitVegShare: number;
   servingGrams: number | null;
   /** Poids d'une portion et, quand la portion le dit, d'une tranche ou d'une pièce. */
@@ -112,6 +124,7 @@ export function toCandidate(product: OffProduct): OffCandidate | null {
     saltG: n.salt_100g ?? null,
     nutriscore: toNutriscore(product.nutriscore_grade),
     novaGroup: toNovaGroup(product.nova_group),
+    novaMarkers: product.nova_groups_markers ? novaFourMarkers(product.nova_groups_markers) : null,
     fruitVegShare: fruitVegShareForCategories(product.categories_tags ?? []),
     servingGrams,
     unitWeights,
@@ -203,7 +216,8 @@ export async function importOpenFoodFactsProduct(userId: string, code: string): 
   const parsed = productSchema.safeParse({ ...(body.product as object), code: barcode });
   const candidate = parsed.success ? toCandidate(parsed.data) : null;
   if (!candidate) throw new DomainError("off_incomplete");
-  return cacheProduct(candidate);
+  // La fiche produit a été lue en entier : sans marqueurs, il n'y en a pas (inutile de la relire).
+  return cacheProduct({ ...candidate, novaMarkers: candidate.novaMarkers ?? [] });
 }
 
 /**
@@ -242,6 +256,7 @@ export async function cacheProduct(candidate: OffCandidate): Promise<string> {
     saltG: candidate.saltG,
     nutriscore: candidate.nutriscore,
     novaGroup: candidate.novaGroup,
+    novaMarkers: candidate.novaMarkers,
     fruitVegShare: candidate.fruitVegShare,
     imageUrl: candidate.imageUrl,
     fetchedAt: new Date(),
@@ -255,6 +270,8 @@ export async function cacheProduct(candidate: OffCandidate): Promise<string> {
       target: [foods.source, foods.sourceRef],
       set: {
         ...values,
+        // Le moteur de recherche ne renvoie pas toujours les marqueurs : on garde ceux déjà connus.
+        novaMarkers: sql`coalesce(excluded.nova_markers, ${foods.novaMarkers})`,
         unitWeights: sql`nullif(coalesce(${foods.unitWeights}, '{}'::jsonb) || coalesce(excluded.unit_weights, '{}'::jsonb), '{}'::jsonb)`,
       },
     })

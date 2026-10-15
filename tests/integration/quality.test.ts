@@ -75,13 +75,14 @@ describe("qualité nutritionnelle", () => {
         saltG: 0.1,
         nutriscore: "e",
         novaGroup: 4,
+        novaMarkers: null,
         fruitVegShare: 0,
         servingGrams: 15,
         unitWeights: { portion: 15 },
         imageUrl: null,
       }),
     );
-    expect(spread).toMatchObject({ nutriscore: "e", novaGroup: 4 });
+    expect(spread).toMatchObject({ nutriscore: "e", novaGroup: 4, novaMarkers: null });
 
     await addEntry(userId, { date: today, slot: "lunch", foodId: apple.id, quantity: 160, unit: "g" });
     await addEntry(userId, { date: today, slot: "lunch", foodId: lentils.id, quantity: 200, unit: "g" });
@@ -136,5 +137,31 @@ describe("qualité nutritionnelle", () => {
     expect(await entriesOn(userId, today)).toHaveLength(2);
     expect(await habitualMeal(userId, "breakfast", today)).toBeNull();
     expect((await db().select().from(mealEntries)).length).toBe(8);
+  });
+
+  it("garde les marqueurs NOVA quand une réponse d'OFF ne les contient pas", async () => {
+    const userId = await setupUser();
+    const bread = {
+      code: "3760049798609",
+      name: "Pain de mie seigle et graines",
+      brand: null,
+      kcal: 297,
+      proteinG: 10,
+      carbsG: 40,
+      fatG: 9.6,
+      fiberG: 7.2,
+      sugarsG: 4.2,
+      saltG: 0.96,
+      nutriscore: "a" as const,
+      novaGroup: 4,
+      novaMarkers: ["en:flavouring", "en:gluten"],
+      fruitVegShare: 0,
+      servingGrams: null,
+      unitWeights: null,
+      imageUrl: null,
+    };
+    const id = await cacheProduct(bread);
+    await cacheProduct({ ...bread, novaMarkers: null });
+    expect((await getFoodDetails(userId, id)).novaMarkers).toEqual(["en:flavouring", "en:gluten"]);
   });
 });

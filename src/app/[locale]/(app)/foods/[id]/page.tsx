@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { after } from "next/server";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { shortFoodName } from "@/domain/food-name";
@@ -13,12 +14,14 @@ import { toLocale } from "@/i18n/routing";
 import { DomainError } from "@/server/errors";
 import { AskCoach } from "@/features/coach/ask-coach";
 import { ProductThumb } from "@/features/foods/product-thumb";
+import { QualityBadges } from "@/features/foods/quality-badges";
 import { ZoomablePhoto } from "@/ui/photo-viewer";
 import { RecipePhotoForm } from "@/features/foods/recipe-photo-form";
 import { RecipeStepsButton } from "@/features/planning/recipe-steps-button";
 import { RecipeVisual } from "@/features/recipes/recipe-visual";
 import { RECIPE_PHOTOS } from "@/features/recipes/recipe-photos";
 import { aiAvailability } from "@/server/ai-availability";
+import { importOpenFoodFactsProduct } from "@/server/open-food-facts";
 import { type Food, getFoodDetails, isGeneratedRecipePhoto, recipeIngredients } from "@/server/foods";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
@@ -45,6 +48,11 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
   const slot = MEAL_SLOTS.find((value) => value === query.slot);
   const via = query.via === "barcode" ? "barcode" : undefined;
   const t = await getTranslations();
+  // Produit enregistré avant les marqueurs NOVA : relu sur OFF après l'affichage, prêt pour la prochaine fois.
+  const offRef = food.source === "off" ? food.sourceRef : null;
+  if (offRef && food.novaGroup === 4 && food.novaMarkers === null) {
+    after(() => importOpenFoodFactsProduct(user.id, offRef).catch(() => undefined));
+  }
 
   const portion = food.unitWeights?.portion ?? null;
   const catalog = food.source === "recipe" ? catalogRecipeFor(food.sourceRef) : undefined;
@@ -243,18 +251,14 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
       )}
 
       {(food.nutriscore || food.novaGroup) && (
-        <ul className="flex flex-wrap gap-2" aria-label={t("quality.labels")}>
-          {food.nutriscore && (
-            <li className="rounded-full border border-border bg-surface-muted px-4 py-2 font-semibold">
-              {t("quality.nutriscore", { grade: food.nutriscore.toUpperCase() })}
-            </li>
-          )}
-          {food.novaGroup && (
-            <li className="rounded-full border border-border bg-surface-muted px-4 py-2 font-semibold">
-              {t("quality.nova", { group: food.novaGroup })}
-            </li>
-          )}
-        </ul>
+        <QualityBadges
+          nutriscore={food.nutriscore}
+          novaGroup={food.novaGroup}
+          novaMarkers={food.novaMarkers}
+          fiberG={food.fiberG}
+          sugarsG={food.sugarsG}
+          saltG={food.saltG}
+        />
       )}
 
       <Card aria-labelledby="nutrients">
