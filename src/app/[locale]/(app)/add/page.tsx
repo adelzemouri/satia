@@ -15,7 +15,7 @@ import { suggestedDish } from "@/server/coach";
 import { catalogRecipe } from "@/domain/recipes/catalog";
 import { DishThumb } from "@/features/recipes/dish-thumb";
 import { daySummary } from "@/server/journal";
-import { familyRecipes, favoriteFoods, type FoodSummary, getFood, ownFoods, recentFoods } from "@/server/foods";
+import { favoriteFoods, type FoodSummary, getFood, ownFoods, recentFoods } from "@/server/foods";
 import { listContainers } from "@/server/personal";
 import { habitualMeal } from "@/server/quality";
 import { listSavedMeals } from "@/server/saved-meals";
@@ -36,20 +36,18 @@ export default async function AddPage({ params, searchParams }: PageProps<"/[loc
   const date = parseDayParam(query.date, todayIso());
   const slot = MEAL_SLOTS.find((value) => value === query.slot) ?? slotAt(new Date(), APP_TIMEZONE);
   const foodId = typeof query.food === "string" ? query.food : null;
-  const [recent, favorites, mine, family, preselected, availability, containers, habit, summary, saved] =
-    await Promise.all([
-      recentFoods(user.id),
-      favoriteFoods(user.id),
-      ownFoods(user.id),
-      familyRecipes(user.id),
-      // Aliment choisi depuis une fiche produit : on passe directement à la quantité.
-      foodId && /^[0-9a-f-]{36}$/.test(foodId) ? getFood(user.id, foodId).catch(() => null) : null,
-      aiAvailability(),
-      listContainers(user.id),
-      foodId ? null : habitualMeal(user.id, slot, date),
-      date === todayIso() && !foodId ? daySummary(user.id, date) : null,
-      foodId ? [] : listSavedMeals(user.id),
-    ]);
+  const [recent, favorites, mine, preselected, availability, containers, habit, summary, saved] = await Promise.all([
+    recentFoods(user.id),
+    favoriteFoods(user.id),
+    ownFoods(user.id),
+    // Aliment choisi depuis une fiche produit : on passe directement à la quantité.
+    foodId && /^[0-9a-f-]{36}$/.test(foodId) ? getFood(user.id, foodId).catch(() => null) : null,
+    aiAvailability(),
+    listContainers(user.id),
+    foodId ? null : habitualMeal(user.id, slot, date),
+    date === todayIso() && !foodId ? daySummary(user.id, date) : null,
+    foodId ? [] : listSavedMeals(user.id),
+  ]);
   // Une idée de plat qui tient dans ce qu'il reste aujourd'hui, si aucun repas habituel ne se présente.
   const dish =
     !habit && summary?.goal
@@ -76,7 +74,7 @@ export default async function AddPage({ params, searchParams }: PageProps<"/[loc
         slot={slot}
         recent={recent.map(toItem)}
         favorites={favorites.map(toItem)}
-        mine={[...mine, ...family].map(toItem)}
+        mine={mine.map(toItem)}
         initialFood={preselected && toItem(preselected)}
         inputMethod={query.via === "barcode" ? "barcode" : "manual"}
         ai={availability ? { availability, containers: containers.map(({ id, name }) => ({ id, name })) } : undefined}

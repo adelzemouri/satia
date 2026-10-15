@@ -208,7 +208,6 @@ describe("saisie IA", () => {
       name: "Fromage blanc, müesli et beurre de cacahuète",
       servings: 1,
       cookedGrams: null,
-      family: true,
       items: [
         { foodId: peanut.id, grams: 15 },
         { foodId: muesli.id, grams: 40 },

@@ -45,11 +45,7 @@ export function FoodList({
                 <span className="w-full truncate font-semibold">{shortFoodName(food.nameFr)}</span>
                 <span className="text-sm text-text-muted">
                   {describe?.(food) ??
-                    [
-                      food.brand,
-                      t(food.householdId ? "sources.family" : `sources.${food.source}`),
-                      t("per100", { kcal: Math.round(food.kcal) }),
-                    ]
+                    [food.brand, t(`sources.${food.source}`), t("per100", { kcal: Math.round(food.kcal) })]
                       .filter(Boolean)
                       .join(" · ")}
                 </span>

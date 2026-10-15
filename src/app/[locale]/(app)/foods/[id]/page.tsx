@@ -111,7 +111,7 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
       <div className="flex items-start gap-4">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <p className="text-sm font-semibold text-text-muted">
-            {catalog ? t("recipes.source") : t(food.householdId ? "add.sources.family" : `add.sources.${food.source}`)}
+            {catalog ? t("recipes.source") : t(`add.sources.${food.source}`)}
           </p>
           <h1 className="font-display text-3xl font-extrabold tracking-tight">{shortFoodName(food.nameFr)}</h1>
           {shortFoodName(food.nameFr) !== food.nameFr && <p className="text-text-muted">{food.nameFr}</p>}

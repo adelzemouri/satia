@@ -13,7 +13,7 @@ export type FoodItem = {
   densityGPerMl: number | null;
   unitWeights: Partial<Record<"portion" | "piece" | "slice", number>> | null;
   imageUrl: string | null;
-  /** Renseigné pour une recette du foyer. */
+  /** Renseigné pour une recette, ou un aliment perso devenu commun en entrant dans une recette. */
   householdId?: string | null;
   /** Nombre de portions d'une recette. */
   servings?: number | null;

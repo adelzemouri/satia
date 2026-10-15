@@ -8,7 +8,7 @@ import { addDays } from "@/domain/energy";
 import { isoWeekStart } from "@/domain/streak";
 import type { OnboardingInput } from "@/features/onboarding/schema";
 import { setupFirstAdmin } from "@/server/accounts";
-import { createRecipe, searchFoods } from "@/server/foods";
+import { createCustomFood, createRecipe, searchFoods } from "@/server/foods";
 import {
   addPlanItem,
   addShoppingItem,
@@ -74,7 +74,6 @@ async function familySoup(userId: string) {
     servings: 4,
     cookedGrams: null,
     items: [{ foodId: carrot.id, grams: 600 }],
-    family: true,
   });
 }
 
@@ -85,15 +84,17 @@ describe("planification", () => {
   });
   afterEach(() => vi.unstubAllEnvs());
 
-  it("ajoute et retire des plats du menu commun, sans recette personnelle", async () => {
+  it("ajoute et retire des plats du menu commun, sans aliment personnel", async () => {
     const { userId, householdId } = await setupUser();
     const soup = await familySoup(userId);
-    const mine = await createRecipe(userId, {
-      name: "Ma salade",
-      servings: 1,
-      cookedGrams: null,
-      items: [{ foodId: (await firstFood(userId, "tomate crue")).id, grams: 150 }],
-      family: false,
+    const mine = await createCustomFood(userId, {
+      name: "Ma sauce",
+      basis: "100g",
+      portionGrams: null,
+      kcal: 200,
+      proteinG: 2,
+      carbsG: 10,
+      fatG: 16,
     });
 
     const id = await addPlanItem(userId, householdId, {
@@ -213,6 +214,6 @@ describe("planification", () => {
       items: omelette.items.map((item) => ({ foodId: item.foodId, grams: item.grams })),
     });
     const library = await recipeLibrary(userId, householdId);
-    expect(library).toEqual([expect.objectContaining({ id, name: "Omelette à la tomate", ownerUserId: userId })]);
+    expect(library).toEqual([expect.objectContaining({ id, name: "Omelette à la tomate", ownerUserId: null })]);
   });
 });

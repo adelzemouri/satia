@@ -28,7 +28,6 @@ export type RecipeFormInitial = {
   name: string;
   servings: number;
   cookedGrams: number | null;
-  family: boolean;
   items: { food: FoodItem; grams: number }[];
   steps: string[];
 };
@@ -43,20 +42,15 @@ function toBase64(blob: Blob): Promise<string> {
 }
 
 /**
- * Création ou modification d'une recette. Une recette « du foyer » est visible et modifiable
- * par tous les membres ; les ingrédients peuvent être pré-remplis depuis une photo (IA).
+ * Création ou modification d'une recette. Toute recette est visible et modifiable par les
+ * membres du foyer ; les ingrédients peuvent être pré-remplis depuis une photo (IA).
  */
 export function RecipeForm({
   initial,
-  familyOnly = false,
-  defaultFamily = false,
   aiAvailable = false,
   onSaved,
 }: {
   initial?: RecipeFormInitial;
-  /** Recette forcément commune (création depuis un repas partagé). */
-  familyOnly?: boolean;
-  defaultFamily?: boolean;
   aiAvailable?: boolean;
   /** Sans ce rappel, on revient à la liste des aliments après l'enregistrement. */
   onSaved?: (id: string) => void;
@@ -68,13 +62,14 @@ export function RecipeForm({
     () => initial?.items.map((item) => ({ food: item.food, grams: String(item.grams) })) ?? [],
   );
   const [servings, setServings] = useState(String(initial?.servings ?? 4));
-  const [family, setFamily] = useState(familyOnly || (initial?.family ?? defaultFamily));
   const [query, setQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState<string[]>([]);
   const [pending, startTransition] = useTransition();
   const { results } = useFoodSearch(query);
 
+  // La recette sera commune : ses aliments perso deviendront visibles par la famille.
+  const personal = items.some((item) => item.food.source === "custom" && !item.food.householdId);
   const totals = sumNutrients(items.map((item) => nutrientsFor(item.food, Number(item.grams.replace(",", ".")) || 0)));
   const perServing = Math.round(totals.kcal / Math.max(1, Number(servings) || 1));
 
@@ -119,7 +114,6 @@ export function RecipeForm({
         servings: Number(servings),
         cookedGrams: readNumber(formData, "cookedGrams"),
         items: items.map((item) => ({ foodId: item.food.id, grams: Number(item.grams.replace(",", ".")) })),
-        family,
         // Une étape par ligne ; les lignes vides sont ignorées.
         steps: String(formData.get("steps") ?? "")
           .split("\n")
@@ -130,7 +124,7 @@ export function RecipeForm({
       if (result?.error) return setError(result.fieldErrors?.items ?? result.fieldErrors?.name ?? result.error);
       const id = initial?.id ?? (result as { id?: string } | null)?.id;
       if (onSaved && id) onSaved(id);
-      else router.push(family ? "/recipes" : "/foods");
+      else router.push("/recipes");
     });
 
   return (
@@ -154,23 +148,6 @@ export function RecipeForm({
           defaultValue={initial?.cookedGrams ?? undefined}
         />
       </div>
-      {!familyOnly && !initial?.family && (
-        <div className="flex flex-col gap-1">
-          <label className="flex min-h-12 items-center gap-3">
-            <input
-              type="checkbox"
-              checked={family}
-              onChange={(event) => setFamily(event.target.checked)}
-              aria-describedby="family-recipe-hint"
-              className="size-5 accent-primary"
-            />
-            {t("foods.familyRecipe")}
-          </label>
-          <p id="family-recipe-hint" className="text-sm text-text-muted">
-            {t("foods.familyRecipeHint")}
-          </p>
-        </div>
-      )}
 
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-1.5 text-lg font-semibold">{t("foods.ingredients")}</legend>
@@ -181,6 +158,7 @@ export function RecipeForm({
             <input type="file" accept="image/*" onChange={fillFromPhoto} disabled={pending} className="sr-only" />
           </label>
         )}
+        {personal && <p className="text-sm text-text-muted">{t("foods.personalIngredientShared")}</p>}
         {notFound.length > 0 && (
           <p className="text-sm text-text-muted">{t("foods.photoNotFound", { names: notFound.join(", ") })}</p>
         )}

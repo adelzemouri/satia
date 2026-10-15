@@ -155,6 +155,13 @@
       "when": 1791362066156,
       "tag": "0021_guest_households",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1792046765519,
+      "tag": "0022_shared_recipes",
+      "breakpoints": true
     }
   ]
 }
