@@ -1,6 +1,6 @@
 import { Bone, SkeletonCard, SkeletonPage, TitleBone } from "@/ui/skeleton";
 
-/** Squelette du journal : titre, semaine et ses liens, bilan du jour, puis une carte par repas. */
+/** Squelette du journal : titre, semaine et ses liens, bilan du jour, puis une carte par repas, boutons dans l'en-tête. */
 export default function JournalLoading() {
   return (
     <SkeletonPage wide className="desktop-columns">
@@ -35,24 +35,22 @@ export default function JournalLoading() {
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          {[0, 1].map((index) => (
-            <div key={index} className="flex flex-col gap-1.5">
-              <Bone className="h-4 w-20" />
-              <Bone className="h-2 w-full rounded-full" />
-              <Bone className="h-4 w-16" />
-            </div>
-          ))}
+        <div className="-mt-2 flex min-h-11 items-center">
+          <Bone className="h-4 w-28" />
         </div>
       </SkeletonCard>
       {[0, 1, 2, 3].map((index) => (
-        <SkeletonCard key={index}>
-          <div className="flex items-center justify-between gap-3">
-            <Bone className="h-6 w-36" />
+        <SkeletonCard key={index} className="gap-3 pt-3 pr-3">
+          <div className="flex items-center gap-2">
+            <Bone className="h-6 w-32" />
+            <span className="flex-1" />
             <Bone className="h-5 w-16" />
+            <Bone className="size-11 rounded-full" />
+            <Bone className="size-11 rounded-full" />
           </div>
-          <Bone className="h-5 w-3/5" />
-          <Bone className="h-12 w-32 rounded-full" />
+          <Bone className="h-3 w-3/5" />
+          <Bone className="h-10 w-full" />
+          <Bone className="h-10 w-full" />
         </SkeletonCard>
       ))}
     </SkeletonPage>

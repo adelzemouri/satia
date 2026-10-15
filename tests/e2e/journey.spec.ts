@@ -347,11 +347,15 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await expect(page.getByRole("region", { name: "Petit-déjeuner" }).getByText("Granola maison")).toBeVisible();
 
   // « Mes repas » : le petit-déjeuner s'enregistre sous un nom, puis se resert d'un geste.
-  const morning = page.getByRole("region", { name: "Petit-déjeuner" });
+  // Les actions moins fréquentes d'un repas sont dans son menu « ⋯ ».
+  await page.getByRole("button", { name: "Plus d'actions pour le petit-déjeuner" }).click();
+  const morning = page.getByRole("dialog", { name: "Petit-déjeuner" });
+  await expectNoA11yViolations(page);
   await morning.getByRole("button", { name: "Enregistrer ce repas" }).click();
   await expect(morning.getByLabel("Nom du repas")).toHaveValue("Granola maison");
   await morning.getByLabel("Nom du repas").fill("Petit-déj du matin");
   await withServerAction(page, () => morning.getByRole("button", { name: "Enregistrer", exact: true }).click());
+  await expect(morning).toBeHidden();
   await expect(page.getByRole("status").filter({ hasText: "Repas enregistré" })).toBeVisible();
   await page.goto("/add?slot=snack");
   const savedList = page.getByRole("region", { name: "Mes repas" });
@@ -658,7 +662,7 @@ test("saisie d'un repas par photo (LLM simulé), avec contenant et écran de con
   // Macros d'un aliment en dépliant sa ligne, et répartition par repas.
   await lunch.getByRole("button", { name: /^Modifier Riz basmati, cuit/ }).click();
   await expect(lunch.getByText(/^Prot\. \d+ g$/).first()).toBeVisible();
-  await page.getByText("Répartition par repas").click();
+  await page.getByText("Voir le détail").click();
   await expect(
     page
       .getByRole("table", { name: /Calories et macronutriments/ })
@@ -1052,10 +1056,8 @@ test("coach : bilan, conversation (LLM simulé), garde-fou", async ({ page }) =>
 
   // Depuis un repas du journal, Pépin s'ouvre par-dessus la page avec le repas joint.
   await page.goto("/journal");
-  await page
-    .getByRole("region", { name: "Déjeuner", exact: true })
-    .getByRole("button", { name: "Demander à Pépin" })
-    .click();
+  await page.getByRole("button", { name: "Plus d'actions pour le déjeuner" }).click();
+  await page.getByRole("dialog", { name: "Déjeuner" }).getByRole("button", { name: "Demander à Pépin" }).click();
   const panel = page.getByRole("dialog", { name: "Pépin" });
   await expect(panel.getByText(/^À propos de : Déjeuner · \d+ kcal$/)).toBeVisible();
   await expectNoA11yViolations(page);

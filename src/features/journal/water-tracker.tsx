@@ -52,7 +52,7 @@ export function WaterTracker({
         </span>
         {fromMeals > 0 && <span className="block text-xs">{t("fromMeals", { count: fromMeals })}</span>}
       </p>
-      <ul className="flex flex-wrap gap-1">
+      <ul className="flex flex-wrap gap-0.5">
         {Array.from({ length: Math.min(slots + 1, 30) }, (_, i) => {
           const n = i + 1;
           const full = n <= optimistic;
@@ -63,7 +63,7 @@ export function WaterTracker({
                 aria-label={t("glass", { n })}
                 aria-pressed={full}
                 onClick={() => set(full && n === optimistic ? n - 1 : n)}
-                className="relative flex h-12 w-9 items-center justify-center rounded-xl"
+                className="relative flex h-12 w-8 items-center justify-center rounded-xl"
               >
                 {/* Même dessin que la carte Eau de l'accueil ; la case en plus permet de dépasser l'objectif. */}
                 <Glass full={full} fresh={full && n === optimistic} />

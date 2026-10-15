@@ -625,7 +625,11 @@
     "emptyDay": "Rien de noté ce jour-là pour l'instant. Un premier repas suffit pour voir ton bilan.",
     "splitTitle": "Répartition par repas",
     "splitCaption": "Calories et macronutriments de chaque repas, avec leur part de la journée",
-    "grams": "{value, number} g"
+    "grams": "{value, number} g",
+    "mealActions": "{slot, select, snack {Plus d'actions pour les {name}} other {Plus d'actions pour le {name}}}",
+    "closeActions": "Fermer",
+    "emptyShort": "Rien pour l'instant",
+    "showDetail": "Voir le détail"
   },
   "add": {
     "title": "Ajouter",
