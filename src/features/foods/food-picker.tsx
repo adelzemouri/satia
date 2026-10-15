@@ -13,6 +13,7 @@ import { Link } from "@/i18n/navigation";
 import { Alert } from "@/ui/alert";
 import { Button, buttonClass } from "@/ui/button";
 import { Icon } from "@/ui/icon";
+import { SearchInput } from "@/ui/search-input";
 
 import { FoodList } from "./food-list";
 import type { FoodItem, OffItem, RecentItem } from "./food-types";
@@ -143,14 +144,7 @@ export function FoodPicker({
           <Icon name="search" />
         </span>
         <span className="sr-only">{t("searchLabel")}</span>
-        <input
-          type="search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder={t("searchHint")}
-          autoComplete="off"
-          className="min-w-0 flex-1 bg-transparent text-base outline-none"
-        />
+        <SearchInput value={query} onValueChange={setQuery} placeholder={t("searchHint")} autoComplete="off" />
       </label>
 
       {error && <Alert>{errorText(error)}</Alert>}

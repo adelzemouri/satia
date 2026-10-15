@@ -351,3 +351,25 @@ fieldset {
     transform: translateY(8px) scale(0.9);
   }
 }
+
+/* Une seule croix dans les champs de recherche : la nôtre (SearchInput), pas celle de WebKit. */
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+  appearance: none;
+}
+
+/* Le conteneur porte déjà l'anneau de focus : pas de second cadre autour du texte. */
+.search-input:focus-visible {
+  outline: none;
+}
+
+/* La croix apparaît en fondu court, et s'enfonce un peu sous le doigt. */
+.search-clear {
+  transition:
+    opacity 150ms var(--ease-out-strong),
+    scale 150ms var(--ease-out-strong);
+  @starting-style {
+    opacity: 0;
+    scale: 0.8;
+  }
+}

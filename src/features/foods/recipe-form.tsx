@@ -14,6 +14,7 @@ import { Alert } from "@/ui/alert";
 import { Button, buttonClass } from "@/ui/button";
 import { Field } from "@/ui/field";
 import { Icon } from "@/ui/icon";
+import { SearchInput } from "@/ui/search-input";
 
 import { readNumber } from "./custom-food-form";
 import { FoodList } from "./food-list";
@@ -239,15 +240,15 @@ export function RecipeForm({
         </p>
         <label className="flex flex-col gap-1.5">
           <span className="font-semibold">{t("foods.addIngredient")}</span>
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            onKeyDown={(event) => event.key === "Enter" && event.preventDefault()}
-            placeholder={t("add.searchHint")}
-            autoComplete="off"
-            className="min-h-12 rounded-2xl border border-border bg-surface px-4 text-base"
-          />
+          <span className="focus-within:outline-focus flex min-h-12 items-center gap-2 rounded-2xl border border-border bg-surface px-4 focus-within:outline-3">
+            <SearchInput
+              value={query}
+              onValueChange={setQuery}
+              onKeyDown={(event) => event.key === "Enter" && event.preventDefault()}
+              placeholder={t("add.searchHint")}
+              autoComplete="off"
+            />
+          </span>
         </label>
         {results && results.length > 0 && (
           <FoodList

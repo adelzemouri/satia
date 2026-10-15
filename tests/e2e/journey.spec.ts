@@ -187,7 +187,14 @@ test("ajout manuel d'un repas depuis la base Ciqual", async ({ page }) => {
   await page.getByRole("link", { name: "Ajouter au déjeuner" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Ajouter");
   await expect(page.getByLabel("Pour quel repas ?")).toHaveValue("lunch");
-  await page.getByLabel("Rechercher un aliment").fill("pomme crue");
+  const search = page.getByLabel("Rechercher un aliment");
+  await search.fill("poire");
+  // La croix vide le champ sans lui faire perdre le focus (le clavier reste ouvert).
+  await page.getByRole("button", { name: "Effacer la recherche" }).click();
+  await expect(search).toHaveValue("");
+  await expect(search).toBeFocused();
+  await expect(page.getByRole("button", { name: "Effacer la recherche" })).toHaveCount(0);
+  await search.fill("pomme crue");
   const result = page.getByRole("button", { name: /^Pomme, pulpe et peau, crue/ }).first();
   await expect(result).toBeVisible();
   await expectNoA11yViolations(page);
