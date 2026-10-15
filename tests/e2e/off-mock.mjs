@@ -10,6 +10,13 @@ const PRODUCT = {
   nutriments: { "energy-kcal_100g": 540, proteins_100g: 6, carbohydrates_100g: 57, fat_100g: 31, sugars_100g: 56 },
   nutriscore_grade: "e",
   nova_group: 4,
+  nova_groups_markers: {
+    3: [["ingredients", "en:sugar"]],
+    4: [
+      ["ingredients", "en:flavouring"],
+      ["additives", "en:e322"],
+    ],
+  },
   categories_tags: ["en:spreads", "en:sweet-spreads"],
 };
 

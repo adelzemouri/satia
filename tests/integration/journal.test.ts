@@ -182,6 +182,7 @@ describe("poids d'une tranche ou d'une pièce", () => {
       saltG: null,
       nutriscore: null,
       novaGroup: null,
+      novaMarkers: null,
       fruitVegShare: 0,
       servingGrams: null,
       unitWeights: null,

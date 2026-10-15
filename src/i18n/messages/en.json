@@ -1060,7 +1060,76 @@
     "sources": "Sources: Ciqual (Anses) and Open Food Facts. ANSES, PNNS and WHO markers, for guidance only.",
     "labels": "Quality indicators",
     "nutriscore": "Nutri-Score {grade}",
-    "nova": "NOVA {group}"
+    "nova": "NOVA {group}",
+    "close": "Close",
+    "fiberLevel": {
+      "rich": "high",
+      "source": "source",
+      "low": "low"
+    },
+    "level": {
+      "low": "low",
+      "medium": "moderate",
+      "high": "high"
+    },
+    "verdict": {
+      "goodButProcessed": "Good nutrition, industrially made.",
+      "simpleButRich": "Barely processed, richer nutrition."
+    },
+    "novaTitle": "NOVA {group}, {group, select, 1 {unprocessed} 2 {culinary ingredient} 3 {processed} other {ultra-processed}}",
+    "nutriscoreScale": "Nutri-Score scale, from A to E",
+    "nutriscoreExplain": "It rates <b>what the food contains</b> per 100 g. It is meant to compare products from the same aisle.",
+    "whatCounts": "What matters here",
+    "nutriscoreSource": "Computed by Open Food Facts. It says nothing about how the food is made.",
+    "novaScale": "NOVA scale, from 1 to 4",
+    "novaShort": {
+      "1": "raw",
+      "2": "cooking",
+      "3": "processed",
+      "4": "ultra"
+    },
+    "novaExplain": "It looks at <b>how the food is made</b>, not what it provides.",
+    "novaGroupText": {
+      "1": "Unprocessed or minimally processed food: fruit, vegetables, eggs, meat, plain milk, rice…",
+      "2": "Culinary ingredient: oil, butter, sugar, salt, flour…",
+      "3": "Processed food: a basic food with added salt, sugar or fat, such as cheese, canned food or bakery bread.",
+      "4": "A single ingredient or additive you would not use in a home kitchen is enough for group 4."
+    },
+    "novaMarkersTitle": "What puts it in group 4",
+    "novaReassureGood": "Still good nutrition. The idea is to keep ultra-processed foods to a modest share of your meals overall, not to ban this one.",
+    "novaReassure": "No food is forbidden. The idea is to keep ultra-processed foods to a modest share of your meals overall."
+  },
+  "novaMarkers": {
+    "flavouring": "Flavouring",
+    "natural-flavouring": "Natural flavouring",
+    "flavour-enhancer": "Flavour enhancer",
+    "gluten": "Added gluten",
+    "colour": "Colouring",
+    "sweetener": "Sweetener",
+    "emulsifier": "Emulsifier",
+    "thickener": "Thickener",
+    "glucose-syrup": "Glucose syrup",
+    "glucose-fructose-syrup": "Glucose-fructose syrup",
+    "glucose": "Glucose",
+    "fructose": "Fructose",
+    "dextrose": "Dextrose",
+    "maltodextrin": "Maltodextrin",
+    "invert-sugar": "Invert sugar",
+    "modified-starch": "Modified starch",
+    "whey": "Whey",
+    "lactose": "Lactose",
+    "casein": "Casein",
+    "milk-proteins": "Milk proteins",
+    "soy-protein": "Soy protein",
+    "hydrolysed-proteins": "Hydrolysed proteins",
+    "hydrogenated-oil": "Hydrogenated oil",
+    "interesterified-oil": "Interesterified oil",
+    "carbonating-agent": "Added carbonation",
+    "anti-caking-agent": "Anti-caking agent",
+    "glazing-agent": "Glazing agent",
+    "acidity-regulator": "Acidity regulator",
+    "sodas": "Soda",
+    "energy-drinks": "Energy drink"
   },
   "habitual": {
     "title": "{slot, select, breakfast {Your usual breakfast?} lunch {Your usual lunch?} dinner {Your usual dinner?} other {Your usual snack?}}",

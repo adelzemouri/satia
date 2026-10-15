@@ -187,3 +187,50 @@ function round1(value: number): number {
 function round2(value: number): number {
   return Math.round(value * 100) / 100;
 }
+
+/** Marqueurs NOVA d'Open Food Facts : pour chaque groupe, des paires [type, étiquette]. */
+export type NovaGroupsMarkers = Partial<Record<string, readonly (readonly string[])[]>>;
+
+/** Étiquettes qui placent le produit en NOVA 4 (ingrédients, additifs, catégories), sans doublon. */
+export function novaFourMarkers(markers: NovaGroupsMarkers | undefined): string[] {
+  const tags = (markers?.["4"] ?? []).map((pair) => pair[1]).filter((tag): tag is string => Boolean(tag));
+  return [...new Set(tags)].slice(0, 8);
+}
+
+/** Clé de traduction d'un marqueur (« en:natural-flavouring » → « natural-flavouring »), ou un additif. */
+export function novaMarkerKey(tag: string): { additive: string } | { key: string } {
+  const bare = tag.replace(/^[a-z]{2}:/, "");
+  const additive = /^e(\d{3,4}[a-z]?)$/i.exec(bare);
+  return additive ? { additive: `E${additive[1]!.toLowerCase()}` } : { key: bare };
+}
+
+/**
+ * Phrase sous les badges quand ils semblent se contredire : bonne composition mais
+ * ultra-transformé, ou peu transformé mais composition riche.
+ */
+export function qualityVerdict(
+  nutriscore: NutriscoreGrade | null,
+  novaGroup: number | null,
+): "goodButProcessed" | "simpleButRich" | null {
+  if (!nutriscore || !novaGroup) return null;
+  if ((nutriscore === "a" || nutriscore === "b") && novaGroup === 4) return "goodButProcessed";
+  if ((nutriscore === "d" || nutriscore === "e") && novaGroup <= 2) return "simpleButRich";
+  return null;
+}
+
+/**
+ * Niveaux pour 100 g, à titre indicatif : fibres selon les allégations européennes (source dès
+ * 3 g, riche dès 6 g) ; sucres et sel selon les seuils « faible / élevé » de l'étiquetage
+ * britannique (sucres 5 et 22,5 g, sel 0,3 et 1,5 g).
+ */
+export function fiberLevel(grams: number): "rich" | "source" | "low" {
+  return grams >= 6 ? "rich" : grams >= 3 ? "source" : "low";
+}
+
+export function sugarsLevel(grams: number): "low" | "medium" | "high" {
+  return grams <= 5 ? "low" : grams > 22.5 ? "high" : "medium";
+}
+
+export function saltLevel(grams: number): "low" | "medium" | "high" {
+  return grams <= 0.3 ? "low" : grams > 1.5 ? "high" : "medium";
+}

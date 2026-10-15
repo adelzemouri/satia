@@ -1060,7 +1060,76 @@
     "sources": "Sources : Ciqual (Anses) et Open Food Facts. Repères ANSES, PNNS et OMS, à titre indicatif.",
     "labels": "Indicateurs de qualité",
     "nutriscore": "Nutri-Score {grade}",
-    "nova": "NOVA {group}"
+    "nova": "NOVA {group}",
+    "close": "Fermer",
+    "fiberLevel": {
+      "rich": "riche",
+      "source": "source",
+      "low": "peu"
+    },
+    "level": {
+      "low": "peu",
+      "medium": "modéré",
+      "high": "élevé"
+    },
+    "verdict": {
+      "goodButProcessed": "Bonne composition, fabrication industrielle.",
+      "simpleButRich": "Peu transformé, composition plus riche."
+    },
+    "novaTitle": "NOVA {group}, {group, select, 1 {brut} 2 {ingrédient de cuisine} 3 {transformé} other {ultra-transformé}}",
+    "nutriscoreScale": "Échelle du Nutri-Score, de A à E",
+    "nutriscoreExplain": "Il note <b>ce que contient</b> l'aliment pour 100 g. Il sert à comparer des produits du même rayon.",
+    "whatCounts": "Ce qui compte ici",
+    "nutriscoreSource": "Calculé par Open Food Facts. Il ne dit rien de la façon dont l'aliment est fabriqué.",
+    "novaScale": "Échelle NOVA, de 1 à 4",
+    "novaShort": {
+      "1": "brut",
+      "2": "cuisine",
+      "3": "transformé",
+      "4": "ultra"
+    },
+    "novaExplain": "Il regarde <b>comment l'aliment est fabriqué</b>, pas ce qu'il apporte.",
+    "novaGroupText": {
+      "1": "Aliment brut ou peu transformé : fruit, légume, œuf, viande, lait nature, riz…",
+      "2": "Ingrédient de cuisine : huile, beurre, sucre, sel, farine…",
+      "3": "Aliment transformé : un produit de base avec du sel, du sucre ou de la matière grasse, comme un fromage, une conserve ou un pain de boulangerie.",
+      "4": "Un seul ingrédient ou additif qu'on n'utilise pas en cuisine suffit pour le groupe 4."
+    },
+    "novaMarkersTitle": "Ce qui le classe en 4",
+    "novaReassureGood": "Bonne composition malgré tout. L'idée est de garder une place modeste aux ultra-transformés sur l'ensemble des repas, pas de bannir celui-ci.",
+    "novaReassure": "Aucun aliment n'est interdit. L'idée est de garder une place modeste aux ultra-transformés sur l'ensemble des repas."
+  },
+  "novaMarkers": {
+    "flavouring": "Arôme",
+    "natural-flavouring": "Arôme naturel",
+    "flavour-enhancer": "Exhausteur de goût",
+    "gluten": "Gluten ajouté",
+    "colour": "Colorant",
+    "sweetener": "Édulcorant",
+    "emulsifier": "Émulsifiant",
+    "thickener": "Épaississant",
+    "glucose-syrup": "Sirop de glucose",
+    "glucose-fructose-syrup": "Sirop de glucose-fructose",
+    "glucose": "Glucose",
+    "fructose": "Fructose",
+    "dextrose": "Dextrose",
+    "maltodextrin": "Maltodextrine",
+    "invert-sugar": "Sucre inverti",
+    "modified-starch": "Amidon modifié",
+    "whey": "Lactosérum",
+    "lactose": "Lactose",
+    "casein": "Caséine",
+    "milk-proteins": "Protéines de lait",
+    "soy-protein": "Protéines de soja",
+    "hydrolysed-proteins": "Protéines hydrolysées",
+    "hydrogenated-oil": "Huile hydrogénée",
+    "interesterified-oil": "Huile interestérifiée",
+    "carbonating-agent": "Gaz carbonique ajouté",
+    "anti-caking-agent": "Antiagglomérant",
+    "glazing-agent": "Agent d'enrobage",
+    "acidity-regulator": "Correcteur d'acidité",
+    "sodas": "Soda",
+    "energy-drinks": "Boisson énergisante"
   },
   "habitual": {
     "title": "{slot, select, breakfast {Ton petit-déj habituel ?} lunch {Ton déjeuner habituel ?} dinner {Ton dîner habituel ?} other {Ta collation habituelle ?}}",

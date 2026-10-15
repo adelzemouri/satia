@@ -1,0 +1,2 @@
+ALTER TABLE "profiles" ALTER COLUMN "notification_prefs" SET DEFAULT '{"meals":true,"water":true,"weeklyReview":true,"fasting":true,"treatment":true,"weighIn":true,"weighDay":1,"measurements":true,"progressPhoto":true,"quietStart":"22:00","quietEnd":"07:30"}'::jsonb;--> statement-breakpoint
+ALTER TABLE "foods" ADD COLUMN "nova_markers" jsonb;

@@ -56,6 +56,11 @@ export const foods = pgTable(
     nutriscore: text({ enum: NUTRISCORE_GRADES }),
     /** Groupe NOVA (1 à 4 : degré de transformation), quand Open Food Facts le fournit. */
     novaGroup: smallint(),
+    /**
+     * Ce qui classe le produit en NOVA 4 selon Open Food Facts (« en:flavouring », « en:e282 »…) ;
+     * null tant que le produit n'a pas été relu depuis l'ajout de ce champ.
+     */
+    novaMarkers: jsonb().$type<string[]>(),
     /** Part de fruits et légumes (0 à 1) : 1 pour un fruit ou un légume, calculée pour une recette. */
     fruitVegShare: numeric({ precision: 3, scale: 2, mode: "number" }).notNull().default(0),
     densityGPerMl: numeric({ precision: 4, scale: 2, mode: "number" }),
