@@ -11,6 +11,7 @@ describe("contrôle des aliments proposés par l'IA", () => {
     expect(line("riz basmati cuit", { nameFr: "Riz basmati, cuit", kcal: 130 })).toEqual([]);
     expect(line("crème liquide", { nameFr: "Crème fluide 30% MG", kcal: 300 }, 20, 60)).toEqual([]);
     expect(line("linguine", { nameFr: "Pâtes sèches, cuites", kcal: 150 }, 250, 375)).toEqual([]);
+    expect(line("oignon vert", { nameFr: "Ciboule ou Ciboulette, fraîche", kcal: 30 }, 15, 4)).toEqual([]);
   });
 
   it("signale un aliment sans rapport avec ce qui a été reconnu", () => {

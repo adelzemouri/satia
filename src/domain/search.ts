@@ -34,6 +34,8 @@ const SYNONYMS: readonly [RegExp, string][] = [
     /^(?:un )?(?:cafe(?: (?:allonge|long|filtre|noir|nature|americain|sans sucre|non sucre))?|americano)$/,
     "cafe non instantane non sucre",
   ],
+  // L'oignon vert (cébette) se dit « ciboule » dans Ciqual.
+  [/\boignons? verts?\b/, "ciboule"],
   // « Un verre » seul se cherche aussi comme de l'eau.
   [PLAIN_WATER, "eau du robinet"],
   // Ciqual ne connaît pas les formes de pâtes : des linguine sont des « pâtes sèches ».
