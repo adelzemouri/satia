@@ -87,6 +87,13 @@ const RESPONSES: Record<string, unknown | ((request: LlmRequest) => unknown)> = 
         };
       }),
   }),
+  // Un aliment par ligne du message : le premier de chaque liste, celui que la recherche propose.
+  food_choices: (request: LlmRequest) => ({
+    choices: request.user
+      .split("\n")
+      .filter(Boolean)
+      .map(() => 1),
+  }),
   // Un aliment par ligne du message : mêmes valeurs moyennes pour chacun.
   food_estimates: (request: LlmRequest) => ({
     items: request.user

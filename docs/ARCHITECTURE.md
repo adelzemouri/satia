@@ -398,8 +398,10 @@ Téléphone                                     Serveur (Vercel fra1)           
                                                6. Appel vision, basse résolution ──────▶ LLM vision
                                                   ← {items:[{name, grams, confidence}]}
                                                7. Par élément : habitude apprise, sinon
-                                                  1er résultat de la recherche trigram
-                                                  (+ 4 alternatives)
+                                                  10 premiers résultats de la recherche
+                                                  trigram ; un seul appel texte groupé
+                                                  choisit parmi eux (0 = aucun) ──────▶ LLM texte
+                                                  (sans IA : 1er résultat ; + 4 alternatives)
                                                8. Éléments sans correspondance :
                                                   un seul appel texte groupé ─────────▶ LLM texte
                                                   → valeurs pour 100 g marquées « estimé »
@@ -423,6 +425,13 @@ Téléphone                                     Serveur (Vercel fra1)           
   le poids bouge de plus de 10 %. Un nom proposé par l'IA corrigé au moins deux fois
   vers le même aliment devient une règle (aliment le plus choisi, poids médian) : elle
   remplace l'aliment proposé, résout le texte sans appel, et part dans le prompt photo.
+- **Choix de l'aliment** (2026-10-15, DECISIONS 032) : l'IA renvoie un nom courant
+  (« pomme », « thé ») que la recherche par mots retrouve, mais classe parfois mal (pomme
+  séchée, feuilles de thé). Le modèle texte reçoit donc, pour tous les aliments du repas en
+  un appel, les 10 premiers résultats numérotés et renvoie un numéro par aliment. Il ne
+  donne aucune valeur : elles restent celles de Ciqual. Banc d'essai :
+  `tests/integration/food-matching.test.ts` vérifie que le bon aliment figure parmi les 10
+  pour ~130 noms courants.
 - **Mes contenants** (`/containers`) : nom, type (bol, assiette, verre, mug), volume ou
   diamètre. La photo d'un contenant n'est pas gérée en v1.
 - **Mon dictionnaire** (`/dictionary`) : expression → aliment, quantité, unité.

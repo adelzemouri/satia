@@ -11,6 +11,10 @@ import { costUsdMicros } from "./pricing";
 import { CONNECTION_TEST_PROMPT } from "./prompts/connection-test";
 import {
   FOOD_ESTIMATE_SYSTEM,
+  chosenIndexes,
+  type FoodChoiceRequest,
+  FOOD_MATCH_SYSTEM,
+  foodMatchPrompt,
   MEAL_PHOTO_SYSTEM,
   MEAL_TEXT_SYSTEM,
   mealUserPrompt,
@@ -24,6 +28,7 @@ import { TRAINING_PLAN_SYSTEM } from "./prompts/training";
 import {
   coachReplySchema,
   connectionTestSchema,
+  foodChoicesSchema,
   foodEstimatesSchema,
   fridgeSchema,
   mealItemsSchema,
@@ -210,6 +215,29 @@ export async function parseMealText(userId: string, text: string, context: Promp
     maxOutputTokens: MEAL_OUTPUT_TOKENS,
   });
   return result.data.items;
+}
+
+/**
+ * Choix, pour chaque aliment reconnu, de l'aliment de la base qui lui correspond, en un seul appel
+ * au modèle texte : la recherche par mots trouve le bon aliment mais le classe parfois mal
+ * (« pomme » → pomme séchée). Renvoie l'indice retenu dans `candidates`, ou null si aucun ne
+ * convient. Une réponse incomplète renvoie null : la recherche garde alors son propre choix.
+ */
+export async function chooseFoods(
+  userId: string,
+  requests: readonly FoodChoiceRequest[],
+): Promise<(number | null)[] | null> {
+  const result = await callLlm({
+    userId,
+    feature: "food_match",
+    kind: "text",
+    system: FOOD_MATCH_SYSTEM,
+    user: foodMatchPrompt(requests),
+    schemaName: "food_choices",
+    schema: foodChoicesSchema,
+    maxOutputTokens: 1024,
+  });
+  return chosenIndexes(result.data.choices, requests);
 }
 
 /**

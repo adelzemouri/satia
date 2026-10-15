@@ -36,6 +36,9 @@ const SYNONYMS: readonly [RegExp, string][] = [
   ],
   // L'oignon vert (cébette) se dit « ciboule » dans Ciqual.
   [/\boignons? verts?\b/, "ciboule"],
+  // Le blanc de volaille est le « filet » de Ciqual, un lait végétal une « boisson ».
+  [/\bblanc de (poulet|dinde)\b/, "$1 filet"],
+  [/\blait (?:d |de |a l )?(avoine|amande|soja|riz)\b/, "boisson $1"],
   // « Un verre » seul se cherche aussi comme de l'eau.
   [PLAIN_WATER, "eau du robinet"],
   // Ciqual ne connaît pas les formes de pâtes : des linguine sont des « pâtes sèches ».
