@@ -216,7 +216,7 @@ app_settings, rate_limits
 | `profiles` | first_name, sex (`female`/`male`, obligatoire), birth_date, height_cm, activity_level (1–5), goal, pace (`gentle`/`moderate`), target_weight_kg, diet, foods_to_avoid, meal_times (jsonb), disclaimer_accepted_at | Si âge < 18 ans, `goal` limité à maintien/équilibre (contrainte applicative). |
 | `goals` | user_id, effective_from, kcal, protein_g, carbs_g, fat_g, water_ml, source (`formula`/`manual`) | Historisé pour que les jours passés gardent leur objectif. |
 | `foods` | source (`ciqual`/`off`/`custom`/`recipe`), source_ref (code Ciqual ou EAN), owner_user_id (null si public), name_fr, name_en, brand, group_fr, search_name, kcal, protein, carbs, fat, fiber, sugars, salt (pour 100 g), density_g_ml, unit_weights (jsonb : portion, pièce, tranche), servings, fetched_at | `search_name` = nom normalisé (minuscules, sans accents) avec index GIN trigram (`pg_trgm`). Une recette est un aliment `recipe` dont les valeurs pour 100 g viennent de ses ingrédients, avec `unit_weights.portion` = poids total / portions. Les produits OFF choisis sont mis en cache ici. |
-| `recipe_items` | recipe_id, food_id, grams, position | Ingrédients d'une recette personnelle. |
+| `recipe_items` | recipe_id, food_id, grams, position | Ingrédients d'une recette (commune au foyer, DECISIONS 031). |
 | `meal_entries` | user_id, date, slot (`breakfast`/`lunch`/`dinner`/`snack`), food_id (null si l'aliment a été supprimé), label, quantity, unit, grams, kcal, protein, carbs, fat, is_estimated, input_method (`manual`/`barcode`/`photo`/`voice`/`text`/`copy`), photo_id | Valeurs **figées** à la saisie : modifier un aliment ne réécrit pas l'historique. |
 | `favorites` | user_id, food_id | Les récents sont calculés depuis `meal_entries`. |
 | `water_logs` | user_id, date, glasses | Verres de 250 ml ; objectif dans `profiles.water_goal_glasses` (8 par défaut). |
@@ -547,7 +547,7 @@ Téléphone                                     Serveur (Vercel fra1)           
 ## Planification (phase 11)
 
 - **Menu de la semaine** (`meal_plan_items`, par foyer) : des plats par jour et par repas,
-  soit une recette du foyer ou un aliment public (une recette personnelle est refusée,
+  soit une recette du foyer ou un aliment public (un aliment personnel est refusé,
   `dish_not_shared`, car tout le foyer voit le menu), soit un simple libellé (« Restes »),
   avec un nombre de parts. Le glisser-déposer est remplacé par un formulaire (jour, repas,
   plat), plus fiable au doigt. « Servir » ouvre le partage de repas existant (phase 6) pour
@@ -567,9 +567,9 @@ Téléphone                                     Serveur (Vercel fra1)           
 - **Scanner de frigo** (feature `fridge`, modèle vision, image réduite côté client) : la
   photo n'est ni stockée ni journalisée. Le modèle renvoie les ingrédients vus et 3 idées
   avec leurs grammes pour une portion ; les calories sont calculées depuis la base et
-  comparées au reste du jour. Une idée peut être enregistrée comme recette personnelle puis
+  comparées au reste du jour. Une idée peut être enregistrée comme recette du foyer puis
   ajoutée au journal.
-- **Bibliothèque** (`/recipes`) : recettes personnelles et du foyer, avec calories par part.
+- **Bibliothèque** (`/recipes`) : recettes du foyer et du catalogue, avec calories par part.
 - Menu et liste appartiennent au foyer, pas à une personne : ils ne sont pas dans l'export
   individuel et disparaissent avec le foyer. Les recettes créées par le coach suivent les
   règles des recettes du foyer.

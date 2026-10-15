@@ -335,6 +335,22 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 031 — Toutes les recettes sont communes au foyer
+
+- **Date** : 2026-10-15 · **Statut** : adoptée
+- **Contexte** : Adel ne comprenait pas la différence entre « Ma recette » et « Recette du
+  foyer ». La case qui choisissait entre les deux bloquait le partage d'un plat perso au menu
+  ou à table, et refusait les aliments perso dans une recette du foyer.
+- **Décision** : plus de recette personnelle. Toute recette est visible et modifiable par
+  les membres du foyer ; un aliment perso qui entre dans une recette devient commun lui
+  aussi (le formulaire le signale). Le catalogue garde son étiquette « Recette Pommelia ».
+  Migration 0022 : les recettes perso existantes et leurs aliments perso passent au foyer.
+- **Conséquences** : plus de case ni de libellé « du foyer ». Une recette reste dans le
+  foyer quand son auteur supprime son compte, et sort de son export personnel (comme le
+  menu). Les aliments perso hors recette restent privés.
+
+---
+
 ## Modèle
 
 ```markdown

@@ -251,17 +251,18 @@ test("recette : l'ordre des ingrédients se change pendant la modification", asy
   await expect(page.getByRole("button", { name: /^Monter Pomme/ })).toBeDisabled();
   await expectNoA11yViolations(page);
   await page.getByRole("button", { name: "Créer" }).click();
-  await expect(page).toHaveURL(/\/foods$/);
+  // Toute recette est commune à la famille : on la retrouve dans les recettes.
+  await expect(page).toHaveURL(/\/recipes$/);
 
-  await page.getByRole("link", { name: /^Salade de pâtes/ }).click();
+  await page.getByRole("link", { name: /^Salade de pâtes \d/ }).click();
   const card = page.getByRole("region", { name: "Ingrédients" }).getByRole("listitem");
   await expect(card.first()).toContainText("Pomme");
   // En modification, on redescend la pomme : la fiche suit le nouvel ordre.
   await page.getByRole("link", { name: "Modifier la recette" }).click();
   await page.getByRole("button", { name: /^Descendre Pomme/ }).click();
   await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
-  await expect(page).toHaveURL(/\/foods$/);
-  await page.getByRole("link", { name: /^Salade de pâtes/ }).click();
+  await expect(page).toHaveURL(/\/recipes$/);
+  await page.getByRole("link", { name: /^Salade de pâtes \d/ }).click();
   await expect(card.first()).toContainText("Pâtes");
   await expect(card.last()).toContainText("Pomme");
 });
@@ -1059,7 +1060,7 @@ test("menu de la semaine, liste de courses commune, recettes et scanner de frigo
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Menu de la semaine");
   const add = page.getByRole("region", { name: "Ajouter un plat" });
   await add.getByLabel("Repas").selectOption("dinner");
-  await add.getByLabel("Recette du foyer").selectOption({ label: "Gratin du dimanche" });
+  await add.getByLabel(/^Recette/).selectOption({ label: "Gratin du dimanche" });
   await add.getByLabel("Nombre de parts").fill("4");
   await add.getByRole("button", { name: "Ajouter au menu" }).click();
   await expect(page.getByRole("link", { name: "Servir Gratin du dimanche et le partager" })).toBeVisible();

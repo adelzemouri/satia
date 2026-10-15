@@ -14,6 +14,7 @@ import {
   fillRecipePhotos,
   getFood,
   getRecipeForEdit,
+  ownFoods,
   recipePhotoUrl,
   isGeneratedRecipePhoto,
   regenerateRecipePhoto,
@@ -47,6 +48,21 @@ async function setupFamily() {
   return { admin: admin!, member: member! };
 }
 
+/** Invité dans un foyer à part : il ne voit rien de la famille. */
+async function createOutsider(admin: { id: string; householdId: string }) {
+  const token = await createAccessLink({
+    kind: "invite",
+    householdId: admin.householdId,
+    createdBy: admin.id,
+    role: "member",
+    label: "Zoé",
+    separateHousehold: true,
+  });
+  await acceptInvite({ token, name: "Zoé", email: "zoe@example.com", password: "mot-de-passe-de-zoe" });
+  const [outsider] = await db().select().from(user).where(eq(user.email, "zoe@example.com"));
+  return outsider!.id;
+}
+
 async function firstFood(userId: string, query: string) {
   const [food] = await searchFoods(userId, query);
   if (!food) throw new Error(`aliment introuvable : ${query}`);
@@ -65,7 +81,6 @@ async function familyLasagna(userId: string) {
       { foodId: pasta.id, grams: 800 },
       { foodId: cheese.id, grams: 150 },
     ],
-    family: true,
   });
 }
 
@@ -141,7 +156,7 @@ describe("espace famille", () => {
     });
   });
 
-  it("photo d'une recette du foyer : visible par la famille, privée sinon, remplaçable", async () => {
+  it("photo d'une recette : visible par la famille, privée hors du foyer, remplaçable", async () => {
     const { admin, member } = await setupFamily();
     const lasagnaId = await familyLasagna(admin.id);
     await setRecipePhoto(admin.id, { foodId: lasagnaId, imageBase64: JPEG_BASE64, mime: "image/jpeg" });
@@ -156,56 +171,43 @@ describe("espace famille", () => {
       setRecipePhoto(member.id, { foodId: lasagnaId, imageBase64: "bm9wZQ==", mime: "image/jpeg" }),
     ).rejects.toMatchObject({ code: "invalid_photo" });
 
-    const rice = await firstFood(admin.id, "riz basmati cuit");
-    const privateId = await createRecipe(admin.id, {
-      name: "Riz d'Adel",
-      servings: 1,
-      cookedGrams: null,
-      items: [{ foodId: rice.id, grams: 200 }],
-    });
-    await setRecipePhoto(admin.id, { foodId: privateId, imageBase64: JPEG_BASE64, mime: "image/jpeg" });
-    expect(await recipePhotoUrl(member.id, privateId)).toBeNull();
+    // Hors du foyer, la photo reste privée.
+    const outsider = await createOutsider(admin);
+    expect(await recipePhotoUrl(outsider, lasagnaId)).toBeNull();
     await expect(
-      setRecipePhoto(member.id, { foodId: privateId, imageBase64: JPEG_BASE64, mime: "image/jpeg" }),
+      setRecipePhoto(outsider, { foodId: lasagnaId, imageBase64: JPEG_BASE64, mime: "image/jpeg" }),
     ).rejects.toMatchObject({ code: "not_found" });
+    const rice = await firstFood(admin.id, "riz basmati cuit");
     // Un aliment qui n'est pas une recette n'a pas de photo de famille.
     await expect(
       setRecipePhoto(admin.id, { foodId: rice.id, imageBase64: JPEG_BASE64, mime: "image/jpeg" }),
     ).rejects.toMatchObject({ code: "not_found" });
   });
 
-  it("une recette du foyer est visible et modifiable par chaque membre ; une recette perso reste privée", async () => {
+  it("toute recette est visible et modifiable par chaque membre du foyer, pas au-delà", async () => {
     const { admin, member } = await setupFamily();
     const lasagnaId = await familyLasagna(admin.id);
-    const rice = await firstFood(admin.id, "riz basmati cuit");
-    const privateId = await createRecipe(admin.id, {
-      name: "Riz d'Adel",
-      servings: 1,
-      cookedGrams: null,
-      items: [{ foodId: rice.id, grams: 200 }],
-    });
+    const outsider = await createOutsider(admin);
 
     expect((await familyRecipes(member.id)).map((food) => food.id)).toEqual([lasagnaId]);
     expect((await searchFoods(member.id, "lasagnes maison"))[0]?.id).toBe(lasagnaId);
-    await expect(getFood(member.id, privateId)).rejects.toMatchObject({ code: "not_found" });
+    await expect(getFood(outsider, lasagnaId)).rejects.toMatchObject({ code: "not_found" });
 
     const recipe = await getRecipeForEdit(member.id, lasagnaId);
-    expect(recipe).toMatchObject({ name: "Lasagnes de la maison", servings: 6, family: true, cookedGrams: 1200 });
+    expect(recipe).toMatchObject({ name: "Lasagnes de la maison", servings: 6, cookedGrams: 1200 });
     await updateRecipe(member.id, lasagnaId, {
       name: "Lasagnes de mamie",
       servings: 8,
       cookedGrams: 1200,
       items: recipe.items.map((item) => ({ foodId: item.food.id, grams: item.grams })),
-      // Une recette du foyer le reste, même si on décoche.
-      family: false,
     });
     const updated = await getFood(admin.id, lasagnaId);
     expect(updated).toMatchObject({ nameFr: "Lasagnes de mamie", servings: 8, unitWeights: { portion: 150 } });
     expect(updated.householdId).toBe(admin.householdId);
-    await expect(getRecipeForEdit(member.id, privateId)).rejects.toMatchObject({ code: "not_found" });
+    await expect(getRecipeForEdit(outsider, lasagnaId)).rejects.toMatchObject({ code: "not_found" });
   });
 
-  it("refuse un aliment personnel dans une recette du foyer, et rend commune une recette perso", async () => {
+  it("un aliment perso devient commun en entrant dans une recette", async () => {
     const { admin, member } = await setupFamily();
     const own = await createCustomFood(admin.id, {
       name: "Sauce secrète",
@@ -216,31 +218,40 @@ describe("espace famille", () => {
       carbsG: 10,
       fatG: 16,
     });
-    await expect(
-      createRecipe(admin.id, {
-        name: "Plat",
-        servings: 2,
-        cookedGrams: null,
-        items: [{ foodId: own, grams: 100 }],
-        family: true,
-      }),
-    ).rejects.toMatchObject({ code: "family_recipe_personal_ingredient" });
+    const other = await createCustomFood(admin.id, {
+      name: "Granola d'Adel",
+      basis: "100g",
+      portionGrams: null,
+      kcal: 450,
+      proteinG: 10,
+      carbsG: 60,
+      fatG: 18,
+    });
+    await expect(getFood(member.id, own)).rejects.toMatchObject({ code: "not_found" });
 
-    const rice = await firstFood(admin.id, "riz basmati cuit");
     const id = await createRecipe(admin.id, {
-      name: "Riz du dimanche",
-      servings: 4,
+      name: "Plat en sauce",
+      servings: 2,
       cookedGrams: null,
-      items: [{ foodId: rice.id, grams: 600 }],
+      items: [{ foodId: own, grams: 100 }],
     });
-    await updateRecipe(admin.id, id, {
-      name: "Riz du dimanche",
-      servings: 4,
+    expect(await getFood(member.id, own)).toMatchObject({ ownerUserId: null, householdId: admin.householdId });
+    // L'autre membre peut modifier la recette : il voit tous ses ingrédients.
+    const recipe = await getRecipeForEdit(member.id, id);
+    await updateRecipe(member.id, id, {
+      name: "Plat en sauce",
+      servings: 3,
       cookedGrams: null,
-      items: [{ foodId: rice.id, grams: 600 }],
-      family: true,
+      items: recipe.items.map((item) => ({ foodId: item.food.id, grams: item.grams })),
     });
-    expect((await familyRecipes(member.id)).map((food) => food.nameFr)).toEqual(["Riz du dimanche"]);
+    // Les aliments perso hors recette restent privés.
+    await expect(getFood(member.id, other)).rejects.toMatchObject({ code: "not_found" });
+    expect((await ownFoods(admin.id)).map((food) => food.nameFr)).toEqual([
+      "Granola d'Adel",
+      "Plat en sauce",
+      "Sauce secrète",
+    ]);
+    expect((await familyRecipes(member.id)).map((food) => food.nameFr)).toEqual(["Plat en sauce"]);
   });
 
   it("repas partagé : l'auteur l'ajoute tout de suite, les autres valident avec leur portion", async () => {
@@ -397,18 +408,26 @@ describe("espace famille", () => {
     expect(entries.map((entry) => [entry.userId, entry.grams])).toEqual([[member.id, 250]]);
   });
 
-  it("refuse un plat personnel partagé, un jour à venir ou un partage sans personne", async () => {
+  it("refuse un aliment personnel partagé, un jour à venir ou un partage sans personne", async () => {
     const { admin, member } = await setupFamily();
     const rice = await firstFood(admin.id, "riz basmati cuit");
-    const personal = await createRecipe(admin.id, {
+    const personal = await createCustomFood(admin.id, {
       name: "Riz perso",
-      servings: 2,
-      cookedGrams: null,
-      items: [{ foodId: rice.id, grams: 300 }],
+      basis: "100g",
+      portionGrams: null,
+      kcal: 130,
+      proteinG: 3,
+      carbsG: 28,
+      fatG: 0,
     });
     const base = { date: todayIso(), slot: "dinner" as const, totalParts: 2, totalGrams: null, myParts: 1 };
     await expect(
-      createSharedMeal(admin.id, admin.householdId, { ...base, foodId: personal, memberIds: [member.id] }),
+      createSharedMeal(admin.id, admin.householdId, {
+        ...base,
+        foodId: personal,
+        totalGrams: 300,
+        memberIds: [member.id],
+      }),
     ).rejects.toMatchObject({ code: "dish_not_shared" });
     const lasagnaId = await familyLasagna(admin.id);
     await expect(

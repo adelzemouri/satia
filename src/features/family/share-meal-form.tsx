@@ -103,7 +103,7 @@ export function ShareMealForm({
         {error && <Alert>{errorText(error)}</Alert>}
         {creating ? (
           <>
-            <RecipeForm familyOnly aiAvailable={aiAvailable} onSaved={recipeCreated} />
+            <RecipeForm aiAvailable={aiAvailable} onSaved={recipeCreated} />
             <Button variant="ghost" onClick={() => setCreating(false)}>
               {t("common.cancel")}
             </Button>

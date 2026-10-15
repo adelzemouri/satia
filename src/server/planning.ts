@@ -73,7 +73,7 @@ export const planItemSchema = z
   .refine((value) => value.foodId !== null || value.label.length > 0, { path: ["label"], message: "required" });
 export type PlanItemInput = z.input<typeof planItemSchema>;
 
-/** Le menu est commun : seul un plat que tout le foyer voit (recette du foyer, aliment public) y entre. */
+/** Le menu est commun : seul un plat que tout le foyer voit (recette, aliment public) y entre. */
 async function sharedDish(userId: string, foodId: string) {
   const food = await getFood(userId, foodId);
   if (food.ownerUserId !== null) throw new DomainError("dish_not_shared");
@@ -189,7 +189,6 @@ export async function generateMenu(
           servings: 1,
           cookedGrams: null,
           items: items.map((item) => ({ foodId: item.food.id, grams: item.grams })),
-          family: true,
         });
       }
     }
@@ -407,10 +406,10 @@ export const saveIdeaSchema = z.object({
     .max(12),
 });
 
-/** Enregistre une idée comme recette personnelle d'une portion (elle rejoint la bibliothèque). */
+/** Enregistre une idée comme recette d'une portion (elle rejoint la bibliothèque). */
 export async function saveIdeaAsRecipe(userId: string, input: z.input<typeof saveIdeaSchema>): Promise<string> {
   const data = saveIdeaSchema.parse(input);
-  return createRecipe(userId, { name: data.name, servings: 1, cookedGrams: null, items: data.items, family: false });
+  return createRecipe(userId, { name: data.name, servings: 1, cookedGrams: null, items: data.items });
 }
 
 // --- Bibliothèque ----------------------------------------------------------------------------

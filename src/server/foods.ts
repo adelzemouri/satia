@@ -248,9 +248,9 @@ export async function setFavorite(userId: string, foodId: string, favorite: bool
   }
 }
 
-/** Aliments personnels et recettes de l'utilisateur. */
+/** Aliments personnels de l'utilisateur, recettes et aliments communs de son foyer. */
 export async function ownFoods(userId: string): Promise<FoodSummary[]> {
-  return db().select(foodSummaryColumns).from(foods).where(eq(foods.ownerUserId, userId)).orderBy(foods.nameFr);
+  return db().select(foodSummaryColumns).from(foods).where(editableBy(userId)).orderBy(foods.nameFr);
 }
 
 const positive = z.number().min(0).max(1000);
@@ -306,8 +306,6 @@ export const recipeSchema = z.object({
     .array(z.object({ foodId: z.uuid(), grams: z.number().min(1).max(10_000) }))
     .min(1, "recipe_empty")
     .max(40),
-  /** Recette du foyer : visible et modifiable par tous ses membres. */
-  family: z.boolean().default(false),
   /** Étapes de préparation, dans l'ordre. */
   steps: z.array(z.string().trim().min(1).max(500)).max(20).default([]),
 });
@@ -328,10 +326,6 @@ async function computeRecipe(userId: string, data: z.infer<typeof recipeSchema>)
     .where(and(inArray(foods.id, ingredientIds), visibleTo(userId)));
   const byId = new Map(ingredients.map((food) => [food.id, food]));
   if (byId.size !== ingredientIds.length) throw new DomainError("not_found");
-  // Les autres membres ne voient pas nos aliments personnels : une recette du foyer n'en contient pas.
-  if (data.family && ingredients.some((food) => food.ownerUserId !== null)) {
-    throw new DomainError("family_recipe_personal_ingredient");
-  }
   const rawGrams = data.items.reduce((sum, item) => sum + item.grams, 0);
   const totalGrams = data.cookedGrams ?? rawGrams;
   const per100 = recipePer100g(
@@ -353,23 +347,43 @@ async function computeRecipe(userId: string, data: z.infer<typeof recipeSchema>)
   };
 }
 
+/**
+ * Toute recette est commune au foyer : ses aliments personnels le deviennent aussi, sinon les
+ * autres membres ne verraient pas ses ingrédients et ne pourraient pas la modifier.
+ */
+type Tx = Parameters<Parameters<ReturnType<typeof db>["transaction"]>[0]>[0];
+
+async function shareIngredients(tx: Tx, userId: string, householdId: string, foodIds: readonly string[]) {
+  await tx
+    .update(foods)
+    .set({ ownerUserId: null, householdId, updatedAt: new Date() })
+    .where(and(inArray(foods.id, [...foodIds]), eq(foods.ownerUserId, userId)));
+}
+
 async function householdIdOf(userId: string): Promise<string> {
   const [row] = await db().select({ householdId: user.householdId }).from(user).where(eq(user.id, userId));
   if (!row) throw new DomainError("not_found");
   return row.householdId;
 }
 
-/** Crée une recette : un aliment dont les valeurs pour 100 g viennent de ses ingrédients. */
+/**
+ * Crée une recette : un aliment dont les valeurs pour 100 g viennent de ses ingrédients.
+ * Elle est commune au foyer, visible et modifiable par tous ses membres.
+ */
 export async function createRecipe(userId: string, input: RecipeInput): Promise<string> {
   const data = recipeSchema.parse(input);
   const values = await computeRecipe(userId, data);
-  const owner = data.family
-    ? { ownerUserId: null, householdId: await householdIdOf(userId) }
-    : { ownerUserId: userId, householdId: null };
+  const householdId = await householdIdOf(userId);
   return db().transaction(async (tx) => {
+    await shareIngredients(
+      tx,
+      userId,
+      householdId,
+      data.items.map((item) => item.foodId),
+    );
     const [recipe] = await tx
       .insert(foods)
-      .values({ source: "recipe", ...owner, ...values })
+      .values({ source: "recipe", ownerUserId: null, householdId, ...values })
       .returning({ id: foods.id });
     await tx.insert(recipeItems).values(
       data.items.map((item, position) => ({
@@ -383,25 +397,26 @@ export async function createRecipe(userId: string, input: RecipeInput): Promise<
   });
 }
 
-/**
- * Modifie une recette personnelle ou du foyer. Une recette personnelle peut être partagée
- * avec le foyer ; une recette du foyer le reste. Le journal garde ses valeurs figées.
- */
+/** Modifie une recette du foyer. Le journal garde ses valeurs figées. */
 export async function updateRecipe(userId: string, recipeId: string, input: RecipeInput): Promise<void> {
   const data = recipeSchema.parse(input);
   const [recipe] = await db()
-    .select({ id: foods.id, householdId: foods.householdId })
+    .select({ id: foods.id })
     .from(foods)
     .where(and(eq(foods.id, z.uuid().parse(recipeId)), eq(foods.source, "recipe"), editableBy(userId)));
   if (!recipe) throw new DomainError("not_found");
-  // Une recette du foyer le reste : les autres membres peuvent en dépendre.
-  if (recipe.householdId) data.family = true;
   const values = await computeRecipe(userId, data);
-  const owner = data.family ? { ownerUserId: null, householdId: await householdIdOf(userId) } : {};
+  const householdId = await householdIdOf(userId);
   await db().transaction(async (tx) => {
+    await shareIngredients(
+      tx,
+      userId,
+      householdId,
+      data.items.map((item) => item.foodId),
+    );
     await tx
       .update(foods)
-      .set({ ...values, ...owner, updatedAt: new Date() })
+      .set({ ...values, ownerUserId: null, householdId, updatedAt: new Date() })
       .where(eq(foods.id, recipe.id));
     await tx.delete(recipeItems).where(eq(recipeItems.recipeId, recipe.id));
     await tx
@@ -416,7 +431,6 @@ export type RecipeDetails = {
   id: string;
   name: string;
   servings: number;
-  family: boolean;
   /** Poids total déclaré (cuit), ou null s'il vaut la somme des ingrédients. */
   cookedGrams: number | null;
   items: { food: FoodSummary; grams: number }[];
@@ -443,7 +457,6 @@ export async function getRecipeForEdit(userId: string, recipeId: string): Promis
     id: recipe.id,
     name: recipe.nameFr,
     servings,
-    family: recipe.householdId !== null,
     cookedGrams: Math.abs(totalGrams - rawGrams) < 1 ? null : Math.round(totalGrams),
     items: rows.map(({ grams, ...food }) => ({ food, grams })),
     steps: recipe.recipeSteps ?? [],
@@ -479,12 +492,12 @@ export async function setRecipeSteps(userId: string, recipeId: string, steps: re
   if (updated.length === 0) throw new DomainError("not_found");
 }
 
-/** Recettes communes du foyer de l'utilisateur. */
+/** Recettes du foyer de l'utilisateur. */
 export async function familyRecipes(userId: string): Promise<FoodSummary[]> {
   return db()
     .select(foodSummaryColumns)
     .from(foods)
-    .where(eq(foods.householdId, householdOf(userId)))
+    .where(and(eq(foods.householdId, householdOf(userId)), eq(foods.source, "recipe")))
     .orderBy(foods.nameFr);
 }
 

@@ -87,7 +87,7 @@ export async function createSharedMeal(userId: string, householdId: string, inpu
   const recipeGrams = (dish.unitWeights?.portion ?? 0) * (dish.servings ?? 0);
   const totalGrams = data.totalGrams ?? (recipeGrams > 0 ? recipeGrams : null);
   if (!totalGrams) throw new DomainError("dish_weight_required");
-  // Une recette personnelle reste invisible aux autres : on ne partage que ce qu'ils peuvent voir.
+  // Un aliment personnel reste invisible aux autres : on ne partage que ce qu'ils peuvent voir.
   if (dish.ownerUserId !== null && data.memberIds.length > 0) throw new DomainError("dish_not_shared");
 
   const memberIds = await householdMembers(userId, householdId, data.memberIds);

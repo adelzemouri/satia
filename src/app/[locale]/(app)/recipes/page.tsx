@@ -53,10 +53,7 @@ export default async function RecipesPage({ params }: PageProps<"/[locale]/recip
       <KitchenTabs current="recipes" />
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
       <p className="text-text-muted">{t("intro")}</p>
-      <Link
-        href={{ pathname: "/foods/new-recipe", query: { family: "1" } }}
-        className={buttonClass("secondary", "self-start px-4")}
-      >
+      <Link href="/foods/new-recipe" className={buttonClass("secondary", "self-start px-4")}>
         {t("new")}
       </Link>
       {ours.length + ideas.length === 0 ? (
