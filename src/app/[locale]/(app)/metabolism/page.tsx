@@ -1,7 +1,10 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { APP_NAME } from "@/config/app";
-import { daysBetween, MIN_DAYS, WINDOW_DAYS } from "@/domain/adaptive";
+import { daysBetween, type Measurement, MIN_DAYS, weightDirection, WINDOW_DAYS } from "@/domain/adaptive";
+import { todayIso } from "@/domain/dates";
+import { addDays } from "@/domain/energy";
+import { isoWeekStart } from "@/domain/streak";
 import { GoalLockForm } from "@/features/adaptive/goal-lock-form";
 import { TdeeChart } from "@/features/adaptive/tdee-chart";
 import { redirect } from "@/i18n/navigation";
@@ -31,28 +34,12 @@ export default async function MetabolismPage({ params }: PageProps<"/[locale]/me
         <h2 id="expenditure-title" className="text-xl font-semibold">
           {t("expenditure")}
         </h2>
-        <dl className="grid grid-cols-2 gap-3">
-          <div className="flex flex-col gap-1 rounded-2xl bg-surface-muted p-3">
-            <dt className="text-sm font-semibold text-text-muted">{t("startEstimate")}</dt>
-            <dd className="font-display text-2xl font-extrabold tracking-tight">
-              {t("kcalPerDay", { value: overview.startTdee })}
-            </dd>
-          </div>
-          <div className="flex flex-col gap-1 rounded-2xl bg-surface-muted p-3">
-            <dt className="text-sm font-semibold text-text-muted">{t("measured")}</dt>
-            <dd className="font-display text-2xl font-extrabold tracking-tight">
-              {measurement.status === "measured" ? t("kcalPerDay", { value: measurement.tdee }) : t("notYet")}
-            </dd>
-          </div>
-        </dl>
         {measurement.status === "measured" && (
-          <p>
-            {t("measuredDetail", {
-              days: daysBetween(measurement.from, measurement.to) + 1,
-              intake: measurement.averageIntake,
-              change: measurement.weeklyChangeKg,
-            })}
-          </p>
+          <MeasuredExpenditure
+            measurement={measurement}
+            startTdee={overview.startTdee}
+            estimatedTdee={overview.estimatedTdee}
+          />
         )}
         {measurement.status === "insufficient" && (
           <>
@@ -69,7 +56,9 @@ export default async function MetabolismPage({ params }: PageProps<"/[locale]/me
           </>
         )}
         {measurement.status === "inconsistent" && <p>{t("inconsistent")}</p>}
-        <p className="text-sm text-text-muted">{t("currentEstimate", { value: overview.estimatedTdee })}</p>
+        {measurement.status !== "measured" && (
+          <p className="text-sm text-text-muted">{t("formulaMeanwhile", { value: overview.estimatedTdee })}</p>
+        )}
       </Card>
 
       <Card aria-labelledby="goal-title">
@@ -80,7 +69,10 @@ export default async function MetabolismPage({ params }: PageProps<"/[locale]/me
           {t("kcalPerDay", { value: overview.goalKcal })}
         </p>
         <p className="text-text-muted">{t(`source.${overview.goalSource}`)}</p>
-        <GoalLockForm locked={overview.goalLocked} />
+        <GoalLockForm
+          locked={overview.goalLocked}
+          nextCheck={formatDay(addDays(isoWeekStart(todayIso()), 7), locale)}
+        />
       </Card>
 
       {overview.history.length > 0 && (
@@ -117,5 +109,70 @@ export default async function MetabolismPage({ params }: PageProps<"/[locale]/me
 
       <p className="text-sm text-text-muted">{t("disclaimer", { appName: APP_NAME })}</p>
     </Columns>
+  );
+}
+
+/** La dépense réelle et son calcul en trois lignes ; les chiffres de la formule restent repliés. */
+async function MeasuredExpenditure({
+  measurement,
+  startTdee,
+  estimatedTdee,
+}: {
+  measurement: Extract<Measurement, { status: "measured" }>;
+  startTdee: number;
+  estimatedTdee: number;
+}) {
+  const t = await getTranslations("metabolism");
+  const direction = weightDirection(measurement.weeklyChangeKg);
+  return (
+    <>
+      <p className="font-display text-4xl font-extrabold tracking-tight tabular-nums">
+        {t("kcalPerDay", { value: measurement.tdee })}{" "}
+        <span className="font-sans text-base font-medium tracking-normal text-text-muted">{t("perDay")}</span>
+      </p>
+      <p>{t(`direction.${direction}`)}</p>
+      <dl aria-label={t("calcLabel")} className="flex flex-col gap-2 rounded-2xl bg-surface-muted p-3 tabular-nums">
+        <div className="flex items-baseline justify-between gap-3">
+          <dt className="min-w-0">
+            {t("calcIntake")}
+            <span className="block text-sm text-text-muted">
+              {t("calcIntakeDetail", { days: daysBetween(measurement.from, measurement.to) + 1 })}
+            </span>
+          </dt>
+          <dd className="font-semibold whitespace-nowrap">{t("kcalPerDay", { value: measurement.averageIntake })}</dd>
+        </div>
+        <div className="flex items-baseline justify-between gap-3">
+          <dt className="min-w-0">
+            {t(`calcWeight.${direction}`)}
+            <span className="block text-sm text-text-muted">
+              {t("calcWeightDetail", { change: measurement.weeklyChangeKg })}
+            </span>
+          </dt>
+          <dd className="font-semibold whitespace-nowrap">
+            {t("calcCorrection", { value: measurement.tdee - measurement.averageIntake })}
+          </dd>
+        </div>
+        <div className="flex items-baseline justify-between gap-3 border-t border-border pt-2 font-bold">
+          <dt>{t("calcTotal")}</dt>
+          <dd className="whitespace-nowrap text-primary">{t("kcalPerDay", { value: measurement.tdee })}</dd>
+        </div>
+      </dl>
+      <details className="group border-t border-border pt-3">
+        <summary className="flex cursor-pointer list-none items-center gap-1 font-semibold text-primary [&::-webkit-details-marker]:hidden">
+          {t("formulaToggle")}
+          <span
+            aria-hidden
+            className="transition-transform duration-150 group-open:rotate-90 motion-reduce:transition-none"
+          >
+            ›
+          </span>
+        </summary>
+        <div className="flex flex-col gap-2 pt-2 text-sm text-text-muted">
+          <p>{t("formulaStart", { value: startTdee })}</p>
+          <p>{t("formulaNow", { value: estimatedTdee })}</p>
+          <p>{t("formulaWhy")}</p>
+        </div>
+      </details>
+    </>
   );
 }

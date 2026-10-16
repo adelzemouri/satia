@@ -131,3 +131,14 @@ function slope(values: readonly number[]): number {
 export function daysBetween(from: string, to: string): number {
   return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
 }
+
+/** En deçà de 0,1 kg par semaine, la tendance de poids est présentée comme stable. */
+export const STABLE_WEIGHT_KG_PER_WEEK = 0.1;
+
+export type WeightDirection = "stable" | "down" | "up";
+
+/** Sens de la tendance de poids, pour l'expliquer en mots plutôt qu'en kilos. */
+export function weightDirection(weeklyChangeKg: number): WeightDirection {
+  if (Math.abs(weeklyChangeKg) < STABLE_WEIGHT_KG_PER_WEEK) return "stable";
+  return weeklyChangeKg < 0 ? "down" : "up";
+}
