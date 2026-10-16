@@ -791,9 +791,11 @@ le pourquoi de chacun est dans `docs/DECISIONS.md`.
 
 ### Repas et recettes
 
-- **Recettes du catalogue** : 43 recettes illustrées rédigées pour l'app
-  (`src/domain/recipes/catalog.ts`, `foods.source = recipe`, `source_ref = catalog:<slug>`),
-  photos générées une fois et servies depuis `public/recipes/<slug>-480|960.webp`. Une
+- **Recettes du catalogue** : 92 recettes illustrées rédigées pour l'app (les 43 de départ
+  dans `src/domain/recipes/catalog.ts`, 49 ajoutées en octobre 2026 dans `catalog-more.ts`,
+  surtout italiennes et marocaines ; `foods.source = recipe`, `source_ref = catalog:<slug>`),
+  photos générées une fois hors de l'app (Nano Banana 2 Lite pour les 49 dernières) et
+  servies depuis `public/recipes/<slug>-480|960.webp`. Une
   recette sans photo n'est jamais proposée.
 - **Recettes du foyer** : étapes (`recipe_steps`, rédigeables par le LLM), ingrédients
   réordonnables, photo prise par la famille ou générée (§4) et servie par

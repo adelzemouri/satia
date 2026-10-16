@@ -1,6 +1,8 @@
 import type { MealSlot } from "@/domain/meals";
 
+import { B, C } from "./art-palette";
 import { type DishArtSpec, seededRandom } from "./dish-art";
+import { MORE_RECIPES } from "./catalog-more";
 
 /**
  * Recettes de départ, écrites pour l'app (textes et illustrations originaux). Les ingrédients
@@ -41,103 +43,7 @@ export type CatalogRecipe = {
 /** Préfixe de `foods.source_ref` pour les recettes de ce catalogue. */
 export const CATALOG_PREFIX = "catalog:";
 
-// Couleurs des ingrédients dessinés.
-const C = {
-  oat: "#e6cf9f",
-  cream: "#f8f1e2",
-  apple: "#d64b3c",
-  appleFlesh: "#f7efc8",
-  banana: "#f6e4a0",
-  bananaCore: "#fff5cf",
-  spinach: "#3f7d3a",
-  tomato: "#e04a3c",
-  tomatoCore: "#f49a8c",
-  cucumber: "#5f9a48",
-  cucumberCore: "#e2f1c9",
-  carrot: "#ef8a2e",
-  rice: "#fbf8ef",
-  chicken: "#e8bd86",
-  chickenLines: "#cf9455",
-  salmon: "#f2976a",
-  salmonLines: "#fde0cc",
-  broccoli: "#4a8a38",
-  broccoliStem: "#9cc27a",
-  lentil: "#e88a48",
-  greenLentil: "#7c6a3a",
-  chickpea: "#e5c07a",
-  redBean: "#8b2f2a",
-  pepperRed: "#d83b2e",
-  pepperYellow: "#f2c230",
-  pepperGreen: "#4f9a3c",
-  zucchini: "#78a94f",
-  zucchiniCore: "#e8f1c6",
-  pumpkin: "#f0a03a",
-  leek: "#b7d48a",
-  mushroom: "#c8a680",
-  mushroomCore: "#f0e4d1",
-  potato: "#f0d189",
-  cod: "#f6f0e5",
-  codLines: "#e3d7c3",
-  shrimp: "#f0896a",
-  noodle: "#f0d49a",
-  quinoa: "#e8d9b2",
-  feta: "#fbfbf5",
-  olive: "#3c382d",
-  strawberry: "#df3a40",
-  blueberry: "#4b4f8e",
-  raspberry: "#d33a5c",
-  cherry: "#9a1c2d",
-  orange: "#f39a2b",
-  orangeCore: "#fdd8a0",
-  kiwi: "#8ab33b",
-  kiwiCore: "#d5e88c",
-  walnut: "#ad7744",
-  almond: "#c6996a",
-  honey: "#e8a838",
-  chocolate: "#5a3a29",
-  date: "#7a4a2a",
-  avocado: "#8ab848",
-  avocadoCore: "#d7e7a2",
-  yolk: "#f5b324",
-  bread: "#ecd3a3",
-  crust: "#b9783f",
-  beefSauce: "#9b3c2a",
-  cheese: "#f5dc88",
-  parsley: "#3e8a3a",
-  mint: "#4fae5a",
-  lemon: "#f5da48",
-  lemonCore: "#fbf1b0",
-  corn: "#f4cd3b",
-  peas: "#7cbf4a",
-  greenBean: "#5a9a3c",
-  tofu: "#f3ead2",
-  aubergine: "#5c3a6b",
-  aubergineCore: "#ebdfc4",
-  sweetPotato: "#e7813a",
-  curry: "#eeb85e",
-  coconut: "#f6ead2",
-  beef: "#7a3b2b",
-  onion: "#f3e3ef",
-  redOnion: "#a24a7a",
-  bulgur: "#d9b874",
-  ham: "#f0a8a4",
-  goat: "#fbf8f0",
-  sesame: "#f2e6c8",
-};
-
-// Fonds pastel des vignettes.
-const B = {
-  sage: "#dcebd9",
-  peach: "#fbe2cf",
-  butter: "#f9eec4",
-  sky: "#d8e9f2",
-  rose: "#f8dde0",
-  lilac: "#e6e0f2",
-  mint: "#d5efe6",
-  sand: "#f1e6d4",
-};
-
-export const CATALOG: readonly CatalogRecipe[] = [
+const FIRST_RECIPES: readonly CatalogRecipe[] = [
   // --- Petits-déjeuners ------------------------------------------------------------------
   {
     slug: "porridge-pomme-cannelle",
@@ -1518,6 +1424,9 @@ export const CATALOG: readonly CatalogRecipe[] = [
     },
   },
 ];
+
+/** Toutes les recettes du catalogue : les 43 de départ, puis celles ajoutées en octobre 2026. */
+export const CATALOG: readonly CatalogRecipe[] = [...FIRST_RECIPES, ...MORE_RECIPES];
 
 const BY_SLUG = new Map(CATALOG.map((recipe) => [recipe.slug, recipe]));
 
