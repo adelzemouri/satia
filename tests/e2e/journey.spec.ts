@@ -678,7 +678,16 @@ test("saisie en texte libre, puis par le dictionnaire personnel sans appel à l'
   await page.getByLabel("Décris ton repas").fill("riz et poulet");
   await page.getByRole("button", { name: "Analyser", exact: true }).click();
   await expect(page.getByRole("heading", { name: "On vérifie ensemble ?" })).toBeVisible();
-  await page.getByRole("button", { name: /^Retirer .*oulet/ }).click();
+  // Remplacer l'aliment nommé dans le plat renomme le plat.
+  const chicken = page.getByRole("region", { name: "Riz au poulet" }).getByRole("listitem").nth(1);
+  await chicken.getByRole("button", { name: "Changer d'aliment" }).click();
+  await page.getByLabel("Remplacer « poulet rôti » par").fill("veau rôti");
+  await page
+    .getByRole("button", { name: /^Veau, rôti/ })
+    .first()
+    .click();
+  await expect(page.getByRole("region", { name: "Riz au veau" }).getByText(/^Veau, rôti/)).toBeVisible();
+  await page.getByRole("button", { name: /^Retirer Veau/ }).click();
   await expect(page.getByRole("button", { name: /^Retirer / })).toHaveCount(1);
   await page.getByRole("button", { name: "Ajouter au journal" }).click();
   await expect(page.getByRole("region", { name: "Dîner" }).getByText(/^Riz basmati, cuit/)).toBeVisible();
