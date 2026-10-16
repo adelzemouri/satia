@@ -1,10 +1,15 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { todayIso } from "@/domain/dates";
+import { StepsChart } from "@/features/activity/steps-chart";
 import { HubLinks } from "@/features/navigation/hub-links";
 import { WeightChart } from "@/features/weight/weight-chart";
 import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
+import { activityOverview } from "@/server/activity";
+import { metabolismOverview } from "@/server/adaptive";
 import { weightOverview } from "@/server/journal";
+import { trainingHistory } from "@/server/training";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
 import { Card } from "@/ui/card";
@@ -19,17 +24,26 @@ export default async function ProgressPage({ params }: PageProps<"/[locale]/prog
   const locale = toLocale((await params).locale);
   setRequestLocale(locale);
   const user = await requireUser(locale);
-  const overview = await weightOverview(user.id);
+  const today = todayIso();
+  // Les cartes du tableau de bord (ordinateur) lisent aussi métabolisme, pas et séances.
+  const [overview, metabolism, activity, sessions] = await Promise.all([
+    weightOverview(user.id),
+    metabolismOverview(user.id),
+    activityOverview(user.id, today),
+    trainingHistory(user.id, 28),
+  ]);
   const trend = overview.trend.at(-1);
   const lastWeighIn = overview.entries.at(-1)?.date ?? null;
   const t = await getTranslations();
+  const lastSession = sessions[0];
+  const linkClass = "self-start font-semibold text-primary underline-offset-4 hover:underline";
 
   return (
-    // Sur ordinateur, les cartes se rangent sur deux colonnes.
-    <div data-wide className="flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start">
-      <h1 className="font-display text-3xl font-extrabold tracking-tight lg:col-span-2">{t("progress.title")}</h1>
+    // Sur ordinateur, un tableau de bord : poids, dépense réelle, séances et pas, les rubriques à droite.
+    <div data-wide className="flex flex-col gap-6 lg:grid lg:grid-cols-3 lg:items-start">
+      <h1 className="font-display text-3xl font-extrabold tracking-tight lg:col-span-3">{t("progress.title")}</h1>
 
-      <Card aria-labelledby="weight-title">
+      <Card aria-labelledby="weight-title" className="lg:col-span-2">
         <div className="flex items-baseline justify-between gap-3">
           <h2 id="weight-title" className="text-xl font-bold">
             {t("weight.title")}
@@ -69,25 +83,75 @@ export default async function ProgressPage({ params }: PageProps<"/[locale]/prog
         )}
       </Card>
 
-      <HubLinks
-        label={t("home.more")}
-        links={[
-          {
-            href: "/weight",
-            icon: "weight",
-            label: t("weight.title"),
-            hint:
-              lastWeighIn === null
-                ? undefined
-                : t("progress.lastWeighIn", { date: formatDay(lastWeighIn, locale, "short") }),
-          },
-          { href: "/training", icon: "dumbbell", label: t("nav.training") },
-          { href: "/activity", icon: "run", label: t("activity.title") },
-          { href: "/body", icon: "ruler", label: t("body.title") },
-          { href: "/quality", icon: "sprout", label: t("quality.title") },
-          { href: "/metabolism", icon: "pulse", label: t("metabolism.title") },
-        ]}
-      />
+      <div className="lg:col-start-3 lg:row-span-3 lg:row-start-2">
+        <HubLinks
+          label={t("home.more")}
+          links={[
+            {
+              href: "/weight",
+              icon: "weight",
+              label: t("weight.title"),
+              hint:
+                lastWeighIn === null
+                  ? undefined
+                  : t("progress.lastWeighIn", { date: formatDay(lastWeighIn, locale, "short") }),
+            },
+            { href: "/training", icon: "dumbbell", label: t("nav.training") },
+            { href: "/activity", icon: "run", label: t("activity.title") },
+            { href: "/body", icon: "ruler", label: t("body.title") },
+            { href: "/quality", icon: "sprout", label: t("quality.title") },
+            { href: "/metabolism", icon: "pulse", label: t("metabolism.title") },
+          ]}
+        />
+      </div>
+
+      {metabolism && (
+        <Card aria-labelledby="tdee-title" className="max-lg:hidden">
+          <h2 id="tdee-title" className="text-xl font-bold">
+            {t("metabolism.expenditure")}
+          </h2>
+          {metabolism.measurement.status === "measured" ? (
+            <p className="font-display text-3xl font-extrabold tracking-tight">
+              {t("metabolism.kcalPerDay", { value: metabolism.measurement.tdee })}
+            </p>
+          ) : (
+            <p className="text-text-muted">{t("progress.tdeeNone")}</p>
+          )}
+          <p className="text-sm text-text-muted">{t("progress.goal", { kcal: metabolism.goalKcal })}</p>
+          <Link href="/metabolism" className={linkClass}>
+            {t("metabolism.title")}
+          </Link>
+        </Card>
+      )}
+
+      <Card aria-labelledby="sessions-title" className="max-lg:hidden">
+        <h2 id="sessions-title" className="text-xl font-bold">
+          {t("nav.training")}
+        </h2>
+        {lastSession ? (
+          <>
+            <p className="font-display text-2xl font-extrabold tracking-tight first-letter:uppercase">
+              {t("progress.lastSession", { date: formatDay(lastSession.date, locale) })}
+            </p>
+            <p className="text-sm text-text-muted">{t("progress.sessions", { count: sessions.length })}</p>
+          </>
+        ) : (
+          <p className="text-text-muted">{t("progress.noSession")}</p>
+        )}
+        <Link href="/training" className={linkClass}>
+          {t("nav.training")}
+        </Link>
+      </Card>
+
+      <Card aria-labelledby="steps-chart-title" className="max-lg:hidden lg:col-span-2">
+        <h2 id="steps-chart-title" className="text-xl font-bold">
+          {t("activity.steps.chartTitle")}
+        </h2>
+        <StepsChart steps={activity.steps} today={today} locale={locale} />
+        <Link href="/activity" className={linkClass}>
+          {t("activity.title")}
+        </Link>
+      </Card>
     </div>
   );
 }

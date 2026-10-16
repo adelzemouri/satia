@@ -15,8 +15,8 @@ export default function RecipesLoading() {
             <Bone key={index} className="h-11 w-24 shrink-0 rounded-full" />
           ))}
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {[0, 1, 2, 3, 4, 5, 6, 7].map((index) => (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
+          {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((index) => (
             <div key={index} className="flex flex-col overflow-hidden rounded-[var(--radius-card)] bg-surface">
               <Bone className="aspect-[4/3] w-full rounded-none" />
               <div className="flex flex-col gap-2 px-3 py-2">

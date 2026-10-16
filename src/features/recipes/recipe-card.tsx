@@ -25,9 +25,14 @@ export function RecipeCard({
       href={{ pathname: `/foods/${id}`, query }}
       className="flex w-full flex-col overflow-hidden rounded-[var(--radius-card)] bg-surface"
     >
-      <RecipeVisual recipe={recipe} imageUrl={imageUrl} morph />
+      <RecipeVisual
+        recipe={recipe}
+        imageUrl={imageUrl}
+        sizes="(min-width: 1024px) 180px, (min-width: 640px) 220px, 45vw"
+        morph
+      />
       <span className="flex flex-col gap-0.5 px-3 py-2">
-        <span className="leading-snug font-bold">{recipe.name}</span>
+        <span className="leading-snug font-bold lg:line-clamp-2">{recipe.name}</span>
         <span className="text-sm text-text-muted">{t("card", { kcal: portionKcal, minutes: recipe.minutes })}</span>
       </span>
     </Link>

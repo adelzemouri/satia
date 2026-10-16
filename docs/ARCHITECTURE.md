@@ -783,7 +783,9 @@ le pourquoi de chacun est dans `docs/DECISIONS.md`.
   parente, `parent-path.ts`). Le Journal est accessible depuis Moi et l'accueil.
 - **Ordinateur** (≥ 1024 px) : barre latérale (`side-nav.tsx`, réduite aux icônes jusqu'à
   1279 px), pages en deux colonnes (`src/ui/columns.tsx`), sous-menu Cuisine en rail
-  vertical, pas de bouton retour. La version mobile n'a pas changé.
+  vertical, pas de bouton retour. La version mobile n'a pas changé. Pages longues
+  densifiées (DECISIONS 033) : recettes en 6 colonnes avec recherche collée, fiche en deux
+  colonnes, menu en tableau jours × repas (`plan-cell-add.tsx`), Progrès en tableau de bord.
 - **Chargement** : un `loading.tsx` par page avec des squelettes qui reprennent sa mise en
   page (`src/ui/skeleton.tsx`) ; à mettre à jour quand la page change.
 - **Confidentialité à l'écran** : le poids est masqué par défaut sur Progrès et Poids

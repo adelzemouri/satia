@@ -30,6 +30,9 @@ export type PlanItem = {
   servings: number;
   /** Calories d'une part, si le plat est une recette ou un aliment connu. */
   kcalPerServing: number | null;
+  /** Photo du plat pour le tableau de la semaine : la recette du catalogue (`catalogRef`) ou l'image de l'aliment. */
+  catalogRef: string | null;
+  imageUrl: string | null;
 };
 
 export async function weekPlan(householdId: string, weekStart: string): Promise<PlanItem[]> {
@@ -43,6 +46,9 @@ export async function weekPlan(householdId: string, weekStart: string): Promise<
       servings: mealPlanItems.servings,
       kcal: foods.kcal,
       unitWeights: foods.unitWeights,
+      source: foods.source,
+      sourceRef: foods.sourceRef,
+      imageUrl: foods.imageUrl,
     })
     .from(mealPlanItems)
     .leftJoin(foods, eq(foods.id, mealPlanItems.foodId))
@@ -55,8 +61,9 @@ export async function weekPlan(householdId: string, weekStart: string): Promise<
     )
     .orderBy(asc(mealPlanItems.date), asc(mealPlanItems.createdAt));
   return rows
-    .map(({ kcal, unitWeights, ...row }) => ({
+    .map(({ kcal, unitWeights, source, sourceRef, ...row }) => ({
       ...row,
+      catalogRef: source === "recipe" ? sourceRef : null,
       kcalPerServing: kcal === null ? null : Math.round((kcal * (unitWeights?.portion ?? 100)) / 100),
     }))
     .sort((a, b) => a.date.localeCompare(b.date) || MEAL_SLOTS.indexOf(a.slot) - MEAL_SLOTS.indexOf(b.slot));

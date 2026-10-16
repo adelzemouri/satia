@@ -124,8 +124,12 @@ export function CoachChat({
         <EmptyState scene="chat">{t("empty")}</EmptyState>
       ) : (
         // Cadre défilant atteignable au clavier (axe : scrollable-region-focusable).
-        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
-        <div ref={scroller} tabIndex={0} className="-mx-2 max-h-[60vh] overflow-y-auto overscroll-contain px-2">
+        <div
+          ref={scroller}
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+          tabIndex={0}
+          className="-mx-2 max-h-[60vh] overflow-y-auto overscroll-contain px-2 lg:max-h-[max(18rem,calc(100dvh-37rem))]"
+        >
           {hidden > 0 && (
             <div className="flex justify-center pb-2">
               <Button variant="ghost" onClick={showEarlier}>

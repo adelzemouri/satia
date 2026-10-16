@@ -58,40 +58,43 @@ export function RecipeFilter<C extends string>({
 
   return (
     <>
-      <label className="flex min-h-12 items-center gap-2 rounded-full border border-border bg-surface px-4 focus-within:outline-2 focus-within:outline-[var(--color-focus)]">
-        <Icon name="search" size={20} />
-        <span className="sr-only">{searchLabel}</span>
-        <SearchInput
-          value={query}
-          onValueChange={(value) => {
-            setQuery(value);
-            remember("q", value.trim() || null);
-          }}
-          placeholder={searchLabel}
-        />
-      </label>
-      <div role="group" aria-label={label} className="-mx-4 overflow-x-auto px-4">
-        <ul className="flex gap-2">
-          {options.map((option) => (
-            <li key={option.value ?? "all"}>
-              <button
-                type="button"
-                aria-pressed={category === option.value}
-                onClick={() => choose(option.value)}
-                className={chip(category === option.value)}
-              >
-                {option.label}
-              </button>
-            </li>
-          ))}
-        </ul>
+      {/* Sur ordinateur, la recherche et les catégories tiennent sur une ligne qui reste en haut pendant le défilement. */}
+      <div className="flex flex-col gap-6 lg:sticky lg:top-0 lg:z-10 lg:-mx-2 lg:flex-row lg:items-center lg:gap-3 lg:bg-bg lg:px-2 lg:py-3">
+        <label className="flex min-h-12 items-center gap-2 rounded-full border border-border bg-surface px-4 focus-within:outline-2 focus-within:outline-[var(--color-focus)] lg:min-w-64 lg:flex-1">
+          <Icon name="search" size={20} />
+          <span className="sr-only">{searchLabel}</span>
+          <SearchInput
+            value={query}
+            onValueChange={(value) => {
+              setQuery(value);
+              remember("q", value.trim() || null);
+            }}
+            placeholder={searchLabel}
+          />
+        </label>
+        <div role="group" aria-label={label} className="-mx-4 overflow-x-auto px-4 lg:mx-0 lg:min-w-0 lg:px-0">
+          <ul className="flex gap-2">
+            {options.map((option) => (
+              <li key={option.value ?? "all"}>
+                <button
+                  type="button"
+                  aria-pressed={category === option.value}
+                  onClick={() => choose(option.value)}
+                  className={chip(category === option.value)}
+                >
+                  {option.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
       {shown.length === 0 ? (
         <p className="text-text-muted" role="status">
           {noMatch}
         </p>
       ) : (
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
           {shown.map((item) => (
             <li key={item.key} className="flex">
               {item.card}

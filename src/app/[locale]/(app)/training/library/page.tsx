@@ -33,80 +33,151 @@ export default async function TrainingLibraryPage({ params, searchParams }: Page
       (!level || exercise.level === level),
   );
 
+  // Filtres de l'ordinateur : des liens qui gardent les deux autres critères, sans bouton « Filtrer ».
+  const current = { muscle, equipment, level: level ? String(level) : null };
+  const filterHref = (key: keyof typeof current, value: string | null) => {
+    const next = { ...current, [key]: value };
+    const search = Object.fromEntries(
+      Object.entries(next).filter((entry): entry is [string, string] => Boolean(entry[1])),
+    );
+    return { pathname: "/training/library" as const, query: search };
+  };
+  const chip = (active: boolean) =>
+    `flex min-h-9 items-center rounded-full px-3 text-sm font-semibold ${
+      active ? "bg-primary text-on-primary" : "bg-surface-muted text-text hover:bg-border"
+    }`;
+  const groups: { key: keyof typeof current; title: string; options: { value: string; label: string }[] }[] = [
+    {
+      key: "muscle",
+      title: t("library.muscle"),
+      options: MUSCLES.map((value) => ({ value, label: t(`muscles.${value}`) })),
+    },
+    {
+      key: "equipment",
+      title: t("library.equipment"),
+      options: EQUIPMENT.map((value) => ({ value, label: t(`equipment.${value}`) })),
+    },
+    {
+      key: "level",
+      title: t("library.level"),
+      options: ["1", "2", "3"].map((value) => ({ value, label: t("library.levelValue", { level: Number(value) }) })),
+    },
+  ];
+
   return (
     <>
       <span data-wide hidden />
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("library.title")}</h1>
       <p className="text-text-muted">{t("library.intro")}</p>
 
-      <Card>
-        <form action={getPathname({ href: "/training/library", locale })} method="get" className="flex flex-col gap-3">
-          <div className="grid grid-cols-3 gap-2">
-            <label className="flex flex-col gap-1.5">
-              <span className="font-semibold">{t("library.muscle")}</span>
-              <select name="muscle" defaultValue={muscle ?? ""} className={selectClass}>
-                <option value="">{t("library.all")}</option>
-                {MUSCLES.map((value) => (
-                  <option key={value} value={value}>
-                    {t(`muscles.${value}`)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className="font-semibold">{t("library.equipment")}</span>
-              <select name="equipment" defaultValue={equipment ?? ""} className={selectClass}>
-                <option value="">{t("library.all")}</option>
-                {EQUIPMENT.map((value) => (
-                  <option key={value} value={value}>
-                    {t(`equipment.${value}`)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className="font-semibold">{t("library.level")}</span>
-              <select name="level" defaultValue={level ? String(level) : ""} className={selectClass}>
-                <option value="">{t("library.all")}</option>
-                {[1, 2, 3].map((value) => (
-                  <option key={value} value={value}>
-                    {t("library.levelValue", { level: value })}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <button type="submit" className={buttonClass("secondary")}>
-            {t("library.filter")}
-          </button>
-        </form>
-      </Card>
+      {/* Ordinateur : les filtres en colonne à gauche, restant visibles pendant le défilement. */}
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:items-start lg:gap-6">
+        <nav
+          aria-label={t("library.filtersLabel")}
+          className="hidden flex-col gap-4 rounded-[var(--radius-card)] bg-surface p-4 lg:sticky lg:top-8 lg:row-span-2 lg:flex"
+        >
+          {groups.map((group) => (
+            <div key={group.key} className="flex flex-col gap-2">
+              <h2 className="text-sm font-semibold text-text-muted">{group.title}</h2>
+              <ul className="flex flex-wrap gap-1.5">
+                {[{ value: null, label: t("library.all") }, ...group.options].map((option) => {
+                  const active = current[group.key] === option.value;
+                  return (
+                    <li key={option.value ?? "all"}>
+                      <Link
+                        href={filterHref(group.key, option.value)}
+                        aria-current={active ? "true" : undefined}
+                        scroll={false}
+                        className={chip(active)}
+                      >
+                        {option.label}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </nav>
+        <Card className="lg:hidden">
+          <form
+            action={getPathname({ href: "/training/library", locale })}
+            method="get"
+            className="flex flex-col gap-3"
+          >
+            <div className="grid grid-cols-3 gap-2">
+              <label className="flex flex-col gap-1.5">
+                <span className="font-semibold">{t("library.muscle")}</span>
+                <select name="muscle" defaultValue={muscle ?? ""} className={selectClass}>
+                  <option value="">{t("library.all")}</option>
+                  {MUSCLES.map((value) => (
+                    <option key={value} value={value}>
+                      {t(`muscles.${value}`)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex flex-col gap-1.5">
+                <span className="font-semibold">{t("library.equipment")}</span>
+                <select name="equipment" defaultValue={equipment ?? ""} className={selectClass}>
+                  <option value="">{t("library.all")}</option>
+                  {EQUIPMENT.map((value) => (
+                    <option key={value} value={value}>
+                      {t(`equipment.${value}`)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex flex-col gap-1.5">
+                <span className="font-semibold">{t("library.level")}</span>
+                <select name="level" defaultValue={level ? String(level) : ""} className={selectClass}>
+                  <option value="">{t("library.all")}</option>
+                  {[1, 2, 3].map((value) => (
+                    <option key={value} value={value}>
+                      {t("library.levelValue", { level: value })}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <button type="submit" className={buttonClass("secondary")}>
+              {t("library.filter")}
+            </button>
+          </form>
+        </Card>
 
-      <p className="font-semibold" role="status">
-        {t("library.count", { count: list.length })}
-      </p>
-      <ul className="flex flex-col gap-2 lg:grid lg:grid-cols-2 xl:grid-cols-3">
-        {list.map((exercise) => (
-          <li key={exercise.id}>
-            <Link
-              href={`/training/library/${exercise.id}`}
-              className="flex items-center gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-3 hover:bg-surface-muted"
-            >
-              <ExerciseArt exerciseId={exercise.id} muscle={exercise.muscle} size={64} />
-              <span className="flex min-w-0 flex-col">
-                <span className="font-semibold">{exercise.name}</span>
-                <span className="text-sm text-text-muted">
-                  {t(`muscles.${exercise.muscle}`)} ·{" "}
-                  {exercise.equipment.length === 0
-                    ? t("equipment.none")
-                    : exercise.equipment.map((item) => t(`equipment.${item}`)).join(", ")}{" "}
-                  · {t("library.levelValue", { level: exercise.level })}
+        <p className="font-semibold lg:col-start-2" role="status">
+          {t("library.count", { count: list.length })}
+        </p>
+        <ul className="flex flex-col gap-2 lg:col-start-2 lg:grid lg:grid-cols-3 xl:grid-cols-4">
+          {list.map((exercise) => (
+            <li key={exercise.id}>
+              <Link
+                href={`/training/library/${exercise.id}`}
+                className="flex items-center gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-3 hover:bg-surface-muted"
+              >
+                <ExerciseArt
+                  exerciseId={exercise.id}
+                  muscle={exercise.muscle}
+                  size={64}
+                  className="shrink-0 lg:size-12"
+                />
+                <span className="flex min-w-0 flex-col">
+                  <span className="font-semibold lg:text-sm lg:leading-snug">{exercise.name}</span>
+                  <span className="text-sm text-text-muted lg:text-xs">
+                    {t(`muscles.${exercise.muscle}`)} ·{" "}
+                    {exercise.equipment.length === 0
+                      ? t("equipment.none")
+                      : exercise.equipment.map((item) => t(`equipment.${item}`)).join(", ")}{" "}
+                    · <span className="lg:hidden">{t("library.levelValue", { level: exercise.level })}</span>
+                    <span className="max-lg:hidden">{t("library.levelShort", { level: exercise.level })}</span>
+                  </span>
                 </span>
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       {profile && profile.excluded.length > 0 && (
         <Card aria-labelledby="excluded-title">

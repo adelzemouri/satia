@@ -369,6 +369,26 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 033 — Sur ordinateur, densifier les pages longues plutôt qu'élargir
+
+- **Date** : 2026-10-16 · **Statut** : adoptée
+- **Contexte** : sur ordinateur, les recettes (92), les exercices (113) et la fiche recette
+  obligeaient à beaucoup défiler alors que l'écran avait de la place. Le contenu occupait
+  déjà 1 152 px de large : le défilement venait de grilles clairsemées et de pages restées
+  en une colonne de téléphone.
+- **Décision** : à partir de 1024 px seulement, recettes en 5 puis 6 colonnes avec
+  recherche et catégories collées en haut ; fiche d'aliment ou de recette en deux colonnes
+  (photo, nom et ajout fixes à gauche) ; menu de la semaine en tableau jours × repas avec
+  ajout dans la case ; filtres des exercices en colonne ; Progrès en tableau de bord
+  (dépense réelle, séances, pas des 14 jours en barres, aussi sur Activité) ; profil
+  sportif sur deux colonnes ; conversation de Pépin à la hauteur de la fenêtre. La largeur
+  maximale ne change pas (écran standard).
+- **Conséquences** : le téléphone ne change pas. Le menu a deux affichages (liste sur
+  téléphone, tableau sur ordinateur) à garder cohérents, et Progrès lit métabolisme, pas
+  et séances même sur téléphone, où ces cartes restent masquées.
+
+---
+
 ## Modèle
 
 ```markdown

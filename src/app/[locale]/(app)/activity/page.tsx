@@ -5,6 +5,7 @@ import { todayIso } from "@/domain/dates";
 import { deleteActivityAction } from "@/features/activity/actions";
 import { ActivityForm } from "@/features/activity/activity-form";
 import { ImportForm } from "@/features/activity/import-form";
+import { StepsChart } from "@/features/activity/steps-chart";
 import { StepsForm } from "@/features/activity/steps-form";
 import { DeleteButton } from "@/features/body/delete-button";
 import { Link } from "@/i18n/navigation";
@@ -58,7 +59,12 @@ export default async function ActivityPage({ params }: PageProps<"/[locale]/acti
         <StepsForm today={today} todaySteps={summary.activity.steps} />
         {baseline !== null && <p className="text-sm text-text-muted">{t("steps.hint", { baseline })}</p>}
         {overview.steps.length > 0 && (
-          <ul className="flex flex-col divide-y divide-border">
+          <div className="hidden lg:block">
+            <StepsChart steps={overview.steps} today={today} locale={locale} />
+          </div>
+        )}
+        {overview.steps.length > 0 && (
+          <ul className="flex flex-col divide-y divide-border lg:hidden">
             {[...overview.steps].reverse().map((row) => (
               <li key={row.date} className="flex justify-between gap-3 py-1">
                 <span className="first-letter:uppercase">{formatDay(row.date, locale, "short")}</span>
