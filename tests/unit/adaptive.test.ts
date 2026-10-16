@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { adaptGoal, measureExpenditure } from "@/domain/adaptive";
+import { adaptGoal, measureExpenditure, weightDirection } from "@/domain/adaptive";
 import { addDays } from "@/domain/energy";
 import { weeklyBudget } from "@/domain/weekly-budget";
 
@@ -155,5 +155,19 @@ describe("budget hebdomadaire : jours sans saisie", () => {
     expect(week.todayKcal).toBe(2000);
     expect(week.days[0]).toMatchObject({ consumed: null, past: true });
     expect(week.consumed).toBe(2000);
+  });
+});
+
+describe("sens de la tendance de poids", () => {
+  it("dit « stable » sous 0,1 kg par semaine, dans les deux sens", () => {
+    expect(weightDirection(-0.03)).toBe("stable");
+    expect(weightDirection(0.09)).toBe("stable");
+    expect(weightDirection(0)).toBe("stable");
+  });
+
+  it("distingue la baisse de la hausse au-delà", () => {
+    expect(weightDirection(-0.3)).toBe("down");
+    expect(weightDirection(-0.1)).toBe("down");
+    expect(weightDirection(0.25)).toBe("up");
   });
 });
