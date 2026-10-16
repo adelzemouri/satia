@@ -51,11 +51,17 @@ export default async function RecipesPage({ params }: PageProps<"/[locale]/recip
     <>
       <span data-wide hidden />
       <KitchenTabs current="recipes" />
-      <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
-      <p className="text-text-muted">{t("intro")}</p>
-      <Link href="/foods/new-recipe" className={buttonClass("secondary", "self-start px-4")}>
-        {t("new")}
-      </Link>
+      {/* Sur ordinateur, « Nouvelle recette » passe à droite du titre. */}
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_auto] lg:items-center lg:gap-x-6 lg:gap-y-2">
+        <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
+        <p className="text-text-muted lg:col-start-1 lg:row-start-2">{t("intro")}</p>
+        <Link
+          href="/foods/new-recipe"
+          className={buttonClass("secondary", "self-start px-4 lg:col-start-2 lg:row-start-1 lg:self-center")}
+        >
+          {t("new")}
+        </Link>
+      </div>
       {ours.length + ideas.length === 0 ? (
         <p className="text-text-muted">{t("none")}</p>
       ) : (

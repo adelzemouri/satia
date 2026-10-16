@@ -14,15 +14,22 @@ import { addPlanItemAction } from "./actions";
 const selectClass = "min-h-12 rounded-2xl border border-border bg-surface px-3 text-base";
 const SLOTS = ["breakfast", "lunch", "dinner", "snack"] as const satisfies readonly MealSlot[];
 
-/** Ajout d'un plat au menu : un jour, un repas, une recette du foyer ou un nom libre. */
+/**
+ * Ajout d'un plat au menu : un jour, un repas, une recette du foyer ou un nom libre. Depuis une
+ * case du tableau de la semaine (ordinateur), le jour et le repas sont déjà choisis (`fixed`).
+ */
 export function AddPlanItemForm({
   days,
   recipes,
   defaultDate,
+  fixed,
+  onDone,
 }: {
   days: { date: string; label: string }[];
   defaultDate: string;
   recipes: { id: string; name: string }[];
+  fixed?: { date: string; slot: MealSlot };
+  onDone?: () => void;
 }) {
   const t = useTranslations();
   const errorText = useErrorText();
@@ -42,33 +49,43 @@ export function AddPlanItemForm({
             servings: Number(formData.get("servings")),
           });
           setError(result?.error ?? null);
-          if (!result?.error) setFoodId("");
+          if (!result?.error) {
+            setFoodId("");
+            onDone?.();
+          }
         })
       }
       className="flex flex-col gap-3"
     >
-      <div className="grid grid-cols-2 gap-3">
-        <label className="flex flex-col gap-1.5">
-          <span className="font-semibold">{t("plan.day")}</span>
-          <select name="date" className={selectClass} defaultValue={defaultDate}>
-            {days.map((day) => (
-              <option key={day.date} value={day.date}>
-                {day.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex flex-col gap-1.5">
-          <span className="font-semibold">{t("plan.slot")}</span>
-          <select name="slot" className={selectClass} defaultValue="dinner">
-            {SLOTS.map((slot) => (
-              <option key={slot} value={slot}>
-                {t(`slots.${slot}`)}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+      {fixed ? (
+        <>
+          <input type="hidden" name="date" value={fixed.date} />
+          <input type="hidden" name="slot" value={fixed.slot} />
+        </>
+      ) : (
+        <div className="grid grid-cols-2 gap-3">
+          <label className="flex flex-col gap-1.5">
+            <span className="font-semibold">{t("plan.day")}</span>
+            <select name="date" className={selectClass} defaultValue={defaultDate}>
+              {days.map((day) => (
+                <option key={day.date} value={day.date}>
+                  {day.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className="font-semibold">{t("plan.slot")}</span>
+            <select name="slot" className={selectClass} defaultValue="dinner">
+              {SLOTS.map((slot) => (
+                <option key={slot} value={slot}>
+                  {t(`slots.${slot}`)}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      )}
       <label className="flex flex-col gap-1.5">
         <span className="font-semibold">{t("plan.recipe")}</span>
         <select value={foodId} onChange={(event) => setFoodId(event.target.value)} className={selectClass}>

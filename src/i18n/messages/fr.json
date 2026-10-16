@@ -1388,7 +1388,10 @@
     "generated": "{count, plural, =0 {Aucun repas ajouté : tout est déjà prévu.} one {# repas ajouté au menu.} other {# repas ajoutés au menu.}}",
     "shopping": "Liste de courses",
     "recipes": "Bibliothèque de recettes",
-    "fridge": "Scanner le frigo"
+    "fridge": "Scanner le frigo",
+    "cellAdd": "Ajouter un plat : {day}, {slot}",
+    "close": "Fermer",
+    "grid": "Menu de la semaine en tableau"
   },
   "shopping": {
     "title": "Liste de courses",
@@ -1672,7 +1675,9 @@
       "delete": "Supprimer",
       "deleteLabel": "Supprimer {name}",
       "noCustom": "Aucun exercice personnel.",
-      "stress": "Zones sollicitées : {list}"
+      "stress": "Zones sollicitées : {list}",
+      "filtersLabel": "Filtrer les exercices",
+      "levelShort": "Niv. {level}"
     },
     "art": {
       "label": "Illustration du mouvement : {name}",
@@ -1768,7 +1773,10 @@
       "date": "Date",
       "save": "Enregistrer les pas",
       "value": "{steps, number} pas",
-      "hint": "Ton niveau d'activité compte déjà environ {baseline, number} pas par jour : seuls les pas au-delà ajoutent des calories."
+      "hint": "Ton niveau d'activité compte déjà environ {baseline, number} pas par jour : seuls les pas au-delà ajoutent des calories.",
+      "average": "{steps, number} pas par jour en moyenne",
+      "none": "pas de saisie",
+      "chartTitle": "Pas des 14 derniers jours"
     },
     "import": {
       "title": "Importer un fichier",
@@ -1865,7 +1873,12 @@
     "weightOpen": "Pesées et objectif",
     "weightValue": "{value, number} kg",
     "weightEmpty": "Note une première pesée pour voir ta courbe ici.",
-    "lastWeighIn": "Dernière pesée : {date}"
+    "lastWeighIn": "Dernière pesée : {date}",
+    "tdeeNone": "Pas encore mesurée : il faut quelques semaines de pesées et de repas notés.",
+    "goal": "Objectif : {kcal, number} kcal par jour",
+    "lastSession": "Dernière séance : {date}",
+    "sessions": "{count, plural, =0 {Aucune séance ces 4 dernières semaines.} one {# séance ces 4 dernières semaines.} other {# séances ces 4 dernières semaines.}}",
+    "noSession": "Pas encore de séance. Ton programme t'attend."
   },
   "kitchen": {
     "title": "Cuisine",

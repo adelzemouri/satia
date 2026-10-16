@@ -1388,7 +1388,10 @@
     "generated": "{count, plural, =0 {No meal added: everything is already planned.} one {# meal added to the menu.} other {# meals added to the menu.}}",
     "shopping": "Shopping list",
     "recipes": "Recipe library",
-    "fridge": "Scan the fridge"
+    "fridge": "Scan the fridge",
+    "cellAdd": "Add a dish: {day}, {slot}",
+    "close": "Close",
+    "grid": "Week menu as a table"
   },
   "shopping": {
     "title": "Shopping list",
@@ -1672,7 +1675,9 @@
       "delete": "Delete",
       "deleteLabel": "Delete {name}",
       "noCustom": "No personal exercise.",
-      "stress": "Areas loaded: {list}"
+      "stress": "Areas loaded: {list}",
+      "filtersLabel": "Filter exercises",
+      "levelShort": "Lvl {level}"
     },
     "art": {
       "label": "Movement illustration: {name}",
@@ -1768,7 +1773,10 @@
       "date": "Date",
       "save": "Save steps",
       "value": "{steps, number} steps",
-      "hint": "Your activity level already includes about {baseline, number} steps a day: only steps above that add calories."
+      "hint": "Your activity level already includes about {baseline, number} steps a day: only steps above that add calories.",
+      "average": "{steps, number} steps a day on average",
+      "none": "not logged",
+      "chartTitle": "Steps over the last 14 days"
     },
     "import": {
       "title": "Import a file",
@@ -1865,7 +1873,12 @@
     "weightOpen": "Weigh-ins and goal",
     "weightValue": "{value, number} kg",
     "weightEmpty": "Log a first weigh-in to see your curve here.",
-    "lastWeighIn": "Last weigh-in: {date}"
+    "lastWeighIn": "Last weigh-in: {date}",
+    "tdeeNone": "Not measured yet: it takes a few weeks of weigh-ins and logged meals.",
+    "goal": "Goal: {kcal, number} kcal a day",
+    "lastSession": "Last session: {date}",
+    "sessions": "{count, plural, =0 {No session in the last 4 weeks.} one {# session in the last 4 weeks.} other {# sessions in the last 4 weeks.}}",
+    "noSession": "No session yet. Your programme is ready."
   },
   "kitchen": {
     "title": "Kitchen",

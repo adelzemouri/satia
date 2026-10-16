@@ -98,7 +98,11 @@ export function TrainingProfileForm({ initial }: { initial: Draft | null }) {
     });
 
   return (
-    <form action={save} className="flex flex-col gap-6">
+    // Sur ordinateur, les questions se répartissent sur deux colonnes ; zones à ménager et bouton sur toute la largeur.
+    <form
+      action={save}
+      className="flex flex-col gap-6 lg:block lg:columns-2 lg:gap-x-10 lg:[&>*]:mb-6 lg:[&>*]:break-inside-avoid"
+    >
       <OptionList
         legend={t("setup.level")}
         name="level"
@@ -149,15 +153,21 @@ export function TrainingProfileForm({ initial }: { initial: Draft | null }) {
         onChange={(value) => set("minutes", value)}
         options={SESSION_MINUTES.map((minutes) => ({ value: minutes, label: t("minutes", { count: minutes }) }))}
       />
-      <Chips
-        legend={t("setup.zones")}
-        hint={t("setup.zonesHint")}
-        options={ZONES.map((zone) => ({ value: zone, label: t(`zones.${zone}`) }))}
-        values={draft.avoidZones}
-        onToggle={(value) => set("avoidZones", toggle(draft.avoidZones, value))}
-      />
-      {error && <Alert>{errorText(error)}</Alert>}
-      <Button type="submit" disabled={pending || draft.days.length === 0}>
+      <div className="lg:[column-span:all]">
+        <Chips
+          legend={t("setup.zones")}
+          hint={t("setup.zonesHint")}
+          options={ZONES.map((zone) => ({ value: zone, label: t(`zones.${zone}`) }))}
+          values={draft.avoidZones}
+          onToggle={(value) => set("avoidZones", toggle(draft.avoidZones, value))}
+        />
+      </div>
+      {error && (
+        <div className="lg:[column-span:all]">
+          <Alert>{errorText(error)}</Alert>
+        </div>
+      )}
+      <Button type="submit" disabled={pending || draft.days.length === 0} className="lg:px-10 lg:[column-span:all]">
         {t("setup.save")}
       </Button>
     </form>

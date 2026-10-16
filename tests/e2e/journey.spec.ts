@@ -158,6 +158,46 @@ test("sur ordinateur, une barre latérale remplace la barre du bas", async ({ pa
   await expectNoA11yViolations(page);
 });
 
+test("sur ordinateur, le menu se remplit case par case et les pages longues se densifient", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await signIn(page, ADMIN);
+  // Menu : tableau jours × repas, ajout d'un plat directement dans une case.
+  await page.goto("/plan");
+  const grid = page.getByRole("table", { name: "Menu de la semaine en tableau" });
+  await expect(grid).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Ajouter un plat" })).toBeHidden();
+  await grid
+    .getByRole("button", { name: /^Ajouter un plat : .*, dîner$/ })
+    .first()
+    .click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Nom du plat").fill("Soupe du soir");
+  await dialog.getByRole("button", { name: "Ajouter au menu" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(grid.getByRole("cell").filter({ hasText: "Soupe du soir" })).toHaveCount(1);
+  await expectNoA11yViolations(page);
+  // Recettes : six vignettes par ligne, recherche toujours visible.
+  await page.goto("/recipes");
+  const cards = page.locator("li:has(> a[href*='/foods/'])");
+  await expect(cards.nth(6)).toBeVisible();
+  const tops = await cards.evaluateAll((items) => items.slice(0, 7).map((item) => item.getBoundingClientRect().top));
+  expect(new Set(tops.slice(0, 6)).size).toBe(1);
+  expect(tops[6]).toBeGreaterThan(tops[0]!);
+  await page.mouse.wheel(0, 2000);
+  await expect(page.getByPlaceholder("Rechercher une recette ou un ingrédient")).toBeInViewport();
+  await expectNoA11yViolations(page);
+  // Progrès : les pas et la dépense s'affichent sans changer de page.
+  await page.goto("/progress");
+  await expect(page.getByRole("heading", { name: "Pas des 14 derniers jours" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Ta dépense réelle" })).toBeVisible();
+  await expectNoA11yViolations(page);
+  // Exercices : les filtres sont des liens, sans bouton « Filtrer ».
+  await page.goto("/training/library");
+  await page.getByRole("navigation", { name: "Filtrer les exercices" }).getByRole("link", { name: "Jambes" }).click();
+  await expect(page).toHaveURL(/muscle=legs/);
+  await expectNoA11yViolations(page);
+});
+
 test("réglages des notifications et génération des clés côté admin", async ({ page }) => {
   await signIn(page, ADMIN);
   await page.goto("/profile/notifications");

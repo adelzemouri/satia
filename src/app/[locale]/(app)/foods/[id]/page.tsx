@@ -84,212 +84,225 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
 
   return (
     <>
-      {catalog && (
-        <figure className="-mx-4 flex flex-col gap-1 sm:mx-0">
-          <div className="overflow-hidden sm:rounded-[var(--radius-card)]">
-            <RecipeVisual
-              recipe={catalog}
-              imageUrl={food.imageUrl}
-              sizes="(min-width: 640px) 640px, 100vw"
-              priority
-              morph
-            />
-          </div>
-        </figure>
-      )}
-      {!catalog && storedPhoto && (
-        <figure className="-mx-4 flex flex-col gap-1 sm:mx-0">
-          <ZoomablePhoto
-            photo={{ src: storedPhoto.url, alt: shortFoodName(food.nameFr) }}
-            caption={shortFoodName(food.nameFr)}
-            className="w-full overflow-hidden sm:rounded-[var(--radius-card)]"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element -- photo privée servie par URL signée */}
-            <img src={storedPhoto.url} alt="" className="block aspect-[4/3] w-full object-cover" />
-          </ZoomablePhoto>
-          {!isGeneratedRecipePhoto(storedPhoto.key) && (
-            <figcaption className="px-4 text-xs text-text-muted sm:px-0">{t("foods.photo.caption")}</figcaption>
+      {/* Sur ordinateur : photo, nom et ajout fixes à gauche ; ingrédients, préparation et valeurs à droite. */}
+      <span data-wide hidden />
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:items-start lg:gap-8">
+        <div className="flex flex-col gap-6 lg:sticky lg:top-8">
+          {catalog && (
+            <figure className="-mx-4 flex flex-col gap-1 sm:mx-0">
+              <div className="overflow-hidden sm:rounded-[var(--radius-card)]">
+                <RecipeVisual
+                  recipe={catalog}
+                  imageUrl={food.imageUrl}
+                  sizes="(min-width: 1024px) 416px, (min-width: 640px) 640px, 100vw"
+                  priority
+                  morph
+                />
+              </div>
+            </figure>
           )}
-        </figure>
-      )}
-      <div className="flex items-start gap-4">
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <p className="text-sm font-semibold text-text-muted">
-            {catalog ? t("recipes.source") : t(`add.sources.${food.source}`)}
-          </p>
-          <h1 className="font-display text-3xl font-extrabold tracking-tight">{shortFoodName(food.nameFr)}</h1>
-          {shortFoodName(food.nameFr) !== food.nameFr && <p className="text-text-muted">{food.nameFr}</p>}
-          {food.brand && <p className="text-lg">{food.brand}</p>}
-          {food.source === "off" && food.sourceRef && (
-            <p className="text-sm text-text-muted">{t("product.barcode", { code: food.sourceRef })}</p>
+          {!catalog && storedPhoto && (
+            <figure className="-mx-4 flex flex-col gap-1 sm:mx-0">
+              <ZoomablePhoto
+                photo={{ src: storedPhoto.url, alt: shortFoodName(food.nameFr) }}
+                caption={shortFoodName(food.nameFr)}
+                className="w-full overflow-hidden sm:rounded-[var(--radius-card)]"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element -- photo privée servie par URL signée */}
+                <img src={storedPhoto.url} alt="" className="block aspect-[4/3] w-full object-cover" />
+              </ZoomablePhoto>
+              {!isGeneratedRecipePhoto(storedPhoto.key) && (
+                <figcaption className="px-4 text-xs text-text-muted sm:px-0">{t("foods.photo.caption")}</figcaption>
+              )}
+            </figure>
           )}
-        </div>
-        {food.imageUrl && !catalog && !food.photoKey && (
-          <ZoomablePhoto
-            photo={{ src: food.imageUrl, alt: shortFoodName(food.nameFr) }}
-            caption={shortFoodName(food.nameFr)}
-            className="shrink-0 rounded-lg"
-          >
-            <ProductThumb src={food.imageUrl} size={112} />
-          </ZoomablePhoto>
-        )}
-      </div>
-
-      <Link
-        href={{ pathname: "/add", query: { food: food.id, date, ...(slot && { slot }), ...(via && { via }) } }}
-        className={buttonClass("primary")}
-      >
-        {t("product.add")}
-      </Link>
-      <AskCoach
-        topic={{ kind: "food", id: food.id }}
-        label={shortFoodName(food.nameFr)}
-        coachName={COACH_NAME}
-        className="self-start"
-      />
-      {(editableRecipe || canRegenerate) && (
-        <RecipePhotoForm
-          foodId={food.id}
-          canUpload={editableRecipe}
-          hasPhoto={Boolean(food.photoKey && !isGeneratedRecipePhoto(food.photoKey))}
-          canRegenerate={canRegenerate}
-        />
-      )}
-      {editableRecipe && (
-        <div className="flex flex-wrap gap-3">
-          <Link href={`/foods/${food.id}/edit`} className={buttonClass("secondary")}>
-            {t("foods.editRecipe")}
-          </Link>
-          <Link
-            href={{ pathname: "/family/share", query: { food: food.id, date, ...(slot && { slot }) } }}
-            className={buttonClass("secondary")}
-          >
-            {t("add.shareWithFamily")}
-          </Link>
-        </div>
-      )}
-
-      {catalog && (
-        <>
-          <ul className="flex flex-wrap gap-2" aria-label={catalog.name}>
-            {[
-              portion && t("recipes.portionKcal", { kcal: Math.round((food.kcal * portion) / 100) }),
-              t("recipes.minutes", { minutes: catalog.minutes }),
-              t("recipes.servings", { count: catalog.servings }),
-              catalog.vegetarian && t("recipes.vegetarian"),
-            ]
-              .filter(Boolean)
-              .map((label) => (
-                <li key={String(label)} className="rounded-full bg-surface px-4 py-2 text-sm font-semibold">
-                  {label}
-                </li>
-              ))}
-          </ul>
-          <Card aria-labelledby="ingredients-title">
-            <div className="flex flex-col">
-              <h2 id="ingredients-title" className="text-xl font-bold">
-                {t("recipes.ingredients")}
-              </h2>
-              <p className="text-sm text-text-muted">{t("recipes.ingredientsFor", { count: catalog.servings })}</p>
-            </div>
-            <ul className="flex flex-col divide-y divide-border">
-              {catalog.ingredients.map(([code, grams, label], index) => (
-                <li key={`${code}-${index}`} className="flex justify-between gap-3 py-2">
-                  <span className="first-letter:uppercase">{label}</span>
-                  <span className="shrink-0 text-text-muted">{number.format(grams)} g</span>
-                </li>
-              ))}
-            </ul>
-          </Card>
-          <Card aria-labelledby="steps-title">
-            <h2 id="steps-title" className="text-xl font-bold">
-              {t("recipes.steps")}
-            </h2>
-            <StepList steps={catalog.steps} />
-          </Card>
-        </>
-      )}
-
-      {ownRecipe && ingredients.length > 0 && (
-        <>
-          <Card aria-labelledby="ingredients-title">
-            <div className="flex flex-col">
-              <h2 id="ingredients-title" className="text-xl font-bold">
-                {t("recipes.ingredients")}
-              </h2>
-              {food.servings && (
-                <p className="text-sm text-text-muted">{t("recipes.ingredientsFor", { count: food.servings })}</p>
+          <div className="flex items-start gap-4">
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <p className="text-sm font-semibold text-text-muted">
+                {catalog ? t("recipes.source") : t(`add.sources.${food.source}`)}
+              </p>
+              <h1 className="font-display text-3xl font-extrabold tracking-tight">{shortFoodName(food.nameFr)}</h1>
+              {shortFoodName(food.nameFr) !== food.nameFr && <p className="text-text-muted">{food.nameFr}</p>}
+              {food.brand && <p className="text-lg">{food.brand}</p>}
+              {food.source === "off" && food.sourceRef && (
+                <p className="text-sm text-text-muted">{t("product.barcode", { code: food.sourceRef })}</p>
               )}
             </div>
-            <ul className="flex flex-col divide-y divide-border">
-              {ingredients.map((item, index) => (
-                <li key={`${item.id}-${index}`} className="flex justify-between gap-3 py-2">
-                  <span className="first-letter:uppercase">{item.name}</span>
-                  <span className="shrink-0 text-text-muted">{number.format(item.grams)} g</span>
-                </li>
-              ))}
-            </ul>
-          </Card>
-          <Card aria-labelledby="steps-title">
-            <h2 id="steps-title" className="text-xl font-bold">
-              {t("recipes.steps")}
-            </h2>
-            {steps.length > 0 ? (
-              <StepList steps={steps} />
-            ) : (
-              <>
-                <p className="text-text-muted">{t("recipes.stepsEmpty")}</p>
-                {ai?.available && <RecipeStepsButton recipeId={food.id} coachName={COACH_NAME} />}
-              </>
+            {food.imageUrl && !catalog && !food.photoKey && (
+              <ZoomablePhoto
+                photo={{ src: food.imageUrl, alt: shortFoodName(food.nameFr) }}
+                caption={shortFoodName(food.nameFr)}
+                className="shrink-0 rounded-lg"
+              >
+                <ProductThumb src={food.imageUrl} size={112} />
+              </ZoomablePhoto>
             )}
+          </div>
+
+          <Link
+            href={{ pathname: "/add", query: { food: food.id, date, ...(slot && { slot }), ...(via && { via }) } }}
+            className={buttonClass("primary")}
+          >
+            {t("product.add")}
+          </Link>
+          <AskCoach
+            topic={{ kind: "food", id: food.id }}
+            label={shortFoodName(food.nameFr)}
+            coachName={COACH_NAME}
+            className="self-start"
+          />
+          {(editableRecipe || canRegenerate) && (
+            <RecipePhotoForm
+              foodId={food.id}
+              canUpload={editableRecipe}
+              hasPhoto={Boolean(food.photoKey && !isGeneratedRecipePhoto(food.photoKey))}
+              canRegenerate={canRegenerate}
+            />
+          )}
+          {editableRecipe && (
+            <div className="flex flex-wrap gap-3">
+              <Link href={`/foods/${food.id}/edit`} className={buttonClass("secondary")}>
+                {t("foods.editRecipe")}
+              </Link>
+              <Link
+                href={{ pathname: "/family/share", query: { food: food.id, date, ...(slot && { slot }) } }}
+                className={buttonClass("secondary")}
+              >
+                {t("add.shareWithFamily")}
+              </Link>
+            </div>
+          )}
+
+          {catalog && (
+            <>
+              <ul className="flex flex-wrap gap-2" aria-label={catalog.name}>
+                {[
+                  portion && t("recipes.portionKcal", { kcal: Math.round((food.kcal * portion) / 100) }),
+                  t("recipes.minutes", { minutes: catalog.minutes }),
+                  t("recipes.servings", { count: catalog.servings }),
+                  catalog.vegetarian && t("recipes.vegetarian"),
+                ]
+                  .filter(Boolean)
+                  .map((label) => (
+                    <li key={String(label)} className="rounded-full bg-surface px-4 py-2 text-sm font-semibold">
+                      {label}
+                    </li>
+                  ))}
+              </ul>
+            </>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-6">
+          {catalog && (
+            <div className="flex flex-col gap-6 xl:grid xl:grid-cols-2 xl:items-start">
+              <Card aria-labelledby="ingredients-title">
+                <div className="flex flex-col">
+                  <h2 id="ingredients-title" className="text-xl font-bold">
+                    {t("recipes.ingredients")}
+                  </h2>
+                  <p className="text-sm text-text-muted">{t("recipes.ingredientsFor", { count: catalog.servings })}</p>
+                </div>
+                <ul className="flex flex-col divide-y divide-border">
+                  {catalog.ingredients.map(([code, grams, label], index) => (
+                    <li key={`${code}-${index}`} className="flex justify-between gap-3 py-2">
+                      <span className="first-letter:uppercase">{label}</span>
+                      <span className="shrink-0 text-text-muted">{number.format(grams)} g</span>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+              <Card aria-labelledby="steps-title">
+                <h2 id="steps-title" className="text-xl font-bold">
+                  {t("recipes.steps")}
+                </h2>
+                <StepList steps={catalog.steps} />
+              </Card>
+            </div>
+          )}
+
+          {ownRecipe && ingredients.length > 0 && (
+            <div className="flex flex-col gap-6 xl:grid xl:grid-cols-2 xl:items-start">
+              <Card aria-labelledby="ingredients-title">
+                <div className="flex flex-col">
+                  <h2 id="ingredients-title" className="text-xl font-bold">
+                    {t("recipes.ingredients")}
+                  </h2>
+                  {food.servings && (
+                    <p className="text-sm text-text-muted">{t("recipes.ingredientsFor", { count: food.servings })}</p>
+                  )}
+                </div>
+                <ul className="flex flex-col divide-y divide-border">
+                  {ingredients.map((item, index) => (
+                    <li key={`${item.id}-${index}`} className="flex justify-between gap-3 py-2">
+                      <span className="first-letter:uppercase">{item.name}</span>
+                      <span className="shrink-0 text-text-muted">{number.format(item.grams)} g</span>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+              <Card aria-labelledby="steps-title">
+                <h2 id="steps-title" className="text-xl font-bold">
+                  {t("recipes.steps")}
+                </h2>
+                {steps.length > 0 ? (
+                  <StepList steps={steps} />
+                ) : (
+                  <>
+                    <p className="text-text-muted">{t("recipes.stepsEmpty")}</p>
+                    {ai?.available && <RecipeStepsButton recipeId={food.id} coachName={COACH_NAME} />}
+                  </>
+                )}
+              </Card>
+            </div>
+          )}
+
+          {(food.nutriscore || food.novaGroup) && (
+            <QualityBadges
+              nutriscore={food.nutriscore}
+              novaGroup={food.novaGroup}
+              novaMarkers={food.novaMarkers}
+              fiberG={food.fiberG}
+              sugarsG={food.sugarsG}
+              saltG={food.saltG}
+            />
+          )}
+
+          <Card aria-labelledby="nutrients">
+            <h2 id="nutrients" className="text-xl font-semibold">
+              {t("product.nutrients")}
+            </h2>
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-border text-sm text-text-muted">
+                  <th scope="col" className="py-2 font-semibold">
+                    <span className="sr-only">{t("product.nutrients")}</span>
+                  </th>
+                  <th scope="col" className="py-2 pl-3 text-right font-semibold">
+                    {t("product.per100")}
+                  </th>
+                  {portion && (
+                    <th scope="col" className="py-2 pl-3 text-right font-semibold">
+                      {t("product.perPortion", { grams: portion })}
+                    </th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.label} className="border-b border-border last:border-0">
+                    <th scope="row" className={`py-2 font-normal ${row.indent ? "pl-4 text-text-muted" : ""}`}>
+                      {row.label}
+                    </th>
+                    <td className="py-2 pl-3 text-right">{cell(row.value, 1, row.unit)}</td>
+                    {portion && <td className="py-2 pl-3 text-right">{cell(row.value, portion / 100, row.unit)}</td>}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </Card>
-        </>
-      )}
-
-      {(food.nutriscore || food.novaGroup) && (
-        <QualityBadges
-          nutriscore={food.nutriscore}
-          novaGroup={food.novaGroup}
-          novaMarkers={food.novaMarkers}
-          fiberG={food.fiberG}
-          sugarsG={food.sugarsG}
-          saltG={food.saltG}
-        />
-      )}
-
-      <Card aria-labelledby="nutrients">
-        <h2 id="nutrients" className="text-xl font-semibold">
-          {t("product.nutrients")}
-        </h2>
-        <table className="w-full text-left">
-          <thead>
-            <tr className="border-b border-border text-sm text-text-muted">
-              <th scope="col" className="py-2 font-semibold">
-                <span className="sr-only">{t("product.nutrients")}</span>
-              </th>
-              <th scope="col" className="py-2 pl-3 text-right font-semibold">
-                {t("product.per100")}
-              </th>
-              {portion && (
-                <th scope="col" className="py-2 pl-3 text-right font-semibold">
-                  {t("product.perPortion", { grams: portion })}
-                </th>
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.label} className="border-b border-border last:border-0">
-                <th scope="row" className={`py-2 font-normal ${row.indent ? "pl-4 text-text-muted" : ""}`}>
-                  {row.label}
-                </th>
-                <td className="py-2 pl-3 text-right">{cell(row.value, 1, row.unit)}</td>
-                {portion && <td className="py-2 pl-3 text-right">{cell(row.value, portion / 100, row.unit)}</td>}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
+        </div>
+      </div>
 
       <p className="text-sm text-text-muted">
         {food.source === "off" ? (
