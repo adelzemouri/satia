@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { db } from "@/db/client";
-import { foods, user } from "@/db/schema";
+import { foods, mealEntries, user } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
 import { pickForLabel } from "@/domain/search";
@@ -29,6 +29,7 @@ import {
   daySummary,
   deleteEntry,
   entriesOn,
+  renameDish,
   setWater,
   setWeight,
   streakFor,
@@ -258,6 +259,30 @@ describe("journal", () => {
     const entryId = await addEntry(userId, { date: today, slot: "lunch", foodId: id, quantity: 100, unit: "g" });
     await deleteEntry("00000000-0000-4000-8000-000000000000", entryId);
     expect(await entriesOn(userId, today)).toHaveLength(1);
+    await renameDish("00000000-0000-4000-8000-000000000000", { ids: [entryId], dish: "Autre plat" });
+    expect((await entriesOn(userId, today))[0]!.dish).toBeNull();
+  });
+
+  it("renomme un plat sur toutes ses lignes", async () => {
+    const userId = await setupUser();
+    const id = await granola(userId);
+    const today = todayIso();
+    const entry = { date: today, slot: "lunch" as const, foodId: id, unit: "g" as const };
+    const ids = [
+      await addEntry(userId, { ...entry, quantity: 100 }),
+      await addEntry(userId, { ...entry, quantity: 50 }),
+    ];
+    const other = await addEntry(userId, { ...entry, quantity: 30 });
+    await db().update(mealEntries).set({ dish: "Riz sauté au porc" }).where(eq(mealEntries.userId, userId));
+
+    await renameDish(userId, { ids, dish: "  Riz sauté au veau " });
+    const dishes = new Map((await entriesOn(userId, today)).map((row) => [row.id, row.dish]));
+    expect([dishes.get(ids[0]!), dishes.get(ids[1]!), dishes.get(other)]).toEqual([
+      "Riz sauté au veau",
+      "Riz sauté au veau",
+      "Riz sauté au porc",
+    ]);
+    await expect(renameDish(userId, { ids, dish: " " })).rejects.toThrow();
   });
 
   it("copie un repas ou la journée d'hier", async () => {

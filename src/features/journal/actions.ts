@@ -24,6 +24,7 @@ import {
   deleteEntry,
   deleteWeight,
   type EntryInput,
+  renameDish,
   setWater,
   setWaterGoal,
   setWeight,
@@ -58,6 +59,10 @@ export async function updateEntryAction(input: Parameters<typeof updateEntry>[1]
 
 export async function deleteEntryAction(id: string): Promise<IdState> {
   return run(async (userId) => (await deleteEntry(userId, id), { ok: true }));
+}
+
+export async function renameDishAction(input: Parameters<typeof renameDish>[1]): Promise<IdState> {
+  return run(async (userId) => (await renameDish(userId, input), { ok: true }));
 }
 
 export async function copyEntriesAction(input: Parameters<typeof copyEntries>[1]): Promise<IdState> {
