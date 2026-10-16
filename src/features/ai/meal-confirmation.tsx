@@ -6,6 +6,7 @@ import { useEffect, useState, useTransition } from "react";
 import { shortFoodName } from "@/domain/food-name";
 import { useErrorText } from "@/features/auth/use-error-text";
 import { FoodSearchBox } from "@/features/foods/food-search-box";
+import { DishName } from "@/features/journal/dish-name";
 import { defaultUnit, type FoodItem } from "@/features/foods/food-types";
 import { ProductThumb } from "@/features/foods/product-thumb";
 import { dishAfterSwap, groupByDish } from "@/domain/dishes";
@@ -319,10 +320,20 @@ export function MealConfirmation({
         const dishKcal = sumNutrients(group.items.flatMap((line) => computedByKey.get(line.key)?.nutrients ?? [])).kcal;
         return (
           <section key={group.dish} aria-label={group.dish} className="flex flex-col gap-2">
-            <h3 className="flex items-baseline justify-between gap-3 font-semibold">
-              <span>{group.dish}</span>
-              <span className="text-sm text-text-muted">{t("common.kcal", { value: Math.round(dishKcal) })}</span>
-            </h3>
+            <div className="font-semibold">
+              <DishName
+                name={group.dish}
+                heading
+                trailing={
+                  <span className="text-sm text-text-muted">{t("common.kcal", { value: Math.round(dishKcal) })}</span>
+                }
+                onSave={(dish) => {
+                  const keys = new Set(group.items.map((line) => line.key));
+                  setLines((list) => list.map((line) => (keys.has(line.key) ? { ...line, dish } : line)));
+                  return null;
+                }}
+              />
+            </div>
             {lineList}
           </section>
         );

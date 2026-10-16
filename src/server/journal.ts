@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, desc, eq, gte, like, lte, or, sum } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, like, lte, or, sum } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db/client";
@@ -8,6 +8,7 @@ import { foods, MEAL_SLOTS, mealEntries, type MealSlot, profiles, waterLogs, wei
 import { todayIso } from "@/domain/dates";
 import { stepsKcal } from "@/domain/activity";
 import { addDays, computePlan } from "@/domain/energy";
+import { DISH_MAX_LENGTH } from "@/domain/dishes";
 import { energyZone, type EnergyZone, type Nutrients, nutrientsFor, sumNutrients } from "@/domain/nutrition";
 import { computeStreak, type Streak } from "@/domain/streak";
 import { trainingDayGoal } from "@/domain/training/program";
@@ -106,6 +107,20 @@ export async function updateEntry(userId: string, input: z.input<typeof updateEn
     .update(mealEntries)
     .set({ ...values, slot: data.slot })
     .where(and(eq(mealEntries.id, entry.id), eq(mealEntries.userId, userId)));
+}
+
+export const renameDishSchema = z.object({
+  ids: z.array(z.uuid()).min(1).max(50),
+  dish: z.string().trim().min(1).max(DISH_MAX_LENGTH),
+});
+
+/** Renomme un plat : le nouveau nom s'applique à toutes ses lignes (celles de l'utilisateur seulement). */
+export async function renameDish(userId: string, input: z.input<typeof renameDishSchema>): Promise<void> {
+  const data = renameDishSchema.parse(input);
+  await db()
+    .update(mealEntries)
+    .set({ dish: data.dish })
+    .where(and(inArray(mealEntries.id, data.ids), eq(mealEntries.userId, userId)));
 }
 
 export async function deleteEntry(userId: string, id: string): Promise<void> {

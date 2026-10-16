@@ -631,6 +631,10 @@
     "emptyShort": "Rien pour l'instant",
     "showDetail": "Voir le détail"
   },
+  "dish": {
+    "label": "Nom du plat",
+    "rename": "Renommer le plat {name}"
+  },
   "add": {
     "title": "Ajouter",
     "searchLabel": "Rechercher un aliment",

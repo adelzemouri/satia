@@ -690,7 +690,13 @@ test("saisie en texte libre, puis par le dictionnaire personnel sans appel à l'
   await page.getByRole("button", { name: /^Retirer Veau/ }).click();
   await expect(page.getByRole("button", { name: /^Retirer / })).toHaveCount(1);
   await page.getByRole("button", { name: "Ajouter au journal" }).click();
-  await expect(page.getByRole("region", { name: "Dîner" }).getByText(/^Riz basmati, cuit/)).toBeVisible();
+  const dinner = page.getByRole("region", { name: "Dîner" });
+  await expect(dinner.getByText(/^Riz basmati, cuit/)).toBeVisible();
+  // Le nom du plat se change à la main.
+  await dinner.getByRole("button", { name: "Renommer le plat Riz au veau" }).click();
+  await dinner.getByLabel("Nom du plat").fill("Riz du soir");
+  await dinner.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(dinner.getByText("Riz du soir", { exact: true })).toBeVisible();
 
   await page.goto("/dictionary");
   await page.getByRole("textbox", { name: "Expression" }).fill("ma tartine");

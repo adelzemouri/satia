@@ -631,6 +631,10 @@
     "emptyShort": "Nothing yet",
     "showDetail": "See details"
   },
+  "dish": {
+    "label": "Dish name",
+    "rename": "Rename the dish {name}"
+  },
   "add": {
     "title": "Add",
     "searchLabel": "Search for a food",

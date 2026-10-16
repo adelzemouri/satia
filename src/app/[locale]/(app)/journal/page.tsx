@@ -10,6 +10,7 @@ import { COACH_NAME } from "@/config/app";
 import { AskCoach } from "@/features/coach/ask-coach";
 import { CopyButton } from "@/features/journal/copy-button";
 import { CalorieSummary, MacroBars, MacroLine, MacroSplit } from "@/features/journal/day-overview";
+import { JournalDishName } from "@/features/journal/dish-name";
 import { EntryRow } from "@/features/journal/entry-row";
 import { MealActions } from "@/features/journal/meal-actions";
 import { groupByDish } from "@/domain/dishes";
@@ -255,7 +256,7 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
               {groupByDish(entries).flatMap((group) => [
                 group.dish && (
                   <li key={`dish-${group.items[0]!.id}`} className="pt-3 pb-1 text-sm font-semibold text-text-muted">
-                    {group.dish}
+                    <JournalDishName name={group.dish} ids={group.items.map((entry) => entry.id)} />
                   </li>
                 ),
                 ...group.items.map((entry) => (
