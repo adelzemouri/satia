@@ -8,7 +8,7 @@ import { useErrorText } from "@/features/auth/use-error-text";
 import { FoodSearchBox } from "@/features/foods/food-search-box";
 import { defaultUnit, type FoodItem } from "@/features/foods/food-types";
 import { ProductThumb } from "@/features/foods/product-thumb";
-import { groupByDish } from "@/domain/dishes";
+import { dishAfterSwap, groupByDish } from "@/domain/dishes";
 import { checkLine, type LineCheck } from "@/domain/meal-checks";
 import { MEAL_SLOTS, type MealSlot } from "@/domain/meals";
 import { type Nutrients, nutrientsFor, sumNutrients } from "@/domain/nutrition";
@@ -95,12 +95,26 @@ export function MealConfirmation({
     // On garde le poids : l'unité passe en grammes si l'ancienne n'existe pas pour ce nouvel aliment.
     const grams = compute(line)?.grams;
     const keepUnit = availableUnits(food).includes(line.unit);
-    update(line.key, {
-      food,
-      estimate: null,
-      searching: false,
-      ...(!keepUnit && { unit: "g", quantityText: String(Math.round(grams ?? 100)) }),
-    });
+    // « Riz sauté au porc » devient « Riz sauté au veau » quand le porc est remplacé par du veau.
+    const oldNames = [line.label, line.aiLabel, line.food?.nameFr, line.estimate?.name].filter((name): name is string =>
+      Boolean(name),
+    );
+    const dish = line.dish ? dishAfterSwap(line.dish, oldNames, food.nameFr) : null;
+    const sameDish = (other: Line) => line.dish && other.dish?.trim().toLowerCase() === line.dish.trim().toLowerCase();
+    setLines((list) =>
+      list.map((other) => {
+        if (other.key === line.key)
+          return {
+            ...other,
+            food,
+            estimate: null,
+            searching: false,
+            ...(dish && { dish }),
+            ...(!keepUnit && { unit: "g" as Unit, quantityText: String(Math.round(grams ?? 100)) }),
+          };
+        return dish && sameDish(other) ? { ...other, dish } : other;
+      }),
+    );
   };
 
   const addFood = (food: FoodItem) => {

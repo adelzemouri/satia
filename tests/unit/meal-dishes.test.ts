@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { mealHistoryLines, type HistoryEntry } from "@/domain/coach";
 import { realisticGrams } from "@/domain/condiments";
-import { groupByDish } from "@/domain/dishes";
+import { dishAfterSwap, groupByDish } from "@/domain/dishes";
 import { addDays } from "@/domain/energy";
 
 describe("plats et quantités de la saisie IA", () => {
@@ -70,5 +70,29 @@ describe("historique des repas pour le coach", () => {
 
   it("dit simplement quand rien n'est saisi", () => {
     expect(mealHistoryLines([], today, (days) => addDays(today, -days))).toEqual(["Rien de saisi aujourd'hui."]);
+  });
+});
+
+describe("nom du plat après une correction", () => {
+  it("remplace l'aliment nommé dans le plat", () => {
+    expect(dishAfterSwap("Riz sauté au porc", ["porc sauté", "Porc, rôti, cuit"], "Veau, rôti, cuit")).toBe(
+      "Riz sauté au veau",
+    );
+    expect(dishAfterSwap("Pâtes au saumon", ["saumon"], "Thon, au naturel, appertisé")).toBe("Pâtes au thon");
+    expect(dishAfterSwap("Tajine d'agneau", ["agneau"], "Abricot sec")).toBe("Tajine d'abricot sec");
+  });
+
+  it("garde le nom quand l'aliment remplacé n'y figure pas", () => {
+    expect(dishAfterSwap("Riz sauté au porc", ["oeuf au plat"], "Oeuf, dur")).toBe("Riz sauté au porc");
+    expect(dishAfterSwap("Riz sauté au porc", ["porc"], "Porc, échine, rôtie")).toBe("Riz sauté au porc");
+    expect(dishAfterSwap("Tajine d'agneau", ["agneau"], "Veau, rôti, cuit")).toBe("Tajine d'agneau");
+    expect(dishAfterSwap("Salade", ["laitue"], "Mâche, crue")).toBe("Salade");
+    // Une variante du même aliment ne change pas le plat.
+    expect(dishAfterSwap("Riz sauté au porc", ["riz blanc cuit"], "Riz basmati, cuit")).toBe("Riz sauté au porc");
+  });
+
+  it("ne dépasse pas la longueur d'un nom de plat", () => {
+    const long = "Pommes de terre sautées et lardons à la crème du terroir";
+    expect(dishAfterSwap(long, ["lardons"], "Jambon cru de pays affiné longuement, tranche")).toBe(long);
   });
 });
