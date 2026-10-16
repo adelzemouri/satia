@@ -19,7 +19,6 @@ import { ZoomablePhoto } from "@/ui/photo-viewer";
 import { RecipePhotoForm } from "@/features/foods/recipe-photo-form";
 import { RecipeStepsButton } from "@/features/planning/recipe-steps-button";
 import { RecipeVisual } from "@/features/recipes/recipe-visual";
-import { RECIPE_PHOTOS } from "@/features/recipes/recipe-photos";
 import { aiAvailability } from "@/server/ai-availability";
 import { importOpenFoodFactsProduct } from "@/server/open-food-facts";
 import { type Food, getFoodDetails, isGeneratedRecipePhoto, recipeIngredients } from "@/server/foods";
@@ -96,9 +95,6 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
               morph
             />
           </div>
-          {(storedPhoto || RECIPE_PHOTOS.has(catalog.slug)) && (
-            <figcaption className="px-4 text-xs text-text-muted sm:px-0">{t("recipes.photoCaption")}</figcaption>
-          )}
         </figure>
       )}
       {!catalog && storedPhoto && (
@@ -111,9 +107,9 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
             {/* eslint-disable-next-line @next/next/no-img-element -- photo privée servie par URL signée */}
             <img src={storedPhoto.url} alt="" className="block aspect-[4/3] w-full object-cover" />
           </ZoomablePhoto>
-          <figcaption className="px-4 text-xs text-text-muted sm:px-0">
-            {t(isGeneratedRecipePhoto(storedPhoto.key) ? "recipes.photoCaption" : "foods.photo.caption")}
-          </figcaption>
+          {!isGeneratedRecipePhoto(storedPhoto.key) && (
+            <figcaption className="px-4 text-xs text-text-muted sm:px-0">{t("foods.photo.caption")}</figcaption>
+          )}
         </figure>
       )}
       <div className="flex items-start gap-4">
