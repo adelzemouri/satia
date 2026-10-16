@@ -1458,7 +1458,6 @@
     "source": "Recette Pommelia",
     "homeTitle": "{slot, select, breakfast {Une idée pour le petit-déjeuner} lunch {Une idée pour le déjeuner} dinner {Une idée pour le dîner} other {Une idée de collation}}",
     "homeMore": "Voir toutes les recettes",
-    "photoCaption": "Photo d'illustration générée par IA.",
     "stepsEmpty": "Pas encore de préparation pour cette recette. Tu peux l'ajouter en la modifiant.",
     "stepsAsk": "Demander la préparation à {name}",
     "stepsWriting": "{name} rédige la préparation…",
