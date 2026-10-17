@@ -1041,6 +1041,7 @@
       "adjusted": "Measured expenditure {measured, number} kcal: goal adjusted from {before, number} to {after, number} kcal.",
       "unchanged": "Measured expenditure {measured, number} kcal: your goal of {after, number} kcal still fits.",
       "locked": "Measured expenditure {measured, number} kcal: goal locked at {after, number} kcal.",
+      "insufficientDetail": "Not enough data yet, {list} missing: goal unchanged.",
       "insufficient": "Not enough data yet: goal unchanged.",
       "inconsistent": "Incomplete data: goal unchanged."
     },

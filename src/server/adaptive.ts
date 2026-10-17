@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { db } from "@/db/client";
 import { goals, largerDays, mealEntries, metabolismChecks, profiles, weightEntries } from "@/db/schema";
-import { adaptGoal, type Measurement, measureExpenditure, WINDOW_DAYS } from "@/domain/adaptive";
+import { adaptGoal, type Measurement, type MissingData, measureExpenditure, WINDOW_DAYS } from "@/domain/adaptive";
 import { todayIso } from "@/domain/dates";
 import { addDays, computePlan, macrosFor } from "@/domain/energy";
 import { BUDGET_MODES, type BudgetMode } from "@/domain/profile";
@@ -174,6 +174,7 @@ export type MetabolismOverview = {
     measuredTdee: number | null;
     kcalBefore: number;
     kcalAfter: number;
+    missing: MissingData | null;
   }[];
 };
 
@@ -192,6 +193,7 @@ export async function metabolismOverview(
       measuredTdee: metabolismChecks.measuredTdee,
       kcalBefore: metabolismChecks.kcalBefore,
       kcalAfter: metabolismChecks.kcalAfter,
+      missing: metabolismChecks.missing,
     })
     .from(metabolismChecks)
     .where(eq(metabolismChecks.userId, userId))

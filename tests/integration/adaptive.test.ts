@@ -102,6 +102,8 @@ describe("objectif adaptatif", () => {
     const overview = await metabolismOverview(userId, today);
     expect(overview?.measurement.status).toBe("insufficient");
     expect(overview?.goalSource).toBe("formula");
+    // Le bilan garde ce qui manquait, pour l'afficher dans la liste des bilans.
+    expect(overview?.history[0]?.missing).toMatchObject({ days: 14, weighIns: 3 });
   });
 
   it("ajuste l'objectif d'au plus 150 kcal, une seule fois par semaine", async () => {

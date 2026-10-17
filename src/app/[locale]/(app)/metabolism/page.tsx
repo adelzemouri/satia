@@ -1,7 +1,14 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { APP_NAME } from "@/config/app";
-import { daysBetween, type Measurement, MIN_DAYS, weightDirection, WINDOW_DAYS } from "@/domain/adaptive";
+import {
+  daysBetween,
+  type Measurement,
+  MIN_DAYS,
+  type MissingData,
+  weightDirection,
+  WINDOW_DAYS,
+} from "@/domain/adaptive";
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
 import { isoWeekStart } from "@/domain/streak";
@@ -24,6 +31,15 @@ export default async function MetabolismPage({ params }: PageProps<"/[locale]/me
   if (!overview) return redirect({ href: "/onboarding", locale });
   const t = await getTranslations("metabolism");
   const { measurement } = overview;
+  /** Ce qui manquait pour un bilan, en une phrase (« 4 jours de suivi et 1 pesée sur la période »). */
+  const missingList = (missing: MissingData) =>
+    new Intl.ListFormat(locale, { type: "conjunction" }).format(
+      [
+        missing.days > 0 && t("missingDays", { count: missing.days }),
+        missing.weighIns > 0 && t("missingWeighIns", { count: missing.weighIns }),
+        missing.loggedDays > 0 && t("missingLogged", { count: missing.loggedDays }),
+      ].filter((item) => typeof item === "string"),
+    );
 
   return (
     <Columns>
@@ -86,11 +102,13 @@ export default async function MetabolismPage({ params }: PageProps<"/[locale]/me
               <li key={check.weekStart} className="flex flex-col gap-0.5 py-2">
                 <span className="font-semibold">{t("weekOf", { date: formatDay(check.weekStart, locale) })}</span>
                 <span className="text-sm text-text-muted">
-                  {t(`status.${check.status}`, {
-                    before: check.kcalBefore,
-                    after: check.kcalAfter,
-                    measured: check.measuredTdee ?? 0,
-                  })}
+                  {check.status === "insufficient" && check.missing
+                    ? t("status.insufficientDetail", { list: missingList(check.missing) })
+                    : t(`status.${check.status}`, {
+                        before: check.kcalBefore,
+                        after: check.kcalAfter,
+                        measured: check.measuredTdee ?? 0,
+                      })}
                 </span>
               </li>
             ))}
