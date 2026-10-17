@@ -606,7 +606,6 @@
     "add": "Add",
     "edit": "Edit {label}",
     "delete": "Delete",
-    "swipeEdit": "Edit",
     "save": "Save",
     "quantity": "Quantity",
     "unit": "Unit",
