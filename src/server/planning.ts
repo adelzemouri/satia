@@ -13,9 +13,9 @@ import { weekDates } from "@/domain/weekly-budget";
 import { proposeMenu, scanFridge, writeRecipeSteps } from "@/llm";
 
 import { DomainError } from "./errors";
-import { createRecipe, familyRecipes, getFood, getRecipeForEdit, per100, searchFoods, setRecipeSteps } from "./foods";
+import { createRecipe, familyRecipes, getFood, getRecipeForEdit, per100, setRecipeSteps } from "./foods";
 import { daySummary } from "./journal";
-import { photoInputSchema } from "./meal-ai";
+import { matchFoodNames, photoInputSchema } from "./meal-ai";
 import { isImage } from "./photos";
 import { getGoalOn, getProfile } from "./profile";
 
@@ -125,15 +125,30 @@ export const generateMenuSchema = z.object({
   servings: z.number().min(1).max(20),
 });
 
-/** Associe chaque ingrédient proposé à l'aliment le plus proche de la base locale. */
-async function matchIngredients(userId: string, ingredients: readonly { name: string; grams: number }[]) {
-  const matched = await Promise.all(
-    ingredients.map(async (ingredient) => ({ ingredient, food: (await searchFoods(userId, ingredient.name))[0] })),
+type Ingredient = { name: string; grams: number };
+
+/**
+ * Associe les ingrédients proposés par l'IA aux aliments de la base, pour plusieurs plats à la fois
+ * (un seul appel pour choisir parmi les résultats de recherche).
+ */
+async function matchIngredients(userId: string, dishes: readonly (readonly Ingredient[])[]) {
+  const all = dishes.flat();
+  const foundAll = await matchFoodNames(
+    userId,
+    all.map((ingredient) => ingredient.name),
   );
-  return {
-    items: matched.flatMap(({ ingredient, food }) => (food ? [{ food, grams: Math.round(ingredient.grams) }] : [])),
-    missing: matched.flatMap(({ ingredient, food }) => (food ? [] : [ingredient.name])),
-  };
+  let offset = 0;
+  return dishes.map((ingredients) => {
+    const found = foundAll.slice(offset, offset + ingredients.length);
+    offset += ingredients.length;
+    return {
+      items: ingredients.flatMap((ingredient, i) => {
+        const food = found[i];
+        return food ? [{ food, grams: Math.round(ingredient.grams) }] : [];
+      }),
+      missing: ingredients.flatMap((ingredient, i) => (found[i] ? [] : [ingredient.name])),
+    };
+  });
 }
 
 /**
@@ -177,9 +192,14 @@ export async function generateMenu(
     `Créneaux à remplir (jour 0 = lundi) : ${wanted.map((meal) => `${meal.day}:${meal.slot}`).join(", ")}.`,
   ].join("\n");
   const plan = await proposeMenu(userId, prompt);
+  // Ingrédients des nouveaux plats, associés aux aliments de la base en une seule fois.
+  const matched = await matchIngredients(
+    userId,
+    plan.meals.map((meal) => (meal.name && !(meal.recipe !== null && pool[meal.recipe - 1]) ? meal.ingredients : [])),
+  );
 
   let added = 0;
-  for (const meal of plan.meals) {
+  for (const [index, meal] of plan.meals.entries()) {
     const target = wanted.find((slot) => slot.day === meal.day && slot.slot === meal.slot);
     if (!target) continue;
     let foodId: string | null = null;
@@ -189,7 +209,7 @@ export async function generateMenu(
       foodId = recipe.id;
       label = recipe.nameFr;
     } else if (meal.ingredients.length > 0 && meal.name) {
-      const { items } = await matchIngredients(userId, meal.ingredients);
+      const { items } = matched[index]!;
       if (items.length > 0) {
         foodId = await createRecipe(userId, {
           name: meal.name,
@@ -385,9 +405,13 @@ export async function fridgeIdeas(userId: string, input: z.input<typeof fridgeIn
       .filter(Boolean)
       .join("\n"),
   );
+  const matched = await matchIngredients(
+    userId,
+    scan.ideas.map((idea) => idea.ingredients),
+  );
   const ideas = await Promise.all(
-    scan.ideas.map(async (idea) => {
-      const { items, missing } = await matchIngredients(userId, idea.ingredients);
+    scan.ideas.map(async (idea, index) => {
+      const { items, missing } = matched[index]!;
       const kcal = Math.round(items.reduce((sum, item) => sum + nutrientsFor(per100(item.food), item.grams).kcal, 0));
       return {
         name: idea.name,

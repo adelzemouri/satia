@@ -92,6 +92,36 @@ export async function foodCandidates(userId: string, label: string) {
 }
 
 /**
+ * Aliment de la base retenu pour chaque nom (ingrédients d'un menu ou d'une idée de recette) : la
+ * recherche propose, l'IA choisit parmi les premiers résultats en un seul appel pour toute la liste.
+ * Une recette du foyer n'est prise que si l'IA l'a nommée : « beurre » ne devient pas un plat au beurre.
+ * Sans IA, le choix de la recherche reste ; null quand rien ne convient.
+ */
+export async function matchFoodNames(userId: string, names: readonly string[]): Promise<(FoodSummary | null)[]> {
+  const lines = await Promise.all(names.map((name) => foodCandidates(userId, name)));
+  const toChoose = lines.flatMap((line, index) => (line.candidates.length > 0 ? [index] : []));
+  let choices: (number | null)[] | null = null;
+  if (toChoose.length > 0) {
+    try {
+      choices = await chooseFoods(
+        userId,
+        toChoose.map((index) => ({ label: names[index]!, candidates: lines[index]!.candidates.map((f) => f.nameFr) })),
+      );
+    } catch (error) {
+      if (!(error instanceof AiUnavailableError)) throw error;
+    }
+  }
+  const picked: (FoodSummary | null)[] = lines.map((line) => line.candidates[0] ?? null);
+  if (choices) {
+    toChoose.forEach((index, i) => {
+      const choice = choices[i];
+      picked[index] = choice === null || choice === undefined ? null : (lines[index]!.candidates[choice] ?? null);
+    });
+  }
+  return picked;
+}
+
+/**
  * Transforme les aliments reconnus par l'IA en lignes à confirmer : habitudes apprises
  * d'abord, puis recherche dans la base locale (Ciqual, OFF en cache, aliments perso).
  * Les valeurs nutritionnelles ne sont demandées à l'IA que pour les aliments introuvables.
