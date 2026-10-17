@@ -1041,6 +1041,7 @@
       "adjusted": "Dépense mesurée {measured, number} kcal : objectif ajusté de {before, number} à {after, number} kcal.",
       "unchanged": "Dépense mesurée {measured, number} kcal : ton objectif de {after, number} kcal reste adapté.",
       "locked": "Dépense mesurée {measured, number} kcal : objectif figé à {after, number} kcal.",
+      "insufficientDetail": "Pas encore assez de données, il manquait {list} : objectif inchangé.",
       "insufficient": "Pas encore assez de données : objectif inchangé.",
       "inconsistent": "Données incomplètes : objectif inchangé."
     },
