@@ -5,7 +5,7 @@ import { db } from "@/db/client";
 import { coachMessages, coachReviews, foods, llmCalls, mealEntries, user } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
-import { catalogRecipe } from "@/domain/recipes/catalog";
+import { CATEGORY_SLOTS, catalogRecipe } from "@/domain/recipes/catalog";
 import { isoWeekStart } from "@/domain/streak";
 import type { OnboardingInput } from "@/features/onboarding/schema";
 import { setupFirstAdmin } from "@/server/accounts";
@@ -212,7 +212,8 @@ describe("coach", () => {
     // Jamais noté au petit-déjeuner : à ce repas, une recette du catalogue prend le relais.
     const breakfast = await suggestedDish(userId, { ...dinner, slot: "breakfast" }, today);
     expect(breakfast?.id).not.toBe(id);
-    expect(catalogRecipe(breakfast!.catalogSlug!)?.category).toBe("breakfast");
+    // Les en-cas du catalogue conviennent aussi au petit-déjeuner (CATEGORY_SLOTS).
+    expect(CATEGORY_SLOTS[catalogRecipe(breakfast!.catalogSlug!)!.category]).toContain("breakfast");
     expect(await db().select().from(llmCalls)).toEqual([]);
   });
 
