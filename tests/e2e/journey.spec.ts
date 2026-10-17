@@ -386,6 +386,21 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await swiped.getByRole("button", { name: "Annuler" }).click();
   await expect(page.getByRole("region", { name: "Petit-déjeuner" }).getByText("Granola maison")).toBeVisible();
 
+  // Vers la droite, rien : toucher la ligne suffit pour la modifier.
+  await row.evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    const y = box.top + box.height / 2;
+    const fire = (type: string, x: number) =>
+      element.dispatchEvent(
+        new PointerEvent(type, { bubbles: true, pointerId: 8, pointerType: "touch", clientX: x, clientY: y }),
+      );
+    fire("pointerdown", box.left + 40);
+    for (const step of [10, 40, 80, 120, 160]) fire("pointermove", box.left + 40 + step);
+    fire("pointerup", box.left + 200);
+  });
+  await expect(row).toHaveAttribute("aria-expanded", "false");
+  await expect(page.getByRole("region", { name: "Petit-déjeuner" }).getByText("Granola maison")).toBeVisible();
+
   // « Mes repas » : le petit-déjeuner s'enregistre sous un nom, puis se resert d'un geste.
   // Les actions moins fréquentes d'un repas sont dans son menu « ⋯ ».
   await page.getByRole("button", { name: "Plus d'actions pour le petit-déjeuner" }).click();

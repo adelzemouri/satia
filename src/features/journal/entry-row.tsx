@@ -142,13 +142,7 @@ export function EntryRow({ entry, units, readOnly = false }: { entry: EntryView;
       style={{ transitionDuration: `${COLLAPSE_MS}ms` }}
     >
       <div className={`flex min-h-0 min-w-0 flex-col gap-3 py-2 ${collapsing ? "overflow-hidden" : ""}`}>
-        <SwipeRow
-          key={restored}
-          onSwipeLeft={remove}
-          onSwipeRight={() => setOpen(true)}
-          leftLabel={t("journal.delete")}
-          rightLabel={t("journal.swipeEdit")}
-        >
+        <SwipeRow key={restored} onSwipeLeft={remove} leftLabel={t("journal.delete")}>
           <button
             type="button"
             onClick={() => setOpen(!open)}

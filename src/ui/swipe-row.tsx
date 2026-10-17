@@ -19,25 +19,20 @@ type Gesture = {
 };
 
 /**
- * Ligne qui se glisse au doigt : vers la gauche pour supprimer, vers la droite pour modifier.
- * Il faut un geste nettement horizontal, sur 40 % de la ligne, ou bien un petit geste vif ; en
+ * Ligne qui se glisse au doigt vers la gauche pour supprimer (toucher la ligne suffit pour la
+ * modifier, d'où aucun geste vers la droite : la ligne ne bouge pas dans ce sens). Il faut un geste nettement horizontal, sur 40 % de la ligne, ou bien un petit geste vif ; en
  * deçà, la ligne revient en place. Pour supprimer, la ligne finit de sortir par la gauche. Raccourci tactile seulement : les mêmes actions restent
  * accessibles par les boutons de la ligne (clavier, lecteur d'écran), d'où les indications décoratives.
  */
 export function SwipeRow({
   children,
   onSwipeLeft,
-  onSwipeRight,
   leftLabel,
-  rightLabel,
 }: {
   children: ReactNode;
   onSwipeLeft: () => void;
-  onSwipeRight: () => void;
   /** Texte révélé en glissant vers la gauche (supprimer). */
   leftLabel: string;
-  /** Texte révélé en glissant vers la droite (modifier). */
-  rightLabel: string;
 }) {
   const [dx, setDx] = useState(0);
   const [armed, setArmed] = useState(false);
@@ -53,26 +48,19 @@ export function SwipeRow({
     setDx(0);
   };
 
-  const left = leaving || dx < 0;
   const ready = leaving || armed;
   return (
     <div data-swipe-lock className="relative overflow-hidden rounded-xl">
-      {(leaving || Math.abs(dx) > 16) && (
+      {(leaving || dx < -16) && (
         <div
           aria-hidden="true"
-          className={`absolute inset-0 flex items-center px-5 font-bold transition-colors duration-150 ${
-            left ? "justify-end" : "justify-start"
-          } ${
-            ready
-              ? left
-                ? "bg-accent text-on-accent"
-                : "bg-primary text-on-primary"
-              : "bg-surface-muted text-text-muted"
+          className={`absolute inset-0 flex items-center justify-end px-5 font-bold transition-colors duration-150 ${
+            ready ? "bg-accent text-on-accent" : "bg-surface-muted text-text-muted"
           }`}
         >
           <span className={`flex items-center gap-2 transition-transform duration-150 ${ready ? "scale-110" : ""}`}>
-            <Icon name={left ? "trash" : "edit"} size={20} />
-            {ready && (left ? leftLabel : rightLabel)}
+            <Icon name="trash" size={20} />
+            {ready && leftLabel}
           </span>
         </div>
       )}
@@ -85,8 +73,8 @@ export function SwipeRow({
           transitionDuration: leaving ? `${EXIT_MS}ms` : undefined,
         }}
         onPointerDown={(event) => {
-          if (leaving || event.pointerType === "mouse" || event.clientX < EDGE_GUARD) return;
           moved.current = false;
+          if (leaving || event.pointerType === "mouse" || event.clientX < EDGE_GUARD) return;
           gesture.current = {
             id: event.pointerId,
             x: event.clientX,
@@ -100,8 +88,9 @@ export function SwipeRow({
         onPointerMove={(event) => {
           const g = gesture.current;
           if (!g || g.id !== event.pointerId) return;
-          const deltaX = event.clientX - g.x;
-          g.axis ??= swipeAxis(deltaX, event.clientY - g.y);
+          // Vers la droite, la ligne reste en place : seul le glissement vers la gauche agit.
+          const deltaX = Math.min(0, event.clientX - g.x);
+          g.axis ??= swipeAxis(event.clientX - g.x, event.clientY - g.y);
           if (g.axis !== "x") return;
           if (!dragging) {
             setDragging(true);
@@ -123,9 +112,10 @@ export function SwipeRow({
           const g = gesture.current;
           if (!g || g.id !== event.pointerId) return;
           const outcome =
-            g.axis === "x" ? swipeRelease(event.clientX - g.x, performance.now() - g.time, g.threshold) : null;
+            g.axis === "x"
+              ? swipeRelease(Math.min(0, event.clientX - g.x), performance.now() - g.time, g.threshold)
+              : null;
           reset();
-          if (outcome === "right") onSwipeRight();
           if (outcome === "left") {
             // La ligne file à gauche, puis la suppression la retire (et la liste se resserre).
             setLeaving(true);
