@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { db } from "@/db/client";
-import { foods, llmCalls, user } from "@/db/schema";
+import { foods, llmCalls, recipeItems, user } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
 import { isoWeekStart } from "@/domain/streak";
@@ -158,6 +158,31 @@ describe("planification", () => {
       servings: 2,
     });
     expect(again).toBe(0);
+  });
+
+  it("les ingrédients d'un nouveau plat sont des aliments, jamais un autre plat du foyer", async () => {
+    const { userId, householdId } = await setupUser();
+    // Recette du foyer dont le nom contient deux ingrédients du plat proposé : la recherche la classe en tête.
+    const carrot = await firstFood(userId, "carotte crue");
+    await createRecipe(userId, {
+      name: "Carottes rôties à l'huile d'olive",
+      servings: 2,
+      cookedGrams: null,
+      items: [{ foodId: carrot.id, grams: 300 }],
+    });
+    await generateMenu(userId, householdId, { weekStart: nextWeek, slots: ["dinner"], servings: 2 });
+    const [planned] = await weekPlan(householdId, nextWeek);
+    expect(planned!.label).toBe("Poêlée de lentilles aux carottes");
+    const ingredients = await db()
+      .select({ name: foods.nameFr, source: foods.source })
+      .from(recipeItems)
+      .innerJoin(foods, eq(foods.id, recipeItems.foodId))
+      .where(eq(recipeItems.recipeId, planned!.foodId!));
+    expect(ingredients).toHaveLength(3);
+    expect(ingredients.every((item) => item.source === "ciqual")).toBe(true);
+    // Un seul appel pour choisir les aliments de tout le menu.
+    const calls = await db().select().from(llmCalls);
+    expect(calls.filter((call) => call.feature === "food_match")).toHaveLength(1);
   });
 
   it("remplit la liste de courses avec le menu, en gardant les articles cochés et ajoutés à la main", async () => {
