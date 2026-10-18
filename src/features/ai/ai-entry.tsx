@@ -27,9 +27,9 @@ import { useSpeech } from "./use-speech";
 
 const inputClass = "min-h-12 rounded-2xl border border-border bg-surface px-3 text-base";
 
-/** Grande tuile d'entrée (photo, voix, code-barres) ; la photo, la plus rapide, est mise en avant. */
+/** Petite tuile d'entrée (photo, voix, code-barres, texte) ; la photo, la plus rapide, est mise en avant. */
 function tileClass(main: boolean, extra = ""): string {
-  return `flex min-h-24 flex-col items-center justify-center gap-2 rounded-2xl px-2 text-center font-bold ${
+  return `flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-center text-sm font-bold ${
     main ? "bg-primary text-on-primary" : "bg-surface text-text hover:bg-surface-muted"
   } ${extra}`;
 }
@@ -99,8 +99,8 @@ export function AiEntry({
 
   const barcodeTile = (
     <Link href={barcodeHref} className={tileClass(false)}>
-      <Icon name="barcode" size={28} />
-      {t("barcode")}
+      <Icon name="barcode" size={24} />
+      {t("barcodeShort")}
     </Link>
   );
 
@@ -110,7 +110,7 @@ export function AiEntry({
         <h2 id="ai-title" className="sr-only">
           {t("title")}
         </h2>
-        <div className="grid grid-cols-3 gap-3">{barcodeTile}</div>
+        <div className="grid grid-cols-4 gap-2">{barcodeTile}</div>
         <p className="text-sm text-text-muted">{errorText(availability.reason)}</p>
       </section>
     );
@@ -198,40 +198,31 @@ export function AiEntry({
       ) : (
         !describing && (
           <>
-            {/* La photo est le geste le plus rapide : elle prend toute la largeur, voix et code-barres en dessous. */}
-            <label className="flex min-h-28 cursor-pointer items-center gap-4 rounded-2xl bg-primary px-5 text-on-primary focus-within:outline-2">
-              <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-on-primary/15">
-                <Icon name="camera" size={30} />
-              </span>
-              <span className="flex flex-col">
-                <span className="text-lg font-bold">{t("takePhoto")}</span>
-                <span className="text-sm">{t("takePhotoHint")}</span>
-              </span>
-              <input type="file" accept="image/*" capture="environment" onChange={choosePhoto} className="sr-only" />
-            </label>
-            <div className="grid grid-cols-2 gap-3">
+            {/* Une seule rangée : l'appareil photo complet est déjà derrière le + ; ici, sans « capture »,
+                le téléphone propose lui-même l'appareil photo ou la galerie. */}
+            <div className="grid grid-cols-4 gap-2">
+              <label className={tileClass(true, "cursor-pointer focus-within:outline-2")}>
+                <Icon name="camera" size={24} />
+                {t("photo")}
+                <input type="file" accept="image/*" onChange={choosePhoto} className="sr-only" />
+              </label>
               <button type="button" onClick={speak} className={tileClass(false)}>
-                <Icon name="mic" size={28} />
+                <Icon name="mic" size={24} />
                 {t("voice")}
               </button>
               {barcodeTile}
-            </div>
-            <p className="flex flex-wrap gap-x-5 gap-y-1 text-sm font-semibold text-primary">
-              <label className="flex min-h-11 cursor-pointer items-center underline-offset-4 focus-within:outline-2 hover:underline">
-                {t("choosePhoto")}
-                <input type="file" accept="image/*" onChange={choosePhoto} className="sr-only" />
-              </label>
               <button
                 type="button"
                 onClick={() => {
                   setVoice(false);
                   setDescribing(true);
                 }}
-                className="min-h-11 underline-offset-4 hover:underline"
+                className={tileClass(false)}
               >
-                {t("write")}
+                <Icon name="edit" size={24} />
+                {t("writeShort")}
               </button>
-            </p>
+            </div>
           </>
         )
       )}
