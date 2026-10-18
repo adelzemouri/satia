@@ -14,6 +14,8 @@ import { useToast } from "@/ui/toast";
 /**
  * Réglage plein écran d'un objectif : × pour revenir à Moi sans rien changer, ✓ pour
  * enregistrer, une question en titre, la valeur en grand au milieu et un repère en bas.
+ * Sur ordinateur, le même réglage devient une carte centrée dans la page, la barre latérale
+ * restant visible : un plein écran blanc de 1440 px laisserait la valeur perdue au milieu.
  */
 export function GoalScreen({
   title,
@@ -46,8 +48,8 @@ export function GoalScreen({
     });
 
   return (
-    <div className="fixed inset-0 z-30 overflow-y-auto bg-surface">
-      <div className="mx-auto flex min-h-full w-full max-w-md flex-col px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <div className="fixed inset-0 z-30 overflow-y-auto bg-surface lg:static lg:z-auto lg:overflow-visible lg:bg-transparent">
+      <div className="mx-auto flex min-h-full w-full max-w-md flex-col px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] lg:mt-4 lg:min-h-0 lg:max-w-lg lg:rounded-[var(--radius-card)] lg:bg-surface lg:p-8 lg:shadow-sm">
         <div className="flex items-center justify-between">
           <Link
             href="/profile"
@@ -69,7 +71,7 @@ export function GoalScreen({
         <h1 className="mt-6 text-center font-display text-3xl leading-tight font-extrabold tracking-tight text-balance">
           {title}
         </h1>
-        <div className="flex flex-1 flex-col justify-center gap-5 py-8">{children}</div>
+        <div className="flex flex-1 flex-col justify-center gap-5 py-8 lg:min-h-72">{children}</div>
         {error && <Alert>{errorText(error)}</Alert>}
         {note && <div className="mt-4">{note}</div>}
       </div>

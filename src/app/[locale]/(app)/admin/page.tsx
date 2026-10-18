@@ -25,6 +25,7 @@ import { requireAdmin } from "@/server/session";
 import { getCalorieFloors } from "@/server/settings";
 import { buttonClass } from "@/ui/button";
 import { Card } from "@/ui/card";
+import { Columns } from "@/ui/columns";
 
 export default async function AdminPage({ params }: PageProps<"/[locale]/admin">) {
   const locale = toLocale((await params).locale);
@@ -59,7 +60,7 @@ export default async function AdminPage({ params }: PageProps<"/[locale]/admin">
   };
 
   return (
-    <>
+    <Columns>
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
 
       <Card aria-labelledby="members">
@@ -239,6 +240,6 @@ export default async function AdminPage({ params }: PageProps<"/[locale]/admin">
         </h2>
         <FloorsForm floors={floors} />
       </Card>
-    </>
+    </Columns>
   );
 }
