@@ -88,18 +88,26 @@ export function useSpeech(locale: string, onText: (text: string) => void) {
       instance.lang = locale === "en" ? "en-US" : "fr-FR";
       instance.interimResults = true;
       instance.continuous = false;
+      // Safari sur iPhone termine sans texte ni erreur quand il ne reconnaît pas le mot
+      // (« msemen ») : il faut le dire, sinon l'écran revient à « prêt » sans explication.
+      let heard = false;
+      let failed = false;
       instance.onresult = (event) => {
         // Un résultat tardif d'une dictée arrêtée ne doit pas écraser la nouvelle.
         if (recognition.current !== instance) return;
         const text = Array.from(event.results, (result) => result[0]?.transcript ?? "").join(" ");
+        if (text.trim()) heard = true;
         callback.current(text.trim());
       };
       instance.onerror = (event) => {
+        failed = true;
         if (recognition.current === instance) setError(speechErrorKey(event.error));
       };
       instance.onend = () => {
         ended.add(instance);
-        if (recognition.current === instance) setListening(false);
+        if (recognition.current !== instance) return;
+        setListening(false);
+        if (!heard && !failed) setError("speech_unrecognized");
       };
       recognition.current = instance;
       setError(null);

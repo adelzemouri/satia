@@ -876,6 +876,36 @@ test("dictée : le micro qui décroche laisse réessayer d'un toucher, sans reto
   await expect(page.getByRole("button", { name: "Analyser", exact: true })).toBeEnabled();
 });
 
+test("dictée : un mot que le téléphone ne reconnaît pas est signalé, avec l'écriture en repli", async ({ page }) => {
+  // Safari sur iPhone, pour un nom rare (« msemen ») : fin de dictée sans texte ni erreur.
+  await page.addInitScript(() => {
+    class FakeRecognition {
+      lang = "";
+      interimResults = false;
+      continuous = false;
+      onresult: ((event: unknown) => void) | null = null;
+      onerror: ((event: unknown) => void) | null = null;
+      onend: (() => void) | null = null;
+      start() {
+        setTimeout(() => this.onend?.(), 50);
+      }
+      stop() {}
+      abort() {
+        setTimeout(() => this.onend?.(), 10);
+      }
+    }
+    (window as unknown as { SpeechRecognition: unknown }).SpeechRecognition = FakeRecognition;
+  });
+  await signIn(page, ADMIN);
+  await page.goto("/add?slot=lunch");
+  await page.getByRole("button", { name: "Voix" }).click();
+  const dictation = page.getByRole("group", { name: "Dictée", exact: true });
+  await expect(dictation.getByRole("alert")).toContainText("Je n'ai reconnu aucun mot");
+  await expectNoA11yViolations(page);
+  await page.getByRole("button", { name: "Écrire à la place" }).click();
+  await expect(page.getByLabel("Décris ton repas")).toBeVisible();
+});
+
 test("coach : dicter un message puis l'envoyer avec Entrée", async ({ page }) => {
   await page.addInitScript(() => {
     class FakeRecognition {
