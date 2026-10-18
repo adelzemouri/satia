@@ -10,7 +10,6 @@ import { KitchenTabs } from "@/features/planning/kitchen-tabs";
 import { SavedMealItem } from "@/features/saved-meals/saved-meal-item";
 import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
-import { otherMembers } from "@/server/family";
 import { listSavedMeals } from "@/server/saved-meals";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
@@ -22,7 +21,7 @@ export default async function SavedMealsPage({ params }: PageProps<"/[locale]/me
   const locale = toLocale((await params).locale);
   setRequestLocale(locale);
   const user = await requireUser(locale);
-  const [meals, members] = await Promise.all([listSavedMeals(user.id), otherMembers(user.id, user.householdId)]);
+  const meals = await listSavedMeals(user.id);
   const t = await getTranslations();
   const date = todayIso();
   const slot = slotAt(new Date(), APP_TIMEZONE);
@@ -56,7 +55,6 @@ export default async function SavedMealsPage({ params }: PageProps<"/[locale]/me
                 key={meal.id}
                 id={meal.id}
                 name={meal.name}
-                canShare={members.length > 0}
                 date={date}
                 slot={slot}
                 foods={meal.items.map((item) => ({

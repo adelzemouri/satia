@@ -165,12 +165,6 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
               <Link href={`/foods/${food.id}/edit`} className={buttonClass("secondary")}>
                 {t("foods.editRecipe")}
               </Link>
-              <Link
-                href={{ pathname: "/family/share", query: { food: food.id, date, ...(slot && { slot }) } }}
-                className={buttonClass("secondary")}
-              >
-                {t("add.shareWithFamily")}
-              </Link>
             </div>
           )}
           {editableRecipe && <DeleteRecipeButton id={food.id} />}

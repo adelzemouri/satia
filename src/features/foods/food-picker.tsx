@@ -296,14 +296,6 @@ export function FoodPicker({
         </div>
       )}
 
-      <Link
-        href={{ pathname: "/family/share", query: { date, slot } }}
-        className={buttonClass("secondary", "lg:self-start")}
-      >
-        <Icon name="family" />
-        {t("shareWithFamily")}
-      </Link>
-
       <p className="text-sm text-text-muted">
         <a href="https://ciqual.anses.fr" className="underline" target="_blank" rel="noreferrer">
           {t("ciqualAttribution")}

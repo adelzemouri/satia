@@ -1023,14 +1023,10 @@ test("l'admin génère un lien de nouveau mot de passe pour un membre", async ({
   await expect(teen).toHaveURL(/\/onboarding$/);
 });
 
-test("repas partagé : l'admin partage un plat du foyer, le membre le valide avec sa portion", async ({
-  page,
-  browser,
-}) => {
+test("recette du foyer : l'admin la crée, un membre la retrouve et y met sa photo", async ({ page, browser }) => {
   test.slow(); // deux sessions (admin puis membre) dans le même test
   await signInWithTotp(page);
-  await page.goto("/family/share?slot=dinner");
-  await page.getByRole("button", { name: "Nouveau plat (ingrédients ou photo)" }).click();
+  await page.goto("/foods/new-recipe");
   await page.getByLabel("Nom", { exact: true }).fill("Gratin du dimanche");
   await page.getByLabel("Nombre de portions").fill("4");
   await page.getByLabel("Ajouter un ingrédient").fill("pâtes cuites");
@@ -1040,31 +1036,18 @@ test("repas partagé : l'admin partage un plat du foyer, le membre le valide ave
     .click();
   await page.getByRole("textbox", { name: /Quantité de Pâtes/ }).fill("600");
   await page.getByRole("button", { name: "Créer" }).click();
+  await expect(page).toHaveURL(/\/recipes$/);
 
-  await expect(page.getByRole("heading", { name: "Gratin du dimanche" })).toBeVisible();
-  await expect(page.getByLabel("Poids du plat entier (g)")).toHaveValue("600");
-  await expect(page.getByText(/^1 part ≈ 150 g, \d+ kcal$/)).toBeVisible();
-  await expect(page.getByLabel("Léa")).toBeChecked();
-  await expectNoA11yViolations(page);
-  await page.getByRole("button", { name: "Partager" }).click();
-  await expect(page).toHaveURL(/\/journal\?date=/);
-  await expect(page.getByRole("region", { name: "Dîner" }).getByText("Gratin du dimanche")).toBeVisible();
+  // Plus de partage de plat : ni bouton sur l'écran d'ajout, ni repas à valider.
+  await page.goto("/add");
+  await expect(page.getByRole("link", { name: /Partager un plat/ })).toHaveCount(0);
 
   const teen = await newPage(browser);
   await signIn(teen, { email: TEEN.email, password: "nouveau-mot-de-passe-lea" });
   await teen.goto("/plan");
-  const pending = teen.getByRole("region", { name: "Repas partagés à valider" });
-  await expect(pending.getByRole("heading", { name: "Gratin du dimanche" })).toBeVisible();
-  await expect(pending.getByText(/^Adel a partagé ce plat pour le dîner/)).toBeVisible();
-  await expectNoA11yViolations(teen);
-  await pending.getByText("½ part", { exact: true }).click();
-  await expect(pending.getByText(/^Ça fait 75 g, \d+ kcal$/)).toBeVisible();
-  await pending.getByRole("button", { name: "Ajouter à mon journal" }).click();
   await expect(teen.getByRole("region", { name: "Repas partagés à valider" })).toHaveCount(0);
-  await teen.goto("/journal");
-  await expect(teen.getByRole("region", { name: "Dîner" }).getByText(/^75 g/)).toBeVisible();
 
-  // Léa met sa photo du gratin : la fiche l'affiche, légendée comme photo de la famille.
+  // Léa met sa photo du gratin : la fiche l'affiche, légendée comme photo du foyer.
   await teen.goto("/recipes");
   await expect(teen.getByRole("link", { name: /^Gratin du dimanche/ })).toBeVisible();
   await teen.getByRole("link", { name: /^Gratin du dimanche/ }).click();
@@ -1072,31 +1055,10 @@ test("repas partagé : l'admin partage un plat du foyer, le membre le valide ave
   await withServerAction(teen, () =>
     teen.getByLabel("Ajouter une photo").setInputFiles({ name: "gratin.png", mimeType: "image/png", buffer: MEAL_PNG }),
   );
-  await expect(teen.getByText("Photo de la famille, visible seulement par le foyer.")).toBeVisible();
+  await expect(teen.getByText("Photo du foyer, visible seulement par ses membres.")).toBeVisible();
   await expect(teen.locator("figure img").first()).toHaveAttribute("src", /\/api\/foods\/.+\/photo\?v=/);
   await expect(teen.getByLabel("Changer la photo")).toBeAttached();
   await expectNoA11yViolations(teen);
-
-  // Un repas de « Mes repas » se partage aussi : Léa le valide avec sa portion.
-  await page.goto("/meals");
-  await page.getByRole("link", { name: "Partager Grand petit-déj" }).click();
-  await expect(page.getByRole("heading", { name: "Partager « Grand petit-déj »" })).toBeVisible();
-  await expect(page.getByLabel("Léa")).toBeChecked();
-  await expectNoA11yViolations(page);
-  await withServerAction(page, () => page.getByRole("button", { name: "Partager" }).click());
-  await expect(page).toHaveURL(/\/meals$/);
-
-  await teen.goto("/plan");
-  const meal = teen.getByRole("region", { name: "Repas partagés à valider" });
-  await expect(meal.getByRole("heading", { name: "Grand petit-déj" })).toBeVisible();
-  await expect(meal.getByText(/^Adel a partagé ce repas pour le/)).toBeVisible();
-  await expect(meal.getByText(/^Portion de Adel : \d+ g, \d+ kcal$/)).toBeVisible();
-  await expectNoA11yViolations(teen);
-  await meal.getByText("2 portions", { exact: true }).click();
-  await meal.getByRole("button", { name: "Ajouter à mon journal" }).click();
-  await expect(teen.getByRole("region", { name: "Repas partagés à valider" })).toHaveCount(0);
-  await teen.goto("/journal");
-  await expect(teen.getByText("Grand petit-déj", { exact: true })).toBeVisible();
 });
 
 test("bilan qualité de la semaine", async ({ page }) => {
@@ -1179,7 +1141,11 @@ test("menu de la semaine, liste de courses commune, recettes et scanner de frigo
   await add.getByLabel(/^Recette/).selectOption({ label: "Gratin du dimanche" });
   await add.getByLabel("Nombre de parts").fill("4");
   await add.getByRole("button", { name: "Ajouter au menu" }).click();
-  await expect(page.getByRole("link", { name: "Servir Gratin du dimanche et le partager" })).toBeVisible();
+  // « Servir » ouvre la fiche du plat pour ajouter sa portion au journal.
+  await expect(page.getByRole("link", { name: "Ajouter Gratin du dimanche à mon journal" })).toHaveAttribute(
+    "href",
+    /\/foods\/[0-9a-f-]+\?date=/,
+  );
   await add.getByLabel("Nom du plat").fill("Restes");
   await add.getByRole("button", { name: "Ajouter au menu" }).click();
   await page.getByRole("button", { name: "Retirer Restes" }).click();
@@ -1522,7 +1488,6 @@ test("audit d'accessibilité : chaque page de l'app, en thème clair et sombre",
     "/foods/new",
     "/foods/new-recipe",
     "/meals",
-    "/family/share",
     "/training",
     "/training/history",
     "/training/library",
