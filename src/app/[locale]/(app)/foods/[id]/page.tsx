@@ -13,6 +13,7 @@ import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { DomainError } from "@/server/errors";
 import { AskCoach } from "@/features/coach/ask-coach";
+import { DeleteRecipeButton } from "@/features/foods/delete-recipe-button";
 import { ProductThumb } from "@/features/foods/product-thumb";
 import { QualityBadges } from "@/features/foods/quality-badges";
 import { ZoomablePhoto } from "@/ui/photo-viewer";
@@ -172,6 +173,7 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
               </Link>
             </div>
           )}
+          {editableRecipe && <DeleteRecipeButton id={food.id} />}
 
           {catalog && (
             <>

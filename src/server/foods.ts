@@ -2,7 +2,7 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 
-import { and, desc, eq, inArray, isNotNull, isNull, like, lt, or, type SQL, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, isNull, like, lt, ne, or, type SQL, sql } from "drizzle-orm";
 import { after } from "next/server";
 import { z } from "zod";
 
@@ -257,9 +257,16 @@ export async function setFavorite(userId: string, foodId: string, favorite: bool
   }
 }
 
-/** Aliments personnels de l'utilisateur, recettes et aliments communs de son foyer. */
+/**
+ * Aliments personnels de l'utilisateur et aliments communs de son foyer. Les recettes, communes à
+ * toute la famille, ont leur place dans Cuisine → Recettes.
+ */
 export async function ownFoods(userId: string): Promise<FoodSummary[]> {
-  return db().select(foodSummaryColumns).from(foods).where(editableBy(userId)).orderBy(foods.nameFr);
+  return db()
+    .select(foodSummaryColumns)
+    .from(foods)
+    .where(and(editableBy(userId), ne(foods.source, "recipe")))
+    .orderBy(foods.nameFr);
 }
 
 const positive = z.number().min(0).max(1000);

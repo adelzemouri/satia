@@ -23,9 +23,6 @@ export default async function FoodsPage({ params }: PageProps<"/[locale]/foods">
         <Link href="/foods/new" className={buttonClass("primary")}>
           {t("foods.newFood")}
         </Link>
-        <Link href="/foods/new-recipe" className={buttonClass("secondary")}>
-          {t("foods.newRecipe")}
-        </Link>
       </div>
       <Card>
         {foods.length === 0 ? (
@@ -51,6 +48,12 @@ export default async function FoodsPage({ params }: PageProps<"/[locale]/foods">
           </ul>
         )}
       </Card>
+      <p className="text-sm text-text-muted">
+        {t("foods.recipesHint")}{" "}
+        <Link href="/recipes" className="font-semibold text-primary underline-offset-4 hover:underline">
+          {t("foods.recipesLink")}
+        </Link>
+      </p>
     </>
   );
 }
