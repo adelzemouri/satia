@@ -1061,6 +1061,31 @@ test("recette du foyer : l'admin la crée, un membre la retrouve et y met sa pho
   await expectNoA11yViolations(teen);
 });
 
+test("bêta : l'admin invite quelqu'un dans un foyer à part et suit s'il revient", async ({ page, browser }) => {
+  await signInWithTotp(page);
+  await page.goto("/admin");
+  await page.getByLabel("Pour qui ? (ex. : Maman, Léo)").fill("Sami");
+  await page.getByRole("radio", { name: /^Foyer à part/ }).check();
+  await page.getByRole("button", { name: "Créer le lien" }).click();
+  const url = (await page.locator("code").first().textContent())!.trim();
+
+  const guest = await newPage(browser);
+  await guest.goto(url);
+  await expect(guest.getByRole("heading", { level: 1 })).toHaveText("Bienvenue sur Pommelia");
+  await guest.getByLabel("Adresse e-mail").fill("sami@example.com");
+  await guest.getByLabel("Mot de passe").fill("mot-de-passe-sami-1");
+  await guest.getByRole("button", { name: "Créer mon compte" }).click();
+  await expect(guest).toHaveURL(/\/onboarding$/);
+
+  await page.reload();
+  const beta = page.getByRole("region", { name: "Invités de la bêta" });
+  await expect(beta.getByText("Sami", { exact: true })).toBeVisible();
+  await expect(beta.getByText("Première semaine")).toBeVisible();
+  await expect(beta.getByRole("img", { name: "0 jour noté sur 1 jour" })).toBeVisible();
+  await expect(beta.getByText("Aucune saisie")).toBeVisible();
+  await expectNoA11yViolations(page);
+});
+
 test("bilan qualité de la semaine", async ({ page }) => {
   await signInWithTotp(page);
   await page.getByRole("link", { name: "Progrès" }).click();

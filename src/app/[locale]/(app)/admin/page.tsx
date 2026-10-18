@@ -1,6 +1,7 @@
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 
 import { revokeInviteAction } from "@/features/admin/actions";
+import { BetaGuestStrip } from "@/features/admin/beta-guest-strip";
 import { DemoAccount } from "@/features/admin/demo-account";
 import { FloorsForm } from "@/features/admin/floors-form";
 import { InviteForm } from "@/features/admin/invite-form";
@@ -8,12 +9,16 @@ import { formatUsd } from "@/features/admin/format-usd";
 import { MemberActions } from "@/features/admin/member-actions";
 import { VapidKeys } from "@/features/admin/vapid-keys";
 import { Link } from "@/i18n/navigation";
+import { daysBetween } from "@/domain/adaptive";
+import { betaSummary, type GuestActivity } from "@/domain/beta";
+import { todayIso } from "@/domain/dates";
 import { DEMO_EMAIL } from "@/domain/demo";
 import { toLocale } from "@/i18n/routing";
 import { llmConfig } from "@/llm/config";
 import { aiStatus } from "@/llm/guard";
 import { currentMonthCostByUser } from "@/llm/usage";
 import { listGuests, listMembers, listPendingInvites } from "@/server/accounts";
+import { guestActivities } from "@/server/beta";
 import { vapidPublicKey } from "@/server/notifications";
 import { demoAccountStatus } from "@/server/demo";
 import { requireAdmin } from "@/server/session";
@@ -37,6 +42,21 @@ export default async function AdminPage({ params }: PageProps<"/[locale]/admin">
   const t = await getTranslations("admin");
   const format = await getFormatter();
   const monthCost = (userId: string) => t("monthCost", { cost: formatUsd(format, costs.get(userId) ?? 0) });
+  const activities = await guestActivities(guests);
+  const summary = betaSummary([...activities.values()]);
+  const lastEntry = (activity: GuestActivity) => {
+    if (!activity.lastLogged) return t("beta.lastNever");
+    const days = daysBetween(activity.lastLogged, todayIso());
+    const when = days === 0 ? t("beta.today") : days === 1 ? t("beta.yesterday") : t("beta.daysAgo", { days });
+    return t("beta.last", { when });
+  };
+  const statusPill = (activity: GuestActivity) => {
+    const { status } = activity;
+    if (status.kind === "idle")
+      return ["bg-accent-soft text-accent", t("beta.statusIdle", { days: status.days })] as const;
+    if (status.kind === "new") return ["bg-surface-muted text-text-muted", t("beta.statusNew")] as const;
+    return ["bg-primary-soft text-primary", t("beta.statusActive")] as const;
+  };
 
   return (
     <>
@@ -73,23 +93,72 @@ export default async function AdminPage({ params }: PageProps<"/[locale]/admin">
             {t("guests")}
           </h2>
           <p className="text-text-muted">{t("guestsHint")}</p>
-          <ul className="flex flex-col divide-y divide-border">
-            {guests.map((guest) => (
-              <li key={guest.id} className="flex flex-col gap-2 py-3">
-                <div className="flex flex-wrap items-baseline gap-x-2">
-                  <span className="font-semibold">{guest.name}</span>
-                  <span className="text-sm text-text-muted">{guest.email}</span>
-                </div>
-                <div className="flex gap-2 text-sm">
-                  <span className="rounded-full bg-pomme-soft px-3 py-1">{t("guestRole")}</span>
-                  {guest.twoFactorEnabled && (
-                    <span className="rounded-full bg-primary-soft px-3 py-1">{t("twoFactor")}</span>
-                  )}
-                </div>
-                <p className="text-sm text-text-muted tabular-nums">{monthCost(guest.id)}</p>
-                <MemberActions userId={guest.id} name={guest.name} isSelf={false} guest />
-              </li>
+          <dl className="grid grid-cols-3 gap-2">
+            {(
+              [
+                [String(summary.total), t("beta.total", { count: summary.total })],
+                [String(summary.active), t("beta.active")],
+                [
+                  summary.veterans > 0
+                    ? t("beta.retainedValue", { retained: summary.retained, veterans: summary.veterans })
+                    : "–",
+                  t("beta.retained"),
+                ],
+              ] as const
+            ).map(([value, label]) => (
+              <div key={label} className="flex flex-col-reverse justify-end rounded-2xl bg-surface-muted px-3 py-2">
+                <dt className="text-xs leading-snug text-text-muted">{label}</dt>
+                <dd className="text-xl font-bold tabular-nums">{value}</dd>
+              </div>
             ))}
+          </dl>
+          <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-muted">
+            <span className="flex items-center gap-1.5">
+              <span className="size-2.5 rounded-[3px] bg-primary" />
+              {t("beta.legendLogged")}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="size-2.5 rounded-[3px] bg-surface-muted ring-1 ring-border" />
+              {t("beta.legendEmpty")}
+            </span>
+            <span>{t("beta.legendWindow")}</span>
+          </p>
+          <ul className="flex flex-col divide-y divide-border">
+            {guests.map((guest) => {
+              const activity = activities.get(guest.id)!;
+              const [pillClass, pillText] = statusPill(activity);
+              return (
+                <li key={guest.id} className="flex flex-col gap-2 py-3">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                    <span className="flex flex-wrap items-baseline gap-x-2">
+                      <span className="font-semibold">{guest.name}</span>
+                      <span className="text-sm text-text-muted">
+                        {t("beta.joined", { days: activity.joinedDaysAgo })}
+                      </span>
+                    </span>
+                    <span className={`rounded-full px-3 py-0.5 text-xs font-semibold ${pillClass}`}>{pillText}</span>
+                  </div>
+                  <BetaGuestStrip
+                    days={activity.days}
+                    label={t("beta.strip", { logged: activity.logged, possible: activity.possible })}
+                  />
+                  <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-text-muted tabular-nums">
+                    <span>{t("beta.logged", { logged: activity.logged, possible: activity.possible })}</span>
+                    <span>{lastEntry(activity)}</span>
+                    <span>{monthCost(guest.id)}</span>
+                  </p>
+                  <details className="group">
+                    <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold text-primary">
+                      {t("beta.manage")}
+                    </summary>
+                    <div className="flex flex-col gap-2 pt-1">
+                      <span className="text-sm text-text-muted">{guest.email}</span>
+                      <MemberActions userId={guest.id} name={guest.name} isSelf={false} guest />
+                    </div>
+                  </details>
+                </li>
+              );
+            })}
           </ul>
           <p className="rounded-2xl bg-surface-muted px-4 py-3 text-sm text-text-muted tabular-nums">
             <span className="block font-semibold text-text">

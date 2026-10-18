@@ -857,6 +857,11 @@ le pourquoi de chacun est dans `docs/DECISIONS.md`.
   foyer à part » (`access_links.separate_household`). L'invité reçoit son propre foyer
   (`households.managed_by` pointe vers celui de l'admin), ne peut pas devenir admin, et sa
   dépense IA du mois apparaît dans `/admin`. Le plafond IA reste commun.
+- **Suivi de la bêta** (`src/domain/beta.ts`, `src/server/beta.ts`) : dans `/admin`, la carte
+  « Invités de la bêta » montre pour chaque invité « Foyer à part » une bande des 28 derniers
+  jours (un jour coloré dès qu'un repas est noté), son état (première semaine, repas notés cette
+  semaine, rien depuis N jours) et trois chiffres : invités, actifs sur 7 jours, encore là après
+  3 semaines. Seules les dates de `meal_entries` sont lues, jamais le contenu des repas.
 - **Compte démo** : `demo@pommelia.fr`, créé ou réinitialisé depuis `/admin` avec 35 jours
   de données d'exemple générées par graine (`src/domain/demo.ts`).
 - **Pages d'erreur** : 404 localisée (`[locale]/[...rest]` + `not-found.tsx`) pour que ses
