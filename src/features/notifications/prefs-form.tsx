@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useState, useTransition } from "react";
+import { type ReactNode, useState, useTransition } from "react";
 
 import type { NotificationPrefs } from "@/domain/notifications";
 import { useErrorText } from "@/features/auth/use-error-text";
@@ -12,21 +12,36 @@ import { Field } from "@/ui/field";
 
 import { setNotificationPrefsAction } from "./actions";
 
-const TYPES = [
+// Rappels rangés par moment d'arrivée ; pesée, mensurations et photo ont aussi une carte sur l'accueil.
+const DAILY = [
   ["meals", "mealsHint"],
   ["water", "waterHint"],
-  ["weeklyReview", "weeklyReviewHint"],
   ["fasting", "fastingHint"],
   ["treatment", "treatmentHint"],
 ] as const;
 
-const RITUALS = [
-  ["weighIn", "weighInHint"],
+const MONTHLY = [
   ["measurements", "measurementsHint"],
   ["progressPhoto", "progressPhotoHint"],
 ] as const;
 
-function Toggle({ name, label, hint, checked }: { name: string; label: string; hint: string; checked: boolean }) {
+function GroupTitle({ children }: { children: ReactNode }) {
+  return <p className="mt-2 text-xs font-bold tracking-wide text-text-muted uppercase">{children}</p>;
+}
+
+function Toggle({
+  name,
+  label,
+  hint,
+  checked,
+  badge,
+}: {
+  name: string;
+  label: string;
+  hint: string;
+  checked: boolean;
+  badge?: { text: string; label: string };
+}) {
   return (
     <div className="flex min-h-12 items-start gap-3 py-1">
       <input
@@ -40,6 +55,12 @@ function Toggle({ name, label, hint, checked }: { name: string; label: string; h
       <span className="flex flex-col">
         <label htmlFor={`notify-${name}`} className="cursor-pointer font-semibold">
           {label}
+          {badge && (
+            <span className="ml-2 inline-block rounded-full bg-primary-soft px-2 align-[2px] text-xs font-bold text-primary">
+              <span aria-hidden="true">{badge.text}</span>
+              <span className="sr-only">{`, ${badge.label}`}</span>
+            </span>
+          )}
         </label>
         <span id={`notify-${name}-hint`} className="text-sm text-text-muted">
           {hint}
@@ -60,6 +81,7 @@ export function NotificationPrefsForm({ prefs }: { prefs: NotificationPrefs }) {
       new Date(Date.UTC(2024, 0, 1 + index)),
     ),
   }));
+  const badge = { text: t("homeBadge"), label: t("homeBadgeLabel") };
   const errorText = useErrorText();
   const [state, setState] = useState<{ ok?: boolean; error?: string } | null>(null);
   const [pending, startTransition] = useTransition();
@@ -89,17 +111,26 @@ export function NotificationPrefsForm({ prefs }: { prefs: NotificationPrefs }) {
     >
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1 font-semibold">{t("types")}</legend>
-        {TYPES.map(([name, hint]) => (
+        <p className="text-sm text-text-muted">{t("typesHint")}</p>
+        <GroupTitle>{t("groupDay")}</GroupTitle>
+        {DAILY.map(([name, hint]) => (
           <Toggle key={name} name={name} label={t(name)} hint={t(hint)} checked={prefs[name]} />
         ))}
-      </fieldset>
-      <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1 font-semibold">{t("rituals")}</legend>
-        <p className="text-sm text-text-muted">{t("ritualsHint")}</p>
-        {RITUALS.map(([name, hint]) => (
-          <Toggle key={name} name={name} label={t(name)} hint={t(hint)} checked={prefs[name]} />
+        <GroupTitle>{t("groupWeek")}</GroupTitle>
+        <Toggle
+          name="weeklyReview"
+          label={t("weeklyReview")}
+          hint={t("weeklyReviewHint")}
+          checked={prefs.weeklyReview}
+        />
+        <Toggle name="weighIn" label={t("weighIn")} hint={t("weighInHint")} checked={prefs.weighIn} badge={badge} />
+        <div className="pl-8">
+          <SelectField label={t("weighDay")} name="weighDay" options={weekdays} defaultValue={String(prefs.weighDay)} />
+        </div>
+        <GroupTitle>{t("groupMonth")}</GroupTitle>
+        {MONTHLY.map(([name, hint]) => (
+          <Toggle key={name} name={name} label={t(name)} hint={t(hint)} checked={prefs[name]} badge={badge} />
         ))}
-        <SelectField label={t("weighDay")} name="weighDay" options={weekdays} defaultValue={String(prefs.weighDay)} />
       </fieldset>
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1 font-semibold">{t("quiet")}</legend>
