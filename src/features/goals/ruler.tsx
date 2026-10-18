@@ -2,8 +2,6 @@
 
 import { type KeyboardEvent, useLayoutEffect, useRef } from "react";
 
-import { prefersReducedMotion } from "@/ui/motion";
-
 /**
  * Règle à faire glisser du doigt, pour choisir une valeur en grand (poids visé, eau, calories).
  * Le défilement natif garde l'élan du téléphone ; la règle se cale ensuite sur la graduation la
@@ -63,7 +61,8 @@ export function Ruler({
 
   const moveTo = (index: number) => {
     const target = clampIndex(index);
-    ref.current?.scrollTo({ left: target * tickPx, behavior: prefersReducedMotion() ? "auto" : "smooth" });
+    // Saut immédiat : un défilement animé ferait repasser la valeur par tous les crans intermédiaires.
+    if (ref.current) ref.current.scrollLeft = target * tickPx;
     onChange(valueAt(target));
   };
 
