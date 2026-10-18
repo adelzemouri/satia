@@ -14,7 +14,7 @@ import {
   revokeInvite,
 } from "@/server/accounts";
 import { type ActionState, toActionState } from "@/server/action-result";
-import { deleteDemoAccount, fillDemoGaps, resetDemoAccount } from "@/server/demo";
+import { deleteDemoAccount, resetDemoAccount } from "@/server/demo";
 import { DomainError } from "@/server/errors";
 import { publicOrigin } from "@/server/request";
 import { type CurrentUser, getCurrentUser } from "@/server/session";
@@ -112,8 +112,7 @@ export async function saveFloorsAction(_prev: ActionState, formData: FormData): 
   }
 }
 
-export type DemoState =
-  (ActionState & { email?: string; password?: string; loginUrl?: string; filledDays?: number }) | null;
+export type DemoState = (ActionState & { email?: string; password?: string; loginUrl?: string }) | null;
 
 /** (Re)crée le compte démo : nouvelles données et nouveau mot de passe, à transmettre au visiteur. */
 export async function resetDemoAction(): Promise<DemoState> {
@@ -123,17 +122,6 @@ export async function resetDemoAction(): Promise<DemoState> {
     revalidatePath("/[locale]/admin", "page");
     const path = getPathname({ href: "/login", locale: await getLocale() });
     return { ...credentials, loginUrl: `${await publicOrigin()}${path}` };
-  } catch (error) {
-    return toActionState(error);
-  }
-}
-
-/** Remplit les jours sans repas du compte démo, sans effacer ni changer le mot de passe. */
-export async function fillDemoAction(): Promise<DemoState> {
-  try {
-    await requireAdminUser();
-    const { days } = await fillDemoGaps();
-    return { ok: true, filledDays: days };
   } catch (error) {
     return toActionState(error);
   }

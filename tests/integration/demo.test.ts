@@ -99,5 +99,14 @@ describe("compte démo", () => {
     const [credential] = await db().select().from(account).where(eq(account.userId, demo!.id));
     expect(await verifyPassword({ hash: credential!.password!, password })).toBe(true);
     expect(await fillDemoGaps(now)).toEqual({ days: 0 });
+
+    // Le soir, les repas passés depuis la dernière visite s'ajoutent à aujourd'hui.
+    expect(await fillDemoGaps(new Date("2026-10-01T18:00:00Z"))).toEqual({ days: 1 });
+    const evening = await db().select().from(mealEntries).where(eq(mealEntries.userId, demo!.id));
+    const lunches = (rows: typeof evening) => rows.filter((e) => e.date === "2026-10-01" && e.slot === "lunch");
+    expect(lunches(evening)).toHaveLength(lunches(after).length);
+    expect(new Set(evening.filter((e) => e.date === "2026-10-01").map((e) => e.slot))).toEqual(
+      new Set(["breakfast", "lunch", "snack", "dinner"]),
+    );
   });
 });

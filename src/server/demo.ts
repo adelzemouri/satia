@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, count, eq, gte, inArray, or } from "drizzle-orm";
+import { and, asc, count, eq, gte, inArray, or, sql } from "drizzle-orm";
 
 import { db } from "@/db/client";
 import {
@@ -178,8 +178,8 @@ export async function resetDemoAccount(today: string = todayIso()): Promise<{ em
 
 /**
  * Complète les jours vides du compte démo (aucun repas saisi) depuis le début de son historique
- * jusqu'à aujourd'hui, sans toucher à ce qui existe ni au mot de passe. Aujourd'hui ne reçoit
- * que les repas dont l'heure est passée. Renvoie le nombre de jours remplis.
+ * jusqu'à aujourd'hui, sans toucher à ce qui existe ni au mot de passe. Aujourd'hui reçoit les
+ * repas dont l'heure est passée et qui n'ont encore rien. Renvoie le nombre de jours complétés.
  */
 export async function fillDemoGaps(now: Date = new Date()): Promise<{ days: number }> {
   const [demo] = await db()
@@ -189,33 +189,39 @@ export async function fillDemoGaps(now: Date = new Date()): Promise<{ days: numb
   if (!demo) throw new DomainError("not_found");
   const userId = demo.id;
   const today = todayIso(now);
-  const [firstGoal] = await db()
-    .select({ effectiveFrom: goals.effectiveFrom })
-    .from(goals)
-    .where(eq(goals.userId, userId))
-    .orderBy(asc(goals.effectiveFrom))
-    .limit(1);
-  const start = firstGoal?.effectiveFrom ?? todayIso(demo.createdAt);
-
-  const logged = await db()
-    .selectDistinct({ date: mealEntries.date })
-    .from(mealEntries)
-    .where(and(eq(mealEntries.userId, userId), gte(mealEntries.date, start)));
-  const loggedDates = new Set(logged.map((row) => row.date));
   const time = new Intl.DateTimeFormat("en-GB", {
     timeZone: APP_TIMEZONE,
     hour: "2-digit",
     minute: "2-digit",
     hourCycle: "h23",
   }).format(now);
-  const data = demoDays({ start, from: start, today, todaySlots: demoSlotsBefore(time) });
-  const empty = (row: { date: string }) => !loggedDates.has(row.date);
-  const entries = data.entries.filter(empty);
-  const days = new Set(entries.map((entry) => entry.date));
-  if (days.size === 0) return { days: 0 };
-  const isFilled = (row: { date: string }) => days.has(row.date);
 
-  await db().transaction(async (tx) => {
+  return db().transaction(async (tx) => {
+    // Deux pages ouvertes en même temps ne doivent pas ajouter deux fois la même journée.
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext('pommelia-demo-fill'))`);
+    const [firstGoal] = await tx
+      .select({ effectiveFrom: goals.effectiveFrom })
+      .from(goals)
+      .where(eq(goals.userId, userId))
+      .orderBy(asc(goals.effectiveFrom))
+      .limit(1);
+    const start = firstGoal?.effectiveFrom ?? todayIso(demo.createdAt);
+    const logged = await tx
+      .selectDistinct({ date: mealEntries.date, slot: mealEntries.slot })
+      .from(mealEntries)
+      .where(and(eq(mealEntries.userId, userId), gte(mealEntries.date, start)));
+    const loggedDates = new Set(logged.map((row) => row.date));
+    const loggedToday = new Set(logged.filter((row) => row.date === today).map((row) => row.slot));
+
+    const data = demoDays({ start, from: start, today, todaySlots: demoSlotsBefore(time) });
+    const entries = data.entries.filter((entry) =>
+      entry.date === today ? !loggedToday.has(entry.slot) : !loggedDates.has(entry.date),
+    );
+    const days = new Set(entries.map((entry) => entry.date));
+    if (days.size === 0) return { days: 0 };
+    // Pesée, eau, ressenti, pas et activité : seulement sur les jours qui étaient vides.
+    const isFilled = (row: { date: string }) => days.has(row.date) && !loggedDates.has(row.date);
+
     const resolve = await foodResolver(
       tx,
       entries.map((entry) => entry.food),
@@ -270,9 +276,8 @@ export async function fillDemoGaps(now: Date = new Date()): Promise<{ days: numb
         })),
       );
     }
+    return { days: days.size };
   });
-
-  return { days: days.size };
 }
 
 /** Charge en une requête les aliments utilisés par la démo et renvoie de quoi figer une ligne. */

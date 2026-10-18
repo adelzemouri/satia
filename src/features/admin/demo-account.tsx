@@ -7,7 +7,7 @@ import { useErrorText } from "@/features/auth/use-error-text";
 import { Alert } from "@/ui/alert";
 import { Button } from "@/ui/button";
 
-import { deleteDemoAction, type DemoState, fillDemoAction, resetDemoAction } from "./actions";
+import { deleteDemoAction, type DemoState, resetDemoAction } from "./actions";
 
 export function DemoAccount({ email, createdOn }: { email: string; createdOn: string | null }) {
   const t = useTranslations("admin");
@@ -23,18 +23,6 @@ export function DemoAccount({ email, createdOn }: { email: string; createdOn: st
       <p className="text-text-muted">{t("demoHint")}</p>
       <p>{createdOn ? t("demoStatus", { email, date: createdOn }) : t("demoNone")}</p>
       <div className="flex flex-wrap gap-2">
-        {createdOn && (
-          <Button
-            disabled={pending}
-            onClick={() => {
-              startTransition(async () => {
-                setResult(await fillDemoAction());
-              });
-            }}
-          >
-            {t("demoFill")}
-          </Button>
-        )}
         <Button
           variant="secondary"
           disabled={pending}
@@ -64,9 +52,6 @@ export function DemoAccount({ email, createdOn }: { email: string; createdOn: st
         )}
       </div>
       {result?.error && <Alert>{errorText(result.error)}</Alert>}
-      {result?.filledDays !== undefined && (
-        <Alert tone="success">{t("demoFilled", { count: result.filledDays })}</Alert>
-      )}
       {credentials && (
         <div className="flex flex-col gap-2 rounded-2xl bg-primary-soft p-4" role="status">
           <p className="font-semibold">{t("demoReady")}</p>
