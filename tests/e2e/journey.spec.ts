@@ -558,7 +558,7 @@ test("ajout d'un produit par code-barres (Open Food Facts simulé)", async ({ pa
   await context.grantPermissions(["camera"]);
   await signIn(page, ADMIN);
   await page.goto("/add?slot=snack");
-  await page.getByRole("link", { name: "Code-barres" }).click();
+  await page.getByRole("link", { name: "Scanner", exact: true }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Scanner un code-barres");
   await expectNoA11yViolations(page);
 
@@ -694,7 +694,7 @@ test("saisie d'un repas par photo (LLM simulé), avec écran de confirmation", a
   // Le fichier peut être choisi avant l'hydratation de la page : on le redonne au besoin.
   await expect(async () => {
     await page
-      .getByLabel("Choisir une photo")
+      .getByLabel("Photo", { exact: true })
       .setInputFiles({ name: "repas.png", mimeType: "image/png", buffer: MEAL_PNG });
     await expect(page.getByRole("img", { name: "Photo de ton repas" })).toBeVisible({ timeout: 3000 });
   }).toPass({ timeout: 20_000 });
@@ -747,7 +747,7 @@ test("saisie d'un repas par photo (LLM simulé), avec écran de confirmation", a
 test("saisie en texte libre, avec changement d'aliment et nom du plat", async ({ page }) => {
   await signIn(page, ADMIN);
   await page.goto("/add?slot=dinner");
-  await page.getByRole("button", { name: "Écrire mon repas" }).click();
+  await page.getByRole("button", { name: "Écrire", exact: true }).click();
   await page.getByLabel("Décris ton repas").fill("riz et poulet");
   await page.getByRole("button", { name: "Analyser", exact: true }).click();
   await expect(page.getByRole("heading", { name: "On vérifie ensemble ?" })).toBeVisible();
@@ -805,7 +805,7 @@ test("dictée : arrêter puis relancer, même quand le navigateur ne signale pas
   });
   await signIn(page, ADMIN);
   await page.goto("/add?slot=dinner");
-  await page.getByRole("button", { name: "Écrire mon repas" }).click();
+  await page.getByRole("button", { name: "Écrire", exact: true }).click();
   // Pendant la dictée, la phrase s'écrit en grand ; à l'arrêt, elle reste en grand avec Analyser,
   // et le micro permet de compléter. Le champ ne revient que pour corriger.
   const listening = page.getByRole("group", { name: "Dictée en cours" });
