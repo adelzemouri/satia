@@ -8,7 +8,7 @@ import { goals, largerDays, mealEntries, metabolismChecks, profiles, weightEntri
 import { adaptGoal, type Measurement, type MissingData, measureExpenditure, WINDOW_DAYS } from "@/domain/adaptive";
 import { todayIso } from "@/domain/dates";
 import { addDays, computePlan, macrosFor } from "@/domain/energy";
-import { BUDGET_MODES, type BudgetMode } from "@/domain/profile";
+import { type ActivityLevel, BUDGET_MODES, type BudgetMode } from "@/domain/profile";
 import { isoWeekStart } from "@/domain/streak";
 import { type WeekBudget, weekDates, weeklyBudget } from "@/domain/weekly-budget";
 import { weightTrend } from "@/domain/weight-trend";
@@ -157,6 +157,16 @@ export async function ensureWeeklyCheck(userId: string, today: string = todayIso
       .values({ userId, effectiveFrom: today, ...values })
       .onConflictDoUpdate({ target: [goals.userId, goals.effectiveFrom], set: values });
   });
+}
+
+/**
+ * Contexte du calcul de l'objectif (profil, dépense mesurée et estimée, poids de tendance) ;
+ * `activityLevel` remplace celui du profil pour la dépense estimée.
+ */
+export async function goalContext(userId: string, today: string = todayIso(), activityLevel?: ActivityLevel) {
+  const ctx = await context(userId, today);
+  if (!ctx || !activityLevel || activityLevel === ctx.profile.activityLevel) return ctx;
+  return { ...ctx, estimatedTdee: await estimatedTdee({ ...ctx.profile, activityLevel }, ctx.weightKg, today) };
 }
 
 export type MetabolismOverview = {

@@ -8,6 +8,8 @@ export type HubLink = {
   icon: keyof typeof ICONS;
   label: string;
   hint?: string;
+  /** Réglage en cours, affiché à droite avant le chevron (« 2 L », « 16:8 »). */
+  value?: string;
 };
 
 /**
@@ -32,6 +34,7 @@ export function HubLinks({ label, links }: { label: string; links: HubLink[] }) 
                 <span className="font-bold">{link.label}</span>
                 {link.hint && <span className="truncate text-sm text-text-muted">{link.hint}</span>}
               </span>
+              {link.value && <span className="shrink-0 text-right text-text-muted">{link.value}</span>}
               <span className="text-text-muted">
                 <Icon name="right" size={20} />
               </span>
