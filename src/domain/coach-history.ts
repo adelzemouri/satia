@@ -1,3 +1,4 @@
+import { daysBetween, type Measurement, weightDirection } from "./adaptive";
 import { addDays } from "./energy";
 import { isoWeekStart } from "./streak";
 
@@ -42,7 +43,7 @@ function periodLine(input: LongHistoryInput, period: Period): string | null {
   const parts: string[] = [];
   if (days.length > 0) {
     parts.push(`${days.length} j saisi${days.length > 1 ? "s" : ""}`);
-    parts.push(`${Math.round(average(days.map((day) => day.kcal))!)} kcal/j`);
+    parts.push(`${Math.round(average(days.map((day) => day.kcal))!)} kcal par jour`);
     parts.push(`${Math.round(average(days.map((day) => day.proteinG))!)} g prot./j`);
   }
   if (weights.length > 0) parts.push(`poids ${oneDecimal(average(weights.map((row) => row.weightKg))!)} kg`);
@@ -112,8 +113,29 @@ export function longHistoryLines(input: LongHistoryInput): string[] {
   }
 
   const monthLines = months.flatMap((period) => periodLine(input, period) ?? []);
-  if (monthLines.length > 0) lines.push(`Par mois (moyennes des jours saisis) : ${monthLines.join(" ; ")}.`);
+  if (monthLines.length > 0)
+    lines.push(`Par mois (moyennes par jour saisi, pas des totaux) : ${monthLines.join(" ; ")}.`);
   const weekLines = weeks.flatMap((period) => periodLine(input, period) ?? []);
-  if (weekLines.length > 0) lines.push(`Par semaine (moyennes des jours saisis) : ${weekLines.join(" ; ")}.`);
+  if (weekLines.length > 0)
+    lines.push(`Par semaine (moyennes par jour saisi, pas des totaux) : ${weekLines.join(" ; ")}.`);
   return lines;
+}
+
+/**
+ * Bilan de « Mon métabolisme » pour le coach : l'apport moyen de toute la période et la dépense
+ * qui en découle. Sans lui, le coach expliquait le poids avec une seule semaine. Null tant que
+ * la dépense n'est pas mesurée.
+ */
+export function metabolismLine(measurement: Measurement): string | null {
+  if (measurement.status !== "measured") return null;
+  const days = daysBetween(measurement.from, measurement.to) + 1;
+  const weight = {
+    stable: "poids stable",
+    down: "poids en baisse",
+    up: "poids en hausse",
+  }[weightDirection(measurement.weeklyChangeKg)];
+  return (
+    `Bilan des ${days} derniers jours (page Mon métabolisme) : mangé en moyenne ${measurement.averageIntake} kcal par jour, ` +
+    `${weight} (${measurement.weeklyChangeKg} kg par semaine), dépense réelle ${measurement.tdee} kcal par jour.`
+  );
 }
