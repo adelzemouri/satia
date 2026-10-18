@@ -252,6 +252,15 @@ export async function streakFor(userId: string, today: string = todayIso()): Pro
   return computeStreak(new Set(rows.map((row) => row.date)), today);
 }
 
+/** Tous les jours avec au moins une saisie, pour la fiche « Ma série » (une ligne par jour). */
+export async function loggedDaysFor(userId: string, today: string = todayIso()): Promise<string[]> {
+  const rows = await db()
+    .selectDistinct({ date: mealEntries.date })
+    .from(mealEntries)
+    .where(and(eq(mealEntries.userId, userId), lte(mealEntries.date, today)));
+  return rows.map((row) => row.date);
+}
+
 export type DaySummary = {
   date: string;
   entries: MealEntry[];

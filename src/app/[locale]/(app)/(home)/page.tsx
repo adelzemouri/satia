@@ -10,12 +10,14 @@ import { withDefaultPrefs } from "@/domain/notifications";
 import { dueRituals, freshVictory, nextWeighDay, parseSnoozes, SNOOZE_COOKIE, weighStatus } from "@/domain/rituals";
 import { suggestedQuestions } from "@/domain/coach-questions";
 import { ideasForSlot } from "@/domain/recipes/catalog";
+import { streakCalendar, streakStats } from "@/domain/streak";
 import { CalorieSummary, MacroBars } from "@/features/journal/day-overview";
 import { WaterTile } from "@/features/journal/water-tile";
 import { BalanceCard } from "@/features/home/balance-card";
 import { CoachCard } from "@/features/home/coach-card";
 import { CoachAvatar } from "@/features/coach/coach-avatar";
 import { StreakCelebration } from "@/features/home/streak-celebration";
+import { StreakSheet } from "@/features/home/streak-sheet";
 import { ActivityTiles, FastingTile, TreatmentTile } from "@/features/home/day-cards";
 import { MealRings } from "@/features/home/meal-rings";
 import { RitualCards, VictoryAnnouncement } from "@/features/home/rituals";
@@ -28,7 +30,7 @@ import { ensureWeeklyCheck } from "@/server/adaptive";
 import { pendingShares } from "@/server/family";
 import { purgePhotosIfDue } from "@/server/photos";
 import { currentFast, fastingAllowed, getFastingPlan } from "@/server/fasting";
-import { daySummary, latestWeight, streakFor, recentIntake } from "@/server/journal";
+import { daySummary, latestWeight, loggedDaysFor, recentIntake } from "@/server/journal";
 import { dayQualityFor } from "@/server/quality";
 import { treatmentRemindersOn } from "@/server/treatment";
 import { getProfile } from "@/server/profile";
@@ -52,21 +54,36 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   await ensureWeeklyCheck(user.id, today);
   const now = new Date();
   const weekday = (new Date(`${today}T00:00:00Z`).getUTCDay() + 6) % 7;
-  const [summary, streak, shares, fast, fastingPlan, canFast, catalog, days, quality, reminders, dates, lastWeight] =
-    await Promise.all([
-      daySummary(user.id, today),
-      streakFor(user.id, today),
-      pendingShares(user.id),
-      currentFast(user.id, now),
-      getFastingPlan(user.id),
-      fastingAllowed(user.id),
-      catalogEntries(),
-      recentIntake(user.id, today),
-      dayQualityFor(user.id, today),
-      treatmentRemindersOn(user.id, today, weekday),
-      ritualDates(user.id, today),
-      latestWeight(user.id, today),
-    ]);
+  const [
+    summary,
+    loggedDays,
+    shares,
+    fast,
+    fastingPlan,
+    canFast,
+    catalog,
+    days,
+    quality,
+    reminders,
+    dates,
+    lastWeight,
+  ] = await Promise.all([
+    daySummary(user.id, today),
+    loggedDaysFor(user.id, today),
+    pendingShares(user.id),
+    currentFast(user.id, now),
+    getFastingPlan(user.id),
+    fastingAllowed(user.id),
+    catalogEntries(),
+    recentIntake(user.id, today),
+    dayQualityFor(user.id, today),
+    treatmentRemindersOn(user.id, today, weekday),
+    ritualDates(user.id, today),
+    latestWeight(user.id, today),
+  ]);
+  const logged = new Set(loggedDays);
+  const streakInfo = streakStats(logged, today);
+  const streak = streakInfo.current;
   // Le repas du moment est mis en avant : c'est le plus probable à saisir maintenant.
   const current = slotAt(now, APP_TIMEZONE);
   const ideas = ideasForSlot(catalog, current, `${user.id}:${today}`, 4);
@@ -128,14 +145,12 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             </span>
             <span className="hidden truncate first-letter:uppercase min-[430px]:block">{formatDay(today, locale)}</span>
           </Link>
-          <Link
-            href="/progress"
-            aria-label={t("home.streak", { days: streak.days })}
-            className={`ml-auto flex min-h-12 shrink-0 items-center gap-1.5 rounded-full px-3.5 font-bold whitespace-nowrap ${milestone ? "celebrate bg-pomme text-on-pomme" : "bg-pomme-soft text-text"}`}
-          >
-            <Icon name="sprout" size={20} />
-            {t("home.streakShort", { days: streak.days })}
-          </Link>
+          <StreakSheet
+            stats={streakInfo}
+            calendar={streakCalendar(logged, streakInfo.restDays, today)}
+            today={today}
+            celebrate={milestone}
+          />
           <Link
             href="/profile"
             aria-label={t("home.openProfile")}
