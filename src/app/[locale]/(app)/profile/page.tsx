@@ -1,10 +1,14 @@
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 
 import { APP_NAME } from "@/config/app";
 import { HubLinks } from "@/features/navigation/hub-links";
 import { LogoutForm } from "@/features/offline/logout-form";
 import { toLocale } from "@/i18n/routing";
-import { getProfile } from "@/server/profile";
+import { goalChangesWeight } from "@/domain/profile";
+import { type FastingPlan } from "@/domain/fasting";
+import { fastingAllowed, getFastingPlan } from "@/server/fasting";
+import { latestWeight } from "@/server/journal";
+import { getGoalOn, getProfile } from "@/server/profile";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
 import { Icon } from "@/ui/icon";
@@ -14,8 +18,18 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
   const locale = toLocale((await params).locale);
   setRequestLocale(locale);
   const user = await requireUser(locale);
-  const profile = await getProfile(user.id);
+  const [profile, goal, weight, fasting, fastingOk] = await Promise.all([
+    getProfile(user.id),
+    getGoalOn(user.id),
+    latestWeight(user.id),
+    getFastingPlan(user.id),
+    fastingAllowed(user.id),
+  ]);
   const t = await getTranslations("profile");
+  const tg = await getTranslations("goals");
+  const tOn = await getTranslations("onboarding");
+  const format = await getFormatter();
+  const kg = (value: number) => format.number(value, { maximumFractionDigits: 1 });
   const tn = await getTranslations("notifications");
   const tAll = await getTranslations();
 
@@ -34,13 +48,62 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
         </div>
       </header>
 
+      {profile && goal && (
+        <div data-col className="flex flex-col gap-3">
+          <h2 className="mt-2 text-lg font-bold">{tg("title")}</h2>
+          <HubLinks
+            label={tg("title")}
+            links={[
+              {
+                href: "/profile/goals/objective",
+                icon: "sprout",
+                label: tg("objective"),
+                value: tOn(`goal.${profile.goal}`),
+              },
+              ...(goalChangesWeight(profile.goal)
+                ? [
+                    {
+                      href: "/profile/goals/weight",
+                      icon: "weight",
+                      label: tg("targetWeight"),
+                      value: profile.targetWeightKg
+                        ? `${kg(weight ?? profile.startWeightKg)} → ${kg(profile.targetWeightKg)} kg`
+                        : tg("targetNone"),
+                    } as const,
+                  ]
+                : []),
+              {
+                href: "/profile/goals/calories",
+                icon: "pulse",
+                label: tg("calories"),
+                value: tg(profile.goalLocked ? "kcalManual" : "kcalAuto", { kcal: format.number(goal.kcal) }),
+              },
+              {
+                href: "/profile/goals/water",
+                icon: "drop",
+                label: tg("water"),
+                value: tg("waterValue", { liters: format.number(profile.waterGoalGlasses / 4) }),
+              },
+              ...(fastingOk
+                ? [{ href: "/fasting", icon: "timer", label: tg("fasting"), value: fastingValue(fasting, tg) } as const]
+                : []),
+              {
+                href: "/profile/goals/activity",
+                icon: "run",
+                label: tg("activity"),
+                value: tOn(`activity.${profile.activityLevel}.label`),
+              },
+            ]}
+          />
+        </div>
+      )}
+
       <div data-col>
         <HubLinks
           label={tAll("home.more")}
           links={[
             { href: "/coach", icon: "chat", label: tAll("coach.title") },
             { href: "/journal", icon: "journal", label: tAll("nav.journal"), hint: tAll("profile.journalHint") },
-            { href: "/fasting", icon: "timer", label: tAll("fasting.title") },
             { href: "/treatment", icon: "pill", label: tAll("treatment.title") },
             { href: "/foods", icon: "star", label: tAll("add.manageFoods") },
             ...(user.role === "admin" ? [{ href: "/admin", icon: "admin", label: tAll("nav.admin") } as const] : []),
@@ -86,4 +149,17 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
       <p className="text-sm text-text-muted">{t("disclaimer", { appName: APP_NAME })}</p>
     </Columns>
   );
+}
+
+/** Résumé du planning de jeûne : le protocole le plus fréquent de la semaine, ou « Désactivé ». */
+function fastingValue(
+  plan: FastingPlan,
+  t: (key: "fastingOff" | "fastingHours", values?: { hours: number }) => string,
+) {
+  const days = plan.days.filter((day) => day !== null);
+  if (!plan.enabled || days.length === 0) return t("fastingOff");
+  const counts = new Map<string, number>();
+  for (const day of days) counts.set(day.protocol, (counts.get(day.protocol) ?? 0) + 1);
+  const [protocol] = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]!;
+  return protocol === "custom" ? t("fastingHours", { hours: plan.customHours }) : protocol;
 }

@@ -1393,7 +1393,10 @@ test("corps et activité : mensuration, photos de progression, activité, pas et
 test("jeûne : planning, minuteur et historique ; traitement : rappel et journal des prises", async ({ page }) => {
   await signInWithTotp(page);
   await page.getByRole("link", { name: "Moi", exact: true }).click();
-  await page.getByRole("navigation", { name: "Raccourcis" }).getByRole("link", { name: "Jeûne", exact: true }).click();
+  await page
+    .getByRole("navigation", { name: "Mes objectifs" })
+    .getByRole("link", { name: /^Jeûne/ })
+    .click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Jeûne");
   await expect(page.getByText(/Pommelia ne donne pas d'avis médical/)).toBeVisible();
   await expectNoA11yViolations(page);
@@ -1533,6 +1536,10 @@ test("audit d'accessibilité : chaque page de l'app, en thème clair et sombre",
     "/profile/notifications",
     "/profile/security",
     "/profile/account",
+    "/profile/goals/objective",
+    "/profile/goals/calories",
+    "/profile/goals/water",
+    "/profile/goals/activity",
     "/admin",
     "/admin/ai",
   ];
@@ -1560,6 +1567,51 @@ test("audit d'accessibilité : chaque page de l'app, en thème clair et sombre",
   await expect(skip).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page.locator("main")).toBeFocused();
+});
+
+test("mes objectifs : réglages plein écran depuis Moi", async ({ page }) => {
+  await signInWithTotp(page);
+  await page.getByRole("link", { name: "Moi", exact: true }).click();
+  const goals = page.getByRole("navigation", { name: "Mes objectifs" });
+  await expect(goals.getByRole("link", { name: /^Eau\s?2 L par jour/ })).toBeVisible();
+
+  // Eau : la règle se règle aussi au clavier ; ✓ enregistre et revient à Moi.
+  await goals.getByRole("link", { name: /^Eau/ }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Combien d'eau par jour ?");
+  // La barre du bas laisse la place au réglage.
+  await expect(page.getByRole("navigation", { name: "Navigation principale" })).toBeHidden();
+  const water = page.getByRole("slider", { name: "Objectif d'eau" });
+  await water.focus();
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
+  await expect(water).toHaveAttribute("aria-valuenow", "10");
+  await expect(page.getByText("10 verres de 25 cl")).toBeVisible();
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page).toHaveURL(/\/profile$/);
+  await expect(goals.getByRole("link", { name: /^Eau\s?2,5 L par jour/ })).toBeVisible();
+
+  // Calories : choisies à la main, jamais sous le plancher, puis retour à l'automatique.
+  await goals.getByRole("link", { name: /^Calories et macros/ }).click();
+  await page.getByRole("radio", { name: "Je choisis" }).click();
+  const kcal = page.getByRole("slider", { name: "Calories par jour" });
+  await expect(kcal).toHaveAttribute("aria-valuemin", "1500");
+  await kcal.focus();
+  await page.keyboard.press("End");
+  await expect(kcal).toHaveAttribute("aria-valuenow", "5000");
+  await expectNoA11yViolations(page);
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(goals.getByRole("link", { name: /^Calories et macros\s?5\s000 kcal · choisi/ })).toBeVisible();
+  await goals.getByRole("link", { name: /^Calories et macros/ }).click();
+  await page.getByRole("radio", { name: "Automatique" }).click();
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(goals.getByRole("link", { name: /^Calories et macros.* kcal · auto/ })).toBeVisible();
+
+  // Objectif : l'aperçu annonce les calories avant d'enregistrer ; × revient sans rien changer.
+  await goals.getByRole("link", { name: /^Objectif/ }).click();
+  await page.getByText("Maintenir mon poids").click();
+  await expect(page.getByText(/Ton objectif (passera de|reste à)/)).toBeVisible();
+  await page.getByRole("link", { name: "Annuler" }).click();
+  await expect(page).toHaveURL(/\/profile$/);
 });
 
 test("export des données en JSON et CSV", async ({ page }) => {

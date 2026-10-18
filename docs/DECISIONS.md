@@ -426,6 +426,27 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 036 — « Mes objectifs » dans Moi, réglés en plein écran
+
+- **Date** : 2026-10-18 · **Statut** : adoptée
+- **Contexte** : après l'inscription, l'objectif (perdre, maintenir, prendre), le rythme et
+  le niveau d'activité ne se changeaient nulle part ; le poids visé était dans Poids, l'eau
+  dans Préférences, le jeûne dans Jeûne. Adel aime les réglages en cartes d'une appli du
+  marché, avec la valeur à droite et un écran plein pour la changer.
+- **Décision** : une carte « Mes objectifs » en tête de Moi (objectif, poids visé, calories,
+  eau, jeûne, activité) avec la valeur en cours ; chaque ligne ouvre un réglage plein écran
+  (× pour annuler, ✓ pour enregistrer), avec une règle à glisser pour le poids visé, l'eau
+  et les calories choisies à la main (maquette https://claude.ai/artifact/D4LHgu5MvuAC95NfzTpoyT).
+  Changer d'objectif, de rythme ou d'activité recalcule les calories dès aujourd'hui, sur la
+  dépense mesurée si le bilan du lundi a assez de données, sinon sur la formule ; un aperçu
+  l'annonce avant d'enregistrer. Les calories peuvent être choisies à la main (jamais sous
+  le plancher, au plus 5 000 kcal) : l'objectif est alors figé, comme « Figer mon objectif ».
+- **Conséquences** : l'objectif d'eau quitte Préférences. Le poids visé reste aussi réglable
+  depuis Poids. Le jeûne garde sa page, la ligne y mène. Pas d'objectif de pas : l'app n'en a
+  pas.
+
+---
+
 ## Modèle
 
 ```markdown

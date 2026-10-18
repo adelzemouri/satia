@@ -52,7 +52,7 @@ export function BottomNav({ ai }: { ai: boolean }) {
   const pathname = usePathname();
   const [cameraOpen, setCameraOpen] = useState(false);
   // Pendant l'onboarding, on va au bout avant de pouvoir partir ailleurs dans l'app.
-  if (pathname === "/onboarding") return null;
+  if (pathname === "/onboarding" || pathname.startsWith("/profile/goals/")) return null;
   return (
     <>
       <nav
