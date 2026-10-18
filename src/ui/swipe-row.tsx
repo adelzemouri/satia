@@ -28,11 +28,14 @@ export function SwipeRow({
   children,
   onSwipeLeft,
   leftLabel,
+  muted = false,
 }: {
   children: ReactNode;
   onSwipeLeft: () => void;
   /** Texte révélé en glissant vers la gauche (supprimer). */
   leftLabel: string;
+  /** La ligne est posée sur un fond gris (plat du journal) : elle en prend la couleur. */
+  muted?: boolean;
 }) {
   const [dx, setDx] = useState(0);
   const [armed, setArmed] = useState(false);
@@ -55,7 +58,7 @@ export function SwipeRow({
         <div
           aria-hidden="true"
           className={`absolute inset-0 flex items-center justify-end px-5 font-bold transition-colors duration-150 ${
-            ready ? "bg-accent text-on-accent" : "bg-surface-muted text-text-muted"
+            ready ? "bg-accent text-on-accent" : `${muted ? "bg-surface" : "bg-surface-muted"} text-text-muted`
           }`}
         >
           <span className={`flex items-center gap-2 transition-transform duration-150 ${ready ? "scale-110" : ""}`}>
@@ -65,7 +68,7 @@ export function SwipeRow({
         </div>
       )}
       <div
-        className={`relative touch-pan-y bg-surface active:bg-surface-muted ${
+        className={`relative touch-pan-y ${muted ? "bg-surface-muted active:bg-border" : "bg-surface active:bg-surface-muted"} ${
           dragging ? "transition-colors" : "transition-[transform,background-color] duration-200 ease-out-strong"
         }`}
         style={{

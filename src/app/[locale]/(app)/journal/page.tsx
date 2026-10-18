@@ -252,35 +252,53 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
                 caption={`${t(`slots.${slot}`)} · ${dayTitle}`}
               />
             )}
-            <ul className="flex flex-col divide-y divide-border">
-              {groupByDish(entries).flatMap((group) => [
-                group.dish && (
-                  <li key={`dish-${group.items[0]!.id}`} className="pt-3 pb-1 text-sm font-semibold text-text-muted">
-                    <JournalDishName name={group.dish} ids={group.items.map((entry) => entry.id)} />
+            {/* Un plat et ses aliments sont encadrés ensemble : on voit où il commence et où il finit. */}
+            <ul className="flex flex-col divide-y divide-border [&>li:has(+li>section)]:border-b-0!">
+              {groupByDish(entries).map((group) => {
+                const rows = (muted: boolean) =>
+                  group.items.map((entry) => (
+                    <li key={entry.id}>
+                      <EntryRow
+                        entry={{
+                          id: entry.id,
+                          label: entry.label,
+                          quantity: entry.quantity,
+                          unit: entry.unit,
+                          grams: entry.grams,
+                          kcal: entry.kcal,
+                          proteinG: entry.proteinG,
+                          carbsG: entry.carbsG,
+                          fatG: entry.fatG,
+                          slot: entry.slot,
+                          isEstimated: entry.isEstimated,
+                          imageUrl: (entry.foodId && foods.get(entry.foodId)?.imageUrl) || null,
+                        }}
+                        units={unitsFor(entry.foodId, entry.unit)}
+                        muted={muted}
+                      />
+                    </li>
+                  ));
+                if (!group.dish) return rows(false);
+                const dishKcal = Math.round(group.items.reduce((sum, entry) => sum + entry.kcal, 0));
+                return (
+                  <li key={`dish-${group.items[0]!.id}`} className="border-b-0! py-2">
+                    <section aria-label={group.dish} className="rounded-2xl bg-surface-muted px-3 pt-1.5 pb-1">
+                      <div className="text-sm font-bold">
+                        <JournalDishName
+                          name={group.dish}
+                          ids={group.items.map((entry) => entry.id)}
+                          trailing={
+                            <span className="font-semibold text-text-muted tabular-nums">
+                              {t("common.kcal", { value: dishKcal })}
+                            </span>
+                          }
+                        />
+                      </div>
+                      <ul className="flex flex-col divide-y divide-border">{rows(true)}</ul>
+                    </section>
                   </li>
-                ),
-                ...group.items.map((entry) => (
-                  <li key={entry.id}>
-                    <EntryRow
-                      entry={{
-                        id: entry.id,
-                        label: entry.label,
-                        quantity: entry.quantity,
-                        unit: entry.unit,
-                        grams: entry.grams,
-                        kcal: entry.kcal,
-                        proteinG: entry.proteinG,
-                        carbsG: entry.carbsG,
-                        fatG: entry.fatG,
-                        slot: entry.slot,
-                        isEstimated: entry.isEstimated,
-                        imageUrl: (entry.foodId && foods.get(entry.foodId)?.imageUrl) || null,
-                      }}
-                      units={unitsFor(entry.foodId, entry.unit)}
-                    />
-                  </li>
-                )),
-              ])}
+                );
+              })}
             </ul>
           </Card>
         );

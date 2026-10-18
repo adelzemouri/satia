@@ -37,7 +37,18 @@ const COLLAPSE_MS = 200;
 const selectClass = "min-h-12 rounded-2xl border border-border bg-surface px-3 text-base";
 
 /** Une ligne du journal, qui se déplie pour modifier la quantité, l'unité ou le repas. */
-export function EntryRow({ entry, units, readOnly = false }: { entry: EntryView; units: Unit[]; readOnly?: boolean }) {
+export function EntryRow({
+  entry,
+  units,
+  readOnly = false,
+  muted = false,
+}: {
+  entry: EntryView;
+  units: Unit[];
+  readOnly?: boolean;
+  /** Ligne d'un plat, posée sur le fond gris de son encadré. */
+  muted?: boolean;
+}) {
   const t = useTranslations();
   const errorText = useErrorText();
   const toast = useToast();
@@ -142,7 +153,7 @@ export function EntryRow({ entry, units, readOnly = false }: { entry: EntryView;
       style={{ transitionDuration: `${COLLAPSE_MS}ms` }}
     >
       <div className={`flex min-h-0 min-w-0 flex-col gap-3 py-2 ${collapsing ? "overflow-hidden" : ""}`}>
-        <SwipeRow key={restored} onSwipeLeft={remove} leftLabel={t("journal.delete")}>
+        <SwipeRow key={restored} onSwipeLeft={remove} leftLabel={t("journal.delete")} muted={muted}>
           <button
             type="button"
             onClick={() => setOpen(!open)}
@@ -155,7 +166,10 @@ export function EntryRow({ entry, units, readOnly = false }: { entry: EntryView;
           </button>
         </SwipeRow>
         {open && (
-          <form action={save} className="flex flex-col gap-3 rounded-2xl bg-surface-muted p-3">
+          <form
+            action={save}
+            className={`flex flex-col gap-3 rounded-2xl p-3 ${muted ? "bg-surface" : "bg-surface-muted"}`}
+          >
             {error && <Alert>{errorText(error)}</Alert>}
             {macros}
             <div className="grid grid-cols-2 gap-3">
