@@ -14,6 +14,7 @@ import {
 } from "@/domain/quality";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
+import { useSheetDrag } from "@/ui/sheet-drag";
 
 type Props = {
   nutriscore: NutriscoreGrade | null;
@@ -48,6 +49,8 @@ export function QualityBadges({ nutriscore, novaGroup, novaMarkers, fiberG, suga
     dialog.current?.showModal();
   };
   const close = () => dialog.current?.close();
+  const scroller = useRef<HTMLDivElement>(null);
+  useSheetDrag(dialog, close, scroller);
 
   const markerLabel = (tag: string) => {
     const parsed = novaMarkerKey(tag);
@@ -107,7 +110,10 @@ export function QualityBadges({ nutriscore, novaGroup, novaMarkers, fiberG, suga
         onClose={() => setOpen(null)}
         className="sheet-in fixed inset-x-0 top-auto bottom-0 m-0 max-h-[85dvh] w-full max-w-none rounded-t-3xl bg-surface p-0 text-text backdrop:bg-black/40 lg:inset-0 lg:m-auto lg:h-fit lg:max-w-md lg:rounded-3xl"
       >
-        <div className="flex flex-col gap-4 overflow-y-auto px-5 pt-3 pb-[calc(1.25rem+env(safe-area-inset-bottom))] lg:pt-5">
+        <div
+          ref={scroller}
+          className="flex flex-col gap-4 overflow-y-auto px-5 pt-3 pb-[calc(1.25rem+env(safe-area-inset-bottom))] lg:pt-5"
+        >
           <span aria-hidden="true" className="mx-auto h-1 w-10 shrink-0 rounded-full bg-border lg:hidden" />
           <div className="flex items-center gap-3">
             <h2 id="quality-sheet-title" className="flex-1 font-display text-xl font-bold text-balance">

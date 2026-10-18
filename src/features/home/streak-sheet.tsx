@@ -6,6 +6,7 @@ import { useRef } from "react";
 import type { CalendarDay, StreakStats } from "@/domain/streak";
 import { formatDay, formatWeekday } from "@/ui/format-date";
 import { Icon } from "@/ui/icon";
+import { useSheetDrag } from "@/ui/sheet-drag";
 
 /**
  * Le compteur de jours de l'accueil et sa fiche « Ma série » : ce que compte le chiffre,
@@ -28,6 +29,7 @@ export function StreakSheet({
   const locale = useLocale();
   const dialog = useRef<HTMLDialogElement>(null);
   const close = () => dialog.current?.close();
+  useSheetDrag(dialog, close);
   const days = stats.current.days;
 
   return (

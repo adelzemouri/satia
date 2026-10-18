@@ -12,6 +12,7 @@ import { Alert } from "@/ui/alert";
 import { Button, buttonClass } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { haptic } from "@/ui/motion";
+import { useSheetDrag } from "@/ui/sheet-drag";
 import { useWeightShown } from "@/ui/private";
 import { useToast } from "@/ui/toast";
 
@@ -106,6 +107,8 @@ function WeighSheet({
   nextWeigh: string;
   onClose: () => void;
 }) {
+  const sheet = useRef<HTMLFormElement>(null);
+  useSheetDrag(sheet, onClose);
   const t = useTranslations("home.rituals");
   const errorText = useErrorText();
   const toast = useToast();
@@ -151,6 +154,7 @@ function WeighSheet({
     <div className="fixed inset-0 z-30 flex items-end justify-center lg:items-center">
       <button type="button" aria-label={t("close")} onClick={onClose} className="absolute inset-0 bg-text/45" />
       <form
+        ref={sheet}
         role="dialog"
         aria-modal="true"
         aria-labelledby="weigh-sheet-title"
