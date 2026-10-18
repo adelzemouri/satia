@@ -588,6 +588,7 @@
     "treatment_name_required": "Indique le nom du traitement.",
     "speech_unavailable": "La dictée est désactivée sur ce téléphone. Sur iPhone : Réglages > Général > Clavier > Activer la dictée. Tu peux aussi écrire ton repas.",
     "speech_silent": "Je n'ai rien entendu. Touche le micro et parle juste après.",
+    "speech_unrecognized": "Je n'ai reconnu aucun mot. Un nom rare passe mieux dans une phrase (« un msemen au miel »), ou écris-le.",
     "speech_mic": "Le micro est indisponible (peut-être utilisé par une autre app). Réessaie dans un instant.",
     "speech_network": "La dictée a besoin d'une connexion internet. Réessaie, ou écris ton repas."
   },
@@ -923,6 +924,7 @@
     "micStart": "Lancer la dictée",
     "micRetry": "Réessayer la dictée",
     "editText": "Corriger le texte",
+    "writeText": "Écrire à la place",
     "stop": "Arrêter"
   },
   "aiConfirm": {

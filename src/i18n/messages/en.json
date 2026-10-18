@@ -588,6 +588,7 @@
     "treatment_name_required": "Enter the treatment's name.",
     "speech_unavailable": "Dictation is turned off on this phone. On iPhone: Settings > General > Keyboard > Enable Dictation. You can also type your meal.",
     "speech_silent": "I didn't hear anything. Tap the mic and speak right away.",
+    "speech_unrecognized": "No word was recognised. An unusual name works better in a sentence (\"a msemen with honey\"), or type it.",
     "speech_mic": "The microphone is unavailable (maybe used by another app). Try again in a moment.",
     "speech_network": "Dictation needs an internet connection. Try again, or type your meal."
   },
@@ -923,6 +924,7 @@
     "micStart": "Start dictation",
     "micRetry": "Retry dictation",
     "editText": "Edit the text",
+    "writeText": "Type it instead",
     "stop": "Stop"
   },
   "aiConfirm": {

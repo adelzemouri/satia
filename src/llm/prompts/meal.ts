@@ -29,6 +29,7 @@ export const MEAL_TEXT_SYSTEM = [
   "Sépare les composants d'un plat cité (« pâtes au saumon » : pâtes cuites, saumon, crème).",
   "grams : poids comestible, celui indiqué sinon une portion habituelle. confidence : de 0 à 1.",
   "« Un verre » sans boisson nommée : eau, 250 g.",
+  "Le texte peut venir d'une dictée : un mot déformé qui sonne comme un aliment ou un plat connu se lit comme ce plat (« m'semen » : msemen).",
   DISH_RULE,
   PORTION_RULE,
   COUNT_RULE,

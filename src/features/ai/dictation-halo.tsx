@@ -178,7 +178,7 @@ export function DictationScreen({
                   disabled={pending}
                   className="min-h-11 underline underline-offset-4"
                 >
-                  {t("editText")}
+                  {text.trim() ? t("editText") : t("writeText")}
                 </button>
                 <button
                   type="button"
