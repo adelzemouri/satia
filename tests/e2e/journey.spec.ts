@@ -264,8 +264,15 @@ test("ajout manuel d'un repas depuis la base Ciqual", async ({ page }) => {
   await expect(page.getByRole("progressbar", { name: /kcal consommées/ })).not.toHaveAttribute("aria-valuenow", "0");
   // L'anneau du déjeuner affiche les calories du créneau sur sa part de l'objectif et ouvre son détail.
   await expect(page.getByRole("link", { name: "Voir le déjeuner" })).toContainText(/^Déjeuner5\d \/ \d/);
-  await expect(page.getByRole("link", { name: /1 jour d'affilée/ })).toBeVisible();
   await expectNoA11yViolations(page);
+  // Le compteur de jours ouvre la fiche « Ma série », qui explique ce qu'il compte.
+  await page.getByRole("button", { name: /1 jour d'affilée/ }).click();
+  const streakSheet = page.getByRole("dialog", { name: "Ma série" });
+  await expect(streakSheet.getByText("Un jour compte dès qu'un repas est noté.")).toBeVisible();
+  await expect(streakSheet.getByText(/Ta première étape arrive à 3 jours/)).toBeVisible();
+  await expectNoA11yViolations(page);
+  await streakSheet.getByRole("button", { name: "Fermer" }).click();
+  await expect(streakSheet).toBeHidden();
   await page.getByRole("link", { name: "Voir le déjeuner" }).click();
   await expect(page).toHaveURL(/\/journal\?date=.*#slot-lunch$/);
   await expect(page.getByRole("region", { name: "Déjeuner" }).getByText(/^Pomme, pulpe et peau, crue/)).toBeVisible();
