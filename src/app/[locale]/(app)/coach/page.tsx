@@ -8,7 +8,7 @@ import { CoachChat } from "@/features/coach/coach-chat";
 import { WeeklyReviewLoader } from "@/features/coach/weekly-review-loader";
 import { redirect } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
-import { lastWeekReview, listCoachMessages } from "@/server/coach";
+import { lastWeekReview, listCoachMessages, weeklyReviewIsStale } from "@/server/coach";
 import { getProfile } from "@/server/profile";
 import { requireUser } from "@/server/session";
 import { Card } from "@/ui/card";
@@ -20,6 +20,8 @@ export default async function CoachPage({ params, searchParams }: PageProps<"/[l
   const profile = await getProfile(user.id);
   if (!profile) return redirect({ href: "/onboarding", locale });
   const [review, messages] = await Promise.all([lastWeekReview(user.id), listCoachMessages(user.id)]);
+  // Repas de la semaine corrigés depuis la rédaction du bilan : il est réécrit en arrière-plan.
+  const reviewStale = review !== null && (await weeklyReviewIsStale(review, user.id));
   const t = await getTranslations("coach");
   const ask = (await searchParams).ask;
   const hour = Number(
@@ -66,6 +68,7 @@ export default async function CoachPage({ params, searchParams }: PageProps<"/[l
                 </ul>
               </>
             )}
+            {reviewStale && <WeeklyReviewLoader refresh />}
           </>
         ) : (
           <WeeklyReviewLoader />

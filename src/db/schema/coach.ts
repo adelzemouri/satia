@@ -19,7 +19,13 @@ export const coachMessages = pgTable(
   (t) => [index().on(t.userId, t.createdAt)],
 );
 
-export type WeeklyReviewContent = { summary: string; highlights: string[]; ideas: string[] };
+export type WeeklyReviewContent = {
+  summary: string;
+  highlights: string[];
+  ideas: string[];
+  /** Données envoyées au LLM : si elles changent (repas corrigés après coup), le bilan est réécrit. */
+  source?: string;
+};
 
 /** Bilan hebdomadaire rédigé par le coach : un par utilisateur et par semaine écoulée. */
 export const coachReviews = pgTable(

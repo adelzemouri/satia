@@ -18,6 +18,7 @@ import {
   listCoachMessages,
   sendCoachMessage,
   suggestedDish,
+  weeklyReviewIsStale,
 } from "@/server/coach";
 import { collectUserData } from "@/server/data-export";
 import { createRecipe, searchFoods } from "@/server/foods";
@@ -180,6 +181,24 @@ describe("coach", () => {
     expect(await ensureWeeklyReview(userId, today)).toEqual(review);
     expect(await lastWeekReview(userId, today)).toEqual(review);
     expect(await db().select().from(llmCalls)).toHaveLength(1);
+    expect(await db().select().from(coachReviews)).toHaveLength(1);
+
+    expect(await weeklyReviewIsStale(review!, userId, today)).toBe(false);
+
+    // Un repas de la semaine corrigé après coup : le bilan est réécrit une fois, pas plus.
+    await addEntry(userId, {
+      date: addDays(lastMonday, 3),
+      slot: "dinner",
+      foodId: lentils.id,
+      quantity: 200,
+      unit: "g",
+    });
+    expect(await weeklyReviewIsStale(review!, userId, today)).toBe(true);
+    const rewritten = await ensureWeeklyReview(userId, today);
+    expect(rewritten!.content.source).toContain("Jours saisis : 4/7");
+    expect(await weeklyReviewIsStale(rewritten!, userId, today)).toBe(false);
+    expect(await ensureWeeklyReview(userId, today)).toEqual(rewritten);
+    expect(await db().select().from(llmCalls)).toHaveLength(2);
     expect(await db().select().from(coachReviews)).toHaveLength(1);
 
     const data = await collectUserData(userId);

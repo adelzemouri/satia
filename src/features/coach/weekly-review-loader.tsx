@@ -7,9 +7,10 @@ import { ensureWeeklyReviewAction } from "./actions";
 
 /**
  * Demande la rédaction du bilan de la semaine écoulée après l'affichage de la page, pour ne
- * pas la ralentir ; la page se met à jour quand le bilan est prêt.
+ * pas la ralentir ; la page se met à jour quand le bilan est prêt. Avec `refresh`, un bilan est
+ * déjà affiché mais ses repas ont changé : il est réécrit, sans message s'il ne peut pas l'être.
  */
-export function WeeklyReviewLoader() {
+export function WeeklyReviewLoader({ refresh = false }: { refresh?: boolean }) {
   const t = useTranslations("coach");
   const [pending, startTransition] = useTransition();
   const [done, setDone] = useState(false);
@@ -21,10 +22,10 @@ export function WeeklyReviewLoader() {
     });
   }, []);
 
-  if (done && !pending) return <p className="text-text-muted">{t("reviewEmpty")}</p>;
+  if (done && !pending) return refresh ? null : <p className="text-text-muted">{t("reviewEmpty")}</p>;
   return (
-    <p role="status" className="text-text-muted">
-      {t("reviewLoading")}
+    <p role="status" className={refresh ? "text-sm text-text-muted" : "text-text-muted"}>
+      {t(refresh ? "reviewRefreshing" : "reviewLoading")}
     </p>
   );
 }
