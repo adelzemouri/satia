@@ -109,6 +109,12 @@ Le choix précis te revient, mais il doit respecter :
 - Ne pas acquiescer par défaut : si une meilleure option existe, la proposer avec
   sa raison et laisser Adel trancher. Si la demande tient, le dire simplement.
 - Pour une nouvelle fonctionnalité visible, montrer une maquette avant le code.
+- Tout nouvel écran ou changement de mise en page prévoit sa version ordinateur
+  (≥ 1024 px) en plus du téléphone : la maquette montre les deux formats, puis on
+  vérifie par captures à la largeur d'un téléphone et à 1440 px avant de livrer.
+  Réutiliser les règles en place : barre latérale toujours visible, `<Columns>` /
+  `data-wide` pour les pages en cartes, carte ou panneau centré plutôt que plein écran,
+  formulaires simples volontairement étroits, `loading.tsx` mis à jour avec la page.
 
 ## Commits
 - Format Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `test:`, `refactor:`…).

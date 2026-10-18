@@ -444,6 +444,8 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 - **Conséquences** : l'objectif d'eau quitte Préférences. Le poids visé reste aussi réglable
   depuis Poids. Le jeûne garde sa page, la ligne y mène. Pas d'objectif de pas : l'app n'en a
   pas.
+  Sur ordinateur (≥ 1024 px, depuis le 2026-10-18), le réglage est une carte centrée dans la
+  page, barre latérale visible, et non un plein écran.
 
 ---
 
