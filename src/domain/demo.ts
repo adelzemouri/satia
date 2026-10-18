@@ -107,72 +107,107 @@ const CIQUAL = {
 
 const FRUITS = [CIQUAL.apple, CIQUAL.banana, CIQUAL.kiwi, CIQUAL.clementine];
 
+/** Repas du jour, dans l'ordre de la journée, avec l'heure à partir de laquelle on les a « mangés ». */
+export const DEMO_SLOT_TIMES: readonly { slot: MealSlot; time: string }[] = [
+  { slot: "breakfast", time: "07:30" },
+  { slot: "lunch", time: "12:30" },
+  { slot: "snack", time: "16:30" },
+  { slot: "dinner", time: "19:30" },
+];
+
+/** Repas déjà passés à l'heure `time` (« HH:MM »). Le petit-déjeuner est toujours là. */
+export function demoSlotsBefore(time: string): MealSlot[] {
+  return DEMO_SLOT_TIMES.filter((row, i) => i === 0 || row.time <= time).map((row) => row.slot);
+}
+
 /** Historique de démonstration se terminant aujourd'hui (petit-déjeuner du jour seulement). */
 export function demoData(today: string, seed = "pommelia-demo"): DemoData {
   const random = seededRandom(seed);
-  const pick = <T>(items: readonly T[]): T => items[Math.floor(random() * items.length)]!;
-  const chance = (p: number) => random() < p;
-  const round = (value: number, step: number) => Math.round(value / step) * step;
-
   const start = addDays(today, -DEMO_DAYS);
   // Deux jours sans saisie dans les semaines anciennes : un historique réel n'est jamais parfait.
   const skipped = new Set([
     addDays(today, -(18 + Math.floor(random() * 6))),
     addDays(today, -(28 + Math.floor(random() * 5))),
   ]);
+  return demoDays({ start, from: start, today, todaySlots: ["breakfast"], skipped, seed });
+}
 
+/**
+ * Journées de démonstration du `from` au `today` inclus. Chaque jour a son propre tirage
+ * (graine + date) : une journée est la même qu'on la crée à la réinitialisation ou plus tard
+ * pour combler un trou. Le poids suit une pente douce depuis `start`, le début de l'historique.
+ * Pour aujourd'hui, seuls les repas `todaySlots` sont saisis.
+ */
+export function demoDays(options: {
+  start: string;
+  from: string;
+  today: string;
+  todaySlots: readonly MealSlot[];
+  skipped?: ReadonlySet<string>;
+  seed?: string;
+}): DemoData {
+  const { start, from, today, todaySlots, skipped = new Set<string>(), seed = "pommelia-demo" } = options;
   const data: DemoData = { start, entries: [], weights: [], water: [], checkins: [], activities: [], steps: [] };
-  const add = (date: string, slot: MealSlot, food: DemoFoodRef, quantity = 1, unit: Unit = "portion") =>
-    data.entries.push({ date, slot, food, quantity, unit });
 
   // Environ 0,4 kg perdu par semaine, avec les variations d'un jour à l'autre.
   const weeklyLoss = 0.4;
-  for (let offset = -DEMO_DAYS; offset <= 0; offset++) {
-    const date = addDays(today, offset);
-    const elapsedDays = offset + DEMO_DAYS;
-    const isToday = offset === 0;
+  for (let date = from; date <= today; date = addDays(date, 1)) {
+    const random = seededRandom(`${seed}:${date}`);
+    const pick = <T>(items: readonly T[]): T => items[Math.floor(random() * items.length)]!;
+    const chance = (p: number) => random() < p;
+    const round = (value: number, step: number) => Math.round(value / step) * step;
+    const entries: DemoEntry[] = [];
+    const add = (slot: MealSlot, food: DemoFoodRef, quantity = 1, unit: Unit = "portion") =>
+      entries.push({ date, slot, food, quantity, unit });
+
+    const elapsedDays = Math.round((Date.parse(date) - Date.parse(start)) / 86_400_000);
+    const isToday = date === today;
     const weekday = new Date(`${date}T00:00:00Z`).getUTCDay();
     const weekend = weekday === 0 || weekday === 6;
 
+    const noise = random();
     if (elapsedDays % 3 === 0 || isToday) {
       const trend = DEMO_PROFILE.startWeightKg - (weeklyLoss * elapsedDays) / 7;
-      data.weights.push({ date, weightKg: round(trend + (random() - 0.5) * 0.6, 0.1) });
+      data.weights.push({ date, weightKg: round(trend + (noise - 0.5) * 0.6, 0.1) });
     }
 
     if (skipped.has(date)) continue;
 
     // Petit-déjeuner
-    if (weekend && chance(0.5)) add(date, "breakfast", { recipe: "pancakes-banane" });
-    else add(date, "breakfast", { recipe: pick(BREAKFASTS) });
-    if (chance(0.7)) add(date, "breakfast", { ciqual: CIQUAL.coffeeWithMilk }, 200, "ml");
-
-    if (isToday) {
-      data.water.push({ date, glasses: 2 });
-      break;
-    }
+    if (weekend && chance(0.5)) add("breakfast", { recipe: "pancakes-banane" });
+    else add("breakfast", { recipe: pick(BREAKFASTS) });
+    if (chance(0.7)) add("breakfast", { ciqual: CIQUAL.coffeeWithMilk }, 200, "ml");
 
     // Déjeuner : un plat ou une salade (parfois une portion et demie), du pain, un yaourt ou un fruit
-    add(date, "lunch", { recipe: chance(0.35) ? pick(SALADS) : pick(MAINS) }, pick([1, 1, 1.5]));
-    if (chance(0.5)) add(date, "lunch", { ciqual: CIQUAL.wholemealBread }, 1, "slice");
-    if (chance(0.5)) add(date, "lunch", { ciqual: CIQUAL.plainYogurt }, 1, "piece");
-    else add(date, "lunch", { ciqual: pick(FRUITS) }, 1, "piece");
+    add("lunch", { recipe: chance(0.35) ? pick(SALADS) : pick(MAINS) }, pick([1, 1, 1.5]));
+    if (chance(0.5)) add("lunch", { ciqual: CIQUAL.wholemealBread }, 1, "slice");
+    if (chance(0.5)) add("lunch", { ciqual: CIQUAL.plainYogurt }, 1, "piece");
+    else add("lunch", { ciqual: pick(FRUITS) }, 1, "piece");
 
     // Dîner : une soupe avec du pain et un dessert, ou un plat
     if (chance(0.3)) {
-      add(date, "dinner", { recipe: pick(SOUPS) }, pick([1, 1.5]));
-      add(date, "dinner", { ciqual: CIQUAL.wholemealBread }, 2, "slice");
-      add(date, "dinner", { recipe: pick(SNACK_RECIPES) });
+      add("dinner", { recipe: pick(SOUPS) }, pick([1, 1.5]));
+      add("dinner", { ciqual: CIQUAL.wholemealBread }, 2, "slice");
+      add("dinner", { recipe: pick(SNACK_RECIPES) });
     } else {
-      add(date, "dinner", { recipe: pick(MAINS) }, pick([1, 1.5]));
-      if (chance(0.4)) add(date, "dinner", { ciqual: pick(FRUITS) }, 1, "piece");
+      add("dinner", { recipe: pick(MAINS) }, pick([1, 1.5]));
+      if (chance(0.4)) add("dinner", { ciqual: pick(FRUITS) }, 1, "piece");
     }
 
     // Collation l'après-midi, parfois deux
-    if (chance(0.5)) add(date, "snack", { recipe: pick(SNACK_RECIPES) });
-    else add(date, "snack", { ciqual: CIQUAL.almonds }, 20, "g");
-    if (chance(0.4)) add(date, "snack", { ciqual: pick(FRUITS) }, 1, "piece");
+    if (chance(0.5)) add("snack", { recipe: pick(SNACK_RECIPES) });
+    else add("snack", { ciqual: CIQUAL.almonds }, 20, "g");
+    if (chance(0.4)) add("snack", { ciqual: pick(FRUITS) }, 1, "piece");
 
-    data.water.push({ date, glasses: 5 + Math.floor(random() * 5) });
+    const glasses = 5 + Math.floor(random() * 5);
+
+    if (isToday) {
+      data.entries.push(...entries.filter((entry) => todaySlots.includes(entry.slot)));
+      data.water.push({ date, glasses: Math.min(glasses, 2 * todaySlots.length) });
+      break;
+    }
+    data.entries.push(...entries);
+    data.water.push({ date, glasses });
 
     if (chance(0.75)) {
       data.checkins.push({

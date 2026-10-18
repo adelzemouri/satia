@@ -2,11 +2,12 @@ import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { db } from "@/db/client";
-import { account, households, mealEntries, user } from "@/db/schema";
+import { account, households, mealEntries, user, weightEntries } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
+import { addDays } from "@/domain/energy";
 import { DEMO_EMAIL } from "@/domain/demo";
 import { listMembers, setupFirstAdmin } from "@/server/accounts";
-import { demoAccountStatus, deleteDemoAccount, resetDemoAccount } from "@/server/demo";
+import { demoAccountStatus, deleteDemoAccount, fillDemoGaps, resetDemoAccount } from "@/server/demo";
 import { daySummary, weightOverview } from "@/server/journal";
 import { getProfile } from "@/server/profile";
 import { verifyPassword } from "@/server/password";
@@ -62,5 +63,50 @@ describe("compte démo", () => {
     expect(await demoAccountStatus()).toBeNull();
     expect(await db().select().from(user)).toHaveLength(1);
     expect((await db().select().from(households)).map((row) => row.name)).toEqual(["Famille"]);
+  });
+
+  it("complète les jours vides sans toucher aux jours saisis ni au mot de passe", async () => {
+    await adminHousehold();
+    const { password } = await resetDemoAccount("2026-09-20");
+    const [demo] = await db().select().from(user).where(eq(user.email, DEMO_EMAIL));
+    const before = await db().select().from(mealEntries).where(eq(mealEntries.userId, demo!.id));
+    const weightsBefore = await db().select().from(weightEntries).where(eq(weightEntries.userId, demo!.id));
+
+    const now = new Date("2026-10-01T11:00:00Z"); // 13 h à Paris
+    const { days } = await fillDemoGaps(now);
+    // Du 20 septembre (le petit-déjeuner y est déjà) au 1er octobre, plus les deux jours sautés.
+    expect(days).toBe(11 + 2);
+
+    const after = await db().select().from(mealEntries).where(eq(mealEntries.userId, demo!.id));
+    const ids = new Set(after.map((entry) => entry.id));
+    expect(before.every((entry) => ids.has(entry.id))).toBe(true);
+    expect(after.filter((entry) => entry.date === "2026-09-20")).toHaveLength(
+      before.filter((entry) => entry.date === "2026-09-20").length,
+    );
+    for (let date = "2026-08-16"; date <= "2026-10-01"; date = addDays(date, 1)) {
+      expect(
+        after.some((entry) => entry.date === date),
+        date,
+      ).toBe(true);
+    }
+    expect(new Set(after.filter((entry) => entry.date === "2026-10-01").map((entry) => entry.slot))).toEqual(
+      new Set(["breakfast", "lunch"]),
+    );
+    const weightsAfter = await db().select().from(weightEntries).where(eq(weightEntries.userId, demo!.id));
+    for (const row of weightsBefore) expect(weightsAfter).toContainEqual(row);
+    expect(weightsAfter.length).toBeGreaterThan(weightsBefore.length);
+
+    const [credential] = await db().select().from(account).where(eq(account.userId, demo!.id));
+    expect(await verifyPassword({ hash: credential!.password!, password })).toBe(true);
+    expect(await fillDemoGaps(now)).toEqual({ days: 0 });
+
+    // Le soir, les repas passés depuis la dernière visite s'ajoutent à aujourd'hui.
+    expect(await fillDemoGaps(new Date("2026-10-01T18:00:00Z"))).toEqual({ days: 1 });
+    const evening = await db().select().from(mealEntries).where(eq(mealEntries.userId, demo!.id));
+    const lunches = (rows: typeof evening) => rows.filter((e) => e.date === "2026-10-01" && e.slot === "lunch");
+    expect(lunches(evening)).toHaveLength(lunches(after).length);
+    expect(new Set(evening.filter((e) => e.date === "2026-10-01").map((e) => e.slot))).toEqual(
+      new Set(["breakfast", "lunch", "snack", "dinner"]),
+    );
   });
 });

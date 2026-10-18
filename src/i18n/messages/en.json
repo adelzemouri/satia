@@ -490,7 +490,7 @@
     "pushPrivateWarning": "Keep the private key secret: paste it only into Vercel.",
     "pushSchedule": "Reminders are sent by the “Notifications” scheduled task in GitHub Actions (every 15 minutes).",
     "demo": "Demo account",
-    "demoHint": "To let someone try Pommelia: a fictional account (Camille) with five weeks of meals, weigh-ins and activity, in a separate household. The visitor sees nothing of your family and has no access to administration.",
+    "demoHint": "To let someone try Pommelia: a fictional account (Camille) with five weeks of meals, weigh-ins and activity, in a separate household. Days with nothing logged fill themselves on each visit, without erasing anything. The visitor sees nothing of your family and has no access to administration.",
     "demoNone": "No demo account yet.",
     "demoStatus": "Account {email}, data created on {date}.",
     "demoCreate": "Create the demo account",
