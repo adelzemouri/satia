@@ -23,11 +23,14 @@ export function QuickAddButton({
   date,
   slot,
   onError,
+  onAdded,
 }: {
   food: RecentItem;
   date: string;
   slot: MealSlot;
   onError: (error: string) => void;
+  /** Appelé une fois la ligne ajoutée (ou mise en attente hors ligne). */
+  onAdded?: () => void;
 }) {
   const t = useTranslations("add");
   const tSlots = useTranslations("slotsLower");
@@ -42,6 +45,7 @@ export function QuickAddButton({
       const queue = () => {
         offline!.queue({ ...input, inputMethod: "manual", label: food.nameFr, kcal: Math.round(food.lastKcal) });
         setAdded(true);
+        onAdded?.();
       };
       if (offline && !navigator.onLine) return queue();
       try {
@@ -49,6 +53,7 @@ export function QuickAddButton({
         if (result?.error) return onError(result.error);
         setAdded(true);
         haptic();
+        onAdded?.();
         const id = result?.id;
         toast({
           message: t("addedTo", { name: shortFoodName(food.nameFr), slot: tSlots(slot) }),

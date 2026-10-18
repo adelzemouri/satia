@@ -323,7 +323,7 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ## 030 — Le + ouvre un éventail d'actions
 
-- **Date** : 2026-10-14 · **Statut** : adoptée
+- **Date** : 2026-10-14 · **Statut** : remplacée par 035
 - **Contexte** : Adel trouve le + de la barre du bas trop gros et voudrait qu'il s'anime. Il
   ouvrait la page Ajouter, qui attend une dizaine de lectures en base avant de s'afficher.
 - **Décision** : un + plus petit qui tourne en × et fait jaillir en éventail la photo, la
@@ -404,6 +404,25 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 - **Conséquences** : une expression personnelle n'est plus reconnue dès la première fois ;
   il faut deux corrections pour qu'une habitude prenne le relais. Les tables pourront être
   supprimées plus tard, dans un déploiement à part.
+
+---
+
+## 035 — Le + ouvre l'appareil photo
+
+- **Date** : 2026-10-18 · **Statut** : adoptée (remplace 030)
+- **Contexte** : Adel aime l'appareil photo intégré d'une appli du marché : le + ouvre la
+  caméra tout de suite, avec les autres façons d'ajouter en bas. L'éventail demandait une
+  touche de plus pour la photo et une page à part pour le code-barres.
+- **Décision** : sur téléphone, le + ouvre un appareil photo plein écran (maquette
+  https://claude.ai/artifact/D4LHgu5MvuAC95NfzTpoyT) : modes Photo et Code-barres sur la
+  même caméra, Voix et Chercher qui mènent à l'écran d'ajout, galerie, « Écrire mon repas »
+  et une liste « Récents » (ajout d'un geste de la dernière portion). Sans IA, il s'ouvre
+  sur le code-barres. La caméra passe par `getUserMedia` (`features/scan/use-camera.ts`),
+  partagée par l'écran de scan.
+- **Conséquences** : chaque + allume la caméra, même pour chercher un aliment. Sur iPhone,
+  pas de lampe (Safari ne la donne pas ; proposée seulement quand le téléphone la permet)
+  et l'autorisation caméra peut être redemandée. Si la caméra est refusée, le déclencheur
+  ouvre l'appareil photo du téléphone. Sur ordinateur, rien ne change.
 
 ---
 

@@ -78,7 +78,7 @@ export function AiEntry({
     speech.start();
   };
 
-  // Départ rapide depuis le + de la barre du bas : la photo déjà prise, ou la dictée à lancer.
+  // Départ rapide depuis l'appareil photo du + : la photo déjà prise, la dictée à lancer ou le texte à écrire.
   const quickStart = useEffectEvent((start: QuickStart) => {
     if (!availability.available) return;
     setError(null);
@@ -89,6 +89,7 @@ export function AiEntry({
     }
     setPhoto(null);
     setDescribing(true);
+    if (start.kind === "write") return setVoice(false);
     if (speech.supported && !speech.listening) dictate();
   });
   useEffect(() => onQuickStart(quickStart), []);

@@ -1,8 +1,9 @@
 /**
- * Départ rapide de la saisie IA depuis le + de la barre du bas : la photo déjà prise ou la dictée
- * à lancer est remise à l'écran d'ajout, qu'il soit déjà ouvert ou qu'il s'ouvre juste après.
+ * Départ rapide de la saisie IA depuis l'appareil photo du + : la photo déjà prise, la dictée à
+ * lancer ou le champ à écrire est remis à l'écran d'ajout, qu'il soit déjà ouvert ou qu'il s'ouvre
+ * juste après.
  */
-export type QuickStart = { kind: "photo"; file: File } | { kind: "voice" };
+export type QuickStart = { kind: "photo"; file: File } | { kind: "voice" } | { kind: "write" };
 
 let pending: QuickStart | null = null;
 let listener: ((start: QuickStart) => void) | null = null;
