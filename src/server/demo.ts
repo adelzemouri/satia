@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, count, eq, inArray, or } from "drizzle-orm";
+import { and, asc, count, eq, gte, inArray, or } from "drizzle-orm";
 
 import { db } from "@/db/client";
 import {
@@ -20,6 +20,7 @@ import {
   weightEntries,
 } from "@/db/schema";
 import { activityKcal } from "@/domain/activity";
+import { APP_TIMEZONE } from "@/config/app";
 import { todayIso } from "@/domain/dates";
 import {
   DEMO_COACH_MESSAGES,
@@ -29,6 +30,8 @@ import {
   type DemoEntry,
   type DemoFoodRef,
   demoData,
+  demoDays,
+  demoSlotsBefore,
 } from "@/domain/demo";
 import { addDays, computePlan } from "@/domain/energy";
 import { nutrientsFor } from "@/domain/nutrition";
@@ -171,6 +174,105 @@ export async function resetDemoAccount(today: string = todayIso()): Promise<{ em
   });
 
   return { email: DEMO_EMAIL, password };
+}
+
+/**
+ * Complète les jours vides du compte démo (aucun repas saisi) depuis le début de son historique
+ * jusqu'à aujourd'hui, sans toucher à ce qui existe ni au mot de passe. Aujourd'hui ne reçoit
+ * que les repas dont l'heure est passée. Renvoie le nombre de jours remplis.
+ */
+export async function fillDemoGaps(now: Date = new Date()): Promise<{ days: number }> {
+  const [demo] = await db()
+    .select({ id: user.id, createdAt: user.createdAt })
+    .from(user)
+    .where(eq(user.email, DEMO_EMAIL));
+  if (!demo) throw new DomainError("not_found");
+  const userId = demo.id;
+  const today = todayIso(now);
+  const [firstGoal] = await db()
+    .select({ effectiveFrom: goals.effectiveFrom })
+    .from(goals)
+    .where(eq(goals.userId, userId))
+    .orderBy(asc(goals.effectiveFrom))
+    .limit(1);
+  const start = firstGoal?.effectiveFrom ?? todayIso(demo.createdAt);
+
+  const logged = await db()
+    .selectDistinct({ date: mealEntries.date })
+    .from(mealEntries)
+    .where(and(eq(mealEntries.userId, userId), gte(mealEntries.date, start)));
+  const loggedDates = new Set(logged.map((row) => row.date));
+  const time = new Intl.DateTimeFormat("en-GB", {
+    timeZone: APP_TIMEZONE,
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(now);
+  const data = demoDays({ start, from: start, today, todaySlots: demoSlotsBefore(time) });
+  const empty = (row: { date: string }) => !loggedDates.has(row.date);
+  const entries = data.entries.filter(empty);
+  const days = new Set(entries.map((entry) => entry.date));
+  if (days.size === 0) return { days: 0 };
+  const isFilled = (row: { date: string }) => days.has(row.date);
+
+  await db().transaction(async (tx) => {
+    const resolve = await foodResolver(
+      tx,
+      entries.map((entry) => entry.food),
+    );
+    const rows = entries.flatMap((entry) => {
+      const line = resolve(entry);
+      return line ? [{ userId, date: entry.date, slot: entry.slot, inputMethod: "manual" as const, ...line }] : [];
+    });
+    if (rows.length > 0) await tx.insert(mealEntries).values(rows);
+
+    // Pesées, eau, ressenti et pas : une ligne par jour au plus, celle qui existe est gardée.
+    const weights = data.weights.filter(isFilled);
+    if (weights.length > 0) {
+      await tx
+        .insert(weightEntries)
+        .values(weights.map((row) => ({ userId, ...row })))
+        .onConflictDoNothing();
+    }
+    const water = data.water.filter(isFilled);
+    if (water.length > 0) {
+      await tx
+        .insert(waterLogs)
+        .values(water.map((row) => ({ userId, ...row })))
+        .onConflictDoNothing();
+    }
+    const checkins = data.checkins.filter(isFilled);
+    if (checkins.length > 0) {
+      await tx
+        .insert(dailyCheckins)
+        .values(checkins.map((row) => ({ userId, ...row })))
+        .onConflictDoNothing();
+    }
+    const steps = data.steps.filter(isFilled);
+    if (steps.length > 0) {
+      await tx
+        .insert(dailySteps)
+        .values(steps.map((row) => ({ userId, ...row })))
+        .onConflictDoNothing();
+    }
+    const existing = await tx
+      .selectDistinct({ date: activities.date })
+      .from(activities)
+      .where(and(eq(activities.userId, userId), inArray(activities.date, [...days])));
+    const withActivity = new Set(existing.map((row) => row.date));
+    const newActivities = data.activities.filter((row) => isFilled(row) && !withActivity.has(row.date));
+    if (newActivities.length > 0) {
+      await tx.insert(activities).values(
+        newActivities.map((row) => ({
+          userId,
+          ...row,
+          kcal: activityKcal(row.type, row.intensity, DEMO_PROFILE.startWeightKg, row.durationMin),
+        })),
+      );
+    }
+  });
+
+  return { days: days.size };
 }
 
 /** Charge en une requête les aliments utilisés par la démo et renvoie de quoi figer une ligne. */
