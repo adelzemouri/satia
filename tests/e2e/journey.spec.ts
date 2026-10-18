@@ -315,6 +315,7 @@ test("recette : l'ordre des ingrédients se change pendant la modification", asy
 });
 
 test("aliment personnel, favori, eau et poids", async ({ page }) => {
+  test.slow(); // garde un message en pause au-delà de son délai
   await signIn(page, ADMIN);
   await page.goto("/foods/new");
   await page.getByLabel("Nom", { exact: true }).fill("Granola maison");
@@ -357,11 +358,11 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await breakfast.getByRole("button", { name: "Modifier Granola maison" }).click();
   await breakfast.getByRole("button", { name: "Supprimer" }).click();
   await expect(breakfast.getByText("Granola maison")).toHaveCount(0);
-  await page
-    .getByRole("status")
-    .filter({ hasText: "Supprimé : Granola maison" })
-    .getByRole("button", { name: "Annuler" })
-    .click();
+  // Le focus sur « Annuler » arrête le décompte : le message reste au-delà des 5 secondes.
+  const deleted = page.getByRole("status").filter({ hasText: "Supprimé : Granola maison" });
+  await deleted.getByRole("button", { name: "Annuler" }).focus();
+  await page.waitForTimeout(6000);
+  await deleted.getByRole("button", { name: "Annuler" }).click();
   await expect(breakfast.getByText("Granola maison")).toBeVisible();
   await page.reload();
   await expect(page.getByRole("region", { name: "Petit-déjeuner" }).getByText("Granola maison")).toBeVisible();

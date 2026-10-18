@@ -33,6 +33,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const current = useRef<Shown | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const nextId = useRef(0);
+  // Temps restant avant la fermeture, et moment où le décompte a repris (null : en pause).
+  const remaining = useRef(DURATION_MS);
+  const startedAt = useRef<number | null>(null);
+  const [paused, setPaused] = useState(false);
 
   const close = useCallback((undone: boolean) => {
     clearTimeout(timer.current);
@@ -51,10 +55,30 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       const shown = { ...input, id: nextId.current };
       current.current = shown;
       setToast(shown);
+      setPaused(false);
+      remaining.current = DURATION_MS;
+      startedAt.current = Date.now();
       timer.current = setTimeout(() => close(false), DURATION_MS);
     },
     [close],
   );
+
+  // Le doigt posé, la souris au-dessus ou le focus sur « Annuler » arrêtent le décompte :
+  // on n'a jamais à se dépêcher pour annuler.
+  const pause = useCallback(() => {
+    if (!current.current || startedAt.current === null) return;
+    clearTimeout(timer.current);
+    remaining.current -= Date.now() - startedAt.current;
+    startedAt.current = null;
+    setPaused(true);
+  }, []);
+
+  const resume = useCallback(() => {
+    if (!current.current || startedAt.current !== null) return;
+    startedAt.current = Date.now();
+    timer.current = setTimeout(() => close(false), Math.max(remaining.current, 0));
+    setPaused(false);
+  }, [close]);
 
   // Une suppression en attente est faite même si l'app est fermée pendant le délai.
   useEffect(() => {
@@ -74,7 +98,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {toast && (
           <div
             key={toast.id}
-            className="toast-in pointer-events-auto flex min-h-12 w-full max-w-md items-center gap-3 rounded-2xl bg-text py-2 pr-2 pl-4 text-bg shadow-lg"
+            onPointerDown={pause}
+            onPointerUp={(event) => event.pointerType !== "mouse" && resume()}
+            onPointerCancel={resume}
+            onPointerEnter={(event) => event.pointerType === "mouse" && pause()}
+            onPointerLeave={resume}
+            onFocus={pause}
+            onBlur={(event) => !event.currentTarget.contains(event.relatedTarget) && resume()}
+            className="toast-in toast-surface pointer-events-auto relative flex min-h-12 w-full max-w-md items-center gap-3 overflow-hidden rounded-2xl bg-text pt-2 pr-2 pb-3 pl-4 text-bg shadow-lg"
           >
             <span className="min-w-0 flex-1 font-semibold">{toast.message}</span>
             {toast.undo && (
@@ -85,6 +116,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               >
                 {t("undo")}
               </button>
+            )}
+            {toast.undo && (
+              <span
+                aria-hidden="true"
+                className="absolute inset-x-4 bottom-1 h-[3px] overflow-hidden rounded-full bg-primary-soft/25"
+              >
+                <span
+                  className="toast-timer block h-full bg-primary-soft"
+                  style={{ animationDuration: `${DURATION_MS}ms`, animationPlayState: paused ? "paused" : "running" }}
+                />
+              </span>
             )}
           </div>
         )}
