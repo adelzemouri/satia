@@ -1234,6 +1234,7 @@
     "reviewTitle": "Bilan de la semaine dernière",
     "reviewLoading": "Le coach prépare ton bilan de la semaine…",
     "reviewEmpty": "Pas encore de bilan : il faut au moins 3 jours saisis la semaine dernière. Il sera prêt lundi prochain si tu continues.",
+    "reviewRefreshing": "Tes repas de la semaine ont changé : le coach met ton bilan à jour…",
     "highlights": "Ce qui a bien marché",
     "ideas": "Des idées pour cette semaine",
     "chatTitle": "Discuter",

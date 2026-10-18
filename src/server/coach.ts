@@ -359,23 +359,43 @@ export async function weeklyReviewData(userId: string, today: string = todayIso(
 }
 
 /**
- * Bilan de la semaine écoulée : rédigé une seule fois (1 appel au LLM par utilisateur et par
- * semaine), à la première visite du coach. Null s'il y a trop peu de données ou si l'IA est
- * indisponible.
+ * Le bilan affiché ne correspond plus aux repas de la semaine (corrigés après sa rédaction) :
+ * il sera réécrit. Lecture seule, sans LLM.
+ */
+export async function weeklyReviewIsStale(
+  review: CoachReview,
+  userId: string,
+  today: string = todayIso(),
+): Promise<boolean> {
+  const data = await weeklyReviewData(userId, today);
+  return data !== null && review.content.source !== data;
+}
+
+/**
+ * Bilan de la semaine écoulée : rédigé à la première visite du coach (1 appel au LLM par
+ * utilisateur et par semaine), puis réécrit seulement si les repas de cette semaine ont changé
+ * depuis. Null s'il y a trop peu de données ou si l'IA est indisponible (le bilan déjà rédigé
+ * reste alors affiché).
  */
 export async function ensureWeeklyReview(userId: string, today: string = todayIso()): Promise<CoachReview | null> {
-  const existing = await lastWeekReview(userId, today);
-  if (existing) return existing;
-  const [profile, data] = await Promise.all([getProfile(userId), weeklyReviewData(userId, today)]);
+  const [existing, profile, data] = await Promise.all([
+    lastWeekReview(userId, today),
+    getProfile(userId),
+    weeklyReviewData(userId, today),
+  ]);
+  if (existing && (data === null || existing.content.source === data)) return existing;
   if (!profile || !data) return null;
   try {
-    const content = await writeWeeklyReview(userId, data);
+    const content = { ...(await writeWeeklyReview(userId, data)), source: data };
     await db()
       .insert(coachReviews)
       .values({ userId, weekStart: addDays(isoWeekStart(today), -7), content })
-      .onConflictDoNothing();
+      .onConflictDoUpdate({
+        target: [coachReviews.userId, coachReviews.weekStart],
+        set: { content, createdAt: new Date() },
+      });
   } catch (error) {
-    if (error instanceof AiUnavailableError) return null;
+    if (error instanceof AiUnavailableError) return existing;
     throw error;
   }
   return lastWeekReview(userId, today);

@@ -1234,6 +1234,7 @@
     "reviewTitle": "Last week's review",
     "reviewLoading": "The coach is preparing your weekly review…",
     "reviewEmpty": "No review yet: it needs at least 3 logged days last week. It will be ready next Monday if you keep going.",
+    "reviewRefreshing": "Your meals for that week changed: the coach is updating your review…",
     "highlights": "What went well",
     "ideas": "Ideas for this week",
     "chatTitle": "Chat",
