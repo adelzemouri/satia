@@ -224,8 +224,8 @@ app_settings, rate_limits
 | `photos` | user_id, object_key, created_at | Purge quotidienne par cron : après la durée réglée par l'admin (défaut 90 j), ou dès le lendemain si aucun repas ne l'utilise. |
 | `llm_calls` | user_id, feature, provider, model, tokens_in, tokens_out, cost_usd_micros, latency_ms, status | Alimente la page admin et le plafond mensuel. |
 | `food_corrections` | user_id, ai_label, ai_grams, food_id, grams | Base des règles locales (§5). |
-| `containers` | user_id, name, kind, volume_ml, diameter_cm, photo_id | « Mes contenants ». |
-| `personal_expressions` | user_id, phrase_normalized, food_id ou recipe_id, quantity, unit | Reconnues sans appel LLM. |
+| `containers` | user_id, name, kind, volume_ml, diameter_cm, photo_id | Ancien « Mes contenants », retiré le 2026-10-18 (DECISIONS 034) : plus lu, gardé pour l'export. |
+| `personal_expressions` | user_id, phrase_normalized, food_id ou recipe_id, quantity, unit | Ancien « Mon dictionnaire », retiré le 2026-10-18 (DECISIONS 034) : plus lu, gardé pour l'export. |
 | `app_settings` | key, value (jsonb) | Budget LLM, IA activée, planchers caloriques, durée de rétention des photos. |
 | `rate_limits` | key, window_start, count | Fenêtre glissante simple, sans Redis. |
 
@@ -333,7 +333,7 @@ Chaque fonction publique suit la même chaîne :
 1. **Garde** : session valide, limite de débit par utilisateur, IA activée, coût du
    mois < `LLM_MONTHLY_BUDGET_USD`. Sinon erreur typée `AiUnavailable`, que l'UI
    transforme en bascule vers la saisie manuelle.
-2. **Règles locales d'abord** : dictionnaire personnel et corrections récurrentes ;
+2. **Règles locales d'abord** : habitudes tirées des corrections récurrentes ;
    si elles suffisent, aucun appel.
 3. **Appel** au provider choisi par `LLM_PROVIDER` (`openai` | `anthropic` | `mock`),
    avec `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL_VISION`, `LLM_MODEL_TEXT`.
@@ -388,12 +388,12 @@ pour les aliments sans correspondance locale, dont le résultat est marqué « e
 Téléphone                                     Serveur (Vercel fra1)                  Externe
 ─────────                                     ─────────────────────                  ───────
 1. Photo (caméra/galerie)
-   + précision libre, contenant facultatif
+   + précision libre facultative
 2. Canvas : côté long ≤ 768 px,
    WebP q≈0.7 (JPEG sur Safari), sans EXIF
 3. Action serveur analyzePhoto ────────────▶ 4. Session ; signature JPEG/WebP ;
    (base64 ≤ 1,5 Mo, cookie de session)          garde §4 (config, admin, plafond, débit)
-                                               5. Contexte compact : contenant choisi,
+                                               5. Contexte compact : précision,
                                                   8 habitudes apprises au plus
                                                6. Appel vision, basse résolution ──────▶ LLM vision
                                                   ← {items:[{name, grams, confidence}]}
@@ -417,10 +417,9 @@ Téléphone                                     Serveur (Vercel fra1)           
 
 - **Voix et texte libre** : la voix passe par la Web Speech API du navigateur (gratuite),
   puis suit le même chemin que le texte. Avant tout appel, le texte est découpé (virgules,
-  « et », « puis »…) ; si chaque morceau est une expression du dictionnaire personnel ou
-  une habitude apprise (avec un nombre ou un poids éventuel devant : « 2 ma tartine »,
-  « 150 g de riz »), la saisie se fait sans IA, même quand elle est en pause. Sinon un
-  seul appel au modèle texte, avec les contenants cités dans la phrase.
+  « et », « puis »…) ; si chaque morceau est une habitude apprise (avec un nombre ou un
+  poids éventuel devant : « 150 g de riz »), la saisie se fait sans IA, même quand elle
+  est en pause. Sinon un seul appel au modèle texte.
 - **Habitudes apprises** : une correction est enregistrée quand l'aliment change ou que
   le poids bouge de plus de 10 %. Un nom proposé par l'IA corrigé au moins deux fois
   vers le même aliment devient une règle (aliment le plus choisi, poids médian) : elle
@@ -432,9 +431,8 @@ Téléphone                                     Serveur (Vercel fra1)           
   donne aucune valeur : elles restent celles de Ciqual. Banc d'essai :
   `tests/integration/food-matching.test.ts` vérifie que le bon aliment figure parmi les 10
   pour ~130 noms courants.
-- **Mes contenants** (`/containers`) : nom, type (bol, assiette, verre, mug), volume ou
-  diamètre. La photo d'un contenant n'est pas gérée en v1.
-- **Mon dictionnaire** (`/dictionary`) : expression → aliment, quantité, unité.
+- **Mes contenants et Mon dictionnaire** : retirés le 2026-10-18 (DECISIONS 034). La
+  précision libre de la photo (« bol de 500 ml ») et les habitudes apprises les remplacent.
 - **Photos** : clé `meals/{user_id}/{uuid}.webp|jpg`, affichées dans le journal par URL
   signée GET de 5 minutes ; le bucket n'est jamais public. Purge chaque nuit par Vercel
   Cron (`/api/cron/purge-photos`, `Authorization: Bearer $CRON_SECRET`), durée réglable

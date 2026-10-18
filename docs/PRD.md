@@ -100,6 +100,8 @@ Toutes les méthodes aboutissent à un écran de confirmation éditable avant aj
 - Dictionnaire personnel : expressions propres à l'utilisateur ("ma tartine",
   "mon café du matin") associées à un aliment ou un repas précis, reconnues en
   saisie texte et vocale sans appel LLM.
+- *Mes contenants et le dictionnaire personnel ont été retirés le 2026-10-18 (non
+  utilisés ; voir DECISIONS 034).*
 
 Unités supportées : g, kg, ml, cl, l, c. à café, c. à soupe, tasse, portion,
 pièce/unité, tranche ; conversions par aliment quand une densité ou un poids

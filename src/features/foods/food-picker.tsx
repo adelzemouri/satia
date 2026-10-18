@@ -49,7 +49,7 @@ export function FoodPicker({
   initialFood?: FoodItem | null;
   inputMethod?: "manual" | "barcode";
   /** Saisie par photo, voix ou texte libre ; absente, seul l'ajout manuel est proposé. */
-  ai?: { availability: AiAvailability; containers: { id: string; name: string }[] };
+  ai?: { availability: AiAvailability };
   /** Repas habituel et idée du moment, affichés tant qu'aucune recherche n'est en cours. */
   suggestions?: ReactNode;
 }) {
@@ -211,7 +211,6 @@ export function FoodPicker({
             {ai ? (
               <AiEntry
                 availability={ai.availability}
-                containers={ai.containers}
                 barcodeHref={barcodeHref}
                 dictationTitle={
                   <header className="flex items-center justify-between gap-3">

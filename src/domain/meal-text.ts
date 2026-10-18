@@ -1,6 +1,6 @@
 /**
- * Saisie d'un repas en texte libre ou à la voix : découpage, quantités, dictionnaire
- * personnel et règles apprises des corrections (calcul pur, sans appel à l'IA).
+ * Saisie d'un repas en texte libre ou à la voix : découpage, quantités et règles apprises
+ * des corrections (calcul pur, sans appel à l'IA).
  */
 import { normalizeForSearch } from "./search";
 import type { Unit } from "./units";
@@ -55,8 +55,6 @@ export function parseSegment(segment: string): Segment {
   return { count: null, grams: null, rest: normalizeForSearch(segment) };
 }
 
-export type Expression = { phraseNormalized: string; foodId: string; quantity: number; unit: Unit };
-
 /** Règle apprise : pour ce nom proposé par l'IA, l'utilisateur choisit cet aliment, à ce poids. */
 export type CorrectionRule = { foodId: string; grams: number };
 
@@ -66,42 +64,20 @@ export type LocalItem = {
   unit: Unit;
   /** Morceau de texte d'origine, gardé pour l'écran de confirmation. */
   label: string;
-  /** Nom de la règle appliquée (null pour une expression du dictionnaire). */
-  ruleLabel: string | null;
+  /** Nom de la règle appliquée. */
+  ruleLabel: string;
 };
 
 /**
- * Résout un texte sans IA quand chaque morceau correspond à une expression du dictionnaire
- * personnel ou à une règle apprise. Renvoie null dès qu'un morceau reste inconnu.
+ * Résout un texte sans IA quand chaque morceau correspond à une règle apprise des
+ * corrections. Renvoie null dès qu'un morceau reste inconnu.
  */
-export function resolveLocally(
-  text: string,
-  expressions: readonly Expression[],
-  rules: ReadonlyMap<string, CorrectionRule>,
-): LocalItem[] | null {
+export function resolveLocally(text: string, rules: ReadonlyMap<string, CorrectionRule>): LocalItem[] | null {
   const parts = splitMealText(text);
   if (parts.length === 0) return null;
-  const byPhrase = new Map(expressions.map((expression) => [expression.phraseNormalized, expression]));
   const items: LocalItem[] = [];
   for (const part of parts) {
-    const whole = normalizeForSearch(part);
     const segment = parseSegment(part);
-    const expression = byPhrase.get(whole) ?? byPhrase.get(segment.rest);
-    if (expression) {
-      const explicit = byPhrase.has(whole) ? { count: null, grams: null } : segment;
-      items.push(
-        explicit.grams !== null
-          ? { foodId: expression.foodId, quantity: explicit.grams, unit: "g", label: part, ruleLabel: null }
-          : {
-              foodId: expression.foodId,
-              quantity: round2(expression.quantity * (explicit.count ?? 1)),
-              unit: expression.unit,
-              label: part,
-              ruleLabel: null,
-            },
-      );
-      continue;
-    }
     const rule = rules.get(segment.rest);
     if (!rule) return null;
     const grams = segment.grams ?? rule.grams * (segment.count ?? 1);

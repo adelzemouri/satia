@@ -389,6 +389,24 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 034 — Retrait de « Mes contenants » et « Mon dictionnaire »
+
+- **Date** : 2026-10-18 · **Statut** : adoptée
+- **Contexte** : Adel ne s'en est pas servi en 14 jours. Les deux ne font rien tant qu'on
+  ne les remplit pas à la main, et d'autres chemins couvrent le même besoin : la précision
+  libre de la photo (« bol de 500 ml ») pour les contenants, les habitudes apprises des
+  corrections (reconnues sans appel à l'IA après deux corrections identiques) pour le
+  dictionnaire.
+- **Décision** : retirer les pages `/containers` et `/dictionary`, leurs entrées dans Moi
+  et sous la photo ou la dictée, le choix du contenant avant la photo et le code qui ne
+  sert plus. Les tables `containers` et `personal_expressions` restent, avec leurs
+  données, et figurent toujours dans l'export.
+- **Conséquences** : une expression personnelle n'est plus reconnue dès la première fois ;
+  il faut deux corrections pour qu'une habitude prenne le relais. Les tables pourront être
+  supprimées plus tard, dans un déploiement à part.
+
+---
+
 ## Modèle
 
 ```markdown

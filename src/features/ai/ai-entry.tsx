@@ -37,18 +37,16 @@ function tileClass(main: boolean, extra = ""): string {
 export type AiAvailability = { available: true } | { available: false; reason: string };
 
 /**
- * Saisie IA : photo (caméra ou galerie) avec une précision facultative et un contenant,
+ * Saisie IA : photo (caméra ou galerie) avec une précision facultative,
  * ou description dictée ou écrite. Le résultat part vers l'écran de confirmation.
  */
 export function AiEntry({
   availability,
-  containers,
   barcodeHref,
   dictationTitle,
   onDraft,
 }: {
   availability: AiAvailability;
-  containers: { id: string; name: string }[];
   /** Le scan de code-barres complète les trois grandes entrées de l'écran d'ajout. */
   barcodeHref: ComponentProps<typeof Link>["href"];
   /** En-tête de l'écran de dictée plein écran (titre et choix du repas). */
@@ -60,7 +58,6 @@ export function AiEntry({
   const errorText = useErrorText();
   const [photo, setPhoto] = useState<{ file: File; preview: string } | null>(null);
   const [note, setNote] = useState("");
-  const [containerId, setContainerId] = useState("");
   const [text, setText] = useState("");
   const [dictated, setDictated] = useState(false);
   const [describing, setDescribing] = useState(false);
@@ -152,7 +149,6 @@ export function AiEntry({
           imageBase64: await toBase64(image.blob),
           mime: image.mime,
           note: note.trim() || undefined,
-          containerId: containerId || null,
         });
         // L'aperçu reste affiché sur l'écran de confirmation : on en crée un nouveau à partir de l'image réduite.
         finish(result, URL.createObjectURL(image.blob));
@@ -189,23 +185,6 @@ export function AiEntry({
               className={inputClass}
             />
           </label>
-          {containers.length > 0 && (
-            <label className="flex flex-col gap-1.5">
-              <span className="font-semibold">{t("container")}</span>
-              <select
-                value={containerId}
-                onChange={(event) => setContainerId(event.target.value)}
-                className={inputClass}
-              >
-                <option value="">{t("noContainer")}</option>
-                {containers.map((container) => (
-                  <option key={container.id} value={container.id}>
-                    {container.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
           <div className="flex flex-wrap gap-2">
             <Button onClick={analyzePhoto} disabled={pending}>
               {pending ? t("analyzing") : t("analyzePhoto")}
@@ -302,16 +281,6 @@ export function AiEntry({
             </Button>
           </div>
         </form>
-      )}
-      {(photo || describing) && (
-        <p className="flex flex-wrap gap-x-4 text-sm">
-          <Link href="/containers" className="underline">
-            {t("containersLink")}
-          </Link>
-          <Link href="/dictionary" className="underline">
-            {t("dictionaryLink")}
-          </Link>
-        </p>
       )}
       <p className="sr-only" aria-live="polite">
         {pending ? t("analyzing") : ""}

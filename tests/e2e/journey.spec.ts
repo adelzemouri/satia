@@ -670,15 +670,8 @@ test("le + ouvre l'éventail et la photo prise part vers l'écran d'ajout", asyn
   await expect(page.getByRole("img", { name: "Photo de ton repas" })).toBeVisible();
 });
 
-test("saisie d'un repas par photo (LLM simulé), avec contenant et écran de confirmation", async ({ page }) => {
+test("saisie d'un repas par photo (LLM simulé), avec écran de confirmation", async ({ page }) => {
   await signIn(page, ADMIN);
-  await page.goto("/containers");
-  await page.getByLabel("Nom").fill("Grand bol");
-  await page.getByLabel("Volume (ml)").fill("500");
-  await page.getByRole("button", { name: "Enregistrer" }).click();
-  await expect(page.getByText("Bol · 500 ml")).toBeVisible();
-  await expectNoA11yViolations(page);
-
   await page.goto("/add?slot=lunch");
   // Le fichier peut être choisi avant l'hydratation de la page : on le redonne au besoin.
   await expect(async () => {
@@ -688,7 +681,6 @@ test("saisie d'un repas par photo (LLM simulé), avec contenant et écran de con
     await expect(page.getByRole("img", { name: "Photo de ton repas" })).toBeVisible({ timeout: 3000 });
   }).toPass({ timeout: 20_000 });
   await page.getByLabel("Une précision ? (facultatif)").fill("sauce à part");
-  await page.getByLabel("Dans quel contenant ?").selectOption({ label: "Grand bol" });
   await page.getByRole("button", { name: "Analyser la photo" }).click();
 
   await expect(page.getByRole("heading", { name: "On vérifie ensemble ?" })).toBeVisible();
@@ -734,7 +726,7 @@ test("saisie d'un repas par photo (LLM simulé), avec contenant et écran de con
   await expectNoA11yViolations(page);
 });
 
-test("saisie en texte libre, puis par le dictionnaire personnel sans appel à l'IA", async ({ page }) => {
+test("saisie en texte libre, avec changement d'aliment et nom du plat", async ({ page }) => {
   await signIn(page, ADMIN);
   await page.goto("/add?slot=dinner");
   await page.getByRole("button", { name: "Écrire mon repas" }).click();
@@ -760,28 +752,6 @@ test("saisie en texte libre, puis par le dictionnaire personnel sans appel à l'
   await dinner.getByLabel("Nom du plat").fill("Riz du soir");
   await dinner.getByRole("button", { name: "Enregistrer" }).click();
   await expect(dinner.getByText("Riz du soir", { exact: true })).toBeVisible();
-
-  await page.goto("/dictionary");
-  await page.getByRole("textbox", { name: "Expression" }).fill("ma tartine");
-  await page.getByLabel("Aliment correspondant").fill("pain de mie courant");
-  await page
-    .getByRole("button", { name: /^Pain de mie, courant/ })
-    .first()
-    .click();
-  await page.getByLabel("Unité").selectOption("g");
-  await page.getByLabel("Quantité").fill("30");
-  await page.getByRole("button", { name: "Enregistrer" }).click();
-  await expect(page.getByText("« ma tartine »")).toBeVisible();
-  await expectNoA11yViolations(page);
-
-  await page.goto("/add?slot=breakfast");
-  await page.getByRole("button", { name: "Écrire mon repas" }).click();
-  await page.getByLabel("Décris ton repas").fill("2 ma tartine");
-  await page.getByRole("button", { name: "Analyser", exact: true }).click();
-  await expect(page.getByText("Reconnu grâce à ton dictionnaire et à tes habitudes, sans appel à l'IA.")).toBeVisible();
-  await expect(page.getByLabel(/^Quantité de Pain de mie, courant/)).toHaveValue("60");
-  await page.getByRole("button", { name: "Ajouter au journal" }).click();
-  await expect(page.getByRole("region", { name: "Petit-déjeuner" }).getByText(/^Pain de mie, courant/)).toBeVisible();
 });
 
 test("dictée : arrêter puis relancer, même quand le navigateur ne signale pas la fin", async ({ page }) => {
@@ -1530,9 +1500,7 @@ test("audit d'accessibilité : chaque page de l'app, en thème clair et sombre",
     "/foods",
     "/foods/new",
     "/foods/new-recipe",
-    "/containers",
     "/meals",
-    "/dictionary",
     "/family/share",
     "/training",
     "/training/history",

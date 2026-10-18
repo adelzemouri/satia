@@ -76,7 +76,7 @@ export function SideNav() {
     href: "/profile",
     label: t("nav.profile"),
     icon: "profile",
-    sections: ["/fasting", "/treatment", "/foods", "/containers", "/dictionary", "/admin"],
+    sections: ["/fasting", "/treatment", "/foods", "/admin"],
   };
   const adding = isActive(pathname, { href: "/add", sections: ["/scan"] });
 

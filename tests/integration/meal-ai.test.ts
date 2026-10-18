@@ -2,7 +2,16 @@ import { eq, sql } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { db } from "@/db/client";
-import { foodCorrections, foods, llmCalls, mealEntries, photos, user } from "@/db/schema";
+import {
+  containers,
+  foodCorrections,
+  foods,
+  llmCalls,
+  mealEntries,
+  personalExpressions,
+  photos,
+  user,
+} from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { setProviderForTests } from "@/llm/providers";
 import type { LlmProvider } from "@/llm/types";
@@ -10,9 +19,8 @@ import { acceptInvite, createAccessLink, setupFirstAdmin } from "@/server/accoun
 import { collectUserData } from "@/server/data-export";
 import { createRecipe, searchFoods, setUnitWeight } from "@/server/foods";
 import { analyzePhoto, analyzeText, foodCandidates, saveMeal } from "@/server/meal-ai";
-import { createContainer, listContainers, saveExpression } from "@/server/personal";
 import { lastPhotoPurge, purgePhotos, purgePhotosIfDue, runPhotoPurge } from "@/server/photos";
-import { setAiSettings, setPhotoSettings } from "@/server/settings";
+import { setPhotoSettings } from "@/server/settings";
 
 import { resetDatabase } from "./helpers";
 
@@ -156,26 +164,6 @@ describe("saisie IA", () => {
     expect(viaAi.items[0]!.food!.id).toBe(white.id);
   });
 
-  it("le dictionnaire personnel est reconnu sans appel, même quand l'IA est en pause", async () => {
-    const userId = await setupUser();
-    const bread = await firstFood(userId, "pain de mie courant");
-    const coffee = await firstFood(userId, "café prêt à boire");
-    await saveExpression(userId, { phrase: "Ma tartine", foodId: bread.id, quantity: 30, unit: "g" });
-    await saveExpression(userId, { phrase: "mon café du matin", foodId: coffee.id, quantity: 200, unit: "g" });
-    await setAiSettings({ enabled: false, monthlyBudgetUsd: null });
-
-    const draft = await analyzeText(userId, { text: "2 ma tartine et mon café du matin", method: "voice" });
-    expect(draft.usedAi).toBe(false);
-    expect(draft.items.map((item) => [item.food?.id, item.quantity, item.unit, item.proposal])).toEqual([
-      [bread.id, 60, "g", null],
-      [coffee.id, 200, "g", null],
-    ]);
-    expect(await callCount()).toBe(0);
-    await expect(analyzeText(userId, { text: "une banane", method: "text" })).rejects.toMatchObject({
-      reason: "disabled",
-    });
-  });
-
   it("des pièces comptées par l'IA s'affichent en pièces si l'aliment a un poids à la pièce", async () => {
     const userId = await setupUser();
     const [croque] = await searchFoods(userId, "croque-monsieur");
@@ -308,10 +296,8 @@ describe("saisie IA", () => {
     expect(await db().select().from(foodCorrections)).toHaveLength(0);
   });
 
-  it("photo : analyse, stockage privé, lien avec le repas, contenant transmis au LLM", async () => {
+  it("photo : analyse, stockage privé, lien avec le repas, précision transmise au LLM", async () => {
     const userId = await setupUser();
-    await createContainer(userId, { name: "Grand bol", kind: "bowl", volumeMl: 500, diameterCm: null });
-    const [bowl] = await listContainers(userId);
     const prompts: string[] = [];
     setProviderForTests({
       name: "spy",
@@ -327,9 +313,8 @@ describe("saisie IA", () => {
       imageBase64: JPEG_BASE64,
       mime: "image/jpeg",
       note: "sauce à part",
-      containerId: bowl!.id,
     });
-    expect(prompts[0]).toBe("Analyse cette photo.\nPrécision : sauce à part\nContenants : Grand bol (bol, 500 ml)");
+    expect(prompts[0]).toBe("Analyse cette photo.\nPrécision : sauce à part");
     expect(draft.method).toBe("photo");
     expect(draft.photoId).toBeTruthy();
     const [photo] = await db().select().from(photos);
@@ -433,11 +418,19 @@ describe("saisie IA", () => {
     expect(await lastPhotoPurge()).toEqual({ lastRunAt: later.toISOString(), purged: 0 });
   });
 
-  it("l'export contient contenants, expressions et corrections", async () => {
+  it("l'export garde les anciens contenants et expressions, et les corrections", async () => {
     const userId = await setupUser();
     const bread = await firstFood(userId, "pain de mie courant");
-    await createContainer(userId, { name: "Mug bleu", kind: "mug", volumeMl: 300, diameterCm: null });
-    await saveExpression(userId, { phrase: "ma tartine", foodId: bread.id, quantity: 30, unit: "g" });
+    // Saisis avant le retrait de « Mes contenants » et « Mon dictionnaire » : toujours exportés.
+    await db().insert(containers).values({ userId, name: "Mug bleu", kind: "mug", volumeMl: 300 });
+    await db().insert(personalExpressions).values({
+      userId,
+      phrase: "ma tartine",
+      phraseNormalized: "ma tartine",
+      foodId: bread.id,
+      quantity: 30,
+      unit: "g",
+    });
     const data = await collectUserData(userId);
     expect(data.containers).toEqual([{ name: "Mug bleu", kind: "mug", volumeMl: 300, diameterCm: null }]);
     expect(data.expressions).toEqual([{ phrase: "ma tartine", foodId: bread.id, quantity: 30, unit: "g" }]);

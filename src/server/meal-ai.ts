@@ -2,11 +2,11 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 
-import { and, desc, eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db/client";
-import { type ContainerKind, containers, foodCorrections, MEAL_SLOTS, mealEntries } from "@/db/schema";
+import { foodCorrections, MEAL_SLOTS, mealEntries } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { correctionRules, type CorrectionRule, isCorrection, resolveLocally } from "@/domain/meal-text";
 import { nutrientsFor } from "@/domain/nutrition";
@@ -22,7 +22,6 @@ import { AiUnavailableError } from "@/llm/types";
 import { DomainError } from "./errors";
 import { type FoodSummary, getFoods, searchFoods } from "./foods";
 import { resolveEntry } from "./journal";
-import { listContainers, listExpressions } from "./personal";
 import { isImage, ownsPhoto, PHOTO_MIME_TYPES, storePhoto } from "./photos";
 
 /** Corrections relues pour en tirer les habitudes : les plus récentes suffisent. */
@@ -63,18 +62,6 @@ async function habitsForPrompt(userId: string, rules: Map<string, CorrectionRule
     const name = names.get(rule.foodId);
     return name ? [`${label} → ${name}, ${rule.grams} g`] : [];
   });
-}
-
-const KIND_NAMES: Record<ContainerKind, string> = { bowl: "bol", plate: "assiette", glass: "verre", mug: "mug" };
-
-function describeContainer(container: {
-  name: string;
-  kind: ContainerKind;
-  volumeMl: number | null;
-  diameterCm: number | null;
-}): string {
-  const size = [container.volumeMl && `${container.volumeMl} ml`, container.diameterCm && `${container.diameterCm} cm`];
-  return `${container.name} (${[KIND_NAMES[container.kind], ...size].filter(Boolean).join(", ")})`;
 }
 
 /**
@@ -220,7 +207,6 @@ export const photoInputSchema = z.object({
     .max(Math.ceil((MAX_PHOTO_BYTES * 4) / 3)),
   mime: z.enum(PHOTO_MIME_TYPES),
   note: z.string().trim().max(200).optional(),
-  containerId: z.uuid().nullable().optional(),
 });
 
 /** Saisie par photo : analyse par le modèle vision, puis photo rangée pour le journal. */
@@ -228,22 +214,12 @@ export async function analyzePhoto(userId: string, input: z.input<typeof photoIn
   const data = photoInputSchema.parse(input);
   const bytes = Uint8Array.from(Buffer.from(data.imageBase64, "base64"));
   if (!isImage(bytes, data.mime)) throw new DomainError("invalid_photo");
-  const [rules, container] = await Promise.all([
-    rulesFor(userId),
-    data.containerId
-      ? db()
-          .select()
-          .from(containers)
-          .where(and(eq(containers.id, data.containerId), eq(containers.userId, userId)))
-          .then((rows) => rows[0])
-      : undefined,
-  ]);
+  const rules = await rulesFor(userId);
   const items = await analyzeMealPhoto(
     userId,
     { mime: data.mime, base64: data.imageBase64 },
     {
       note: data.note,
-      containers: container ? [describeContainer(container)] : [],
       habits: await habitsForPrompt(userId, rules),
     },
   );
@@ -264,13 +240,13 @@ export const textInputSchema = z.object({
 });
 
 /**
- * Saisie dictée ou écrite : dictionnaire personnel et habitudes d'abord (sans appel), puis
- * le modèle texte si un morceau reste inconnu.
+ * Saisie dictée ou écrite : habitudes apprises d'abord (sans appel), puis le modèle texte
+ * si un morceau reste inconnu.
  */
 export async function analyzeText(userId: string, input: z.input<typeof textInputSchema>): Promise<MealDraft> {
   const data = textInputSchema.parse(input);
-  const [expressions, rules] = await Promise.all([listExpressions(userId), rulesFor(userId)]);
-  const local = resolveLocally(data.text, expressions, rules);
+  const rules = await rulesFor(userId);
+  const local = resolveLocally(data.text, rules);
   if (local) {
     const foods = new Map(
       (
@@ -288,7 +264,7 @@ export async function analyzeText(userId: string, input: z.input<typeof textInpu
           key: randomUUID(),
           label: item.label,
           aiLabel: item.ruleLabel,
-          proposal: item.ruleLabel ? { foodId: food.id, grams: item.quantity } : null,
+          proposal: { foodId: food.id, grams: item.quantity },
           food: toFoodItem(food),
           estimate: null,
           quantity: item.quantity,
@@ -300,10 +276,7 @@ export async function analyzeText(userId: string, input: z.input<typeof textInpu
     });
     if (items.length === local.length) return { method: data.method, photoId: null, items, usedAi: false };
   }
-  // Seuls les contenants cités dans le texte sont envoyés, pour garder le prompt court.
-  const text = normalizeForSearch(data.text);
-  const cited = (await listContainers(userId)).filter((container) => text.includes(normalizeForSearch(container.name)));
-  const items = await parseMealText(userId, data.text, { containers: cited.map(describeContainer) });
+  const items = await parseMealText(userId, data.text, {});
   return { method: data.method, photoId: null, items: await toDraftItems(userId, items, rules), usedAi: true };
 }
 
