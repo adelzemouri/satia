@@ -649,24 +649,42 @@ const MEAL_PNG = Buffer.from(
   "base64",
 );
 
-test("le + ouvre l'éventail et la photo prise part vers l'écran d'ajout", async ({ page }) => {
+test("le + ouvre l'appareil photo et la photo prise part vers l'écran d'ajout", async ({ page, context }) => {
+  await context.grantPermissions(["camera"]);
   await signIn(page, ADMIN);
   await page.goto("/journal");
   const plus = page.getByRole("button", { name: "Ajouter un repas" });
-  const close = page.getByRole("button", { name: "Fermer les façons d'ajouter" });
-  // Le bouton peut être touché avant l'hydratation de la page : on recommence au besoin, sans
-  // retoucher un éventail déjà ouvert (le + s'appelle alors « Fermer »).
+  const camera = page.getByRole("dialog", { name: "Ajouter un repas" });
+  // Le bouton peut être touché avant l'hydratation de la page : on recommence au besoin.
   await expect(async () => {
-    if (!(await close.isVisible())) await plus.click({ timeout: 2000 });
-    await expect(close).toBeVisible({ timeout: 2000 });
+    if (!(await camera.isVisible())) await plus.click({ timeout: 2000 });
+    await expect(camera).toBeVisible({ timeout: 2000 });
   }).toPass({ timeout: 20_000 });
-  await expect(page.getByRole("link", { name: "Code-barres" })).toBeVisible();
+  // Caméra simulée de Chromium : le déclencheur s'active quand l'image arrive.
+  const shutter = camera.getByRole("button", { name: "Prendre la photo" });
+  await expect(shutter).toBeEnabled({ timeout: 10_000 });
   await expectNoA11yViolations(page);
-  await page
-    .getByRole("navigation", { name: "Navigation principale" })
-    .getByLabel("Prendre mon repas en photo")
-    .setInputFiles({ name: "repas.png", mimeType: "image/png", buffer: MEAL_PNG });
+
+  // Le mode code-barres propose aussi la saisie des chiffres ; les récents s'ouvrent par-dessus.
+  await camera.getByRole("button", { name: "Code-barres" }).click();
+  await expect(camera.getByRole("link", { name: "Taper le code à la main" })).toBeVisible();
+  await camera.getByRole("button", { name: "Récents" }).click();
+  const recent = page.getByRole("dialog", { name: "Récents" });
+  await expect(recent.getByRole("button", { name: /^Granola maison/ })).toBeVisible();
+  await recent.getByRole("button", { name: "Fermer les récents" }).click();
+  await camera.getByRole("button", { name: "Photo", exact: true }).click();
+
+  await shutter.click();
   await expect(page).toHaveURL(/\/add$/);
+  await expect(camera).toBeHidden();
+  await expect(page.getByRole("img", { name: "Photo de ton repas" })).toBeVisible();
+
+  // La galerie passe par le même chemin.
+  await plus.click();
+  await camera
+    .getByLabel("Choisir dans mes photos")
+    .setInputFiles({ name: "repas.png", mimeType: "image/png", buffer: MEAL_PNG });
+  await expect(camera).toBeHidden();
   await expect(page.getByRole("img", { name: "Photo de ton repas" })).toBeVisible();
 });
 

@@ -10,6 +10,8 @@ import {
   type CustomFoodInput,
   deleteOwnFood,
   fillRecipePhotosLater,
+  type RecentFood,
+  recentFoods,
   type RecipeInput,
   type recipePhotoSchema,
   regenerateRecipePhoto,
@@ -131,4 +133,10 @@ export async function setTargetWeightAction(targetWeightKg: number | null): Prom
 
 export async function deleteWeightAction(date: string): Promise<IdState> {
   return run(async (userId) => (await deleteWeight(userId, date), { ok: true }));
+}
+
+/** Derniers aliments saisis, pour la liste « Récents » de l'appareil photo du +. Lecture seule. */
+export async function recentFoodsAction(): Promise<RecentFood[]> {
+  const user = await getCurrentUser();
+  return user ? recentFoods(user.id, 8) : [];
 }

@@ -35,9 +35,7 @@
     "addPhoto": "Photo",
     "addVoice": "Voice",
     "addBarcode": "Barcode",
-    "addSearch": "Search",
-    "addClose": "Close the add options",
-    "addPhotoTake": "Take a photo of my meal"
+    "addSearch": "Search"
   },
   "home": {
     "greeting": "Hello {name}",
@@ -811,6 +809,25 @@
     "createFood": "Create this food",
     "searchByName": "Search by name",
     "again": "Scan another product"
+  },
+  "camera": {
+    "recent": "Recent",
+    "recentClose": "Close recent foods",
+    "recentHint": "Tap a food to choose the amount, or + to add your last portion again (meal: {slot}).",
+    "recentLoading": "Loading…",
+    "recentEmpty": "Your latest foods will show up here.",
+    "modes": "Way to add",
+    "close": "Close the camera",
+    "torch": "Torch",
+    "gallery": "Choose from my photos",
+    "shutter": "Take the photo",
+    "write": "Write my meal",
+    "typeCode": "Type the code",
+    "starting": "Opening the camera…",
+    "photoHint": "The whole plate in the frame, seen slightly from above",
+    "barcodeHint": "Aim at the barcode, it reads automatically",
+    "photoUnavailable": "The camera can't open here: the shutter opens your phone's camera.",
+    "barcodeUnavailable": "The camera isn't available: type the code, or allow it in your browser settings."
   },
   "product": {
     "title": "Product details",

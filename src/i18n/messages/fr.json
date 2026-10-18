@@ -35,9 +35,7 @@
     "addPhoto": "Photo",
     "addVoice": "Voix",
     "addBarcode": "Code-barres",
-    "addSearch": "Chercher",
-    "addClose": "Fermer les façons d'ajouter",
-    "addPhotoTake": "Prendre mon repas en photo"
+    "addSearch": "Chercher"
   },
   "home": {
     "greeting": "Bonjour {name}",
@@ -811,6 +809,25 @@
     "createFood": "Créer cet aliment",
     "searchByName": "Chercher par nom",
     "again": "Scanner un autre produit"
+  },
+  "camera": {
+    "recent": "Récents",
+    "recentClose": "Fermer les récents",
+    "recentHint": "Touche un aliment pour choisir la quantité, ou + pour remettre ta dernière portion (repas : {slot}).",
+    "recentLoading": "Chargement…",
+    "recentEmpty": "Tes derniers aliments apparaîtront ici.",
+    "modes": "Façon d'ajouter",
+    "close": "Fermer l'appareil photo",
+    "torch": "Lampe",
+    "gallery": "Choisir dans mes photos",
+    "shutter": "Prendre la photo",
+    "write": "Écrire mon repas",
+    "typeCode": "Taper le code à la main",
+    "starting": "Ouverture de la caméra…",
+    "photoHint": "Tout le plat dans l'image, vu d'un peu haut",
+    "barcodeHint": "Vise le code-barres, la lecture est automatique",
+    "photoUnavailable": "La caméra ne s'ouvre pas ici : le déclencheur ouvre l'appareil photo du téléphone.",
+    "barcodeUnavailable": "La caméra n'est pas accessible : tape le code à la main, ou autorise-la dans les réglages du navigateur."
   },
   "product": {
     "title": "Fiche produit",
