@@ -246,10 +246,7 @@ describe("espace famille", () => {
     });
     // Les aliments perso hors recette restent privés.
     await expect(getFood(member.id, other)).rejects.toMatchObject({ code: "not_found" });
-    expect((await ownFoods(admin.id)).map((food) => food.nameFr)).toEqual([
-      "Granola d'Adel",
-      "Sauce secrète",
-    ]);
+    expect((await ownFoods(admin.id)).map((food) => food.nameFr)).toEqual(["Granola d'Adel", "Sauce secrète"]);
     expect((await familyRecipes(member.id)).map((food) => food.nameFr)).toEqual(["Plat en sauce"]);
   });
 
