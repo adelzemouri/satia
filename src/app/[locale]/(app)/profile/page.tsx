@@ -2,6 +2,7 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 
 import { APP_NAME } from "@/config/app";
 import { HubLinks } from "@/features/navigation/hub-links";
+import { PrivateText } from "@/ui/private";
 import { LogoutForm } from "@/features/offline/logout-form";
 import { toLocale } from "@/i18n/routing";
 import { goalChangesWeight } from "@/domain/profile";
@@ -66,9 +67,12 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
                       href: "/profile/goals/weight",
                       icon: "weight",
                       label: tg("targetWeight"),
-                      value: profile.targetWeightKg
-                        ? `${kg(weight ?? profile.startWeightKg)} → ${kg(profile.targetWeightKg)} kg`
-                        : tg("targetNone"),
+                      // Le poids reste masqué ici comme ailleurs (PrivateText), tant qu'on ne l'a pas affiché.
+                      value: profile.targetWeightKg ? (
+                        <PrivateText>{`${kg(weight ?? profile.startWeightKg)} → ${kg(profile.targetWeightKg)} kg`}</PrivateText>
+                      ) : (
+                        tg("targetNone")
+                      ),
                     } as const,
                   ]
                 : []),

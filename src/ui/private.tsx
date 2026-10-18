@@ -78,3 +78,19 @@ export function PrivateBlock({ children, className = "" }: { children: ReactNode
     </div>
   );
 }
+
+/**
+ * Valeur de poids en ligne (une ligne de réglage, par exemple) : remplacée par des points tant
+ * que le poids est masqué. On la dévoile depuis un bloc flouté, comme ailleurs dans l'app.
+ */
+export function PrivateText({ children }: { children: ReactNode }) {
+  const shown = useWeightShown();
+  const t = useTranslations("privacy");
+  if (shown) return <>{children}</>;
+  return (
+    <>
+      <span aria-hidden="true">•••</span>
+      <span className="sr-only">{t("hidden")}</span>
+    </>
+  );
+}

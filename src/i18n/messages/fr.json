@@ -817,7 +817,8 @@
   },
   "privacy": {
     "show": "Afficher mon poids",
-    "hide": "Masquer mon poids"
+    "hide": "Masquer mon poids",
+    "hidden": "Poids masqué"
   },
   "weight": {
     "title": "Mon poids",

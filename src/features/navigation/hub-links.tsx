@@ -1,4 +1,4 @@
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 import { Link } from "@/i18n/navigation";
 import { Icon, type ICONS } from "@/ui/icon";
@@ -9,7 +9,7 @@ export type HubLink = {
   label: string;
   hint?: string;
   /** Réglage en cours, affiché à droite avant le chevron (« 2 L », « 16:8 »). */
-  value?: string;
+  value?: ReactNode;
 };
 
 /**

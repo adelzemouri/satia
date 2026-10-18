@@ -8,6 +8,7 @@ import { ACTIVITY_LEVELS, type ActivityLevel, type Goal, goalChangesWeight, type
 import { setTargetWeightAction, setWaterGoalAction } from "@/features/journal/actions";
 import { Link, useRouter } from "@/i18n/navigation";
 import { OptionList } from "@/ui/option-list";
+import { PrivateBlock, useWeightShown } from "@/ui/private";
 
 import { proposeGoalAction, setAutomaticCaloriesAction, setManualCaloriesAction, updateGoalAction } from "./actions";
 import { BigValue, GoalNote, GoalScreen } from "./goal-screen";
@@ -142,12 +143,13 @@ export function TargetWeightEditor({
   const router = useRouter();
   const gap = value - current;
   const room = min < max;
+  const shown = useWeightShown();
   return (
     <GoalScreen
       title={t("weightTitle")}
-      subtitle={t("weightToday", { kg: kg(current) })}
       save={() => setTargetWeightAction(value)}
-      canSave={room}
+      // Pas d'enregistrement à l'aveugle : la règle est floutée tant que le poids est masqué.
+      canSave={room && shown}
       note={
         <div className="flex flex-col gap-3">
           <GoalNote title={t("healthyTitle")}>
@@ -165,26 +167,30 @@ export function TargetWeightEditor({
         </div>
       }
     >
-      {room ? (
-        <>
-          <BigValue value={kg(value)} unit="kg" />
-          <Ruler
-            min={min}
-            max={max}
-            step={0.1}
-            value={value}
-            onChange={setValue}
-            label={t("weightLabel")}
-            valueText={`${kg(value)} kg`}
-            formatMajor={(major) => format.number(major)}
-          />
-          <p className="text-center text-text-muted">
-            {t("weightGap", { gap: `${gap > 0 ? "+" : "−"}${kg(Math.abs(gap))}` })}
-          </p>
-        </>
-      ) : (
-        <p className="text-center">{t("weightNoRoom")}</p>
-      )}
+      {/* Le poids reste masqué tant qu'on ne l'a pas affiché, comme sur la page Poids. */}
+      <PrivateBlock className="flex flex-col gap-5">
+        <p className="text-center text-text-muted">{t("weightToday", { kg: kg(current) })}</p>
+        {room ? (
+          <>
+            <BigValue value={kg(value)} unit="kg" />
+            <Ruler
+              min={min}
+              max={max}
+              step={0.1}
+              value={value}
+              onChange={setValue}
+              label={t("weightLabel")}
+              valueText={`${kg(value)} kg`}
+              formatMajor={(major) => format.number(major)}
+            />
+            <p className="text-center text-text-muted">
+              {t("weightGap", { gap: `${gap > 0 ? "+" : "−"}${kg(Math.abs(gap))}` })}
+            </p>
+          </>
+        ) : (
+          <p className="text-center">{t("weightNoRoom")}</p>
+        )}
+      </PrivateBlock>
     </GoalScreen>
   );
 }
