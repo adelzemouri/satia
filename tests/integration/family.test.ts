@@ -248,7 +248,6 @@ describe("espace famille", () => {
     await expect(getFood(member.id, other)).rejects.toMatchObject({ code: "not_found" });
     expect((await ownFoods(admin.id)).map((food) => food.nameFr)).toEqual([
       "Granola d'Adel",
-      "Plat en sauce",
       "Sauce secrète",
     ]);
     expect((await familyRecipes(member.id)).map((food) => food.nameFr)).toEqual(["Plat en sauce"]);
