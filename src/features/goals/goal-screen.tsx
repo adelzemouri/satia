@@ -17,14 +17,12 @@ import { useToast } from "@/ui/toast";
  */
 export function GoalScreen({
   title,
-  subtitle,
   children,
   note,
   save,
   canSave = true,
 }: {
   title: string;
-  subtitle?: ReactNode;
   children: ReactNode;
   note?: ReactNode;
   save: () => Promise<ActionState>;
@@ -71,7 +69,6 @@ export function GoalScreen({
         <h1 className="mt-6 text-center font-display text-3xl leading-tight font-extrabold tracking-tight text-balance">
           {title}
         </h1>
-        {subtitle && <p className="mt-2 text-center text-text-muted">{subtitle}</p>}
         <div className="flex flex-1 flex-col justify-center gap-5 py-8">{children}</div>
         {error && <Alert>{errorText(error)}</Alert>}
         {note && <div className="mt-4">{note}</div>}

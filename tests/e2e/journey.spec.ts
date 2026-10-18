@@ -1575,6 +1575,17 @@ test("mes objectifs : réglages plein écran depuis Moi", async ({ page }) => {
   const goals = page.getByRole("navigation", { name: "Mes objectifs" });
   await expect(goals.getByRole("link", { name: /^Eau\s?2 L par jour/ })).toBeVisible();
 
+  // Le poids visé reste masqué comme ailleurs : rien ne s'enregistre tant qu'on ne l'a pas affiché.
+  await expect(goals.getByRole("link", { name: /^Poids visé\s?Poids masqué/ })).toBeVisible();
+  await goals.getByRole("link", { name: /^Poids visé/ }).click();
+  await expect(page.getByRole("button", { name: "Enregistrer" })).toBeDisabled();
+  await page.getByRole("button", { name: "Afficher mon poids" }).click();
+  await expect(page.getByRole("slider", { name: "Poids visé" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Enregistrer" })).toBeEnabled();
+  await page.getByRole("button", { name: "Masquer mon poids" }).click();
+  await page.getByRole("link", { name: "Annuler" }).click();
+  await expect(page).toHaveURL(/\/profile$/);
+
   // Eau : la règle se règle aussi au clavier ; ✓ enregistre et revient à Moi.
   await goals.getByRole("link", { name: /^Eau/ }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Combien d'eau par jour ?");

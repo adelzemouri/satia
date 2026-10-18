@@ -818,7 +818,8 @@
   },
   "privacy": {
     "show": "Show my weight",
-    "hide": "Hide my weight"
+    "hide": "Hide my weight",
+    "hidden": "Weight hidden"
   },
   "weight": {
     "title": "My weight",
