@@ -293,12 +293,20 @@ export async function lastWeekReview(userId: string, today: string = todayIso())
 /** Il faut au moins 3 jours saisis la semaine écoulée pour qu'un bilan ait du sens. */
 const MIN_DAYS_FOR_REVIEW = 3;
 
+/** Écart à l'objectif en clair, pour que le bilan ne dise pas « proche » d'un écart de 10 %. */
+function gapLine(averageKcal: number, goalKcal: number): string {
+  const gap = averageKcal - goalKcal;
+  const percent = Math.round((Math.abs(gap) / goalKcal) * 100);
+  if (percent < 5) return "soit à moins de 5 % de l'objectif";
+  return `soit ${Math.abs(gap)} kcal par jour (${percent} %) ${gap < 0 ? "sous" : "au-dessus de"} l'objectif`;
+}
+
 /** Données de la semaine écoulée, en lignes courtes pour le prompt ; null s'il y a trop peu de saisies. */
 export async function weeklyReviewData(userId: string, today: string = todayIso()): Promise<string | null> {
   const from = addDays(isoWeekStart(today), -7);
   const to = addDays(from, 6);
-  const goal = await getGoalOn(userId, to);
-  if (!goal) return null;
+  const [goal, profile] = await Promise.all([getGoalOn(userId, to), getProfile(userId)]);
+  if (!goal || !profile) return null;
   const [intakes, checkins, items, check] = await Promise.all([
     db()
       .select({
@@ -340,7 +348,8 @@ export async function weeklyReviewData(userId: string, today: string = todayIso(
 
   return [
     `Semaine du ${from} au ${to}. Jours saisis : ${stats.daysLogged}/7.`,
-    `Apport moyen : ${stats.averageKcal} kcal (objectif ${goal.kcal}). Protéines : ${stats.averageProteinG} g (objectif ${goal.proteinG}).`,
+    `But : ${GOAL_LABELS[profile.goal]}.`,
+    `Apport moyen : ${stats.averageKcal} kcal par jour (objectif ${goal.kcal}), ${gapLine(stats.averageKcal, goal.kcal)}. Protéines : ${stats.averageProteinG} g (objectif ${goal.proteinG}).`,
     quality &&
       `Fibres ${quality.fiberPerDay} g/j, fruits et légumes ${quality.fruitVegPortionsPerDay} portions/j, sel ${quality.saltPerDay} g/j` +
         (quality.ultraProcessedShare !== null

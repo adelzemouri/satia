@@ -196,6 +196,8 @@ describe("coach", () => {
     expect(await weeklyReviewIsStale(review!, userId, today)).toBe(true);
     const rewritten = await ensureWeeklyReview(userId, today);
     expect(rewritten!.content.source).toContain("Jours saisis : 4/7");
+    expect(rewritten!.content.source).toMatch(/But : .+\./);
+    expect(rewritten!.content.source).toMatch(/soit \d+ kcal par jour \(\d+ %\) sous l'objectif/);
     expect(await weeklyReviewIsStale(rewritten!, userId, today)).toBe(false);
     expect(await ensureWeeklyReview(userId, today)).toEqual(rewritten);
     expect(await db().select().from(llmCalls)).toHaveLength(2);
