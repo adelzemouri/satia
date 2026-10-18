@@ -115,6 +115,12 @@ export function DishName({
 }
 
 /** Nom d'un plat du journal : le renommer met à jour toutes ses lignes. */
-export function JournalDishName({ name, ids }: { name: string; ids: string[] }) {
-  return <DishName name={name} onSave={async (dish) => (await renameDishAction({ ids, dish }))?.error ?? null} />;
+export function JournalDishName({ name, ids, trailing }: { name: string; ids: string[]; trailing?: ReactNode }) {
+  return (
+    <DishName
+      name={name}
+      trailing={trailing}
+      onSave={async (dish) => (await renameDishAction({ ids, dish }))?.error ?? null}
+    />
+  );
 }
