@@ -188,6 +188,29 @@
       "measureFirst": "First measurements saved. See you in a month to compare.",
       "photoFirst": "First progress photo saved. See you in a month.",
       "weighFirst": "Weigh-in saved."
+    },
+    "streakSheet": {
+      "open": "My streak: {days, plural, =0 {not started yet} one {# day in a row} other {# days in a row}}. See details",
+      "title": "My streak",
+      "close": "Close",
+      "explainStrong": "A day counts as soon as one meal is logged.",
+      "explain": "If you forget a day, one rest day per week is covered and your streak keeps going. Until the day is over, nothing is lost.",
+      "current": "{days, plural, one {day in a row} other {days in a row}}",
+      "best": "best streak",
+      "total": "{days, plural, one {day logged so far} other {days logged so far}}",
+      "calendarTitle": "Last 5 weeks",
+      "legendLogged": "meal logged",
+      "legendRest": "rest day covered",
+      "legendEmpty": "nothing logged",
+      "dayLogged": "{date}: meal logged",
+      "dayRest": "{date}: rest day covered",
+      "dayEmpty": "{date}: nothing logged",
+      "stepsTitle": "My milestones",
+      "step": "{days, select, 7 {1 week} 14 {2 weeks} 21 {3 weeks} 30 {1 month} 365 {1 year} other {{days} days}}",
+      "stepReached": "{step} in a row, on {date}",
+      "noSteps": "Your first milestone comes at 3 days in a row.",
+      "next": "Next milestone: <b>{days} days in a row</b>, {remaining, plural, one {# day} other {# days}} to go.",
+      "allDone": "You've reached every milestone, well done on a year of consistency."
     }
   },
   "theme": {
