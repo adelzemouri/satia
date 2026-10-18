@@ -1,3 +1,4 @@
+import { daysBetween, type Measurement, weightDirection } from "./adaptive";
 import { addDays } from "./energy";
 import { isoWeekStart } from "./streak";
 
@@ -118,4 +119,23 @@ export function longHistoryLines(input: LongHistoryInput): string[] {
   if (weekLines.length > 0)
     lines.push(`Par semaine (moyennes par jour saisi, pas des totaux) : ${weekLines.join(" ; ")}.`);
   return lines;
+}
+
+/**
+ * Bilan de « Mon métabolisme » pour le coach : l'apport moyen de toute la période et la dépense
+ * qui en découle. Sans lui, le coach expliquait le poids avec une seule semaine. Null tant que
+ * la dépense n'est pas mesurée.
+ */
+export function metabolismLine(measurement: Measurement): string | null {
+  if (measurement.status !== "measured") return null;
+  const days = daysBetween(measurement.from, measurement.to) + 1;
+  const weight = {
+    stable: "poids stable",
+    down: "poids en baisse",
+    up: "poids en hausse",
+  }[weightDirection(measurement.weeklyChangeKg)];
+  return (
+    `Bilan des ${days} derniers jours (page Mon métabolisme) : mangé en moyenne ${measurement.averageIntake} kcal par jour, ` +
+    `${weight} (${measurement.weeklyChangeKg} kg par semaine), dépense réelle ${measurement.tdee} kcal par jour.`
+  );
 }

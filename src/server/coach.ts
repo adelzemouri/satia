@@ -31,7 +31,7 @@ import {
   weekStats,
 } from "@/domain/coach";
 import { APP_TIMEZONE } from "@/config/app";
-import { longHistoryLines } from "@/domain/coach-history";
+import { longHistoryLines, metabolismLine } from "@/domain/coach-history";
 import { type CoachTopic, coachTopicSchema, dayTopicLine, foodTopicLine, mealTopicLine } from "@/domain/coach-topic";
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
@@ -43,7 +43,7 @@ import { weightTrend } from "@/domain/weight-trend";
 import { RECIPE_PHOTOS } from "@/features/recipes/recipe-photos";
 import { AiUnavailableError, coachReply, writeWeeklyReview } from "@/llm";
 
-import { weekBudget } from "./adaptive";
+import { metabolismOverview, weekBudget } from "./adaptive";
 import { dishPool, getFoodDetails } from "./foods";
 import { daySummary, entriesOn } from "./journal";
 import { getGoalOn, getProfile } from "./profile";
@@ -149,14 +149,16 @@ function dayTotals(meals: readonly { date: string; kcal: number; proteinG: numbe
 export async function coachContextFor(userId: string, today: string = todayIso()): Promise<string | null> {
   const profile = await getProfile(userId);
   if (!profile) return null;
-  const [summary, floors, quality, feeling, week, history] = await Promise.all([
+  const [summary, floors, quality, feeling, week, history, metabolism] = await Promise.all([
     daySummary(userId, today),
     getCalorieFloors(),
     dayQualityFor(userId, today),
     checkinOn(userId, today),
     profile.budgetMode === "weekly" ? weekBudget(userId, today) : null,
     historyFor(userId, today),
+    metabolismOverview(userId, today),
   ]);
+  const metabolismSummary = metabolism && metabolismLine(metabolism.measurement);
   return coachContext({
     firstName: profile.firstName,
     goal: GOAL_LABELS[profile.goal],
@@ -185,6 +187,7 @@ export async function coachContextFor(userId: string, today: string = todayIso()
         moves: history.moves,
         steps: history.steps,
       }),
+      ...(metabolismSummary ? [metabolismSummary] : []),
     ],
   });
 }
