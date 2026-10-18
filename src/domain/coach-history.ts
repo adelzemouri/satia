@@ -42,7 +42,7 @@ function periodLine(input: LongHistoryInput, period: Period): string | null {
   const parts: string[] = [];
   if (days.length > 0) {
     parts.push(`${days.length} j saisi${days.length > 1 ? "s" : ""}`);
-    parts.push(`${Math.round(average(days.map((day) => day.kcal))!)} kcal/j`);
+    parts.push(`${Math.round(average(days.map((day) => day.kcal))!)} kcal par jour`);
     parts.push(`${Math.round(average(days.map((day) => day.proteinG))!)} g prot./j`);
   }
   if (weights.length > 0) parts.push(`poids ${oneDecimal(average(weights.map((row) => row.weightKg))!)} kg`);
@@ -112,8 +112,10 @@ export function longHistoryLines(input: LongHistoryInput): string[] {
   }
 
   const monthLines = months.flatMap((period) => periodLine(input, period) ?? []);
-  if (monthLines.length > 0) lines.push(`Par mois (moyennes des jours saisis) : ${monthLines.join(" ; ")}.`);
+  if (monthLines.length > 0)
+    lines.push(`Par mois (moyennes par jour saisi, pas des totaux) : ${monthLines.join(" ; ")}.`);
   const weekLines = weeks.flatMap((period) => periodLine(input, period) ?? []);
-  if (weekLines.length > 0) lines.push(`Par semaine (moyennes des jours saisis) : ${weekLines.join(" ; ")}.`);
+  if (weekLines.length > 0)
+    lines.push(`Par semaine (moyennes par jour saisi, pas des totaux) : ${weekLines.join(" ; ")}.`);
   return lines;
 }

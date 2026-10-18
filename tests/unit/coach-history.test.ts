@@ -33,9 +33,9 @@ describe("historique long du coach", () => {
     expect(lines).toEqual([
       "Suivi depuis le 2026-06-10 : 4 jours de repas saisis.",
       "Poids : 84 kg le 2026-06-10, plus bas 80.5 kg le 2026-09-29, dernier 80.8 kg le 2026-10-05.",
-      "Par mois (moyennes des jours saisis) : Mois 2026-06 : 2 j saisis, 2100 kcal/j, 85 g prot./j, poids 84 kg, 8000 pas/j.",
-      "Par semaine (moyennes des jours saisis) : Sem. du 09-28 : 1 j saisi, 1800 kcal/j, 100 g prot./j, poids 80.5 kg, 1 activité (45 min) ; " +
-        "Cette semaine : 1 j saisi, 1700 kcal/j, 110 g prot./j, poids 80.8 kg, faim 2/5, énergie 4/5, 1 activité (30 min).",
+      "Par mois (moyennes par jour saisi, pas des totaux) : Mois 2026-06 : 2 j saisis, 2100 kcal par jour, 85 g prot./j, poids 84 kg, 8000 pas/j.",
+      "Par semaine (moyennes par jour saisi, pas des totaux) : Sem. du 09-28 : 1 j saisi, 1800 kcal par jour, 100 g prot./j, poids 80.5 kg, 1 activité (45 min) ; " +
+        "Cette semaine : 1 j saisi, 1700 kcal par jour, 110 g prot./j, poids 80.8 kg, faim 2/5, énergie 4/5, 1 activité (30 min).",
     ]);
   });
 });
