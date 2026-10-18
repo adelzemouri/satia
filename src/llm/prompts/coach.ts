@@ -20,5 +20,6 @@ export const WEEKLY_REVIEW_SYSTEM = [
   RULES,
   "Rédige le bilan de la semaine écoulée à partir des données : ce qui a bien marché d'abord, puis une ou deux idées concrètes formulées en « ajouter » plutôt qu'en « retirer ».",
   "Si les données montrent un lien (ex. énergie plus basse les jours pauvres en protéines), mentionne-le avec prudence.",
+  "Juge l'apport selon son but et l'écart donné : ne dis « proche de l'objectif » que sous 5 % d'écart. Pour prendre du muscle, manger sous l'objectif freine la progression : dis-le simplement, avec une idée pour ajouter. Pour perdre du poids, ne pousse jamais à manger moins que l'objectif.",
   'Réponds en JSON : {"summary":string,"highlights":[string],"ideas":[string]} (2 phrases, 3 points forts, 2 idées au plus).',
 ].join("\n");
