@@ -11,6 +11,7 @@ import { CoachAvatar } from "@/features/coach/coach-avatar";
 import { SaveMealForm } from "@/features/saved-meals/save-meal-form";
 import { Icon } from "@/ui/icon";
 import { haptic } from "@/ui/motion";
+import { useSheetDrag } from "@/ui/sheet-drag";
 import { useToast } from "@/ui/toast";
 
 import { copyEntriesAction } from "./actions";
@@ -51,6 +52,7 @@ export function MealActions({
     dialog.current?.showModal();
   };
   const close = () => dialog.current?.close();
+  useSheetDrag(dialog, close);
 
   const copy = () =>
     startTransition(async () => {
