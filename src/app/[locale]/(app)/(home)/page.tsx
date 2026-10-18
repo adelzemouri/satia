@@ -22,12 +22,10 @@ import { ActivityTiles, FastingTile, TreatmentTile } from "@/features/home/day-c
 import { MealRings } from "@/features/home/meal-rings";
 import { RitualCards, VictoryAnnouncement } from "@/features/home/rituals";
 import { WeekStrip } from "@/features/home/week-strip";
-import { PendingShares } from "@/features/family/pending-shares";
 import { RecipeCard } from "@/features/recipes/recipe-card";
 import { Link, redirect } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { ensureWeeklyCheck } from "@/server/adaptive";
-import { pendingShares } from "@/server/family";
 import { purgePhotosIfDue } from "@/server/photos";
 import { currentFast, fastingAllowed, getFastingPlan } from "@/server/fasting";
 import { daySummary, latestWeight, loggedDaysFor, recentIntake } from "@/server/journal";
@@ -54,33 +52,20 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   await ensureWeeklyCheck(user.id, today);
   const now = new Date();
   const weekday = (new Date(`${today}T00:00:00Z`).getUTCDay() + 6) % 7;
-  const [
-    summary,
-    loggedDays,
-    shares,
-    fast,
-    fastingPlan,
-    canFast,
-    catalog,
-    days,
-    quality,
-    reminders,
-    dates,
-    lastWeight,
-  ] = await Promise.all([
-    daySummary(user.id, today),
-    loggedDaysFor(user.id, today),
-    pendingShares(user.id),
-    currentFast(user.id, now),
-    getFastingPlan(user.id),
-    fastingAllowed(user.id),
-    catalogEntries(),
-    recentIntake(user.id, today),
-    dayQualityFor(user.id, today),
-    treatmentRemindersOn(user.id, today, weekday),
-    ritualDates(user.id, today),
-    latestWeight(user.id, today),
-  ]);
+  const [summary, loggedDays, fast, fastingPlan, canFast, catalog, days, quality, reminders, dates, lastWeight] =
+    await Promise.all([
+      daySummary(user.id, today),
+      loggedDaysFor(user.id, today),
+      currentFast(user.id, now),
+      getFastingPlan(user.id),
+      fastingAllowed(user.id),
+      catalogEntries(),
+      recentIntake(user.id, today),
+      dayQualityFor(user.id, today),
+      treatmentRemindersOn(user.id, today, weekday),
+      ritualDates(user.id, today),
+      latestWeight(user.id, today),
+    ]);
   const logged = new Set(loggedDays);
   const streakInfo = streakStats(logged, today);
   const streak = streakInfo.current;
@@ -184,15 +169,6 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       </header>
 
       <div className="contents lg:flex lg:min-w-0 lg:flex-col lg:gap-6">
-        {shares.length > 0 && (
-          <Card aria-labelledby="pending-title">
-            <h2 id="pending-title" className="text-xl font-bold">
-              {t("family.pendingTitle")}
-            </h2>
-            <PendingShares shares={shares} />
-          </Card>
-        )}
-
         {/* Le premier écran : l'anneau, les macros et les repas du jour, avec un seul geste à faire. */}
         <Card aria-labelledby="today-title">
           <h2 id="today-title" className="sr-only">

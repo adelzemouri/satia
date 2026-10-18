@@ -447,6 +447,23 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 037 — Plus de partage de plats ; le foyer reste
+
+- **Date** : 2026-10-18 · **Statut** : adoptée
+- **Contexte** : le partage de plats entre membres n'a pas servi en 14 jours. Adel envisage
+  d'ouvrir Pommelia (peut-être payante) et commence par une bêta fermée d'invités en
+  « Foyer à part ».
+- **Décision** : retirer l'interface du partage (« Partager un plat » dans Menu, Ajouter, la
+  fiche recette et Mes repas ; les repas à valider sur l'accueil et le menu) et les mots
+  « famille » des textes. « Servir » dans le menu ouvre la fiche du plat pour ajouter sa
+  portion. Le foyer reste : il porte les recettes, le menu, la liste de courses, le compte
+  démo et l'isolement des invités ; chaque futur inscrit public aura le sien.
+- **Conséquences** : les tables `shared_meals` et `shared_meal_shares` et `server/family.ts`
+  sont gardés (toujours exportés et testés) pour pouvoir remettre le partage. Les plats déjà
+  partagés et pas encore validés ne s'affichent plus.
+
+---
+
 ## Modèle
 
 ```markdown

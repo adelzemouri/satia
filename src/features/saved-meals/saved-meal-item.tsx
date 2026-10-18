@@ -21,7 +21,6 @@ import { ServeButton } from "./saved-meal-list";
 export function SavedMealItem({
   id,
   name,
-  canShare,
   date,
   slot,
   foods,
@@ -29,8 +28,6 @@ export function SavedMealItem({
 }: {
   id: string;
   name: string;
-  /** Faux quand on est seul au foyer : rien à partager. */
-  canShare: boolean;
   /** Jour et repas où « Ajouter » sert ce repas. */
   date: string;
   slot: MealSlot;
@@ -70,11 +67,6 @@ export function SavedMealItem({
         >
           {name}
         </Link>
-        {canShare && (
-          <Link href={`/meals/${id}/share`} aria-label={t("share", { name })} className={iconClass}>
-            <Icon name="share" size={18} />
-          </Link>
-        )}
         <Link href={`/meals/${id}`} aria-label={t("edit", { name })} className={iconClass}>
           <Icon name="edit" size={18} />
         </Link>

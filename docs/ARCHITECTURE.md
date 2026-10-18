@@ -453,7 +453,8 @@ Téléphone                                     Serveur (Vercel fra1)           
   Sa portion entre tout de suite dans son journal. Les autres membres reçoivent le repas
   « à valider » : rien n'entre dans leur journal sans leur accord, avec leur portion
   (½, 1, 1½, 2 parts ou un poids en grammes). Les lignes créées ont `input_method = shared`
-  et des valeurs figées comme toute saisie.
+  et des valeurs figées comme toute saisie. Interface retirée le 2026-10-18 (DECISIONS 037) :
+  tables et `src/server/family.ts` gardés, plus aucun écran n'y mène.
 - **Confidentialité** : un membre ne voit que les partages qui lui sont adressés, jamais
   le journal des autres. Seuls les noms des membres sont exposés.
 
@@ -557,8 +558,8 @@ Téléphone                                     Serveur (Vercel fra1)           
   soit une recette du foyer ou un aliment public (un aliment personnel est refusé,
   `dish_not_shared`, car tout le foyer voit le menu), soit un simple libellé (« Restes »),
   avec un nombre de parts. Le glisser-déposer est remplacé par un formulaire (jour, repas,
-  plat), plus fiable au doigt. « Servir » ouvre le partage de repas existant (phase 6) pour
-  le plat du jour : le menu ne remplit jamais le journal tout seul.
+  plat), plus fiable au doigt. « Servir » ouvre la fiche du plat pour ajouter sa portion
+  au journal : le menu ne remplit jamais le journal tout seul.
 - **Menu proposé par le coach** (feature LLM `menu_plan`, modèle texte, un appel) : il ne
   remplit que les créneaux vides à partir d'aujourd'hui. Le prompt donne le régime, la cible
   par repas (25 / 35 / 30 % de l'objectif) et les 30 premières recettes du foyer, que le
