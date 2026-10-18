@@ -65,8 +65,6 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
                   } as const,
                 ]
               : []),
-            { href: "/containers", icon: "sparkle", label: t("containers"), hint: t("containersHint") },
-            { href: "/dictionary", icon: "book", label: t("dictionary"), hint: t("dictionaryHint") },
             {
               href: "/profile/security",
               icon: "lock",

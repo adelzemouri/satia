@@ -77,8 +77,6 @@ export const FOOD_ESTIMATE_SYSTEM = [
 export type PromptContext = {
   /** Précision de l'utilisateur (« sauce à part », « demi-portion »). */
   note?: string | undefined;
-  /** Contenants utiles : « grand bol (bol, 500 ml) ». */
-  containers?: readonly string[];
   /** Habitudes apprises des corrections : « riz → Riz blanc, cuit, 200 g ». */
   habits?: readonly string[];
 };
@@ -88,7 +86,6 @@ export function mealUserPrompt(main: string, context: PromptContext = {}): strin
   return [
     main,
     context.note && `Précision : ${context.note}`,
-    context.containers?.length && `Contenants : ${context.containers.join(" ; ")}`,
     context.habits?.length && `Habitudes : ${context.habits.join(" ; ")}`,
   ]
     .filter(Boolean)

@@ -15,7 +15,7 @@ export type DraftItem = {
   label: string;
   /** Plat reconnu par l'IA (« Pâtes au saumon »), pour regrouper ses composants. */
   dish?: string | null;
-  /** Nom proposé par l'IA, normalisé ; null pour une expression du dictionnaire personnel. */
+  /** Nom proposé par l'IA (ou nom de l'habitude appliquée), normalisé. */
   aiLabel: string | null;
   /** Proposition initiale, pour repérer une correction de l'utilisateur. */
   proposal: { foodId: string | null; grams: number } | null;
@@ -25,7 +25,7 @@ export type DraftItem = {
   unit: Unit;
   /** Nombre de pièces vues par l'IA, pour expliquer un poids proposé en grammes. */
   count?: number | null;
-  /** Aliment tiré d'une habitude apprise ou du dictionnaire personnel : déjà validé par l'utilisateur. */
+  /** Aliment tiré d'une habitude apprise : déjà validé par l'utilisateur. */
   fromHabit?: boolean;
   /** Autres aliments proches dans la base, pour corriger en un tap. */
   alternatives: FoodItem[];
@@ -35,6 +35,6 @@ export type MealDraft = {
   method: AiInputMethod;
   photoId: string | null;
   items: DraftItem[];
-  /** false quand tout a été reconnu par le dictionnaire ou les habitudes, sans appel à l'IA. */
+  /** false quand tout a été reconnu par les habitudes, sans appel à l'IA. */
   usedAi: boolean;
 };

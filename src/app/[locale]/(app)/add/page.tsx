@@ -16,7 +16,6 @@ import { catalogRecipe } from "@/domain/recipes/catalog";
 import { DishThumb } from "@/features/recipes/dish-thumb";
 import { daySummary } from "@/server/journal";
 import { favoriteFoods, type FoodSummary, getFood, ownFoods, recentFoods } from "@/server/foods";
-import { listContainers } from "@/server/personal";
 import { habitualMeal } from "@/server/quality";
 import { listSavedMeals } from "@/server/saved-meals";
 import { savedMealKcal } from "@/domain/saved-meals";
@@ -36,14 +35,13 @@ export default async function AddPage({ params, searchParams }: PageProps<"/[loc
   const date = parseDayParam(query.date, todayIso());
   const slot = MEAL_SLOTS.find((value) => value === query.slot) ?? slotAt(new Date(), APP_TIMEZONE);
   const foodId = typeof query.food === "string" ? query.food : null;
-  const [recent, favorites, mine, preselected, availability, containers, habit, summary, saved] = await Promise.all([
+  const [recent, favorites, mine, preselected, availability, habit, summary, saved] = await Promise.all([
     recentFoods(user.id),
     favoriteFoods(user.id),
     ownFoods(user.id),
     // Aliment choisi depuis une fiche produit : on passe directement à la quantité.
     foodId && /^[0-9a-f-]{36}$/.test(foodId) ? getFood(user.id, foodId).catch(() => null) : null,
     aiAvailability(),
-    listContainers(user.id),
     foodId ? null : habitualMeal(user.id, slot, date),
     date === todayIso() && !foodId ? daySummary(user.id, date) : null,
     foodId ? [] : listSavedMeals(user.id),
@@ -77,7 +75,7 @@ export default async function AddPage({ params, searchParams }: PageProps<"/[loc
         mine={mine.map(toItem)}
         initialFood={preselected && toItem(preselected)}
         inputMethod={query.via === "barcode" ? "barcode" : "manual"}
-        ai={availability ? { availability, containers: containers.map(({ id, name }) => ({ id, name })) } : undefined}
+        ai={availability ? { availability } : undefined}
         suggestions={
           <>
             {saved.length > 0 && (
