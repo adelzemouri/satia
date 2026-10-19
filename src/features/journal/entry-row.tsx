@@ -14,7 +14,7 @@ import { Icon } from "@/ui/icon";
 import { SwipeRow } from "@/ui/swipe-row";
 import { useToast } from "@/ui/toast";
 
-import { deleteEntryAction, setFavoriteAction, updateEntryAction } from "./actions";
+import { deleteEntryAction, favoriteEstimatedEntryAction, setFavoriteAction, updateEntryAction } from "./actions";
 
 export type EntryView = {
   id: string;
@@ -29,7 +29,7 @@ export type EntryView = {
   slot: MealSlot;
   isEstimated: boolean;
   imageUrl: string | null;
-  /** Aliment de la base derrière la ligne ; sans lui (valeurs estimées seules), pas de favori possible. */
+  /** Aliment de la base derrière la ligne ; absent pour une estimation de l'IA ou un aliment supprimé. */
   foodId: string | null;
   favorite: boolean;
 };
@@ -64,6 +64,9 @@ export function EntryRow({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [favorite, setFavorite] = useState(entry.favorite);
+  // Une estimation mise en favori devient un aliment personnel : la ligne s'y rattache ensuite.
+  const [foodId, setFoodId] = useState(entry.foodId);
+  const canFavorite = !!foodId || entry.isEstimated;
 
   const summary = (
     <span className="flex min-w-0 flex-1 items-center gap-3">
@@ -126,17 +129,18 @@ export function EntryRow({
 
   // L'étoile change tout de suite ; elle revient en arrière si l'enregistrement échoue.
   const toggleFavorite = () => {
-    const foodId = entry.foodId;
-    if (!foodId) return;
+    if (!canFavorite) return;
     const next = !favorite;
     setFavorite(next);
-    void setFavoriteAction(foodId, next).then((result) => {
+    const request = foodId ? setFavoriteAction(foodId, next) : favoriteEstimatedEntryAction(entry.id);
+    void request.then((result) => {
       if (result?.error) {
         setFavorite(!next);
         setError(result.error);
-      } else {
-        toast({ message: t(next ? "journal.favoriteAdded" : "journal.favoriteRemoved", { label: entry.label }) });
+        return;
       }
+      if (result?.id) setFoodId(result.id);
+      toast({ message: t(next ? "journal.favoriteAdded" : "journal.favoriteRemoved", { label: entry.label }) });
     });
   };
 
@@ -194,7 +198,7 @@ export function EntryRow({
             <div className="flex items-center gap-2">
               <div className="min-w-0 flex-1">{macros}</div>
               {/* L'étoile, comme dans les listes d'aliments, en face des macros. */}
-              {entry.foodId && (
+              {canFavorite && (
                 <button
                   type="button"
                   onClick={toggleFavorite}
