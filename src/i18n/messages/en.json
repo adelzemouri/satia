@@ -1428,6 +1428,8 @@
     "slot": "Meal",
     "recipe": "Recipe",
     "recipeNone": "Other dish (free text)",
+    "householdRecipes": "Household recipes",
+    "catalogRecipes": "Pommelia recipes",
     "label": "Dish name",
     "labelHint": "For an idea without a recipe, such as “Leftovers” or “Homemade pizza”.",
     "servingsLabel": "Servings",

@@ -1428,6 +1428,8 @@
     "slot": "Repas",
     "recipe": "Recette",
     "recipeNone": "Autre plat (texte libre)",
+    "householdRecipes": "Recettes du foyer",
+    "catalogRecipes": "Recettes Pommelia",
     "label": "Nom du plat",
     "labelHint": "Pour une idée sans recette, par exemple « Restes » ou « Pizza maison ».",
     "servingsLabel": "Nombre de parts",

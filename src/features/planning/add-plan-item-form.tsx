@@ -14,20 +14,27 @@ import { addPlanItemAction } from "./actions";
 const selectClass = "min-h-12 rounded-2xl border border-border bg-surface px-3 text-base";
 const SLOTS = ["breakfast", "lunch", "dinner", "snack"] as const satisfies readonly MealSlot[];
 
+type RecipeOption = { id: string; name: string };
+
 /**
- * Ajout d'un plat au menu : un jour, un repas, une recette du foyer ou un nom libre. Depuis une
+ * Ajout d'un plat au menu : un jour, un repas, une recette (du foyer ou du catalogue Pommelia)
+ * ou un nom libre. Depuis une
  * case du tableau de la semaine (ordinateur), le jour et le repas sont déjà choisis (`fixed`).
  */
 export function AddPlanItemForm({
   days,
   recipes,
+  catalogRecipes,
   defaultDate,
   fixed,
   onDone,
 }: {
   days: { date: string; label: string }[];
   defaultDate: string;
-  recipes: { id: string; name: string }[];
+  /** Recettes du foyer. */
+  recipes: RecipeOption[];
+  /** Recettes du catalogue Pommelia, communes à tous. */
+  catalogRecipes: RecipeOption[];
   fixed?: { date: string; slot: MealSlot };
   onDone?: () => void;
 }) {
@@ -90,14 +97,27 @@ export function AddPlanItemForm({
         <span className="font-semibold">{t("plan.recipe")}</span>
         <select value={foodId} onChange={(event) => setFoodId(event.target.value)} className={selectClass}>
           <option value="">{t("plan.recipeNone")}</option>
-          {recipes.map((recipe) => (
-            <option key={recipe.id} value={recipe.id}>
-              {recipe.name}
-            </option>
-          ))}
+          {recipes.length > 0 && (
+            <optgroup label={t("plan.householdRecipes")}>
+              {recipes.map((recipe) => (
+                <option key={recipe.id} value={recipe.id}>
+                  {recipe.name}
+                </option>
+              ))}
+            </optgroup>
+          )}
+          {catalogRecipes.length > 0 && (
+            <optgroup label={t("plan.catalogRecipes")}>
+              {catalogRecipes.map((recipe) => (
+                <option key={recipe.id} value={recipe.id}>
+                  {recipe.name}
+                </option>
+              ))}
+            </optgroup>
+          )}
         </select>
       </label>
-      {recipes.length === 0 && <p className="text-sm text-text-muted">{t("plan.noRecipes")}</p>}
+      {recipes.length + catalogRecipes.length === 0 && <p className="text-sm text-text-muted">{t("plan.noRecipes")}</p>}
       {!foodId && <Field label={t("plan.label")} hint={t("plan.labelHint")} name="label" maxLength={80} required />}
       <Field
         label={t("plan.servingsLabel")}

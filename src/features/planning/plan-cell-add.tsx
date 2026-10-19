@@ -17,12 +17,14 @@ export function PlanCellAdd({
   slot,
   dayLabel,
   recipes,
+  catalogRecipes,
   filled,
 }: {
   date: string;
   slot: MealSlot;
   dayLabel: string;
   recipes: { id: string; name: string }[];
+  catalogRecipes: { id: string; name: string }[];
   /** Case qui a déjà un plat : le « + » se fait discret, en bas de la case. */
   filled: boolean;
 }) {
@@ -88,6 +90,7 @@ export function PlanCellAdd({
             defaultDate={date}
             fixed={{ date, slot }}
             recipes={recipes}
+            catalogRecipes={catalogRecipes}
             onDone={close}
           />
         </div>
