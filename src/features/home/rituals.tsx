@@ -261,7 +261,6 @@ export function RitualCards({
       <div
         ref={track}
         onScroll={onScroll}
-        data-swipe-lock={rituals.length > 1 ? true : undefined}
         className="flex snap-x snap-mandatory [scrollbar-width:none] gap-3 overflow-x-auto [contain:inline-size]"
       >
         {rituals.map((ritual, position) => {
