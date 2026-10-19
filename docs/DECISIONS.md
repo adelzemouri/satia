@@ -481,6 +481,20 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 039 — Plus de glissement latéral pour changer d'onglet
+
+- **Date** : 2026-10-19 · **Statut** : adoptée
+- **Contexte** : sur téléphone, glisser le doigt vers la gauche ou la droite faisait passer d'un
+  onglet principal à l'autre (Accueil, Cuisine, Progrès, Moi). Adel trouve ce geste sans logique :
+  il se déclenche par erreur et les onglets ne forment pas une suite de pages.
+- **Décision** : le geste est retiré (`tab-swipe.tsx`, `tab-order.ts`). On change d'onglet par la
+  barre du bas ou la barre latérale. Le glissement d'une ligne du journal (supprimer, dupliquer),
+  les carrousels et le retour arrière du téléphone restent.
+- **Conséquences** : plus de conflit entre ce geste et les carrousels horizontaux ; l'attribut
+  `data-swipe-lock` qui servait à les protéger disparaît.
+
+---
+
 ## Modèle
 
 ```markdown

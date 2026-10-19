@@ -162,7 +162,7 @@ export function CoachChat({
       {questions.length > 0 && (
         <div className="flex flex-col gap-2">
           <h3 className="text-sm font-semibold text-text-muted">{t("suggestions")}</h3>
-          <ul data-swipe-lock className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
+          <ul className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
             {questions.map((question) => (
               <li key={question} className="shrink-0">
                 <button

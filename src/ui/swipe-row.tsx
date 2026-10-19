@@ -53,7 +53,7 @@ export function SwipeRow({
 
   const ready = leaving || armed;
   return (
-    <div data-swipe-lock className="relative overflow-hidden rounded-xl">
+    <div className="relative overflow-hidden rounded-xl">
       {(leaving || dx < -16) && (
         <div
           aria-hidden="true"

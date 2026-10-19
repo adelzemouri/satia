@@ -777,8 +777,8 @@ le pourquoi de chacun est dans `docs/DECISIONS.md`.
 - **Identité « gourmande »** : titres en Fraunces, couleur pomme, logo « quartier qui
   sourit » (icônes PWA, favicon, écrans de démarrage iOS générés par
   `scripts/generate-icons.ts`). Onboarding en 6 écrans sans barre de navigation.
-- **Mobile** (< 1024 px) : barre inférieure Accueil, Cuisine, +, Progrès, Moi ; balayage
-  latéral entre onglets (`tab-swipe.tsx`) ; bouton retour (Navigation API, sinon page
+- **Mobile** (< 1024 px) : barre inférieure Accueil, Cuisine, +, Progrès, Moi ; pas de
+  glissement latéral entre onglets (retiré, DECISIONS 039) ; bouton retour (Navigation API, sinon page
   parente, `parent-path.ts`). Le Journal est accessible depuis Moi et l'accueil.
 - **Ordinateur** (≥ 1024 px) : barre latérale (`side-nav.tsx`, réduite aux icônes jusqu'à
   1279 px), pages en deux colonnes (`src/ui/columns.tsx`), sous-menu Cuisine en rail
