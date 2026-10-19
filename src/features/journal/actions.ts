@@ -27,6 +27,7 @@ import {
   deleteEntry,
   deleteWeight,
   type EntryInput,
+  favoriteEstimatedEntry,
   renameDish,
   setWater,
   setWaterGoal,
@@ -78,6 +79,11 @@ export async function setWaterAction(date: string, glasses: number): Promise<IdS
 
 export async function setWaterGoalAction(glasses: number): Promise<IdState> {
   return run(async (userId) => (await setWaterGoal(userId, glasses), { ok: true }));
+}
+
+/** Étoile d'un aliment estimé : il devient un aliment personnel mis en favori. */
+export async function favoriteEstimatedEntryAction(entryId: string): Promise<IdState> {
+  return run(async (userId) => ({ ok: true, id: await favoriteEstimatedEntry(userId, entryId) }));
 }
 
 export async function setFavoriteAction(foodId: string, favorite: boolean): Promise<IdState> {

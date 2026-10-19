@@ -17,7 +17,7 @@ import { glassesFromMl, isWaterFood, WATER_GROUP } from "@/domain/water";
 import { projectGoalDate, type TrendPoint, weeklyChangeKg, weightTrend } from "@/domain/weight-trend";
 
 import { DomainError } from "./errors";
-import { getFood, per100 } from "./foods";
+import { createCustomFood, getFood, per100, setFavorite } from "./foods";
 import { dayGoal } from "./adaptive";
 import { getProfile } from "./profile";
 import { getCalorieFloors } from "./settings";
@@ -127,6 +127,39 @@ export async function deleteEntry(userId: string, id: string): Promise<void> {
   await db()
     .delete(mealEntries)
     .where(and(eq(mealEntries.id, z.uuid().parse(id)), eq(mealEntries.userId, userId)));
+}
+
+/**
+ * Met en favori un aliment estimé par l'IA (sans aliment de la base) : il devient un aliment
+ * personnel, avec une portion égale à la quantité saisie, et la ligne du journal s'y rattache.
+ * Un aliment personnel du même nom est réutilisé. Renvoie l'aliment mis en favori.
+ */
+export async function favoriteEstimatedEntry(userId: string, entryId: string): Promise<string> {
+  const entry = await getOwnEntry(userId, z.uuid().parse(entryId));
+  if (entry.foodId) {
+    await setFavorite(userId, entry.foodId, true);
+    return entry.foodId;
+  }
+  if (entry.grams < 1 || entry.grams > 2000) throw new DomainError("unit_not_available");
+  const [existing] = await db()
+    .select({ id: foods.id })
+    .from(foods)
+    .where(and(eq(foods.ownerUserId, userId), eq(foods.source, "custom"), eq(foods.nameFr, entry.label.trim())));
+  const foodId =
+    existing?.id ??
+    (await createCustomFood(userId, {
+      name: entry.label,
+      basis: "portion",
+      portionGrams: entry.grams,
+      kcal: entry.kcal,
+      proteinG: entry.proteinG,
+      carbsG: entry.carbsG,
+      fatG: entry.fatG,
+    }));
+  // Les valeurs de la ligne ne changent pas : elle reste marquée « estimée ».
+  await db().update(mealEntries).set({ foodId }).where(eq(mealEntries.id, entry.id));
+  await setFavorite(userId, foodId, true);
+  return foodId;
 }
 
 async function getOwnEntry(userId: string, id: string): Promise<MealEntry> {

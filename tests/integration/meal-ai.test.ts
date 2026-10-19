@@ -17,7 +17,8 @@ import { setProviderForTests } from "@/llm/providers";
 import type { LlmProvider } from "@/llm/types";
 import { acceptInvite, createAccessLink, setupFirstAdmin } from "@/server/accounts";
 import { collectUserData } from "@/server/data-export";
-import { createRecipe, searchFoods, setUnitWeight } from "@/server/foods";
+import { createRecipe, favoriteFoods, searchFoods, setUnitWeight } from "@/server/foods";
+import { favoriteEstimatedEntry } from "@/server/journal";
 import { analyzePhoto, analyzeText, foodCandidates, saveMeal } from "@/server/meal-ai";
 import { lastPhotoPurge, purgePhotos, purgePhotosIfDue, runPhotoPurge } from "@/server/photos";
 import { setPhotoSettings } from "@/server/settings";
@@ -294,6 +295,17 @@ describe("saisie IA", () => {
     });
     // Rien à apprendre d'une ligne sans aliment de la base.
     expect(await db().select().from(foodCorrections)).toHaveLength(0);
+
+    // L'étoile du journal en fait un aliment personnel (portion = quantité saisie), mis en favori.
+    const foodId = await favoriteEstimatedEntry(userId, entry!.id);
+    const [linked] = await db().select().from(mealEntries);
+    expect(linked).toMatchObject({ foodId, kcal: 450, isEstimated: true });
+    const [food] = await db().select().from(foods).where(eq(foods.id, foodId));
+    expect(food).toMatchObject({ source: "custom", ownerUserId: userId, nameFr: "zqxw plat imaginaire", kcal: 180 });
+    expect(food!.unitWeights).toEqual({ portion: 250 });
+    expect((await favoriteFoods(userId)).map((item) => item.id)).toEqual([foodId]);
+    // Une deuxième fois, le même aliment sert.
+    expect(await favoriteEstimatedEntry(userId, entry!.id)).toBe(foodId);
   });
 
   it("photo : analyse, stockage privé, lien avec le repas, précision transmise au LLM", async () => {
