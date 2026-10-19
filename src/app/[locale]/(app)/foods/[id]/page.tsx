@@ -22,7 +22,8 @@ import { RecipeStepsButton } from "@/features/planning/recipe-steps-button";
 import { RecipeVisual } from "@/features/recipes/recipe-visual";
 import { aiAvailability } from "@/server/ai-availability";
 import { importOpenFoodFactsProduct } from "@/server/open-food-facts";
-import { type Food, getFoodDetails, isGeneratedRecipePhoto, recipeIngredients } from "@/server/foods";
+import { RecipeFavoriteButton } from "@/features/recipes/favorite-star";
+import { type Food, getFoodDetails, isFavorite, isGeneratedRecipePhoto, recipeIngredients } from "@/server/foods";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
 import { Card } from "@/ui/card";
@@ -63,9 +64,10 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
   const ownRecipe = food.source === "recipe" && !catalog;
   // L'admin peut refaire par l'IA la photo de n'importe quelle recette, catalogue compris.
   const adminRecipe = food.source === "recipe" && user.role === "admin";
-  const [ingredients, ai] = await Promise.all([
+  const [ingredients, ai, favorite] = await Promise.all([
     ownRecipe ? recipeIngredients(user.id, food.id) : [],
     adminRecipe && llmConfig().imageModel ? aiAvailability() : null,
+    food.source === "recipe" ? isFavorite(user.id, food.id) : false,
   ]);
   const canRegenerate = Boolean(ai?.available);
   // Photo rangée dans le stockage (prise par la famille ou refaite par l'IA), servie par URL signée.
@@ -137,6 +139,12 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
               >
                 <ProductThumb src={food.imageUrl} size={112} />
               </ZoomablePhoto>
+            )}
+            {/* Recettes : l'étoile des favoris, en face du titre. */}
+            {food.source === "recipe" && (
+              <div className="mt-1">
+                <RecipeFavoriteButton id={food.id} name={shortFoodName(food.nameFr)} initial={favorite} />
+              </div>
             )}
           </div>
 

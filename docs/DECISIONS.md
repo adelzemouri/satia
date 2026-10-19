@@ -466,6 +466,21 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 038 — Recettes favorites : les mêmes favoris que les aliments
+
+- **Date** : 2026-10-19 · **Statut** : adoptée
+- **Contexte** : Adel veut mettre des recettes en favoris depuis Cuisine → Recettes. Une recette est
+  déjà enregistrée comme un aliment (`foods.source = 'recipe'`), et la table `favorites` (par
+  utilisateur) sert déjà à l'étoile des aliments.
+- **Décision** : pas de nouvelle table. L'étoile d'une vignette ou d'une fiche recette écrit dans
+  `favorites` ; la page Recettes gagne un filtre « Favoris » (`?cat=favoris`) sans changer l'ordre
+  fixe des recettes. Les favoris restent personnels, même pour les recettes du foyer.
+- **Conséquences** : une recette favorite apparaît aussi dans l'onglet Favoris de « Écrire », prête
+  à être notée (voulu). Des favoris communs à la famille, s'ils servent un jour au menu de la
+  semaine, demanderaient une autre table.
+
+---
+
 ## Modèle
 
 ```markdown

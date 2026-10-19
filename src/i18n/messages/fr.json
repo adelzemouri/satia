@@ -1518,7 +1518,14 @@
     "stepsAsk": "Demander la préparation à {name}",
     "stepsWriting": "{name} rédige la préparation…",
     "search": "Rechercher une recette ou un ingrédient",
-    "noMatch": "Aucune recette ne correspond. Essaie un autre mot."
+    "noMatch": "Aucune recette ne correspond. Essaie un autre mot.",
+    "favorites": "Favoris",
+    "noFavorites": "Touche l'étoile d'une recette pour la retrouver ici, et aussi dans l'onglet Favoris quand tu ajoutes un aliment.",
+    "favoriteAdd": "Ajouter {name} aux favoris",
+    "favoriteRemove": "Retirer {name} des favoris",
+    "favoriteAdded": "Recette ajoutée aux favoris : {name}",
+    "favoriteRemoved": "Recette retirée des favoris : {name}",
+    "favoriteError": "L'étoile n'a pas pu être enregistrée. Réessaie."
   },
   "training": {
     "title": "Entraînement",

@@ -1518,7 +1518,14 @@
     "stepsAsk": "Ask {name} for the method",
     "stepsWriting": "{name} is writing the method…",
     "search": "Search a recipe or an ingredient",
-    "noMatch": "No recipe matches. Try another word."
+    "noMatch": "No recipe matches. Try another word.",
+    "favorites": "Favourites",
+    "noFavorites": "Tap a recipe's star to find it here, and in the Favourites tab when you add a food.",
+    "favoriteAdd": "Add {name} to favourites",
+    "favoriteRemove": "Remove {name} from favourites",
+    "favoriteAdded": "Recipe added to favourites: {name}",
+    "favoriteRemoved": "Recipe removed from favourites: {name}",
+    "favoriteError": "The star couldn't be saved. Try again."
   },
   "training": {
     "title": "Training",
