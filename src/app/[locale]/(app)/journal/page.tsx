@@ -18,7 +18,7 @@ import { WaterTracker } from "@/features/journal/water-tracker";
 import { QualityBars } from "@/features/quality/quality-bars";
 import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
-import { getFoods } from "@/server/foods";
+import { favoriteIds, getFoods } from "@/server/foods";
 import { daySummary, entriesOn, loggedDays } from "@/server/journal";
 import { photoUrls } from "@/server/photos";
 import { dayQualityFor } from "@/server/quality";
@@ -41,11 +41,12 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
   const yesterday = addDays(today, -1);
   const weekStart = isoWeekStart(date);
   const week = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
-  const [summary, yesterdayEntries, quality, logged] = await Promise.all([
+  const [summary, yesterdayEntries, quality, logged, favorites] = await Promise.all([
     daySummary(user.id, date),
     date === today ? entriesOn(user.id, yesterday) : Promise.resolve([]),
     dayQualityFor(user.id, date),
     loggedDays(user.id, week[0]!, week[6]!),
+    favoriteIds(user.id),
   ]);
   const foods = new Map(
     (
@@ -272,6 +273,9 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
                           slot: entry.slot,
                           isEstimated: entry.isEstimated,
                           imageUrl: (entry.foodId && foods.get(entry.foodId)?.imageUrl) || null,
+                          // Seul un aliment encore visible peut aller dans les favoris.
+                          foodId: entry.foodId && foods.has(entry.foodId) ? entry.foodId : null,
+                          favorite: !!entry.foodId && favorites.has(entry.foodId),
                         }}
                         units={unitsFor(entry.foodId, entry.unit)}
                         muted={muted}

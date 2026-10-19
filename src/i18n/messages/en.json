@@ -719,7 +719,11 @@
     "mealActions": "More actions for {name}",
     "closeActions": "Close",
     "emptyShort": "Nothing yet",
-    "showDetail": "See details"
+    "showDetail": "See details",
+    "favoriteAdd": "Add {label} to favourites",
+    "favoriteRemove": "Remove {label} from favourites",
+    "favoriteAdded": "{label} added to favourites",
+    "favoriteRemoved": "{label} removed from favourites"
   },
   "dish": {
     "label": "Dish name",
@@ -775,7 +779,9 @@
     "unitWeightSave": "Save this weight",
     "addedTo": "Added: {name}, {slot}",
     "less": "Less",
-    "more": "More"
+    "more": "More",
+    "recentMore": "Show more",
+    "recentMoreLoading": "Loading…"
   },
   "foods": {
     "photo": {

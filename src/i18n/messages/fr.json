@@ -719,7 +719,11 @@
     "mealActions": "{slot, select, snack {Plus d'actions pour les {name}} other {Plus d'actions pour le {name}}}",
     "closeActions": "Fermer",
     "emptyShort": "Rien pour l'instant",
-    "showDetail": "Voir le détail"
+    "showDetail": "Voir le détail",
+    "favoriteAdd": "Ajouter {label} aux favoris",
+    "favoriteRemove": "Retirer {label} des favoris",
+    "favoriteAdded": "{label} ajouté aux favoris",
+    "favoriteRemoved": "{label} retiré des favoris"
   },
   "dish": {
     "label": "Nom du plat",
@@ -775,7 +779,9 @@
     "unitWeightSave": "Enregistrer ce poids",
     "addedTo": "Ajouté : {name}, {slot}",
     "less": "Moins",
-    "more": "Plus"
+    "more": "Plus",
+    "recentMore": "Voir plus",
+    "recentMoreLoading": "Chargement…"
   },
   "foods": {
     "photo": {

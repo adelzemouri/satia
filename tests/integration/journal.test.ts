@@ -169,6 +169,29 @@ describe("base d'aliments", () => {
       expect.objectContaining({ id, lastQuantity: 30, lastUnit: "g", lastKcal: expect.any(Number) }),
     ]);
   });
+
+  it("donne les récents page par page pour « Voir plus »", async () => {
+    const userId = await setupUser();
+    const ids: string[] = [];
+    for (const name of ["Pomme", "Poire", "Prune"]) {
+      const id = await createCustomFood(userId, {
+        name,
+        brand: "",
+        basis: "100g",
+        portionGrams: null,
+        kcal: 50,
+        proteinG: 0,
+        carbsG: 12,
+        fatG: 0,
+      });
+      await addEntry(userId, { date: todayIso(), slot: "snack", foodId: id, quantity: 100, unit: "g" });
+      ids.push(id);
+    }
+    const page = async (offset: number) => (await recentFoods(userId, 2, offset)).map((food) => food.id);
+    // Du plus récent au plus ancien, sans trou ni doublon entre deux pages.
+    expect([...(await page(0)), ...(await page(2))]).toEqual(ids.toReversed());
+    expect(await page(3)).toEqual([]);
+  });
 });
 
 describe("poids d'une tranche ou d'une pièce", () => {

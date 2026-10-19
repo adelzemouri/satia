@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import type { z } from "zod";
 
+import { RECENT_PAGE } from "@/domain/food-name";
 import { type ActionState, toActionState } from "@/server/action-result";
 import {
   createCustomFood,
@@ -135,8 +136,9 @@ export async function deleteWeightAction(date: string): Promise<IdState> {
   return run(async (userId) => (await deleteWeight(userId, date), { ok: true }));
 }
 
-/** Derniers aliments saisis, pour la liste « Récents » de l'appareil photo du +. Lecture seule. */
-export async function recentFoodsAction(): Promise<RecentFood[]> {
+/** Une page des derniers aliments saisis (« Récents » de l'appareil photo et « Voir plus »). Lecture seule. */
+export async function recentFoodsAction(offset = 0): Promise<RecentFood[]> {
   const user = await getCurrentUser();
-  return user ? recentFoods(user.id, 8) : [];
+  const valid = Number.isInteger(offset) && offset >= 0 && offset <= 10_000;
+  return user && valid ? recentFoods(user.id, RECENT_PAGE, offset) : [];
 }

@@ -14,7 +14,7 @@ import { Icon } from "@/ui/icon";
 import { SwipeRow } from "@/ui/swipe-row";
 import { useToast } from "@/ui/toast";
 
-import { deleteEntryAction, updateEntryAction } from "./actions";
+import { deleteEntryAction, setFavoriteAction, updateEntryAction } from "./actions";
 
 export type EntryView = {
   id: string;
@@ -29,6 +29,9 @@ export type EntryView = {
   slot: MealSlot;
   isEstimated: boolean;
   imageUrl: string | null;
+  /** Aliment de la base derrière la ligne ; sans lui (valeurs estimées seules), pas de favori possible. */
+  foodId: string | null;
+  favorite: boolean;
 };
 
 /** Resserrement de la liste quand une ligne est supprimée. */
@@ -60,6 +63,7 @@ export function EntryRow({
   const collapseTimer = useRef(0);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [favorite, setFavorite] = useState(entry.favorite);
 
   const summary = (
     <span className="flex min-w-0 flex-1 items-center gap-3">
@@ -120,6 +124,22 @@ export function EntryRow({
       else setOpen(false);
     });
 
+  // L'étoile change tout de suite ; elle revient en arrière si l'enregistrement échoue.
+  const toggleFavorite = () => {
+    const foodId = entry.foodId;
+    if (!foodId) return;
+    const next = !favorite;
+    setFavorite(next);
+    void setFavoriteAction(foodId, next).then((result) => {
+      if (result?.error) {
+        setFavorite(!next);
+        setError(result.error);
+      } else {
+        toast({ message: t(next ? "journal.favoriteAdded" : "journal.favoriteRemoved", { label: entry.label }) });
+      }
+    });
+  };
+
   const restore = () => {
     window.clearTimeout(collapseTimer.current);
     setCollapsing(false);
@@ -171,7 +191,23 @@ export function EntryRow({
             className={`flex flex-col gap-3 rounded-2xl p-3 ${muted ? "bg-surface" : "bg-surface-muted"}`}
           >
             {error && <Alert>{errorText(error)}</Alert>}
-            {macros}
+            <div className="flex items-center gap-2">
+              <div className="min-w-0 flex-1">{macros}</div>
+              {/* L'étoile, comme dans les listes d'aliments, en face des macros. */}
+              {entry.foodId && (
+                <button
+                  type="button"
+                  onClick={toggleFavorite}
+                  aria-pressed={favorite}
+                  aria-label={t(favorite ? "journal.favoriteRemove" : "journal.favoriteAdd", { label: entry.label })}
+                  className={`-my-2 -mr-1 flex size-12 shrink-0 items-center justify-center rounded-full transition active:scale-[0.97] ${
+                    favorite ? "text-carbs" : "text-text-muted"
+                  }`}
+                >
+                  <Icon name="star" filled={favorite} />
+                </button>
+              )}
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <label className="flex flex-col gap-1.5">
                 <span className="font-semibold">{t("journal.quantity")}</span>
