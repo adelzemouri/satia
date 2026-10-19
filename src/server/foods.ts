@@ -248,6 +248,15 @@ export async function favoriteIds(userId: string): Promise<Set<string>> {
   return new Set(rows.map((row) => row.foodId));
 }
 
+export async function isFavorite(userId: string, foodId: string): Promise<boolean> {
+  const rows = await db()
+    .select({ foodId: favorites.foodId })
+    .from(favorites)
+    .where(and(eq(favorites.userId, userId), eq(favorites.foodId, foodId)))
+    .limit(1);
+  return rows.length > 0;
+}
+
 export async function setFavorite(userId: string, foodId: string, favorite: boolean): Promise<void> {
   await getFood(userId, foodId);
   if (favorite) {

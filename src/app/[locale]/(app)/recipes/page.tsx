@@ -9,7 +9,7 @@ import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { recipeLibrary } from "@/server/planning";
 import { catalogEntries } from "@/server/recipes";
-import { fillRecipePhotosLater } from "@/server/foods";
+import { favoriteIds, fillRecipePhotosLater } from "@/server/foods";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
 
@@ -20,13 +20,18 @@ export default async function RecipesPage({ params }: PageProps<"/[locale]/recip
   const locale = toLocale((await params).locale);
   setRequestLocale(locale);
   const user = await requireUser(locale);
-  const [recipes, catalog] = await Promise.all([recipeLibrary(user.id, user.householdId), catalogEntries()]);
+  const [recipes, catalog, favorites] = await Promise.all([
+    recipeLibrary(user.id, user.householdId),
+    catalogEntries(),
+    favoriteIds(user.id),
+  ]);
   // Recettes du foyer encore sans photo : l'IA en prépare quelques-unes après l'affichage.
   fillRecipePhotosLater(user.id);
   const t = await getTranslations("recipes");
   // Une seule bibliothèque : les recettes de la famille d'abord, puis les idées Pommelia.
   const ours = recipes.map((recipe) => ({
     key: recipe.id,
+    name: recipe.name,
     category: OURS,
     text: recipe.name,
     card: (
@@ -41,6 +46,7 @@ export default async function RecipesPage({ params }: PageProps<"/[locale]/recip
   }));
   const ideas = catalog.map((entry) => ({
     key: entry.id,
+    name: entry.recipe.name,
     category: entry.recipe.category,
     text: [entry.recipe.name, ...entry.recipe.ingredients.map(([, , label]) => label)].join(" "),
     card: <RecipeCard id={entry.id} recipe={entry.recipe} portionKcal={entry.portionKcal} imageUrl={entry.imageUrl} />,
@@ -70,8 +76,11 @@ export default async function RecipesPage({ params }: PageProps<"/[locale]/recip
           allLabel={t("all")}
           searchLabel={t("search")}
           noMatch={t("noMatch")}
+          favoritesLabel={t("favorites")}
+          noFavorites={t("noFavorites")}
           categories={categories}
           items={[...ours, ...ideas]}
+          favoriteIds={[...ours, ...ideas].map((item) => item.key).filter((id) => favorites.has(id))}
         />
       )}
     </>

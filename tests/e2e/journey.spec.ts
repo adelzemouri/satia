@@ -1492,6 +1492,48 @@ test("recettes du catalogue : bibliothèque illustrée, fiche et ajout", async (
   ).toBeVisible();
 });
 
+test("recettes favorites : étoile sur la vignette et la fiche, filtre, annulation et onglet Favoris", async ({
+  page,
+}) => {
+  await signInWithTotp(page);
+  await page.goto("/recipes");
+  const filters = page.getByRole("group", { name: "Type de recette" });
+  await page.getByRole("button", { name: "Ajouter Harira aux favoris" }).click();
+  await expect(page.getByRole("button", { name: "Retirer Harira des favoris" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await page.getByRole("button", { name: "Ajouter Minestrone aux favoris" }).click();
+  await expect(page.getByRole("button", { name: "Retirer Minestrone des favoris" })).toBeVisible();
+
+  // Le filtre ne garde que les favoris, et l'adresse le retient.
+  await filters.getByRole("button", { name: "Favoris" }).click();
+  await expect(page).toHaveURL(/cat=favoris/);
+  await expect(page.getByRole("link", { name: /^Harira/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /^Taboulé aux herbes/ })).toHaveCount(0);
+
+  // Un retrait se rattrape depuis le bandeau.
+  await page.getByRole("button", { name: "Retirer Minestrone des favoris" }).click();
+  await expect(page.getByRole("link", { name: /^Minestrone/ })).toHaveCount(0);
+  await withServerAction(page, () => page.getByRole("button", { name: "Annuler" }).click());
+  await page.reload();
+  await expect(page.getByRole("link", { name: /^Minestrone/ })).toBeVisible();
+  await expectNoA11yViolations(page);
+
+  // Sur la fiche, la même étoile ; retirée ici, la recette quitte les favoris.
+  await page.getByRole("link", { name: /^Minestrone/ }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Minestrone");
+  await withServerAction(page, () => page.getByRole("button", { name: "Retirer Minestrone des favoris" }).click());
+  await expect(page.getByRole("button", { name: "Ajouter Minestrone aux favoris" })).toBeVisible();
+
+  // La recette favorite se retrouve dans l'onglet Favoris de « Écrire ».
+  await page.goto("/add");
+  await page.getByRole("button", { name: "Écrire", exact: true }).click();
+  await page.getByRole("tab", { name: "Favoris" }).click();
+  await expect(page.getByRole("button", { name: /^Harira/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Minestrone/ })).toHaveCount(0);
+});
+
 test("audit d'accessibilité : chaque page de l'app, en thème clair et sombre", async ({ page, context, baseURL }) => {
   test.setTimeout(120_000);
   // Sans animation : axe mesurerait sinon des contrastes en plein fondu d'arrivée de la page.
