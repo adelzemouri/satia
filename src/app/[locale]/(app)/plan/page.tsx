@@ -18,6 +18,7 @@ import { toLocale } from "@/i18n/routing";
 import { aiAvailability } from "@/server/ai-availability";
 import { familyRecipes } from "@/server/foods";
 import { weekPlan } from "@/server/planning";
+import { catalogEntries } from "@/server/recipes";
 import { requireUser } from "@/server/session";
 import { Card } from "@/ui/card";
 import { formatDay, formatWeekday } from "@/ui/format-date";
@@ -37,15 +38,20 @@ export default async function PlanPage({ params, searchParams }: PageProps<"/[lo
   const user = await requireUser(locale);
   const today = todayIso();
   const weekStart = weekParam((await searchParams).week, today);
-  const [items, recipes, ai] = await Promise.all([
+  const [items, recipes, catalog, ai] = await Promise.all([
     weekPlan(user.householdId, weekStart),
     familyRecipes(user.id),
+    catalogEntries(),
     aiAvailability(),
   ]);
   const t = await getTranslations();
   const days = weekDates(weekStart);
   const linkClass = "font-semibold text-primary underline-offset-4 hover:underline";
+  // Recettes du foyer puis celles du catalogue Pommelia, chacune par ordre alphabétique.
   const recipeOptions = recipes.map((recipe) => ({ id: recipe.id, name: recipe.nameFr }));
+  const catalogOptions = catalog
+    .map((entry) => ({ id: entry.id, name: locale === "en" ? entry.recipe.nameEn : entry.recipe.name }))
+    .sort((a, b) => a.name.localeCompare(b.name, locale));
   // Tableau de l'ordinateur : déjeuner et dîner toujours, petit-déjeuner et collations seulement s'ils ont un plat.
   const gridSlots = MEAL_SLOTS.filter(
     (slot) => slot === "lunch" || slot === "dinner" || items.some((item) => item.slot === slot),
@@ -165,6 +171,7 @@ export default async function PlanPage({ params, searchParams }: PageProps<"/[lo
                     slot={slot}
                     dayLabel={dayLabel}
                     recipes={recipeOptions}
+                    catalogRecipes={catalogOptions}
                     filled={cellItems.length > 0}
                   />
                 </div>
@@ -228,6 +235,7 @@ export default async function PlanPage({ params, searchParams }: PageProps<"/[lo
           days={days.map((date) => ({ date, label: formatDay(date, locale) }))}
           defaultDate={days.includes(today) ? today : days[0]!}
           recipes={recipeOptions}
+          catalogRecipes={catalogOptions}
         />
       </Card>
 

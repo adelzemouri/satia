@@ -24,6 +24,7 @@ import {
   weekPlan,
 } from "@/server/planning";
 import { saveOnboarding } from "@/server/profile";
+import { catalogEntries } from "@/server/recipes";
 
 import { resetDatabase } from "./helpers";
 
@@ -217,6 +218,24 @@ describe("planification", () => {
 
     await clearCheckedShopping(householdId);
     expect(await listShopping(householdId)).toHaveLength(2);
+  });
+
+  it("met une recette du catalogue Pommelia au menu, qui remplit la liste de courses", async () => {
+    const { userId, householdId } = await setupUser();
+    const [harira] = (await catalogEntries()).filter((entry) => entry.recipe.slug === "harira");
+    expect(harira).toBeDefined();
+    await addPlanItem(userId, householdId, {
+      date: nextWeek,
+      slot: "dinner",
+      foodId: harira!.id,
+      label: "",
+      servings: 4,
+    });
+
+    const plan = await weekPlan(householdId, nextWeek);
+    expect(plan.map((item) => [item.label, item.catalogRef])).toEqual([["Harira", "catalog:harira"]]);
+    expect(plan[0]!.kcalPerServing).toBe(harira!.portionKcal);
+    expect(await shoppingFromMenu(householdId, nextWeek)).toBeGreaterThan(3);
   });
 
   it("propose des idées depuis la photo du frigo, chiffrées par la base, et les enregistre", async () => {

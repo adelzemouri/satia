@@ -175,6 +175,18 @@ test("sur ordinateur, le menu se remplit case par case et les pages longues se d
   await dialog.getByRole("button", { name: "Ajouter au menu" }).click();
   await expect(dialog).toBeHidden();
   await expect(grid.getByRole("cell").filter({ hasText: "Soupe du soir" })).toHaveCount(1);
+  // Les recettes Pommelia sont proposées aussi, pas seulement celles du foyer.
+  await grid
+    .getByRole("button", { name: /^Ajouter un plat : .*, déjeuner$/ })
+    .first()
+    .click();
+  await dialog.getByRole("combobox", { name: /^Recette/ }).selectOption({ label: "Harira" });
+  await dialog.getByRole("button", { name: "Ajouter au menu" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(grid.getByRole("button", { name: "Retirer Harira" })).toHaveCount(1);
+  // Retiré aussitôt : la liste de courses d'un parcours suivant ne doit compter que ses propres plats.
+  await grid.getByRole("button", { name: "Retirer Harira" }).click();
+  await expect(grid.getByRole("button", { name: "Retirer Harira" })).toHaveCount(0);
   await expectNoA11yViolations(page);
   // Recettes : six vignettes par ligne, recherche toujours visible.
   await page.goto("/recipes");
