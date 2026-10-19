@@ -72,3 +72,6 @@ export function shortFoodName(name: string): string {
   const short = kept.join(", ");
   return short;
 }
+
+/** Taille d'une page de la liste « Récents » ; « Voir plus » charge la suivante. */
+export const RECENT_PAGE = 15;

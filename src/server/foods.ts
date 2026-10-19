@@ -8,6 +8,7 @@ import { z } from "zod";
 
 import { db } from "@/db/client";
 import { favorites, foods, mealEntries, recipeItems, user } from "@/db/schema";
+import { RECENT_PAGE } from "@/domain/food-name";
 import { kcalFromMacros, type Nutrients, nutrientsFor, recipePer100g } from "@/domain/nutrition";
 import { recipeQuality } from "@/domain/quality";
 import { CATALOG_PREFIX } from "@/domain/recipes/catalog";
@@ -177,11 +178,11 @@ export async function getFoodDetails(userId: string, foodId: string): Promise<Fo
   return food;
 }
 
-/** Derniers aliments saisis, du plus récent au plus ancien, sans doublon. */
 /** Aliment récent, avec la dernière portion saisie pour pouvoir le rajouter d'un geste. */
 export type RecentFood = FoodSummary & { lastQuantity: number; lastUnit: Unit; lastKcal: number };
 
-export async function recentFoods(userId: string, limit = 15): Promise<RecentFood[]> {
+/** Derniers aliments saisis, du plus récent au plus ancien, sans doublon, page par page. */
+export async function recentFoods(userId: string, limit = RECENT_PAGE, offset = 0): Promise<RecentFood[]> {
   // Dernière saisie de chaque aliment (DISTINCT ON garde la plus récente).
   const recent = db()
     .selectDistinctOn([mealEntries.foodId], {
@@ -205,8 +206,9 @@ export async function recentFoods(userId: string, limit = 15): Promise<RecentFoo
     .from(recent)
     .innerJoin(foods, eq(foods.id, recent.foodId))
     .where(visibleTo(userId))
-    .orderBy(desc(recent.createdAt))
-    .limit(limit);
+    .orderBy(desc(recent.createdAt), recent.foodId)
+    .limit(limit)
+    .offset(offset);
 }
 
 export async function favoriteFoods(userId: string): Promise<FoodSummary[]> {

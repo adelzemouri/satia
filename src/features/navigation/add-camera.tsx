@@ -9,9 +9,10 @@ import { slotAt } from "@/domain/meals";
 import { requestQuickStart } from "@/features/ai/quick-start";
 import { useErrorText } from "@/features/auth/use-error-text";
 import { FoodList } from "@/features/foods/food-list";
-import type { RecentItem } from "@/features/foods/food-types";
+import { RecentMore } from "@/features/foods/recent-more";
 import { QuickAddButton } from "@/features/foods/quick-add-button";
-import { recentFoodsAction, scanBarcodeAction } from "@/features/journal/actions";
+import { useRecentPages } from "@/features/foods/use-recent-pages";
+import { scanBarcodeAction } from "@/features/journal/actions";
 import { captureFrame, useBarcodeDetection, useCameraStream } from "@/features/scan/use-camera";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Icon } from "@/ui/icon";
@@ -40,7 +41,8 @@ export function AddCamera({ ai, onClose }: { ai: boolean; onClose: () => void })
   const dialog = useRef<HTMLDialogElement>(null);
   const [mode, setMode] = useState<Mode>(ai ? "photo" : "barcode");
   const [recentOpen, setRecentOpen] = useState(false);
-  const [recent, setRecent] = useState<RecentItem[] | null>(null);
+  const more = useRecentPages(null);
+  const recent = more.items;
   const [error, setError] = useState<string | null>(null);
   const [lookingUp, startLookUp] = useTransition();
   // Repas et jour pris au moment de l'ouverture, comme l'écran d'ajout le ferait.
@@ -82,7 +84,7 @@ export function AddCamera({ ai, onClose }: { ai: boolean; onClose: () => void })
 
   const openRecent = () => {
     setRecentOpen(true);
-    if (!recent) void recentFoodsAction().then(setRecent, () => setRecent([]));
+    more.loadFirst();
   };
 
   const sendPhoto = (file: File) => {
@@ -339,6 +341,7 @@ export function AddCamera({ ai, onClose }: { ai: boolean; onClose: () => void })
                   }}
                 />
               )}
+              <RecentMore hasMore={more.hasMore} loading={more.loading} onMore={more.loadMore} />
             </div>
           </section>
         </>

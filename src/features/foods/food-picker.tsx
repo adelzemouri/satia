@@ -18,10 +18,12 @@ import { SearchInput } from "@/ui/search-input";
 import { FoodList } from "./food-list";
 import type { FoodItem, OffItem, RecentItem } from "./food-types";
 import { QuickAddButton } from "./quick-add-button";
+import { RecentMore } from "./recent-more";
 import { SlotSelect } from "./slot-select";
 import { ProductThumb } from "./product-thumb";
 import { QuantityForm } from "./quantity-form";
 import { useFoodSearch } from "./use-food-search";
+import { useRecentPages } from "./use-recent-pages";
 
 const TABS = ["recent", "favorites", "mine"] as const;
 type Tab = (typeof TABS)[number];
@@ -33,7 +35,7 @@ type Tab = (typeof TABS)[number];
 export function FoodPicker({
   date,
   slot,
-  recent,
+  recent: initialRecent,
   favorites: initialFavorites,
   mine,
   initialFood = null,
@@ -65,6 +67,8 @@ export function FoodPicker({
   const [draft, setDraft] = useState<{ draft: MealDraft; preview: string | null } | null>(null);
   const [pending, startTransition] = useTransition();
   const { results, loading } = useFoodSearch(query);
+  const more = useRecentPages(initialRecent);
+  const recent = more.items ?? [];
   const favoriteIds = new Set(favorites.map((food) => food.id));
 
   const toggleFavorite = (food: FoodItem, favorite: boolean) => {
@@ -263,23 +267,26 @@ export function FoodPicker({
                 (recent.length === 0 ? (
                   <p className="py-3 text-text-muted">{t("emptyRecent")}</p>
                 ) : (
-                  <FoodList
-                    foods={recent}
-                    favoriteIds={favoriteIds}
-                    onSelect={setSelected}
-                    trailing={(food) => {
-                      const item = recent.find((value) => value.id === food.id)!;
-                      return <QuickAddButton food={item} date={date} slot={slot} onError={setError} />;
-                    }}
-                    describe={(food) => {
-                      const item = recent.find((value) => value.id === food.id)!;
-                      return t("lastPortion", {
-                        quantity: item.lastQuantity,
-                        unit: tAll(`units.${item.lastUnit}`),
-                        kcal: Math.round(item.lastKcal),
-                      });
-                    }}
-                  />
+                  <>
+                    <FoodList
+                      foods={recent}
+                      favoriteIds={favoriteIds}
+                      onSelect={setSelected}
+                      trailing={(food) => {
+                        const item = recent.find((value) => value.id === food.id)!;
+                        return <QuickAddButton food={item} date={date} slot={slot} onError={setError} />;
+                      }}
+                      describe={(food) => {
+                        const item = recent.find((value) => value.id === food.id)!;
+                        return t("lastPortion", {
+                          quantity: item.lastQuantity,
+                          unit: tAll(`units.${item.lastUnit}`),
+                          kcal: Math.round(item.lastKcal),
+                        });
+                      }}
+                    />
+                    <RecentMore hasMore={more.hasMore} loading={more.loading} onMore={more.loadMore} />
+                  </>
                 ))}
               {tab === "favorites" && list(favorites, t("emptyFavorites"))}
               {tab === "mine" && (
