@@ -1242,7 +1242,9 @@
     "noItems": "Plus aucun aliment : garde-en au moins un, ou supprime le repas depuis « Mes repas ».",
     "total": "Total : {kcal} kcal",
     "saveChanges": "Enregistrer les modifications",
-    "updated": "Repas modifié."
+    "updated": "Repas modifié.",
+    "addFood": "Ajouter un aliment",
+    "searchLabel": "Rechercher un aliment à ajouter"
   },
   "coach": {
     "title": "Coach",
