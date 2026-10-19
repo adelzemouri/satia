@@ -154,6 +154,25 @@ describe("mes repas", () => {
     expect(after!.items[0]).toMatchObject({ label: before!.items[1]!.label, quantity: 250, grams: 250 });
     expect(after!.items[0]!.kcal).toBeCloseTo(before!.items[1]!.kcal * 2, 0);
 
+    // Un aliment ajouté depuis « Modifier le repas » : valeurs tirées de la base, à sa place dans la liste.
+    const banana = await foodId(userId, "banane");
+    await updateSavedMeal(userId, {
+      id,
+      name: "Petit-déj léger",
+      items: [
+        { foodId: banana, quantity: 120, unit: "g" },
+        { index: 0, quantity: 250 },
+      ],
+    });
+    const [withBanana] = await listSavedMeals(userId);
+    expect(withBanana!.items.map((item) => item.quantity)).toEqual([120, 250]);
+    expect(withBanana!.items[0]).toMatchObject({ foodId: banana, unit: "g", grams: 120, isEstimated: false });
+    expect(withBanana!.items[0]!.label).toMatch(/^Banane/);
+    expect(withBanana!.items[0]!.kcal).toBeGreaterThan(50);
+    await expect(
+      updateSavedMeal(userId, { id, name: "X", items: [{ foodId: banana, quantity: 1, unit: "slice" }] }),
+    ).rejects.toMatchObject({ code: "unit_not_available" });
+
     // Position inconnue, liste vide ou repas d'un autre membre : refusés.
     await expect(updateSavedMeal(userId, { id, name: "X", items: [{ index: 5, quantity: 1 }] })).rejects.toThrow();
     await expect(updateSavedMeal(userId, { id, name: "X", items: [] })).rejects.toThrow();

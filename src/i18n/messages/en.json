@@ -1242,7 +1242,9 @@
     "noItems": "No food left: keep at least one, or delete the meal from “My meals”.",
     "total": "Total: {kcal} kcal",
     "saveChanges": "Save changes",
-    "updated": "Meal updated."
+    "updated": "Meal updated.",
+    "addFood": "Add a food",
+    "searchLabel": "Search for a food to add"
   },
   "coach": {
     "title": "Coach",

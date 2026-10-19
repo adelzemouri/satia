@@ -5,10 +5,11 @@ import { z } from "zod";
 
 import { db } from "@/db/client";
 import { scaleSavedItem } from "@/domain/saved-meals";
+import { UNITS } from "@/domain/units";
 import { MEAL_SLOTS, mealEntries, savedMeals, type SavedMealItem } from "@/db/schema";
 
 import { DomainError } from "./errors";
-import { assertNotFuture, entriesOn } from "./journal";
+import { assertNotFuture, entriesOn, resolveEntry } from "./journal";
 
 /** Au-delà, la liste devient difficile à parcourir : on demande d'en supprimer. */
 export const MAX_SAVED_MEALS = 40;
@@ -68,22 +69,47 @@ export async function getSavedMeal(userId: string, id: string): Promise<SavedMea
 const updateSchema = z.object({
   id: z.uuid(),
   name: z.string().trim().min(1).max(60),
-  /** Lignes gardées, repérées par leur position d'origine, avec leur nouvelle quantité. */
+  /**
+   * Lignes du repas dans l'ordre voulu : une ligne gardée est repérée par sa position d'origine,
+   * avec sa nouvelle quantité ; un aliment ajouté arrive avec sa quantité et son unité.
+   */
   items: z
-    .array(z.object({ index: z.number().int().min(0), quantity: z.number().positive().max(10_000) }))
+    .array(
+      z.union([
+        z.object({ index: z.number().int().min(0), quantity: z.number().positive().max(10_000) }),
+        z.object({ foodId: z.uuid(), quantity: z.number().positive().max(10_000), unit: z.enum(UNITS) }),
+      ]),
+    )
     .min(1)
     .max(100),
 });
 
-/** Renomme un repas enregistré, change ses quantités ou retire des aliments. */
+/** Renomme un repas enregistré, change ses quantités, retire des aliments ou en ajoute. */
 export async function updateSavedMeal(userId: string, input: z.input<typeof updateSchema>): Promise<void> {
   const data = updateSchema.parse(input);
   const meal = await getOwnSavedMeal(userId, data.id);
-  const indexes = data.items.map((item) => item.index);
+  const indexes = data.items.flatMap((item) => ("index" in item ? [item.index] : []));
   if (new Set(indexes).size !== indexes.length || indexes.some((index) => index >= meal.items.length)) {
     throw new DomainError("not_found");
   }
-  const items = data.items.map((item) => scaleSavedItem(meal.items[item.index]!, item.quantity));
+  const items: SavedMealItem[] = [];
+  for (const item of data.items) {
+    if ("index" in item) {
+      items.push(scaleSavedItem(meal.items[item.index]!, item.quantity));
+      continue;
+    }
+    // Valeurs calculées comme pour une saisie du journal, depuis la base d'aliments.
+    const { food, grams, nutrients } = await resolveEntry(userId, item.foodId, item.quantity, item.unit);
+    items.push({
+      foodId: food.id,
+      label: food.brand ? `${food.nameFr} (${food.brand})` : food.nameFr,
+      quantity: item.quantity,
+      unit: item.unit,
+      grams,
+      ...nutrients,
+      isEstimated: false,
+    });
+  }
   await db().update(savedMeals).set({ name: data.name, items }).where(eq(savedMeals.id, meal.id));
 }
 
