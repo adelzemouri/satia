@@ -862,6 +862,13 @@ le pourquoi de chacun est dans `docs/DECISIONS.md`.
   jours (un jour coloré dès qu'un repas est noté), son état (première semaine, repas notés cette
   semaine, rien depuis N jours) et trois chiffres : invités, actifs sur 7 jours, encore là après
   3 semaines. Seules les dates de `meal_entries` sont lues, jamais le contenu des repas.
+- **Remarques et bugs** (`feedback_messages`, `src/server/feedback.ts`) : « Une remarque, un
+  bug ? » dans Moi ouvre une fiche (type, texte, capture facultative) ; l'écran d'erreur propose
+  « Signaler ce bug » avec le détail technique. Le message va au foyer de la personne, ou à
+  celui qui gère son foyer à part ; la page d'où elle vient, la version (commit) et le
+  user-agent sont joints. Les admins reçoivent une notification push et lisent tout dans la
+  carte « Remarques reçues » de `/admin` (traité / rouvrir, « Copier pour Claude »). Captures
+  sous `feedback/{userId}/` dans le stockage privé, purgées après 90 jours avec les photos.
 - **Compte démo** : `demo@pommelia.fr`, créé ou réinitialisé depuis `/admin` avec 35 jours
   de données d'exemple générées par graine (`src/domain/demo.ts`).
 - **Pages d'erreur** : 404 localisée (`[locale]/[...rest]` + `not-found.tsx`) pour que ses

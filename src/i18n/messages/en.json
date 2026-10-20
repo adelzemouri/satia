@@ -657,7 +657,8 @@
     "speech_mic": "The microphone is unavailable (maybe used by another app). Try again in a moment.",
     "speech_network": "Dictation needs an internet connection. Try again, or type your meal.",
     "below_floor": "We don't go below this floor: under it, your body may miss what it needs.",
-    "kcal_range": "Above 5,000 kcal, it's best to talk it through with a professional."
+    "kcal_range": "Above 5,000 kcal, it's best to talk it through with a professional.",
+    "feedback_empty": "Write a few words before sending."
   },
   "slots": {
     "breakfast": "Breakfast",
@@ -1396,6 +1397,10 @@
           "title": "Your progress photo",
           "body": "A month has gone by. A private photo to compare later?"
         }
+      },
+      "feedback": {
+        "remark": "Feedback from {name}",
+        "bug": "Bug reported by {name}"
       }
     },
     "fasting": "Fasting",
@@ -1984,5 +1989,73 @@
     "position": "{index} of {count}",
     "hint": "Pinch or double-tap to zoom, swipe down to close",
     "hintMany": "Swipe for the next photo, pinch to zoom, swipe down to close"
+  },
+  "feedback": {
+    "title": "Send feedback",
+    "titleTo": "Write to {name}",
+    "bugTitle": "Report this bug",
+    "entry": "Feedback or a bug?",
+    "entryHintTo": "Write straight to {name}",
+    "entryHint": "What you liked, what bothered you, what doesn't work",
+    "close": "Close",
+    "kindLegend": "Message type",
+    "kinds": {
+      "remark": "Feedback",
+      "bug": "A bug"
+    },
+    "messageRemark": "Your message",
+    "messageBug": "What happened?",
+    "placeholderRemark": "What you liked, what bothered you, what's missing…",
+    "placeholderBug": "What you were doing, and what didn't go as expected…",
+    "screenshotAdd": "Attach a screenshot",
+    "screenshotAdded": "Screenshot attached",
+    "screenshotRemove": "Remove",
+    "screenshotPreview": "Screenshot preview",
+    "context": "Sent with: {context}",
+    "contextPage": "page {page}",
+    "send": "Send",
+    "sending": "Sending…",
+    "sentTo": "Thanks, {name} got your message.",
+    "sent": "Thanks, your message was sent.",
+    "errorSent": "Thanks, it's sent. You can reload the page.",
+    "pages": {
+      "home": "Home",
+      "journal": "Journal",
+      "add": "Add",
+      "recipes": "Recipes",
+      "plan": "Menu",
+      "meals": "My meals",
+      "progress": "Progress",
+      "profile": "Me",
+      "coach": "Pépin",
+      "weight": "Weight",
+      "admin": "Administration",
+      "shopping": "Shopping",
+      "foods": "My foods",
+      "scan": "Camera",
+      "fridge": "Fridge",
+      "training": "Training",
+      "activity": "Activity",
+      "body": "Measurements",
+      "fasting": "Fasting",
+      "treatment": "Treatment",
+      "metabolism": "My metabolism",
+      "week": "Week",
+      "quality": "Quality",
+      "family": "Family"
+    },
+    "inbox": {
+      "title": "Feedback received",
+      "new": "{count, plural, one {# new} other {# new}}",
+      "empty": "No messages yet. Your guests can write to you from Me › “Feedback or a bug?”.",
+      "handle": "Mark as handled",
+      "reopen": "Reopen",
+      "handled": "Handled",
+      "screenshot": "View screenshot",
+      "details": "Technical detail",
+      "copy": "Copy for Claude",
+      "copied": "Copied",
+      "version": "version {version}"
+    }
   }
 }

@@ -10,6 +10,7 @@ import {
   type AccessLinkKind,
   accessLinks,
   account,
+  feedbackMessages,
   foods,
   households,
   photos,
@@ -280,8 +281,12 @@ export async function deleteUser(userId: string): Promise<void> {
       .select({ key: foods.photoKey })
       .from(foods)
       .where(and(eq(foods.ownerUserId, userId), isNotNull(foods.photoKey)));
+    const feedback = await tx
+      .select({ key: feedbackMessages.screenshotKey })
+      .from(feedbackMessages)
+      .where(and(eq(feedbackMessages.userId, userId), isNotNull(feedbackMessages.screenshotKey)));
     await tx.delete(user).where(eq(user.id, userId));
-    return [...keys, ...progress, ...recipes].flatMap((row) => row.key ?? []);
+    return [...keys, ...progress, ...recipes, ...feedback].flatMap((row) => row.key ?? []);
   });
   // Les lignes `photos` et `progress_photos` partent en cascade ; on retire ensuite les fichiers du stockage.
   await deleteObjects(photoKeys).catch((error: unknown) => console.error("Suppression des photos échouée", error));

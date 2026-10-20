@@ -7,6 +7,7 @@ import { FloorsForm } from "@/features/admin/floors-form";
 import { InviteForm } from "@/features/admin/invite-form";
 import { formatUsd } from "@/features/admin/format-usd";
 import { MemberActions } from "@/features/admin/member-actions";
+import { FeedbackInbox } from "@/features/feedback/feedback-inbox";
 import { VapidKeys } from "@/features/admin/vapid-keys";
 import { Link } from "@/i18n/navigation";
 import { daysBetween } from "@/domain/adaptive";
@@ -19,6 +20,7 @@ import { aiStatus } from "@/llm/guard";
 import { currentMonthCostByUser } from "@/llm/usage";
 import { listGuests, listMembers, listPendingInvites } from "@/server/accounts";
 import { guestActivities } from "@/server/beta";
+import { listFeedback } from "@/server/feedback";
 import { vapidPublicKey } from "@/server/notifications";
 import { demoAccountStatus } from "@/server/demo";
 import { requireAdmin } from "@/server/session";
@@ -31,7 +33,7 @@ export default async function AdminPage({ params }: PageProps<"/[locale]/admin">
   const locale = toLocale((await params).locale);
   setRequestLocale(locale);
   const admin = await requireAdmin(locale);
-  const [members, guests, invites, floors, demo, costs, ai] = await Promise.all([
+  const [members, guests, invites, floors, demo, costs, ai, feedback] = await Promise.all([
     listMembers(admin.householdId),
     listGuests(admin.householdId),
     listPendingInvites(admin.householdId),
@@ -39,7 +41,10 @@ export default async function AdminPage({ params }: PageProps<"/[locale]/admin">
     demoAccountStatus(),
     currentMonthCostByUser(),
     aiStatus(llmConfig()),
+    listFeedback(admin.householdId),
   ]);
+  const tf = await getTranslations("feedback.inbox");
+  const unread = feedback.filter((item) => !item.handled).length;
   const t = await getTranslations("admin");
   const format = await getFormatter();
   const monthCost = (userId: string) => t("monthCost", { cost: formatUsd(format, costs.get(userId) ?? 0) });
@@ -62,6 +67,24 @@ export default async function AdminPage({ params }: PageProps<"/[locale]/admin">
   return (
     <Columns>
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
+
+      <Card aria-labelledby="remarques">
+        <h2 id="remarques" className="flex scroll-mt-6 flex-wrap items-center gap-2 text-xl font-semibold">
+          {tf("title")}
+          {unread > 0 && (
+            <span className="rounded-full bg-accent px-2.5 py-0.5 text-sm font-bold text-on-accent tabular-nums">
+              {tf("new", { count: unread })}
+            </span>
+          )}
+        </h2>
+        <FeedbackInbox
+          items={feedback.map(({ createdAt, ...item }) => ({
+            ...item,
+            createdAt: createdAt.toISOString(),
+            when: format.relativeTime(createdAt),
+          }))}
+        />
+      </Card>
 
       <Card aria-labelledby="members">
         <h2 id="members" className="text-xl font-semibold">

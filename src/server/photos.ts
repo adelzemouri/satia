@@ -90,6 +90,12 @@ async function removePhotos(rows: readonly { id: string; objectKey: string }[]):
   return rows.length;
 }
 
+/** Captures jointes aux remarques : même purge (import différé, `feedback` dépend de ce module). */
+async function purgeFeedbackPhotos(now: Date): Promise<void> {
+  const { purgeFeedbackScreenshots } = await import("./feedback");
+  await purgeFeedbackScreenshots(now);
+}
+
 const PURGE_KEY = "photo_purge";
 /** Une purge par jour suffit ; un peu moins de 24 h pour ne pas glisser d'un jour à l'autre. */
 const PURGE_INTERVAL_HOURS = 20;
@@ -99,6 +105,7 @@ export type PurgeRun = { lastRunAt: string; purged: number };
 /** Purge immédiate (cron ou bouton de l'admin), en gardant trace du dernier passage. */
 export async function runPhotoPurge(now: Date = new Date()): Promise<number> {
   const purged = await purgePhotos(now);
+  await purgeFeedbackPhotos(now);
   await purgeRateLimits();
   await recordPurge({ lastRunAt: now.toISOString(), purged });
   return purged;
@@ -123,6 +130,7 @@ export async function purgePhotosIfDue(now: Date = new Date()): Promise<number |
     .returning({ key: appSettings.key });
   if (claimed.length === 0) return null;
   await purgeRateLimits();
+  await purgeFeedbackPhotos(now);
   const purged = await purgePhotos(now);
   if (purged > 0) await recordPurge({ ...value, purged });
   return purged;

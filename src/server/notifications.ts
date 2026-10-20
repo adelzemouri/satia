@@ -324,3 +324,36 @@ export async function notificationExport(userId: string) {
     .from(pushSubscriptions)
     .where(eq(pushSubscriptions.userId, userId));
 }
+
+/**
+ * Prévient les admins du foyer qui reçoit une remarque ou un bug. Sans clés VAPID (local, tests
+ * sans faux envoi), on n'envoie rien : le message reste lisible dans Administration.
+ */
+export async function notifyFeedback(
+  householdId: string,
+  input: { kind: "remark" | "bug"; senderName: string; message: string },
+  origin: string,
+): Promise<number> {
+  const sender = senderForTests ?? (env().VAPID_PUBLIC_KEY && env().VAPID_PRIVATE_KEY ? webPushSender(origin) : null);
+  if (!sender) return 0;
+  const admins = await db()
+    .select({ id: user.id, locale: user.locale })
+    .from(user)
+    .where(and(eq(user.householdId, householdId), eq(user.role, "admin")));
+  let delivered = 0;
+  for (const admin of admins) {
+    const m = MESSAGES[admin.locale ?? "fr"].feedback;
+    const preview = input.message.length > 120 ? `${input.message.slice(0, 119)}…` : input.message;
+    delivered += await sendToUser(
+      admin.id,
+      {
+        title: format(m[input.kind], { name: input.senderName }),
+        body: preview,
+        url: "/admin#remarques",
+        tag: "feedback",
+      },
+      sender,
+    );
+  }
+  return delivered;
+}

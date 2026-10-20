@@ -28,6 +28,7 @@ import { activityExport } from "./activity";
 import { adaptiveExport } from "./adaptive";
 import { bodyExport } from "./body";
 import { fastingExport } from "./fasting";
+import { feedbackExport } from "./feedback";
 import { coachExport } from "./coach";
 import { notificationExport } from "./notifications";
 import { checkinExport } from "./quality";
@@ -191,6 +192,7 @@ export async function collectUserData(userId: string) {
     fasts: fasting.fasts,
     treatments: treatment.treatments,
     treatmentLogs: treatment.logs,
+    feedback: await feedbackExport(userId),
   };
 }
 
@@ -247,5 +249,6 @@ export function toCsvZip(data: UserData): Uint8Array {
     "fasts.csv": strToU8(toCsv(data.fasts)),
     "treatments.csv": strToU8(toCsv(data.treatments)),
     "treatment-logs.csv": strToU8(toCsv(data.treatmentLogs)),
+    "feedback.csv": strToU8(toCsv(data.feedback)),
   });
 }

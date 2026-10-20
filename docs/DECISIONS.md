@@ -512,6 +512,24 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 041 — Remarques et bugs envoyés depuis l'app, rangés dans la base
+
+- **Date** : 2026-10-20 · **Statut** : adoptée
+- **Contexte** : les invités de la bêta n'avaient aucun moyen simple de signaler un bug ou
+  de donner un avis à Adel. Pas d'e-mail en v1, et des issues GitHub exposeraient leurs
+  messages tant que le dépôt est public (et demanderaient un jeton GitHub côté serveur).
+- **Décision** : nouvelle table `feedback_messages` (type remarque ou bug, texte, page
+  d'origine, version, user-agent, détail d'erreur, capture facultative). Le message va au
+  foyer de la personne, ou au foyer qui gère son foyer à part. Les admins de ce foyer
+  reçoivent une notification push et lisent les messages dans `/admin`. Limite de 20 messages
+  par jour et par personne.
+- **Conséquences** : rien ne sort de Pommelia et rien ne coûte en IA. La personne ne voit
+  pas de réponse dans l'app, Adel répond de vive voix. Les captures suivent la durée de
+  conservation des photos (90 jours) ; les messages restent, sont exportés avec les données de
+  la personne et partent avec son compte.
+
+---
+
 ## Modèle
 
 ```markdown

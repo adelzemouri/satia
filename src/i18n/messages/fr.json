@@ -657,7 +657,8 @@
     "speech_mic": "Le micro est indisponible (peut-être utilisé par une autre app). Réessaie dans un instant.",
     "speech_network": "La dictée a besoin d'une connexion internet. Réessaie, ou écris ton repas.",
     "below_floor": "On ne descend pas sous ce plancher : en dessous, ton corps risque de manquer de l'essentiel.",
-    "kcal_range": "Au-delà de 5 000 kcal, mieux vaut en parler avec un professionnel."
+    "kcal_range": "Au-delà de 5 000 kcal, mieux vaut en parler avec un professionnel.",
+    "feedback_empty": "Écris quelques mots avant d'envoyer."
   },
   "slots": {
     "breakfast": "Petit-déjeuner",
@@ -1396,6 +1397,10 @@
           "title": "Ta photo de progrès",
           "body": "Un mois a passé. Une photo, privée, pour comparer plus tard ?"
         }
+      },
+      "feedback": {
+        "remark": "Remarque de {name}",
+        "bug": "Bug signalé par {name}"
       }
     },
     "fasting": "Jeûne",
@@ -1984,5 +1989,73 @@
     "position": "{index} sur {count}",
     "hint": "Pincez ou touchez deux fois pour zoomer, glissez vers le bas pour fermer",
     "hintMany": "Glissez pour la photo suivante, pincez pour zoomer, glissez vers le bas pour fermer"
+  },
+  "feedback": {
+    "title": "Envoyer une remarque",
+    "titleTo": "Écrire à {name}",
+    "bugTitle": "Signaler ce bug",
+    "entry": "Une remarque, un bug ?",
+    "entryHintTo": "Écris directement à {name}",
+    "entryHint": "Ce qui t'a plu, gêné ou ce qui ne marche pas",
+    "close": "Fermer",
+    "kindLegend": "Type de message",
+    "kinds": {
+      "remark": "Remarque",
+      "bug": "Un bug"
+    },
+    "messageRemark": "Ton message",
+    "messageBug": "Que s'est-il passé ?",
+    "placeholderRemark": "Ce qui t'a plu, gêné, ou ce qui manque…",
+    "placeholderBug": "Ce que tu faisais, et ce qui ne s'est pas passé comme prévu…",
+    "screenshotAdd": "Joindre une capture",
+    "screenshotAdded": "Capture jointe",
+    "screenshotRemove": "Retirer",
+    "screenshotPreview": "Aperçu de la capture",
+    "context": "Envoyé avec : {context}",
+    "contextPage": "page {page}",
+    "send": "Envoyer",
+    "sending": "Envoi…",
+    "sentTo": "Merci, {name} a bien reçu ton message.",
+    "sent": "Merci, ton message est bien parti.",
+    "errorSent": "Merci, c'est envoyé. Tu peux recharger la page.",
+    "pages": {
+      "home": "Accueil",
+      "journal": "Journal",
+      "add": "Ajouter",
+      "recipes": "Recettes",
+      "plan": "Menu",
+      "meals": "Mes repas",
+      "progress": "Progrès",
+      "profile": "Moi",
+      "coach": "Pépin",
+      "weight": "Poids",
+      "admin": "Administration",
+      "shopping": "Courses",
+      "foods": "Mes aliments",
+      "scan": "Appareil photo",
+      "fridge": "Frigo",
+      "training": "Entraînement",
+      "activity": "Activité",
+      "body": "Mensurations",
+      "fasting": "Jeûne",
+      "treatment": "Traitement",
+      "metabolism": "Mon métabolisme",
+      "week": "Semaine",
+      "quality": "Qualité",
+      "family": "Famille"
+    },
+    "inbox": {
+      "title": "Remarques reçues",
+      "new": "{count, plural, one {# nouvelle} other {# nouvelles}}",
+      "empty": "Aucun message pour l'instant. Tes invités peuvent t'écrire depuis Moi › « Une remarque, un bug ? ».",
+      "handle": "Marquer comme traité",
+      "reopen": "Rouvrir",
+      "handled": "Traité",
+      "screenshot": "Voir la capture",
+      "details": "Détail technique",
+      "copy": "Copier pour Claude",
+      "copied": "Copié",
+      "version": "version {version}"
+    }
   }
 }
