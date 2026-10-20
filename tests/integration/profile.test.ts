@@ -103,6 +103,7 @@ describe("onboarding et données", () => {
       "fasting-plan.csv",
       "fasts.csv",
       "favorites.csv",
+      "feedback.csv",
       "foods.csv",
       "goals.csv",
       "larger-days.csv",
