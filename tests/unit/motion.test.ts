@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  countUp,
   easeOutStrong,
   FLICK_MIN_DISTANCE,
   SWIPE_THRESHOLD,
@@ -35,6 +36,37 @@ describe("tween", () => {
     expect(middle).toBeLessThan(1200);
     expect(middle).toBeGreaterThan(800);
     expect(Number.isInteger(middle)).toBe(true);
+  });
+});
+
+describe("countUp", () => {
+  it("file vite puis égrène les dix dernières unités, de plus en plus lentement", () => {
+    const { duration, valueAt } = countUp(0, 2080, 700);
+    expect(valueAt(0)).toBe(0);
+    expect(valueAt(699)).toBeLessThanOrEqual(2070);
+    expect(valueAt(700)).toBe(2070);
+    expect(valueAt(duration)).toBe(2080);
+    // Chaque unité reste affichée plus longtemps que la précédente.
+    const ticks: number[] = [];
+    for (let t = 701; t <= Math.ceil(duration); t++) if (valueAt(t) !== valueAt(t - 1)) ticks.push(t);
+    expect(ticks).toHaveLength(10);
+    const gaps = ticks.slice(1).map((tick, index) => tick - ticks[index]!);
+    gaps.slice(1).forEach((gap, index) => expect(gap).toBeGreaterThan(gaps[index]!));
+  });
+
+  it("descend aussi, et un petit écart ne fait que la fin au ralenti", () => {
+    const down = countUp(500, 480, 450);
+    expect(down.valueAt(450)).toBe(490);
+    expect(down.valueAt(down.duration)).toBe(480);
+    const small = countUp(100, 104, 450);
+    expect(small.valueAt(0)).toBe(100);
+    expect(small.valueAt(small.duration)).toBe(104);
+    expect(small.duration).toBeLessThan(450);
+  });
+
+  it("ne bouge pas quand rien ne change", () => {
+    expect(countUp(42, 42, 700)).toMatchObject({ duration: 0 });
+    expect(countUp(42, 42, 700).valueAt(0)).toBe(42);
   });
 });
 

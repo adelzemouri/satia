@@ -41,6 +41,36 @@ export function tween(from: number, to: number, progress: number): number {
   return Math.round(from + (to - from) * easeOutStrong(progress));
 }
 
+/** Dernières unités d'un compteur, affichées une à une avec un écart qui s'allonge. */
+const SETTLE_UNITS = 10;
+const SETTLE_FIRST_MS = 40;
+const SETTLE_GROWTH = 1.22;
+
+/** Instants (ms, depuis le début de la fin au ralenti) où chacune des dernières unités apparaît. */
+const SETTLE_TICKS = Array.from({ length: SETTLE_UNITS }, (_, index) => index).reduce<number[]>(
+  (ticks, index) => [...ticks, (ticks.at(-1) ?? 0) + SETTLE_FIRST_MS * SETTLE_GROWTH ** index],
+  [],
+);
+
+/**
+ * Défilement d'un compteur en deux temps : il file jusqu'à quelques unités de l'arrivée (`fastMs`,
+ * courbe de l'anneau), puis égrène les dernières une à une, de plus en plus lentement. Renvoie la
+ * valeur à afficher à l'instant `elapsed` et la durée totale.
+ */
+export function countUp(from: number, to: number, fastMs: number) {
+  const direction = Math.sign(to - from);
+  const settle = Math.min(SETTLE_UNITS, Math.abs(to - from));
+  const settleFrom = to - direction * settle;
+  const fast = settleFrom === from ? 0 : fastMs;
+  const duration = fast + (settle === 0 ? 0 : SETTLE_TICKS[settle - 1]!);
+  const valueAt = (elapsed: number): number => {
+    if (elapsed < fast) return tween(from, settleFrom, elapsed / fast);
+    const done = SETTLE_TICKS.slice(0, settle).filter((tick) => tick <= elapsed - fast).length;
+    return settleFrom + direction * done;
+  };
+  return { duration, valueAt };
+}
+
 export function prefersReducedMotion(): boolean {
   return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
 }
