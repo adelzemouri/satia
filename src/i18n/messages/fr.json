@@ -419,6 +419,8 @@
     }
   },
   "profile": {
+    "version": "Version {number} · {date}",
+    "versionNoDate": "Version {number}",
     "title": "Profil",
     "preferencesHint": "Thème et langue",
     "notificationsHint": "Rappels de repas, d'eau et bilan de la semaine",

@@ -530,6 +530,15 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 042 — Numéro de version calculé au build
+
+- **Date** : 2026-10-20 · **Statut** : adoptée
+- **Contexte** : Adel veut un numéro de version en bas de Moi, qui reste valable si l'app ouvre au public, sans intervention humaine. L'app est remise en ligne à chaque fusion sur `main`, sans sorties numérotées.
+- **Décision** : « Version 1.N · date », où N est le nombre de commits de `main` (`git rev-list --count`, historique récupéré en entier sur Vercel) et la date celle du build, figés par `next.config.ts`. Le premier chiffre (`APP_MAJOR_VERSION`) ne change qu'à la main, pour une étape. Pas de semver calculé depuis les titres de commits (robot qui écrit dans le dépôt, minutes de CI, numéro pas plus parlant). Les remarques enregistrent « 1.N · sha ».
+- **Conséquences** : un commit poussé directement sur `main` compte aussi. Si l'historique ne peut pas être récupéré (Docker, build hors Vercel), l'app affiche le code court du commit à la place, sans casser le build.
+
+---
+
 ## Modèle
 
 ```markdown

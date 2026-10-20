@@ -19,6 +19,7 @@ import { notifyFeedback } from "./notifications";
 import { isImage, PHOTO_MIME_TYPES } from "./photos";
 import { enforceRateLimit } from "./rate-limit";
 import { deleteObjects, putObject, signedGetUrl } from "./storage";
+import { currentVersion } from "./version";
 
 /** Capture réduite côté client (côté long ≤ 1280 px) : quelques centaines de Ko au plus. */
 const SCREENSHOT_MAX_BYTES = 1_500_000;
@@ -42,10 +43,11 @@ export const feedbackSchema = z.object({
 });
 export type FeedbackInput = z.input<typeof feedbackSchema>;
 
-/** Version déployée : le commit court fourni par l'hébergeur, sinon rien. */
+/** Version déployée telle qu'affichée en bas de Moi, suivie du commit court (« 1.196 · e3aaeb9 »). */
 export function appVersion(): string | null {
-  const sha = process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.GIT_SHA;
-  return sha ? sha.slice(0, 7) : null;
+  const { label, sha } = currentVersion();
+  if (label && sha && label !== sha) return `${label} · ${sha}`;
+  return label ?? sha;
 }
 
 /** Foyer qui reçoit les messages de la personne : le sien, ou celui qui gère son foyer à part. */
