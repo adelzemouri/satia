@@ -1501,7 +1501,7 @@
     "fits": "Fits in today's budget",
     "over": "A little above what you have left",
     "missing": "Not found in the database: {list}.",
-    "save": "Save and add to the log",
+    "save": "Add to the log",
     "noIdeas": "No idea this time: try a sharper or wider photo."
   },
   "recipes": {

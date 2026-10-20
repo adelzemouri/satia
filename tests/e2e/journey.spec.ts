@@ -1286,7 +1286,7 @@ test("menu de la semaine, liste de courses commune, recettes et scanner de frigo
   }).toPass({ timeout: 30_000 });
   await expect(page.getByText(/^Repéré : œuf, tomate/)).toBeVisible();
   await expectNoA11yViolations(page);
-  await omelette.getByRole("button", { name: "Enregistrer et ajouter au journal" }).click();
+  await omelette.getByRole("button", { name: "Ajouter au journal" }).click();
   await expect(page).toHaveURL(/\/add\?food=/);
   await expect(page.getByText("Omelette à la tomate").first()).toBeVisible();
 });
