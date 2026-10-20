@@ -13,6 +13,7 @@ import { feedbackRecipient, unreadFeedbackCount } from "@/server/feedback";
 import { latestWeight } from "@/server/journal";
 import { getGoalOn, getProfile } from "@/server/profile";
 import { requireUser } from "@/server/session";
+import { currentVersion } from "@/server/version";
 import { buttonClass } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 
@@ -40,6 +41,7 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
     user.role === "admin" ? unreadFeedbackCount(user.householdId) : Promise.resolve(0),
   ]);
   // L'admin qui reçoit les messages ne s'écrit pas « à lui-même ».
+  const version = currentVersion();
   const recipientName = recipient && recipient.id !== user.id ? recipient.name : null;
 
   return (
@@ -183,7 +185,19 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
         </LogoutForm>
       </div>
 
-      <p className="text-sm text-text-muted lg:col-span-2">{t("disclaimer", { appName: APP_NAME })}</p>
+      <div className="flex flex-col gap-1 lg:col-span-2">
+        <p className="text-sm text-text-muted">{t("disclaimer", { appName: APP_NAME })}</p>
+        {version.label && (
+          <p className="text-xs text-text-muted tabular-nums">
+            {version.builtAt
+              ? t("version", {
+                  number: version.label,
+                  date: format.dateTime(version.builtAt, { day: "numeric", month: "short" }),
+                })
+              : t("versionNoDate", { number: version.label })}
+          </p>
+        )}
+      </div>
 
       <FeedbackHost recipient={recipientName} />
     </div>

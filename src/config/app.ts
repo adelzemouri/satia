@@ -1,6 +1,9 @@
 /** Nom de l'application, centralisé pour pouvoir le changer facilement. */
 export const APP_NAME = "Pommelia";
 
+/** Premier chiffre de la version (« 1.196 ») ; le second se calcule tout seul au build. */
+export const APP_MAJOR_VERSION = 1;
+
 export const APP_SHORT_NAME = "Pommelia";
 
 /** Prénom du coach, affiché dans l'app et donné au modèle pour qu'il se présente pareil. */

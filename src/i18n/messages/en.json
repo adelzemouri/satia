@@ -419,6 +419,8 @@
     }
   },
   "profile": {
+    "version": "Version {number} · {date}",
+    "versionNoDate": "Version {number}",
     "title": "Profile",
     "preferencesHint": "Theme and language",
     "notificationsHint": "Meal and water reminders, weekly review",
