@@ -86,6 +86,12 @@ fieldset {
   outline-offset: 2px;
 }
 
+/* <main tabindex="-1"> n'est qu'une cible du lien d'évitement : sur iPhone, toucher un blanc de la
+   page lui donnait le focus et son contour bleu traversait l'écran comme un trait. */
+main[tabindex="-1"]:focus {
+  outline: none;
+}
+
 /* Message en bas d'écran : il monte doucement. */
 .toast-in {
   animation: toast-in 180ms ease-out;

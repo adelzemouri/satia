@@ -1501,7 +1501,7 @@
     "fits": "Tient dans ton budget du jour",
     "over": "Un peu au-dessus de ce qu'il te reste",
     "missing": "Non trouvé dans la base : {list}.",
-    "save": "Enregistrer et ajouter au journal",
+    "save": "Ajouter au journal",
     "noIdeas": "Pas d'idée cette fois : essaie une photo plus nette ou plus large."
   },
   "recipes": {

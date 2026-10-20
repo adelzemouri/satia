@@ -56,9 +56,11 @@ export function FridgeScanner() {
     });
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-2">
-        <label className={buttonClass("secondary", "cursor-pointer px-3 focus-within:outline-2")}>
+    <div className="flex flex-col">
+      {/* Sur téléphone, deux boutons côte à côte coupaient leur libellé sur trois lignes :
+          on les empile, la prise de vue en premier ; côte à côte dès qu'il y a la place. */}
+      <div className="grid gap-2 sm:grid-cols-2">
+        <label className={buttonClass("primary", "cursor-pointer whitespace-nowrap focus-within:outline-2")}>
           <Icon name="camera" />
           {t("takePhoto")}
           <input
@@ -70,14 +72,15 @@ export function FridgeScanner() {
             className="sr-only"
           />
         </label>
-        <label className={buttonClass("secondary", "cursor-pointer px-3 focus-within:outline-2")}>
+        <label className={buttonClass("secondary", "cursor-pointer whitespace-nowrap focus-within:outline-2")}>
           <Icon name="image" />
           {t("choosePhoto")}
           <input type="file" accept="image/*" onChange={choosePhoto} disabled={pending} className="sr-only" />
         </label>
       </div>
 
-      <div aria-live="polite" className="flex flex-col gap-4">
+      {/* Zone vide tant qu'il n'y a rien à annoncer : pas de marge, sinon un blanc sous les boutons. */}
+      <div aria-live="polite" className="flex flex-col gap-4 not-empty:mt-4">
         {pending && !result && <p className="text-text-muted">{t("analyzing")}</p>}
         {error && <Alert>{errorText(error)}</Alert>}
         {result && (
