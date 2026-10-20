@@ -14,12 +14,15 @@ import { JournalDishName } from "@/features/journal/dish-name";
 import { EntryRow } from "@/features/journal/entry-row";
 import { MealActions } from "@/features/journal/meal-actions";
 import { groupByDish } from "@/domain/dishes";
+import { catalogRecipeFor } from "@/domain/recipes/catalog";
+import { DishThumb } from "@/features/recipes/dish-thumb";
 import { WaterTracker } from "@/features/journal/water-tracker";
 import { QualityBars } from "@/features/quality/quality-bars";
 import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { favoriteIds, getFoods } from "@/server/foods";
 import { daySummary, entriesOn, loggedDays } from "@/server/journal";
+import { weekPlan } from "@/server/planning";
 import { photoUrls } from "@/server/photos";
 import { dayQualityFor } from "@/server/quality";
 import { requireUser } from "@/server/session";
@@ -41,12 +44,14 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
   const yesterday = addDays(today, -1);
   const weekStart = isoWeekStart(date);
   const week = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
-  const [summary, yesterdayEntries, quality, logged, favorites] = await Promise.all([
+  const [summary, yesterdayEntries, quality, logged, favorites, plan] = await Promise.all([
     daySummary(user.id, date),
     date === today ? entriesOn(user.id, yesterday) : Promise.resolve([]),
     dayQualityFor(user.id, date),
     loggedDays(user.id, week[0]!, week[6]!),
     favoriteIds(user.id),
+    // Plats du menu du foyer prévus ce jour-là (jusqu'à aujourd'hui) : proposés dans leur repas.
+    date <= today ? weekPlan(user.householdId, weekStart) : Promise.resolve([]),
   ]);
   const foods = new Map(
     (
@@ -203,7 +208,55 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
             <Icon name="plus" />
           </Link>
         );
-        // Un repas vide tient sur une ligne : son nom et « + ».
+        // Plat prévu au menu pour ce repas, tant qu'il n'est pas déjà dans le journal : un tap l'ajoute.
+        const planned = plan
+          .filter(
+            (item) =>
+              item.date === date &&
+              item.slot === slot &&
+              item.foodId !== null &&
+              !entries.some((entry) => entry.foodId === item.foodId),
+          )
+          .filter((item, index, list) => list.findIndex((other) => other.foodId === item.foodId) === index);
+        const plannedRows = planned.map((item) => {
+          const catalog = item.catalogRef ? catalogRecipeFor(item.catalogRef) : undefined;
+          return (
+            <div key={item.id} className="flex items-center gap-3 rounded-2xl border-2 border-dashed border-border p-2">
+              <span className="w-16 shrink-0 overflow-hidden rounded-xl">
+                <DishThumb catalog={catalog} imageUrl={item.imageUrl} sizes="64px" />
+              </span>
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="text-xs font-semibold text-text-muted">{t("plan.planned")}</span>
+                <span className="leading-snug font-semibold">{item.label}</span>
+                {item.kcalPerServing !== null && (
+                  <span className="text-xs text-text-muted">{t("plan.perServing", { kcal: item.kcalPerServing })}</span>
+                )}
+              </span>
+              <Link
+                href={{ pathname: "/add", query: { food: item.foodId!, slot, date } }}
+                aria-label={t("plan.plannedAddLabel", { name: item.label })}
+                className={buttonClass("primary", "min-h-11 px-4")}
+              >
+                {t("plan.plannedAdd")}
+              </Link>
+            </div>
+          );
+        });
+        // Un repas vide tient sur une ligne : son nom et « + » (et, en dessous, le plat prévu au menu).
+        if (entries.length === 0 && plannedRows.length > 0) {
+          return (
+            <Card key={slot} aria-labelledby={`slot-${slot}`} className="gap-2 pt-2.5 pr-3">
+              <div className="flex items-center gap-3">
+                <h2 id={`slot-${slot}`} className="scroll-mt-24 text-lg font-bold">
+                  {t(`slots.${slot}`)}
+                </h2>
+                <p className="flex-1 text-sm text-text-muted">{t("journal.emptyShort")}</p>
+                {addLink}
+              </div>
+              {plannedRows}
+            </Card>
+          );
+        }
         if (entries.length === 0) {
           return (
             <Card key={slot} aria-labelledby={`slot-${slot}`} className="flex-row items-center gap-3 py-2.5 pr-3">
@@ -244,6 +297,7 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
               />
             </div>
             <MacroLine totals={totals} />
+            {plannedRows}
             {slotPhotos.length > 0 && (
               <PhotoGallery
                 photos={slotPhotos.map((url) => ({

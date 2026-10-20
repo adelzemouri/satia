@@ -18,6 +18,7 @@ import { ProductThumb } from "@/features/foods/product-thumb";
 import { QualityBadges } from "@/features/foods/quality-badges";
 import { ZoomablePhoto } from "@/ui/photo-viewer";
 import { RecipePhotoForm } from "@/features/foods/recipe-photo-form";
+import { AddToMenuButton } from "@/features/planning/add-to-menu-button";
 import { RecipeStepsButton } from "@/features/planning/recipe-steps-button";
 import { RecipeVisual } from "@/features/recipes/recipe-visual";
 import { aiAvailability } from "@/server/ai-availability";
@@ -62,6 +63,8 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
   const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
   // Recette du foyer ou personnelle : ses ingrédients et sa préparation, comme une fiche du catalogue.
   const ownRecipe = food.source === "recipe" && !catalog;
+  // Le menu est commun au foyer : seules les recettes que tous voient y entrent.
+  const menuRecipe = food.source === "recipe" && food.ownerUserId === null;
   // L'admin peut refaire par l'IA la photo de n'importe quelle recette, catalogue compris.
   const adminRecipe = food.source === "recipe" && user.role === "admin";
   const [ingredients, ai, favorite] = await Promise.all([
@@ -148,12 +151,23 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
             )}
           </div>
 
-          <Link
-            href={{ pathname: "/add", query: { food: food.id, date, ...(slot && { slot }), ...(via && { via }) } }}
-            className={buttonClass("primary")}
-          >
-            {t("product.add")}
-          </Link>
+          {/* Une recette que tout le foyer voit peut aussi aller au menu de la semaine. */}
+          <div className={menuRecipe ? "grid grid-cols-2 gap-3" : "flex flex-col"}>
+            <Link
+              href={{ pathname: "/add", query: { food: food.id, date, ...(slot && { slot }), ...(via && { via }) } }}
+              className={buttonClass("primary", menuRecipe ? "px-3" : "")}
+            >
+              {t("product.add")}
+            </Link>
+            {menuRecipe && (
+              <AddToMenuButton
+                foodId={food.id}
+                name={shortFoodName(food.nameFr)}
+                today={todayIso()}
+                defaultServings={Math.min(20, Math.max(1, Math.round(catalog?.servings ?? food.servings ?? 4)))}
+              />
+            )}
+          </div>
           <AskCoach
             topic={{ kind: "food", id: food.id }}
             label={shortFoodName(food.nameFr)}

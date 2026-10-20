@@ -161,6 +161,22 @@ describe("planification", () => {
     expect(again).toBe(0);
   });
 
+  it("sans recette du foyer, le coach pioche dans les recettes Pommelia", async () => {
+    const { userId, householdId } = await setupUser();
+    const added = await generateMenu(userId, householdId, {
+      weekStart: nextWeek,
+      slots: ["lunch", "dinner"],
+      servings: 2,
+    });
+    expect(added).toBe(2);
+    const plan = await weekPlan(householdId, nextWeek);
+    // Le coach simulé reprend la recette n° 1 de la liste : une recette du catalogue, avec sa photo.
+    expect(plan[1]).toMatchObject({ date: addDays(nextWeek, 1), slot: "lunch" });
+    expect(plan[1]!.catalogRef).toMatch(/^catalog:/);
+    const [prompt] = await db().select().from(llmCalls);
+    expect(prompt).toMatchObject({ feature: "menu_plan" });
+  });
+
   it("les ingrédients d'un nouveau plat sont des aliments, jamais un autre plat du foyer", async () => {
     const { userId, householdId } = await setupUser();
     // Recette du foyer dont le nom contient deux ingrédients du plat proposé : la recherche la classe en tête.

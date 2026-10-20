@@ -495,6 +495,23 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 040 — Un menu de la semaine branché sur les recettes et le journal
+
+- **Date** : 2026-10-20 · **Statut** : adoptée
+- **Contexte** : la page Menu vivait à part : l'accueil et le journal ne lisaient pas le menu,
+  la liste déroulante ne proposait que les recettes du foyer, et le menu de Pépin inventait des
+  plats sans photo au lieu de reprendre les recettes Pommelia.
+- **Décision** : « Ajouter au menu » sur la fiche de toute recette commune (jour, repas, parts) ;
+  le plat prévu apparaît dans son repas du journal avec « Ajouter » (jusqu'à aujourd'hui, tant
+  qu'il n'y est pas) ; sur la page Menu, chaque repas a un « + » qui ouvre une recherche avec
+  photos (recettes du foyer puis Pommelia, ou plat libre) ; Pépin reçoit les recettes du foyer
+  puis jusqu'à 50 recettes du catalogue adaptées aux repas et au régime.
+- **Conséquences** : la page Menu n'a plus de formulaire en bas ; sur téléphone, seuls le
+  déjeuner et le dîner (et les repas déjà remplis) ont leur ligne, comme le tableau sur
+  ordinateur ; les autres repas se planifient depuis la fiche d'une recette.
+
+---
+
 ## Modèle
 
 ```markdown

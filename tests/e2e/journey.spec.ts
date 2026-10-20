@@ -165,26 +165,44 @@ test("sur ordinateur, le menu se remplit case par case et les pages longues se d
   await page.goto("/plan");
   const grid = page.getByRole("table", { name: "Menu de la semaine en tableau" });
   await expect(grid).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Ajouter un plat" })).toBeHidden();
   await grid
     .getByRole("button", { name: /^Ajouter un plat : .*, dîner$/ })
     .first()
     .click();
   const dialog = page.getByRole("dialog");
+  // Un plat sans recette s'écrit à la main.
+  await dialog.getByRole("button", { name: "Écrire un plat sans recette" }).click();
   await dialog.getByLabel("Nom du plat").fill("Soupe du soir");
   await dialog.getByRole("button", { name: "Ajouter au menu" }).click();
   await expect(dialog).toBeHidden();
-  await expect(grid.getByRole("cell").filter({ hasText: "Soupe du soir" })).toHaveCount(1);
-  // Les recettes Pommelia sont proposées aussi, pas seulement celles du foyer.
+  await expect(grid.getByRole("button", { name: "Retirer Soupe du soir" })).toHaveCount(1);
+  // Une recette se cherche par son nom, avec sa photo : celles du foyer, puis les recettes Pommelia.
   await grid
     .getByRole("button", { name: /^Ajouter un plat : .*, déjeuner$/ })
     .first()
     .click();
-  await dialog.getByRole("combobox", { name: /^Recette/ }).selectOption({ label: "Harira" });
+  await dialog.getByRole("searchbox", { name: "Rechercher une recette" }).fill("harira");
+  await expect(dialog.getByRole("region", { name: "Recettes Pommelia" })).toBeVisible();
+  await dialog.getByRole("button", { name: /^Harira/ }).click();
+  await expectNoA11yViolations(page);
   await dialog.getByRole("button", { name: "Ajouter au menu" }).click();
   await expect(dialog).toBeHidden();
   await expect(grid.getByRole("button", { name: "Retirer Harira" })).toHaveCount(1);
   // Retiré aussitôt : la liste de courses d'un parcours suivant ne doit compter que ses propres plats.
+  await grid.getByRole("button", { name: "Retirer Harira" }).click();
+  await expect(grid.getByRole("button", { name: "Retirer Harira" })).toHaveCount(0);
+  // Depuis la fiche d'une recette : « Ajouter au menu » choisit le jour, le repas et les parts.
+  await page.goto("/recipes");
+  await page.getByRole("searchbox", { name: "Rechercher une recette ou un ingrédient" }).fill("harira");
+  await page.getByRole("link", { name: /^Harira/ }).click();
+  await page.getByRole("button", { name: "Ajouter au menu" }).click();
+  const sheet = page.getByRole("dialog");
+  await sheet.getByRole("button", { name: "Déjeuner", exact: true }).click();
+  await expectNoA11yViolations(page);
+  await sheet.getByRole("button", { name: /^Ajouter pour .*, déjeuner$/ }).click();
+  await expect(sheet).toBeHidden();
+  await expect(page.getByText(/^Harira ajouté au menu : .*, déjeuner\.$/)).toBeVisible();
+  await page.goto("/plan");
   await grid.getByRole("button", { name: "Retirer Harira" }).click();
   await expect(grid.getByRole("button", { name: "Retirer Harira" })).toHaveCount(0);
   await expectNoA11yViolations(page);
@@ -1173,20 +1191,33 @@ test("menu de la semaine, liste de courses commune, recettes et scanner de frigo
   await page.getByRole("link", { name: "Cuisine", exact: true }).click();
   await page.getByRole("navigation", { name: "Cuisine" }).getByRole("link", { name: "Menu" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Menu de la semaine");
-  const add = page.getByRole("region", { name: "Ajouter un plat" });
-  await add.getByLabel("Repas").selectOption("dinner");
-  await add.getByLabel(/^Recette/).selectOption({ label: "Gratin du dimanche" });
-  await add.getByLabel("Nombre de parts").fill("4");
-  await add.getByRole("button", { name: "Ajouter au menu" }).click();
+  // Le dîner d'aujourd'hui : on cherche la recette du foyer dans la liste, 4 parts par défaut.
+  const todayCard = page.locator('[aria-current="date"]').filter({ visible: true });
+  await todayCard.getByRole("button", { name: /, dîner$/ }).click();
+  const picker = page.getByRole("dialog");
+  await picker.getByRole("searchbox", { name: "Rechercher une recette" }).fill("gratin");
+  await picker.getByRole("button", { name: /^Gratin du dimanche/ }).click();
+  await expect(picker.getByText("4 parts", { exact: true })).toBeVisible();
+  await picker.getByRole("button", { name: "Ajouter au menu" }).click();
+  await expect(picker).toBeHidden();
   // « Servir » ouvre la fiche du plat pour ajouter sa portion au journal.
   await expect(page.getByRole("link", { name: "Ajouter Gratin du dimanche à mon journal" })).toHaveAttribute(
     "href",
     /\/foods\/[0-9a-f-]+\?date=/,
   );
-  await add.getByLabel("Nom du plat").fill("Restes");
-  await add.getByRole("button", { name: "Ajouter au menu" }).click();
+  await todayCard.getByRole("button", { name: /, déjeuner$/ }).click();
+  await picker.getByRole("button", { name: "Écrire un plat sans recette" }).click();
+  await picker.getByLabel("Nom du plat").fill("Restes");
+  await picker.getByRole("button", { name: "Ajouter au menu" }).click();
   await page.getByRole("button", { name: "Retirer Restes" }).click();
   await expect(page.getByRole("button", { name: "Retirer Restes" })).toHaveCount(0);
+  // Le plat prévu ce soir attend dans le dîner du journal, prêt à être ajouté.
+  await page.goto("/journal");
+  await expect(page.getByRole("region", { name: "Dîner" }).getByText("Prévu au menu")).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Ajouter Gratin du dimanche, prévu au menu, à mon journal" }),
+  ).toHaveAttribute("href", /\/add\?food=[0-9a-f-]+&slot=dinner&date=/);
+  await page.goto("/plan");
   await expectNoA11yViolations(page);
 
   // Semaine suivante : le coach (simulé) remplit le déjeuner et le dîner encore vides.

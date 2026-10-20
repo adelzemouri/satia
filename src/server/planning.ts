@@ -9,6 +9,8 @@ import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
 import { nutrientsFor } from "@/domain/nutrition";
 import { AISLES, type PlannedDish, shoppingFromPlan } from "@/domain/planning";
+import { CATEGORY_SLOTS, type RecipeCategory } from "@/domain/recipes/catalog";
+import { seededRandom } from "@/domain/recipes/dish-art";
 import { weekDates } from "@/domain/weekly-budget";
 import { proposeMenu, scanFridge, writeRecipeSteps } from "@/llm";
 
@@ -18,6 +20,7 @@ import { daySummary } from "./journal";
 import { matchFoodNames, photoInputSchema } from "./meal-ai";
 import { isImage } from "./photos";
 import { getGoalOn, getProfile } from "./profile";
+import { catalogEntries } from "./recipes";
 
 // --- Menu de la semaine ---------------------------------------------------------------
 
@@ -117,7 +120,16 @@ const PLANNED_SLOTS = ["breakfast", "lunch", "dinner"] as const;
 /** Part de l'objectif du jour visée par repas. */
 const SLOT_SHARE = { breakfast: 0.25, lunch: 0.35, dinner: 0.3 } as const;
 const SLOT_NAMES = { breakfast: "petit-déjeuner", lunch: "déjeuner", dinner: "dîner" } as const;
-const MAX_RECIPES_IN_PROMPT = 30;
+const MAX_RECIPES_IN_PROMPT = 50;
+/** Type de plat indiqué au coach, pour qu'il mette un petit-déjeuner au petit-déjeuner. */
+const CATEGORY_NAMES: Record<RecipeCategory, string> = {
+  breakfast: "petit-déjeuner",
+  main: "plat",
+  soup: "soupe",
+  salad: "salade",
+  dessert: "dessert",
+  snack: "en-cas",
+};
 
 export const generateMenuSchema = z.object({
   weekStart: z.iso.date(),
@@ -163,11 +175,12 @@ export async function generateMenu(
 ): Promise<number> {
   const data = generateMenuSchema.parse(input);
   const today = todayIso();
-  const [profile, goal, existing, recipes] = await Promise.all([
+  const [profile, goal, existing, recipes, catalog] = await Promise.all([
     getProfile(userId),
     getGoalOn(userId, today),
     weekPlan(householdId, data.weekStart),
     familyRecipes(userId),
+    catalogEntries(),
   ]);
   if (!profile) throw new DomainError("not_found");
   const taken = new Set(existing.map((item) => `${item.date}:${item.slot}`));
@@ -176,19 +189,44 @@ export async function generateMenu(
   );
   if (wanted.length === 0) return 0;
 
-  const pool = recipes.slice(0, MAX_RECIPES_IN_PROMPT);
+  // Recettes du foyer d'abord, puis celles du catalogue Pommelia (avec photo) qui vont aux repas
+  // demandés et au régime, mélangées selon la semaine pour varier d'une semaine à l'autre.
+  const vegetarianOnly = profile.diet === "vegetarian" || profile.diet === "vegan";
+  const fromCatalog = catalog
+    .filter(
+      (entry) =>
+        CATEGORY_SLOTS[entry.recipe.category].some((slot) => wanted.some((meal) => meal.slot === slot)) &&
+        (!vegetarianOnly || entry.recipe.vegetarian),
+    )
+    .map((entry) => ({ entry, order: seededRandom(`${data.weekStart}:${entry.recipe.slug}`)() }))
+    .sort((a, b) => a.order - b.order)
+    .map(({ entry }) => ({
+      id: entry.id,
+      nameFr: entry.recipe.name,
+      kcal: entry.portionKcal,
+      category: entry.recipe.category,
+    }));
+  const pool = [
+    ...recipes.map((recipe) => ({
+      id: recipe.id,
+      nameFr: recipe.nameFr,
+      kcal: Math.round((recipe.kcal * (recipe.unitWeights?.portion ?? 100)) / 100),
+      category: null,
+    })),
+    ...fromCatalog,
+  ].slice(0, MAX_RECIPES_IN_PROMPT);
   const kcal = goal?.kcal ?? 2000;
   const prompt = [
     `Régime : ${profile.diet}${profile.foodsToAvoid ? `, à éviter : ${profile.foodsToAvoid}` : ""}.`,
     `Objectif par repas (une part) : ${data.slots.map((slot) => `${SLOT_NAMES[slot]} ~${Math.round(kcal * SLOT_SHARE[slot])} kcal`).join(", ")}.`,
     pool.length > 0
-      ? `Recettes du foyer :\n${pool
+      ? `Recettes disponibles (à préférer) :\n${pool
           .map(
             (recipe, index) =>
-              `${index + 1}. ${recipe.nameFr} (${Math.round((recipe.kcal * (recipe.unitWeights?.portion ?? 100)) / 100)} kcal/part)`,
+              `${index + 1}. ${recipe.nameFr} (${recipe.category ? `${CATEGORY_NAMES[recipe.category]}, ` : ""}${recipe.kcal} kcal/part)`,
           )
           .join("\n")}`
-      : "Pas encore de recette du foyer.",
+      : "Pas encore de recette.",
     `Créneaux à remplir (jour 0 = lundi) : ${wanted.map((meal) => `${meal.day}:${meal.slot}`).join(", ")}.`,
   ].join("\n");
   const plan = await proposeMenu(userId, prompt);
