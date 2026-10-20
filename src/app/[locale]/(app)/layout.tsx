@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { RouteMemory } from "@/features/feedback/route-memory";
 import { BackButton } from "@/features/navigation/back-button";
 import { BottomNav } from "@/features/navigation/bottom-nav";
 import { SideNav } from "@/features/navigation/side-nav";
@@ -17,6 +18,7 @@ export default async function AppLayout({ children, params }: LayoutProps<"/[loc
     <OfflineProvider userId={user.id}>
       <ToastProvider>
         <FillsGate />
+        <RouteMemory />
         {/* Premier arrêt au clavier : passer directement au contenu de la page. */}
         <a
           href="#contenu"

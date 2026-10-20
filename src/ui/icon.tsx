@@ -35,6 +35,7 @@ export const ICONS = {
   book: "M5 4h9a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4Zm0 13a3 3 0 0 1 3-3h9",
   fridge: "M7 3h10v18H7V3Zm0 7h10M10 6v2M10 13v3",
   chat: "M5 5h14v10H10l-5 4V5Zm4 4h6M9 12h4",
+  mail: "M4 6h16v12H4V6Zm0 .5 8 6.5 8-6.5",
   dumbbell: "M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10",
   run: "M14 5.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM6 12l3-3h4l2 3h3M11 9l-2 6 3 2v4M9 15l-3 5",
   ruler: "M3 16 16 3l5 5L8 21l-5-5Zm4-1 1.5 1.5M10 12l1.5 1.5M13 9l1.5 1.5M16 6l1.5 1.5",

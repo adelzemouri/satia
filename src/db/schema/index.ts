@@ -15,3 +15,4 @@ export * from "./planning";
 export * from "./training";
 export * from "./body";
 export * from "./fasting";
+export * from "./feedback";

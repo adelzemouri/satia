@@ -1,6 +1,7 @@
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 
 import { APP_NAME } from "@/config/app";
+import { FEEDBACK_HASH, FeedbackHost } from "@/features/feedback/feedback-host";
 import { HubLinks } from "@/features/navigation/hub-links";
 import { PrivateText } from "@/ui/private";
 import { LogoutForm } from "@/features/offline/logout-form";
@@ -8,6 +9,7 @@ import { toLocale } from "@/i18n/routing";
 import { goalChangesWeight } from "@/domain/profile";
 import { type FastingPlan } from "@/domain/fasting";
 import { fastingAllowed, getFastingPlan } from "@/server/fasting";
+import { feedbackRecipient, unreadFeedbackCount } from "@/server/feedback";
 import { latestWeight } from "@/server/journal";
 import { getGoalOn, getProfile } from "@/server/profile";
 import { requireUser } from "@/server/session";
@@ -33,6 +35,13 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
   const kg = (value: number) => format.number(value, { maximumFractionDigits: 1 });
   const tn = await getTranslations("notifications");
   const tAll = await getTranslations();
+  const tf = await getTranslations("feedback");
+  const [recipient, unread] = await Promise.all([
+    feedbackRecipient(user.id),
+    user.role === "admin" ? unreadFeedbackCount(user.householdId) : Promise.resolve(0),
+  ]);
+  // L'admin qui reçoit les messages ne s'écrit pas « à lui-même ».
+  const recipientName = recipient && recipient.id !== user.id ? recipient.name : null;
 
   return (
     <Columns>
@@ -110,7 +119,27 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
             { href: "/journal", icon: "journal", label: tAll("nav.journal"), hint: tAll("profile.journalHint") },
             { href: "/treatment", icon: "pill", label: tAll("treatment.title") },
             { href: "/foods", icon: "star", label: tAll("add.manageFoods") },
-            ...(user.role === "admin" ? [{ href: "/admin", icon: "admin", label: tAll("nav.admin") } as const] : []),
+            {
+              href: { pathname: "/profile", hash: FEEDBACK_HASH },
+              icon: "mail",
+              label: tf("entry"),
+              hint: recipientName ? tf("entryHintTo", { name: recipientName }) : tf("entryHint"),
+            },
+            ...(user.role === "admin"
+              ? [
+                  {
+                    href: "/admin",
+                    icon: "admin",
+                    label: tAll("nav.admin"),
+                    value:
+                      unread > 0 ? (
+                        <span className="rounded-full bg-accent px-2.5 py-0.5 text-sm font-bold text-on-accent tabular-nums">
+                          {tf("inbox.new", { count: unread })}
+                        </span>
+                      ) : undefined,
+                  } as const,
+                ]
+              : []),
           ]}
         />
       </div>
@@ -151,6 +180,8 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
       </LogoutForm>
 
       <p className="text-sm text-text-muted">{t("disclaimer", { appName: APP_NAME })}</p>
+
+      <FeedbackHost recipient={recipientName} />
     </Columns>
   );
 }
