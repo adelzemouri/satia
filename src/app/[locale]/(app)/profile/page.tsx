@@ -15,7 +15,6 @@ import { getGoalOn, getProfile } from "@/server/profile";
 import { requireUser } from "@/server/session";
 import { buttonClass } from "@/ui/button";
 import { Icon } from "@/ui/icon";
-import { Columns } from "@/ui/columns";
 
 export default async function ProfilePage({ params }: PageProps<"/[locale]/profile">) {
   const locale = toLocale((await params).locale);
@@ -44,8 +43,10 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
   const recipientName = recipient && recipient.id !== user.id ? recipient.name : null;
 
   return (
-    <Columns>
-      <header className="flex items-center gap-4">
+    // Sur ordinateur, une grille : objectifs puis réglages à gauche, raccourcis puis déconnexion à
+    // droite. Les deux colonnes ont un titre, donc leurs cartes démarrent à la même hauteur.
+    <div data-wide className="flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-6 lg:gap-y-8">
+      <header className="flex items-center gap-4 lg:col-span-2">
         <span
           aria-hidden="true"
           className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary-soft text-xl font-extrabold text-primary"
@@ -59,7 +60,7 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
       </header>
 
       {profile && goal && (
-        <div data-col className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 lg:col-start-1 lg:row-start-2">
           <h2 className="mt-2 text-lg font-bold">{tg("title")}</h2>
           <HubLinks
             label={tg("title")}
@@ -111,7 +112,8 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
         </div>
       )}
 
-      <div data-col>
+      <div className="flex flex-col gap-3 lg:col-start-2 lg:row-start-2">
+        <h2 className="mt-2 text-lg font-bold">{tAll("home.more")}</h2>
         <HubLinks
           label={tAll("home.more")}
           links={[
@@ -144,9 +146,8 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
         />
       </div>
 
-      <div data-col className="flex flex-col gap-6">
-        {/* Sur ordinateur, les deux cartes sont côte à côte : le titre reste lu par les lecteurs d'écran sans décaler la carte. */}
-        <h2 className="mt-2 text-lg font-bold lg:sr-only">{t("settings")}</h2>
+      <div className="flex flex-col gap-3 lg:col-start-1 lg:row-start-3">
+        <h2 className="mt-2 text-lg font-bold">{t("settings")}</h2>
         <HubLinks
           label={t("settings")}
           links={[
@@ -172,17 +173,20 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
         />
       </div>
 
-      <LogoutForm>
-        <button type="submit" className={buttonClass("secondary", "w-full lg:max-w-xs")}>
-          <Icon name="logout" />
-          {tAll("nav.logout")}
-        </button>
-      </LogoutForm>
+      {/* Sur ordinateur, à hauteur de la carte des réglages (sous leur titre). */}
+      <div className="lg:col-start-2 lg:row-start-3 lg:pt-12">
+        <LogoutForm>
+          <button type="submit" className={buttonClass("secondary", "w-full lg:max-w-xs")}>
+            <Icon name="logout" />
+            {tAll("nav.logout")}
+          </button>
+        </LogoutForm>
+      </div>
 
-      <p className="text-sm text-text-muted">{t("disclaimer", { appName: APP_NAME })}</p>
+      <p className="text-sm text-text-muted lg:col-span-2">{t("disclaimer", { appName: APP_NAME })}</p>
 
       <FeedbackHost recipient={recipientName} />
-    </Columns>
+    </div>
   );
 }
 
