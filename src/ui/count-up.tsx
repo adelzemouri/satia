@@ -3,11 +3,14 @@
 import { useLocale } from "next-intl";
 import { useLayoutEffect, useRef } from "react";
 
-import { fillsDone, lastShown, prefersReducedMotion, rememberShown, tween } from "./motion";
+import { countUp, fillsDone, lastShown, prefersReducedMotion, rememberShown } from "./motion";
 
-/** Défilement à l'ouverture de l'app, et après un changement (plus court). */
-const FIRST_MS = 600;
-const CHANGE_MS = 500;
+/**
+ * Course rapide à l'ouverture de l'app, et après un changement (plus courte). Viennent ensuite les
+ * dernières unités, égrenées une à une de plus en plus lentement (environ 0,9 s).
+ */
+const FIRST_MS = 700;
+const CHANGE_MS = 450;
 
 /**
  * Nombre qui défile : depuis zéro à l'ouverture de l'app, puis depuis la dernière valeur montrée
@@ -27,14 +30,14 @@ export function CountUp({ value, memoryKey }: { value: number; memoryKey: string
     shown.current = value;
     rememberShown(memoryKey, value);
     if (!element || from === value || prefersReducedMotion()) return;
-    const duration = first && from === 0 ? FIRST_MS : CHANGE_MS;
+    const { duration, valueAt } = countUp(from, value, first && from === 0 ? FIRST_MS : CHANGE_MS);
     const format = new Intl.NumberFormat(locale);
     let frame = 0;
     const start = performance.now();
     const step = (now: number) => {
-      const progress = (now - start) / duration;
-      element.textContent = format.format(tween(from, value, progress));
-      if (progress < 1) frame = requestAnimationFrame(step);
+      const elapsed = now - start;
+      element.textContent = format.format(valueAt(elapsed));
+      if (elapsed < duration) frame = requestAnimationFrame(step);
     };
     element.textContent = format.format(from);
     frame = requestAnimationFrame(step);

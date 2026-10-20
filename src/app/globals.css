@@ -161,7 +161,7 @@ main[tabindex="-1"]:focus {
 }
 
 .ring-fill {
-  animation: ring-fill 600ms var(--ease-out-strong);
+  animation: ring-fill 1100ms var(--ease-out-strong);
 }
 
 /* Après l'ouverture de l'app, revenir sur une page ne rejoue plus le remplissage : seul ce qui

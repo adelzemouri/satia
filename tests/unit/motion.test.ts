@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  easeOutCubic,
+  countUp,
+  easeOutStrong,
   FLICK_MIN_DISTANCE,
   SWIPE_THRESHOLD,
   swipeAxis,
@@ -11,16 +12,19 @@ import {
   tween,
 } from "@/ui/motion";
 
-describe("easeOutCubic", () => {
+describe("easeOutStrong", () => {
   it("part de 0, arrive à 1 et reste dans les bornes", () => {
-    expect(easeOutCubic(0)).toBe(0);
-    expect(easeOutCubic(1)).toBe(1);
-    expect(easeOutCubic(-1)).toBe(0);
-    expect(easeOutCubic(2)).toBe(1);
+    expect(easeOutStrong(0)).toBe(0);
+    expect(easeOutStrong(1)).toBe(1);
+    expect(easeOutStrong(-1)).toBe(0);
+    expect(easeOutStrong(2)).toBe(1);
   });
 
-  it("avance vite au début", () => {
-    expect(easeOutCubic(0.5)).toBeGreaterThan(0.5);
+  it("avance vite au début puis ralentit nettement à la fin", () => {
+    expect(easeOutStrong(0.5)).toBeGreaterThan(0.9);
+    // Le dernier cinquième du temps ne couvre que la toute fin du trajet.
+    expect(1 - easeOutStrong(0.8)).toBeLessThan(0.01);
+    expect(easeOutStrong(0.9)).toBeGreaterThan(easeOutStrong(0.8));
   });
 });
 
@@ -32,6 +36,37 @@ describe("tween", () => {
     expect(middle).toBeLessThan(1200);
     expect(middle).toBeGreaterThan(800);
     expect(Number.isInteger(middle)).toBe(true);
+  });
+});
+
+describe("countUp", () => {
+  it("file vite puis égrène les dix dernières unités, de plus en plus lentement", () => {
+    const { duration, valueAt } = countUp(0, 2080, 700);
+    expect(valueAt(0)).toBe(0);
+    expect(valueAt(699)).toBeLessThanOrEqual(2070);
+    expect(valueAt(700)).toBe(2070);
+    expect(valueAt(duration)).toBe(2080);
+    // Chaque unité reste affichée plus longtemps que la précédente.
+    const ticks: number[] = [];
+    for (let t = 701; t <= Math.ceil(duration); t++) if (valueAt(t) !== valueAt(t - 1)) ticks.push(t);
+    expect(ticks).toHaveLength(10);
+    const gaps = ticks.slice(1).map((tick, index) => tick - ticks[index]!);
+    gaps.slice(1).forEach((gap, index) => expect(gap).toBeGreaterThan(gaps[index]!));
+  });
+
+  it("descend aussi, et un petit écart ne fait que la fin au ralenti", () => {
+    const down = countUp(500, 480, 450);
+    expect(down.valueAt(450)).toBe(490);
+    expect(down.valueAt(down.duration)).toBe(480);
+    const small = countUp(100, 104, 450);
+    expect(small.valueAt(0)).toBe(100);
+    expect(small.valueAt(small.duration)).toBe(104);
+    expect(small.duration).toBeLessThan(450);
+  });
+
+  it("ne bouge pas quand rien ne change", () => {
+    expect(countUp(42, 42, 700)).toMatchObject({ duration: 0 });
+    expect(countUp(42, 42, 700).valueAt(0)).toBe(42);
   });
 });
 
