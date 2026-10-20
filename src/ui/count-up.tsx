@@ -5,9 +5,12 @@ import { useLayoutEffect, useRef } from "react";
 
 import { fillsDone, lastShown, prefersReducedMotion, rememberShown, tween } from "./motion";
 
-/** Défilement à l'ouverture de l'app, et après un changement (plus court). */
-const FIRST_MS = 600;
-const CHANGE_MS = 500;
+/**
+ * Défilement à l'ouverture de l'app, et après un changement (plus court). Mêmes durées et même
+ * courbe que l'anneau : le nombre file puis ralentit sur ses dernières calories.
+ */
+const FIRST_MS = 1100;
+const CHANGE_MS = 800;
 
 /**
  * Nombre qui défile : depuis zéro à l'ouverture de l'app, puis depuis la dernière valeur montrée

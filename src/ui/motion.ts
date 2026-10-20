@@ -1,14 +1,44 @@
 /** Petits outils d'animation partagés : courbe, vibration, gestes de glissement. */
 
-/** Décélération douce : rapide au début, lente à l'arrivée. */
-export function easeOutCubic(progress: number): number {
+/**
+ * Courbe « ease-out-strong » des animations CSS (cubic-bezier(0.23, 1, 0.32, 1)), calculée en JS
+ * pour que les nombres qui défilent suivent exactement l'anneau : très rapide au début, puis un
+ * long ralenti où les dernières unités défilent une à une.
+ */
+export function easeOutStrong(progress: number): number {
   const p = Math.min(1, Math.max(0, progress));
-  return 1 - (1 - p) ** 3;
+  if (p === 0 || p === 1) return p;
+  return bezierY(bezierT(p));
+}
+
+const X1 = 0.23;
+const Y1 = 1;
+const X2 = 0.32;
+const Y2 = 1;
+
+function bezierX(t: number): number {
+  return 3 * X1 * t * (1 - t) ** 2 + 3 * X2 * t ** 2 * (1 - t) + t ** 3;
+}
+
+function bezierY(t: number): number {
+  return 3 * Y1 * t * (1 - t) ** 2 + 3 * Y2 * t ** 2 * (1 - t) + t ** 3;
+}
+
+/** Retrouve le paramètre t dont l'abscisse vaut x (dichotomie : x croît avec t). */
+function bezierT(x: number): number {
+  let low = 0;
+  let high = 1;
+  for (let i = 0; i < 24; i++) {
+    const middle = (low + high) / 2;
+    if (bezierX(middle) < x) low = middle;
+    else high = middle;
+  }
+  return (low + high) / 2;
 }
 
 /** Valeur intermédiaire entre `from` et `to`, arrondie à l'entier. */
 export function tween(from: number, to: number, progress: number): number {
-  return Math.round(from + (to - from) * easeOutCubic(progress));
+  return Math.round(from + (to - from) * easeOutStrong(progress));
 }
 
 export function prefersReducedMotion(): boolean {

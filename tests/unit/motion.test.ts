@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  easeOutCubic,
+  easeOutStrong,
   FLICK_MIN_DISTANCE,
   SWIPE_THRESHOLD,
   swipeAxis,
@@ -11,16 +11,19 @@ import {
   tween,
 } from "@/ui/motion";
 
-describe("easeOutCubic", () => {
+describe("easeOutStrong", () => {
   it("part de 0, arrive à 1 et reste dans les bornes", () => {
-    expect(easeOutCubic(0)).toBe(0);
-    expect(easeOutCubic(1)).toBe(1);
-    expect(easeOutCubic(-1)).toBe(0);
-    expect(easeOutCubic(2)).toBe(1);
+    expect(easeOutStrong(0)).toBe(0);
+    expect(easeOutStrong(1)).toBe(1);
+    expect(easeOutStrong(-1)).toBe(0);
+    expect(easeOutStrong(2)).toBe(1);
   });
 
-  it("avance vite au début", () => {
-    expect(easeOutCubic(0.5)).toBeGreaterThan(0.5);
+  it("avance vite au début puis ralentit nettement à la fin", () => {
+    expect(easeOutStrong(0.5)).toBeGreaterThan(0.9);
+    // Le dernier cinquième du temps ne couvre que la toute fin du trajet.
+    expect(1 - easeOutStrong(0.8)).toBeLessThan(0.01);
+    expect(easeOutStrong(0.9)).toBeGreaterThan(easeOutStrong(0.8));
   });
 });
 

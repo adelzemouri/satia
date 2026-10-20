@@ -7,7 +7,7 @@ import { lastShown, rememberShown } from "@/ui/motion";
 const MEMORY_KEY = "ring-arc";
 
 /** Avancée de l'anneau quand un repas s'ajoute (ou se retire). */
-const CHANGE_ANIMATION = "ring-fill 500ms var(--ease-out-strong)";
+const CHANGE_ANIMATION = "ring-fill 800ms var(--ease-out-strong)";
 
 /**
  * Arc de l'anneau des calories. Il se remplit depuis zéro à l'ouverture de l'app ; ensuite il
