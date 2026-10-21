@@ -70,6 +70,14 @@ const HINTS: [RegExp, Hints][] = [
   [/^yaourt|^lait fermenté/, { unitWeights: { piece: 125 } }],
   [/^fromage blanc/, { unitWeights: { portion: 100 } }],
   [/^petit-suisse/, { unitWeights: { piece: 60 } }],
+  // Œufs de poisson (lompe, saumon) : pas de pièce. Blanc et jaune pèsent une part de l'œuf.
+  [/^(œufs?|oeufs?) de (lompe|cabillaud|saumon|truite|poisson)/, {}],
+  [/^(œuf|oeuf), blanc/, { unitWeights: { piece: 33 } }],
+  [/^(œuf|oeuf), jaune/, { unitWeights: { piece: 18 } }],
+  [/^(œuf|oeuf) de caille/, { unitWeights: { piece: 10 } }],
+  [/^(œuf|oeuf) de cane/, { unitWeights: { piece: 70 } }],
+  [/^(œuf|oeuf) de dinde/, { unitWeights: { piece: 80 } }],
+  [/^(œuf|oeuf) d'oie/, { unitWeights: { piece: 150 } }],
   [/^œuf|^oeuf/, { unitWeights: { piece: 55 } }],
   [/^pain de mie/, { unitWeights: { slice: 25 } }],
   [/^pain\b/, { unitWeights: { slice: 35 } }],
@@ -83,12 +91,15 @@ const HINTS: [RegExp, Hints][] = [
   [/^beurre/, { unitWeights: { portion: 10 } }],
   [/^pomme\b(?!.*de terre)/, { unitWeights: { piece: 150 } }],
   [/^poire\b/, { unitWeights: { piece: 160 } }],
+  [/^banane plantain/, { unitWeights: { piece: 250 } }],
   [/^banane\b/, { unitWeights: { piece: 120 } }],
   [/^orange\b/, { unitWeights: { piece: 150 } }],
   [/^clémentine|^mandarine/, { unitWeights: { piece: 70 } }],
   [/^kiwi/, { unitWeights: { piece: 75 } }],
   [/^pêche|^nectarine/, { unitWeights: { piece: 130 } }],
   [/^abricot\b/, { unitWeights: { piece: 40 } }],
+  [/^tomate cerise/, { unitWeights: { piece: 15 } }],
+  [/^tomate (côtelée|coeur de boeuf|cœur de bœuf)/, { unitWeights: { piece: 250 } }],
   [/^tomate\b/, { unitWeights: { piece: 100 } }],
   [/^carotte\b/, { unitWeights: { piece: 80 } }],
   [/^pomme de terre/, { unitWeights: { piece: 120 } }],
@@ -106,7 +117,8 @@ const HINTS: [RegExp, Hints][] = [
 const BEVERAGE_GROUP = "06";
 
 /** Formes transformées dont la « pièce » n'a plus le poids du produit frais (pomme sèche, frites…). */
-const PROCESSED = /(sèche|séché|déshydrat|appertis|au sirop|confit|en poudre|chips|frite|purée|flocons|noisette)/;
+const PROCESSED =
+  /(sèche|séché|\bsec\b|déshydrat|appertis|au sirop|confit|en poudre|chips|frite|purée|flocons|noisette|dauphine|duchesse)/;
 
 export function ciqualHints(name: string, groupCode: string): Hints {
   const lower = name.toLowerCase();
