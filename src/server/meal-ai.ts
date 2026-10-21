@@ -11,7 +11,7 @@ import { todayIso } from "@/domain/dates";
 import { correctionRules, type CorrectionRule, isCorrection, resolveLocally } from "@/domain/meal-text";
 import { nutrientsFor } from "@/domain/nutrition";
 import { normalizeForSearch, pickForLabel } from "@/domain/search";
-import { UNITS } from "@/domain/units";
+import { piecesMatchGrams, UNITS } from "@/domain/units";
 import { realisticGrams } from "@/domain/condiments";
 import { looksUnrelated } from "@/domain/meal-checks";
 import { AI_INPUT_METHODS, type DraftItem, type MealDraft } from "@/features/ai/draft";
@@ -159,8 +159,10 @@ async function toDraftItems(
     const food = habit ?? (chosen.has(line) ? chosen.get(line)! : (candidates[0] ?? null));
     const grams = Math.round(realisticGrams(item.name, item.grams));
     const count = item.count ?? null;
-    // Des pièces comptées s'affichent en pièces quand l'aliment a un poids à la pièce.
-    const byPiece = count !== null && Boolean(food?.unitWeights?.piece);
+    // Des pièces comptées s'affichent en pièces quand l'aliment a un poids à la pièce qui
+    // concorde avec le poids estimé ; sinon on garde les grammes de l'IA.
+    const piece = food?.unitWeights?.piece;
+    const byPiece = count !== null && piece !== undefined && piecesMatchGrams(count, piece, grams);
     return {
       key: randomUUID(),
       label: item.name,

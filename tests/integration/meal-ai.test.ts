@@ -180,6 +180,12 @@ describe("saisie IA", () => {
     setProviderForTests(scripted(reply));
     const byPiece = (await analyzeText(userId, { text: "deux croque-monsieur", method: "text" })).items[0]!;
     expect(byPiece).toMatchObject({ quantity: 2, unit: "piece", proposal: { grams: 300 } });
+
+    // Un poids à la pièce qui ne colle pas à l'estimation (5 tomates cerises ≠ 5 tomates) : grammes.
+    await setUnitWeight(userId, { foodId: croque!.id, unit: "piece", grams: 1000 });
+    setProviderForTests(scripted(reply));
+    const mismatch = (await analyzeText(userId, { text: "deux croque-monsieur", method: "text" })).items[0]!;
+    expect(mismatch).toMatchObject({ quantity: 300, unit: "g", count: 2 });
     await db().update(foods).set({ unitWeights: croque!.unitWeights }).where(eq(foods.id, croque!.id));
   });
 

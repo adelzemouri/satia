@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { availableUnits, countUnitsFromServing, stepQuantity } from "@/domain/units";
+import { availableUnits, countUnitsFromServing, piecesMatchGrams, stepQuantity } from "@/domain/units";
 
 describe("countUnitsFromServing", () => {
   it("déduit le poids d'une tranche", () => {
@@ -36,5 +36,19 @@ describe("stepQuantity", () => {
     expect(stepQuantity(1, "slice", 1)).toBe("1.5");
     expect(stepQuantity(0.5, "slice", -1)).toBe("0.5");
     expect(stepQuantity(Number.NaN, "g", 1)).toBe("10");
+  });
+});
+
+describe("piecesMatchGrams", () => {
+  it("garde les pièces quand leur poids concorde avec l'estimation", () => {
+    expect(piecesMatchGrams(5, 15, 80)).toBe(true);
+    expect(piecesMatchGrams(2, 55, 120)).toBe(true);
+  });
+
+  it("revient aux grammes quand la pièce connue ne correspond pas", () => {
+    // 5 tomates cerises estimées à 80 g, mais une « tomate » de 100 g : 500 g serait faux.
+    expect(piecesMatchGrams(5, 100, 80)).toBe(false);
+    expect(piecesMatchGrams(1, 10, 100)).toBe(false);
+    expect(piecesMatchGrams(0, 15, 80)).toBe(false);
   });
 });
