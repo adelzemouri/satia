@@ -421,6 +421,7 @@
   "profile": {
     "version": "Version {number} · {date}",
     "versionNoDate": "Version {number}",
+    "versionLink": "(voir cette modification sur GitHub, nouvel onglet)",
     "title": "Profil",
     "preferencesHint": "Thème et langue",
     "notificationsHint": "Rappels de repas, d'eau et bilan de la semaine",

@@ -42,6 +42,14 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
   ]);
   // L'admin qui reçoit les messages ne s'écrit pas « à lui-même ».
   const version = currentVersion();
+  const versionText = version.label
+    ? version.builtAt
+      ? t("version", {
+          number: version.label,
+          date: format.dateTime(version.builtAt, { day: "numeric", month: "short" }),
+        })
+      : t("versionNoDate", { number: version.label })
+    : null;
   const recipientName = recipient && recipient.id !== user.id ? recipient.name : null;
 
   return (
@@ -187,14 +195,22 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
 
       <div className="flex flex-col gap-1 lg:col-span-2">
         <p className="text-sm text-text-muted">{t("disclaimer", { appName: APP_NAME })}</p>
-        {version.label && (
+        {versionText && (
           <p className="text-xs text-text-muted tabular-nums">
-            {version.builtAt
-              ? t("version", {
-                  number: version.label,
-                  date: format.dateTime(version.builtAt, { day: "numeric", month: "short" }),
-                })
-              : t("versionNoDate", { number: version.label })}
+            {/* Pour l'admin, un lien vers la modification correspondante sur GitHub ; texte simple sinon. */}
+            {user.role === "admin" && version.commitUrl ? (
+              <a
+                href={version.commitUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block py-1 underline decoration-dotted underline-offset-2 hover:text-text"
+              >
+                {versionText}
+                <span className="sr-only"> {t("versionLink")}</span>
+              </a>
+            ) : (
+              versionText
+            )}
           </p>
         )}
       </div>
