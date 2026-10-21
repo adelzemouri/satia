@@ -4,6 +4,9 @@ export const APP_NAME = "Pommelia";
 /** Premier chiffre de la version (« 1.196 ») ; le second se calcule tout seul au build. */
 export const APP_MAJOR_VERSION = 1;
 
+/** Dépôt public du code : la ligne de version de Moi y renvoie (administrateurs seulement). */
+export const SOURCE_REPOSITORY_URL = "https://github.com/adelzemouri/satia";
+
 export const APP_SHORT_NAME = "Pommelia";
 
 /** Prénom du coach, affiché dans l'app et donné au modèle pour qu'il se présente pareil. */
