@@ -46,7 +46,13 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
     ? version.builtAt
       ? t("version", {
           number: version.label,
-          date: format.dateTime(version.builtAt, { day: "numeric", month: "short" }),
+          // L'admin voit aussi l'heure de mise en ligne ; les autres comptes, la date seule.
+          date: format.dateTime(
+            version.builtAt,
+            user.role === "admin"
+              ? { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }
+              : { day: "numeric", month: "short" },
+          ),
         })
       : t("versionNoDate", { number: version.label })
     : null;
