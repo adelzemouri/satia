@@ -18,7 +18,8 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { Icon } from "@/ui/icon";
 import { haptic } from "@/ui/motion";
 
-type Mode = "photo" | "barcode";
+export type CameraMode = "photo" | "barcode";
+type Mode = CameraMode;
 
 const ROUND = "flex size-11 shrink-0 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-md";
 const SIDE =
@@ -26,11 +27,11 @@ const SIDE =
 const PILL = "flex h-9 items-center rounded-full px-3 text-sm font-bold whitespace-nowrap";
 
 /**
- * L'appareil photo du + : la caméra s'ouvre tout de suite, avec en bas les façons d'ajouter
- * (photo, code-barres, voix, recherche) et en haut les aliments récents. Sans IA configurée, il
- * s'ouvre sur le code-barres et la photo et la voix disparaissent.
+ * L'appareil photo, ouvert par la photo ou le code-barres de l'éventail du + : la caméra s'allume
+ * tout de suite, avec en bas les façons d'ajouter (photo, code-barres, voix, recherche) et en haut
+ * les aliments récents. Sans IA configurée, la photo et la voix disparaissent.
  */
-export function AddCamera({ ai, onClose }: { ai: boolean; onClose: () => void }) {
+export function AddCamera({ ai, initialMode, onClose }: { ai: boolean; initialMode: CameraMode; onClose: () => void }) {
   const t = useTranslations("camera");
   const tNav = useTranslations("nav");
   const tScan = useTranslations("scan");
@@ -39,7 +40,7 @@ export function AddCamera({ ai, onClose }: { ai: boolean; onClose: () => void })
   const errorText = useErrorText();
   const router = useRouter();
   const dialog = useRef<HTMLDialogElement>(null);
-  const [mode, setMode] = useState<Mode>(ai ? "photo" : "barcode");
+  const [mode, setMode] = useState<Mode>(ai ? initialMode : "barcode");
   const [recentOpen, setRecentOpen] = useState(false);
   const more = useRecentPages(null);
   const recent = more.items;
