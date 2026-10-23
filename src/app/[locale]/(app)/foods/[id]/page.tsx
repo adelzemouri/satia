@@ -20,7 +20,7 @@ import { ZoomablePhoto } from "@/ui/photo-viewer";
 import { RecipePhotoForm } from "@/features/foods/recipe-photo-form";
 import { AddToMenuButton } from "@/features/planning/add-to-menu-button";
 import { RecipeStepsButton } from "@/features/planning/recipe-steps-button";
-import { RecipeVisual } from "@/features/recipes/recipe-visual";
+import { RecipeVisual, recipePhotoSrc } from "@/features/recipes/recipe-visual";
 import { aiAvailability } from "@/server/ai-availability";
 import { importOpenFoodFactsProduct } from "@/server/open-food-facts";
 import { RecipeFavoriteButton } from "@/features/recipes/favorite-star";
@@ -75,6 +75,16 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
   const canRegenerate = Boolean(ai?.available);
   // Photo rangée dans le stockage (prise par la famille ou refaite par l'IA), servie par URL signée.
   const storedPhoto = food.photoKey && food.imageUrl ? { key: food.photoKey, url: food.imageUrl } : null;
+  const catalogPhoto = catalog ? recipePhotoSrc(catalog, food.imageUrl) : null;
+  const catalogVisual = catalog && (
+    <RecipeVisual
+      recipe={catalog}
+      imageUrl={food.imageUrl}
+      sizes="(min-width: 1024px) 416px, (min-width: 640px) 640px, 100vw"
+      priority
+      morph
+    />
+  );
   const steps = food.recipeSteps ?? [];
   const rows: { label: string; value: number | null; unit: string; indent?: boolean }[] = [
     { label: t("product.energy"), value: food.kcal, unit: "kcal" },
@@ -96,15 +106,18 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
         <div className="flex flex-col gap-6 lg:sticky lg:top-8">
           {catalog && (
             <figure className="-mx-4 flex flex-col gap-1 sm:mx-0">
-              <div className="overflow-hidden sm:rounded-[var(--radius-card)]">
-                <RecipeVisual
-                  recipe={catalog}
-                  imageUrl={food.imageUrl}
-                  sizes="(min-width: 1024px) 416px, (min-width: 640px) 640px, 100vw"
-                  priority
-                  morph
-                />
-              </div>
+              {catalogPhoto ? (
+                // Toucher la photo l'ouvre en plein écran, avec le zoom au pincement.
+                <ZoomablePhoto
+                  photo={{ src: catalogPhoto, alt: shortFoodName(food.nameFr) }}
+                  caption={shortFoodName(food.nameFr)}
+                  className="w-full overflow-hidden sm:rounded-[var(--radius-card)]"
+                >
+                  {catalogVisual}
+                </ZoomablePhoto>
+              ) : (
+                <div className="overflow-hidden sm:rounded-[var(--radius-card)]">{catalogVisual}</div>
+              )}
             </figure>
           )}
           {!catalog && storedPhoto && (
