@@ -679,17 +679,29 @@ const MEAL_PNG = Buffer.from(
   "base64",
 );
 
-test("le + ouvre l'appareil photo et la photo prise part vers l'écran d'ajout", async ({ page, context }) => {
+test("le + ouvre l'éventail, puis l'appareil photo, et la photo prise part vers l'écran d'ajout", async ({
+  page,
+  context,
+}) => {
   await context.grantPermissions(["camera"]);
   await signIn(page, ADMIN);
   await page.goto("/journal");
+  const nav = page.getByRole("navigation", { name: "Navigation principale" });
   const plus = page.getByRole("button", { name: "Ajouter un repas" });
+  const close = page.getByRole("button", { name: "Fermer les façons d'ajouter" });
   const camera = page.getByRole("dialog", { name: "Ajouter un repas" });
-  // Le bouton peut être touché avant l'hydratation de la page : on recommence au besoin.
+  // Le bouton peut être touché avant l'hydratation de la page : on recommence au besoin, sans
+  // retoucher un éventail déjà ouvert (le + s'appelle alors « Fermer »).
   await expect(async () => {
-    if (!(await camera.isVisible())) await plus.click({ timeout: 2000 });
-    await expect(camera).toBeVisible({ timeout: 2000 });
+    if (!(await close.isVisible())) await plus.click({ timeout: 2000 });
+    await expect(close).toBeVisible({ timeout: 2000 });
   }).toPass({ timeout: 20_000 });
+  await expect(nav.getByRole("button", { name: "Voix" })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Chercher" })).toBeVisible();
+  await expectNoA11yViolations(page);
+  await nav.getByRole("button", { name: "Photo" }).click();
+  await expect(camera).toBeVisible();
+  await expect(close).toBeHidden();
   // Caméra simulée de Chromium : le déclencheur s'active quand l'image arrive.
   const shutter = camera.getByRole("button", { name: "Prendre la photo" });
   await expect(shutter).toBeEnabled({ timeout: 10_000 });
@@ -711,6 +723,7 @@ test("le + ouvre l'appareil photo et la photo prise part vers l'écran d'ajout",
 
   // La galerie passe par le même chemin.
   await plus.click();
+  await nav.getByRole("button", { name: "Photo" }).click();
   await camera
     .getByLabel("Choisir dans mes photos")
     .setInputFiles({ name: "repas.png", mimeType: "image/png", buffer: MEAL_PNG });

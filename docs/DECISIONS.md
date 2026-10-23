@@ -323,7 +323,7 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ## 030 — Le + ouvre un éventail d'actions
 
-- **Date** : 2026-10-14 · **Statut** : remplacée par 035
+- **Date** : 2026-10-14 · **Statut** : remplacée par 035, puis rétablie par 043
 - **Contexte** : Adel trouve le + de la barre du bas trop gros et voudrait qu'il s'anime. Il
   ouvrait la page Ajouter, qui attend une dizaine de lectures en base avant de s'afficher.
 - **Décision** : un + plus petit qui tourne en × et fait jaillir en éventail la photo, la
@@ -409,7 +409,7 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ## 035 — Le + ouvre l'appareil photo
 
-- **Date** : 2026-10-18 · **Statut** : adoptée (remplace 030)
+- **Date** : 2026-10-18 · **Statut** : remplacée par 043
 - **Contexte** : Adel aime l'appareil photo intégré d'une appli du marché : le + ouvre la
   caméra tout de suite, avec les autres façons d'ajouter en bas. L'éventail demandait une
   touche de plus pour la photo et une page à part pour le code-barres.
@@ -536,6 +536,22 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 - **Contexte** : Adel veut un numéro de version en bas de Moi, qui reste valable si l'app ouvre au public, sans intervention humaine. L'app est remise en ligne à chaque fusion sur `main`, sans sorties numérotées.
 - **Décision** : « Version 1.N · date », où N est le nombre de commits de `main` (`git rev-list --count`, historique récupéré en entier sur Vercel) et la date celle du build, figés par `next.config.ts`. Le premier chiffre (`APP_MAJOR_VERSION`) ne change qu'à la main, pour une étape. Pas de semver calculé depuis les titres de commits (robot qui écrit dans le dépôt, minutes de CI, numéro pas plus parlant). Les remarques enregistrent « 1.N · sha ».
 - **Conséquences** : un commit poussé directement sur `main` compte aussi. Si l'historique ne peut pas être récupéré (Docker, build hors Vercel), l'app affiche le code court du commit à la place, sans casser le build.
+
+---
+
+## 043 — Retour de l'éventail du +
+
+- **Date** : 2026-10-23 · **Statut** : adoptée (remplace 035, rétablit 030)
+- **Contexte** : Adel préfère l'éventail : le + qui tourne en × et fait sortir les façons
+  d'ajouter, plutôt qu'une caméra qui s'allume à chaque toucher.
+- **Décision** : le + rouvre l'éventail de 030 (Photo, Voix, Code-barres, Chercher ; sans IA,
+  Code-barres et Chercher). Photo et Code-barres ouvrent l'appareil photo de 035 sur le bon
+  mode, qui garde les récents, la galerie et « Écrire mon repas ». Voix et Chercher mènent à
+  l'écran d'ajout, comme avant.
+- **Conséquences** : la photo demande une touche de plus qu'avec 035, mais la caméra ne
+  s'allume plus quand on veut seulement chercher ou dicter. Le code-barres passe par
+  l'appareil photo du + au lieu de la page `/scan`, qui reste en place. Sur ordinateur, rien
+  ne change : « Ajouter un repas » de la barre latérale ouvre la page Ajouter.
 
 ---
 

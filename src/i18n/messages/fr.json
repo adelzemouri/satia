@@ -35,7 +35,8 @@
     "addPhoto": "Photo",
     "addVoice": "Voix",
     "addBarcode": "Code-barres",
-    "addSearch": "Chercher"
+    "addSearch": "Chercher",
+    "addClose": "Fermer les façons d'ajouter"
   },
   "home": {
     "greeting": "Bonjour {name}",
