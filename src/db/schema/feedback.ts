@@ -1,4 +1,4 @@
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { index, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 import { FEEDBACK_KINDS } from "@/domain/feedback";
 
@@ -33,3 +33,17 @@ export const feedbackMessages = pgTable(
   },
   (t) => [index().on(t.householdId, t.createdAt), index().on(t.userId)],
 );
+
+/**
+ * Erreurs du serveur, repérées par leur `digest` : en production, le navigateur ne reçoit que
+ * ce numéro. Un bug signalé depuis l'écran d'erreur retrouve ainsi le vrai message. Purgées
+ * après quelques semaines.
+ */
+export const serverErrors = pgTable("server_errors", {
+  digest: text().primaryKey(),
+  message: text().notNull(),
+  path: text(),
+  count: integer().notNull().default(1),
+  firstAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  lastAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+});

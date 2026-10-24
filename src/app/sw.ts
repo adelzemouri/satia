@@ -12,13 +12,28 @@ declare const self: ServiceWorkerGlobalScope;
 
 // --- Pages de l'app hors ligne -------------------------------------------------------
 
+/**
+ * Une page dont le rendu serveur a échoué arrive quand même en 200 (l'erreur voyage dans le flux,
+ * repérée par son `digest`). On ne la garde pas : sinon un réseau lent la ressortirait des jours.
+ */
+const RENDER_ERROR = /:E\{\\?"digest\\?"/;
+
+async function withoutRenderError(response: Response): Promise<Response | null> {
+  if (!response.ok) return null;
+  const html = await response.clone().text();
+  return RENDER_ERROR.test(html) ? null : response;
+}
+
 /** Pages déjà consultées (dont l'accueil et le journal du jour), pour les relire sans réseau. */
 const PAGES_CACHE = "app-pages";
 const pages = new NetworkFirst({
   cacheName: PAGES_CACHE,
   // Réseau lent ou capricieux : on montre la dernière version enregistrée plutôt qu'un écran blanc.
   networkTimeoutSeconds: 4,
-  plugins: [new ExpirationPlugin({ maxEntries: 48, maxAgeSeconds: 7 * 24 * 3600 })],
+  plugins: [
+    { cacheWillUpdate: ({ response }) => withoutRenderError(response) },
+    new ExpirationPlugin({ maxEntries: 48, maxAgeSeconds: 7 * 24 * 3600 }),
+  ],
 });
 
 async function pageHandler(options: RouteHandlerCallbackOptions): Promise<Response> {
@@ -93,7 +108,7 @@ async function warmPages(urls: unknown[]): Promise<void> {
     paths.map(async (path) => {
       const response = await fetch(path, { credentials: "same-origin" }).catch(() => null);
       // Une redirection (session expirée…) ne doit pas remplacer une page valable.
-      if (response?.ok && !response.redirected) await cache.put(path, response);
+      if (response?.ok && !response.redirected && (await withoutRenderError(response))) await cache.put(path, response);
     }),
   );
 }

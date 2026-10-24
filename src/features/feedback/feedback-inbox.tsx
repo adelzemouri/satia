@@ -79,7 +79,7 @@ export function FeedbackInbox({ items }: { items: InboxItem[] }) {
             {item.errorDetail && (
               <details className="text-sm text-text-muted">
                 <summary className="cursor-pointer font-semibold">{t("inbox.details")}</summary>
-                <p className="mt-1 font-mono text-xs break-all">{item.errorDetail}</p>
+                <p className="mt-1 font-mono text-xs break-all whitespace-pre-line">{item.errorDetail}</p>
               </details>
             )}
             {item.screenshotUrl && (

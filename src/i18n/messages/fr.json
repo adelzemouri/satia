@@ -1978,7 +1978,8 @@
     "body": "Ce n'est pas de ta faute. Un rechargement règle presque toujours le problème.",
     "recovering": "Mise à jour de l'app, un instant…",
     "reload": "Recharger",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "retrying": "Un instant…"
   },
   "notFound": {
     "title": "Cette page n'existe pas",
