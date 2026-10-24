@@ -14,6 +14,7 @@ import {
   unreadFeedbackCount,
 } from "@/server/feedback";
 import { setPushSenderForTests } from "@/server/notifications";
+import { purgeServerErrors, recordServerError } from "@/server/server-errors";
 
 import { resetDatabase } from "./helpers";
 
@@ -124,5 +125,31 @@ describe("remarques et bugs", () => {
 
     await deleteUser(guest.id);
     expect(await db().select().from(feedbackMessages)).toEqual([]);
+  });
+
+  it("joint le vrai message du serveur à un bug parti de l'écran d'erreur", async () => {
+    const { admin, guest } = await setup();
+    const cause = Object.assign(new Error("write CONNECTION_CLOSED"), { code: "CONNECTION_CLOSED" });
+    const error = Object.assign(new Error("Failed query: select 1", { cause }), { digest: "3914836991" });
+    await recordServerError(error, "/?_rsc=abc");
+    await recordServerError(error, "/");
+    await sendFeedback(
+      guest.id,
+      {
+        kind: "bug",
+        message: "J'ai juste ouvert l'appli",
+        errorDetail: "digest 3914836991 · Error: Minified React error #441",
+      },
+      context,
+    );
+    const [item] = await listFeedback(admin.householdId);
+    expect(item!.errorDetail).toBe(
+      "digest 3914836991 · Error: Minified React error #441\n" +
+        "Serveur : Error: Failed query: select 1\ncause: Error: write CONNECTION_CLOSED [CONNECTION_CLOSED]",
+    );
+    expect(await purgeServerErrors()).toBe(0);
+    expect(await purgeServerErrors(new Date(Date.now() + 31 * 86_400_000))).toBe(1);
+    const [later] = await listFeedback(admin.householdId);
+    expect(later!.errorDetail).toBe("digest 3914836991 · Error: Minified React error #441");
   });
 });

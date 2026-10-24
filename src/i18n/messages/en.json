@@ -1978,7 +1978,8 @@
     "body": "It's not your fault. Reloading almost always fixes it.",
     "recovering": "Updating the app, one moment…",
     "reload": "Reload",
-    "retry": "Try again"
+    "retry": "Try again",
+    "retrying": "One moment…"
   },
   "notFound": {
     "title": "This page doesn't exist",

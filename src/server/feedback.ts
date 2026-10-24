@@ -18,6 +18,7 @@ import { DomainError } from "./errors";
 import { notifyFeedback } from "./notifications";
 import { isImage, PHOTO_MIME_TYPES } from "./photos";
 import { enforceRateLimit } from "./rate-limit";
+import { serverErrorMessages } from "./server-errors";
 import { deleteObjects, putObject, signedGetUrl } from "./storage";
 import { currentVersion } from "./version";
 
@@ -131,6 +132,16 @@ export type FeedbackItem = {
   createdAt: Date;
 };
 
+function digestOf(errorDetail: string | null): string | null {
+  return errorDetail?.match(/digest (\S+)/)?.[1] ?? null;
+}
+
+function withServerMessage(errorDetail: string | null, serverMessages: Map<string, string>): string | null {
+  const digest = digestOf(errorDetail);
+  const serverMessage = digest ? serverMessages.get(digest) : undefined;
+  return serverMessage ? `${errorDetail}\nServeur : ${serverMessage}` : errorDetail;
+}
+
 /** Boîte de réception de l'admin : non traités d'abord, puis les plus récents. */
 export async function listFeedback(householdId: string, limit = 30): Promise<FeedbackItem[]> {
   const rows = await db()
@@ -154,6 +165,9 @@ export async function listFeedback(householdId: string, limit = 30): Promise<Fee
     .where(eq(feedbackMessages.householdId, householdId))
     .orderBy(isNotNull(feedbackMessages.handledAt), desc(feedbackMessages.createdAt))
     .limit(limit);
+  // Un bug parti de l'écran d'erreur ne porte que le digest : on y joint le vrai message du serveur.
+  const digests = rows.map((row) => digestOf(row.errorDetail)).filter((digest) => digest !== null);
+  const serverMessages = await serverErrorMessages([...new Set(digests)]);
   return Promise.all(
     rows.map(async (row) => ({
       id: row.id,
@@ -163,7 +177,7 @@ export async function listFeedback(householdId: string, limit = 30): Promise<Fee
       page: row.page,
       appVersion: row.appVersion,
       userAgent: row.userAgent,
-      errorDetail: row.errorDetail,
+      errorDetail: withServerMessage(row.errorDetail, serverMessages),
       screenshotUrl: row.screenshotKey ? await signedGetUrl(row.screenshotKey) : null,
       handled: row.handledAt !== null,
       createdAt: row.createdAt,

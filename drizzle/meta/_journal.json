@@ -176,6 +176,13 @@
       "when": 1792478102102,
       "tag": "0024_feedback",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1792858420830,
+      "tag": "0025_server_errors",
+      "breakpoints": true
     }
   ]
 }

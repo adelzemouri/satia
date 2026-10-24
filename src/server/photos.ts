@@ -8,6 +8,7 @@ import { db } from "@/db/client";
 import { appSettings, mealEntries, photos } from "@/db/schema";
 
 import { purgeRateLimits } from "./rate-limit";
+import { purgeServerErrors } from "./server-errors";
 import { getPhotoSettings } from "./settings";
 import { deleteObjects, putObject, signedGetUrl } from "./storage";
 
@@ -106,6 +107,7 @@ export type PurgeRun = { lastRunAt: string; purged: number };
 export async function runPhotoPurge(now: Date = new Date()): Promise<number> {
   const purged = await purgePhotos(now);
   await purgeFeedbackPhotos(now);
+  await purgeServerErrors(now);
   await purgeRateLimits();
   await recordPurge({ lastRunAt: now.toISOString(), purged });
   return purged;
@@ -131,6 +133,7 @@ export async function purgePhotosIfDue(now: Date = new Date()): Promise<number |
   if (claimed.length === 0) return null;
   await purgeRateLimits();
   await purgeFeedbackPhotos(now);
+  await purgeServerErrors(now);
   const purged = await purgePhotos(now);
   if (purged > 0) await recordPurge({ ...value, purged });
   return purged;

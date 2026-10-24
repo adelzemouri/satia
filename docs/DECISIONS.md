@@ -555,6 +555,28 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 044 — Erreurs du serveur : relance, message gardé, pas de cache
+
+- **Date** : 2026-10-24 · **Statut** : adoptée
+- **Contexte** : Adel a vu « Minified React error #441 » en ouvrant l'app. C'est une erreur du
+  rendu serveur dont la production ne transmet qu'un `digest`, et les journaux de Vercel Hobby
+  ne gardent qu'une heure : impossible d'en retrouver la cause. Le bouton « Réessayer »
+  appelait `reset`, qui réaffiche la même réponse sans redemander la page au serveur. Et la
+  page en erreur arrive en 200 : le service worker la gardait pour le hors-ligne.
+- **Décision** : l'écran d'erreur redemande la page une fois tout seul quand l'erreur vient du
+  serveur (au plus une fois par 30 s), avec « Un instant… » à la place du message d'erreur ;
+  « Réessayer » utilise `retry` (rafraîchit depuis le serveur). `onRequestError`
+  (`src/instrumentation.ts`) garde le message de chaque erreur, cause comprise, dans
+  `server_errors`, par digest, 30 jours ; la boîte des remarques le joint au bug signalé
+  (« Serveur : … »), donc aussi à « Copier pour Claude ». Le service worker ne met plus en
+  cache une page dont le flux contient une erreur.
+- **Conséquences** : une coupure passagère (base qui se réveille…) ne se voit plus. Les
+  messages gardés peuvent contenir le texte d'une requête SQL ; ils restent en base, visibles
+  des seuls admins via les bugs signalés. Si la base elle-même est en cause, le message n'est
+  pas gardé (il reste une heure dans les journaux de Vercel).
+
+---
+
 ## Modèle
 
 ```markdown
