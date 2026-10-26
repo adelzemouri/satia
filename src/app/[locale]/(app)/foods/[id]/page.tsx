@@ -164,11 +164,16 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
             )}
           </div>
 
-          {/* Une recette que tout le foyer voit peut aussi aller au menu de la semaine. */}
-          <div className={menuRecipe ? "grid grid-cols-2 gap-3" : "flex flex-col"}>
+          {/* Une recette que tout le foyer voit peut aussi aller au menu de la semaine.
+              Côte à côte tant que les deux libellés tiennent sur une ligne, sinon empilés. */}
+          <div
+            className={
+              menuRecipe ? "flex flex-wrap gap-3 [&>*]:flex-1 [&>*]:px-4 [&>*]:whitespace-nowrap" : "flex flex-col"
+            }
+          >
             <Link
               href={{ pathname: "/add", query: { food: food.id, date, ...(slot && { slot }), ...(via && { via }) } }}
-              className={buttonClass("primary", menuRecipe ? "px-3" : "")}
+              className={buttonClass("primary")}
             >
               {t("product.add")}
             </Link>
