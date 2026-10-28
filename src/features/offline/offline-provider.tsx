@@ -18,10 +18,10 @@ import { addEntryAction } from "@/features/journal/actions";
 import { useRouter } from "@/i18n/navigation";
 import { Alert } from "@/ui/alert";
 import { Button } from "@/ui/button";
+import { isNetworkFailure } from "@/ui/network-failure";
 
 import {
   addPending,
-  isNetworkFailure,
   markPendingFailed,
   type PendingEntry,
   readPending,

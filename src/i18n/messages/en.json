@@ -592,6 +592,7 @@
   },
   "errors": {
     "generic": "Something went wrong. Please try again in a moment.",
+    "network": "The connection dropped before the reply arrived. Check your network, then try again.",
     "required": "This field is required.",
     "invalid_email": "Invalid email address.",
     "password_too_short": "The password must be at least {min} characters long.",

@@ -592,6 +592,7 @@
   },
   "errors": {
     "generic": "Une erreur est survenue. Réessaie dans un instant.",
+    "network": "La connexion a été coupée avant la réponse. Vérifie ton réseau, puis réessaie.",
     "required": "Ce champ est obligatoire.",
     "invalid_email": "Adresse e-mail invalide.",
     "password_too_short": "Le mot de passe doit contenir au moins {min} caractères.",

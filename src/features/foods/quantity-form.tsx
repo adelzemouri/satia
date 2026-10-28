@@ -6,7 +6,7 @@ import { useState, useTransition } from "react";
 import { shortFoodName } from "@/domain/food-name";
 import { useErrorText } from "@/features/auth/use-error-text";
 import { addEntryAction, deleteEntryAction, setUnitWeightAction } from "@/features/journal/actions";
-import { isNetworkFailure } from "@/features/offline/pending-queue";
+import { isNetworkFailure } from "@/ui/network-failure";
 import { useOfflineQueue } from "@/features/offline/offline-provider";
 import { MEAL_SLOTS, type MealSlot } from "@/domain/meals";
 import { nutrientsFor } from "@/domain/nutrition";

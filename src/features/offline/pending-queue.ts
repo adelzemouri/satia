@@ -80,8 +80,3 @@ export function subscribePending(onChange: () => void): () => void {
     window.removeEventListener("storage", onChange);
   };
 }
-
-/** Échec d'un appel serveur faute de réseau (et non refus du serveur). */
-export function isNetworkFailure(error: unknown): boolean {
-  return !navigator.onLine || error instanceof TypeError;
-}

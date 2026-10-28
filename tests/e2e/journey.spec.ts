@@ -1109,6 +1109,13 @@ test("bêta : l'admin invite quelqu'un dans un foyer à part et suit s'il revien
   await page.goto("/admin");
   await page.getByLabel("Pour qui ? (ex. : Maman, Léo)").fill("Sami");
   await page.getByRole("radio", { name: /^Foyer à part/ }).check();
+  // Réseau coupé pendant l'envoi (Safari : « Load failed ») : message dans le formulaire, pas d'écran d'erreur.
+  await page.route("**/admin", (route) => (route.request().method() === "POST" ? route.abort() : route.fallback()));
+  await page.getByRole("button", { name: "Créer le lien" }).click();
+  await expect(page.getByText("La connexion a été coupée avant la réponse.", { exact: false })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Administration");
+  await expect(page.getByLabel("Pour qui ? (ex. : Maman, Léo)")).toHaveValue("Sami");
+  await page.unrouteAll();
   await page.getByRole("button", { name: "Créer le lien" }).click();
   const url = (await page.locator("code").first().textContent())!.trim();
 
