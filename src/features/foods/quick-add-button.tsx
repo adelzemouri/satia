@@ -7,7 +7,7 @@ import { shortFoodName } from "@/domain/food-name";
 import type { MealSlot } from "@/domain/meals";
 import { addEntryAction, deleteEntryAction } from "@/features/journal/actions";
 import { useOfflineQueue } from "@/features/offline/offline-provider";
-import { isNetworkFailure } from "@/features/offline/pending-queue";
+import { isNetworkFailure } from "@/ui/network-failure";
 import { Icon } from "@/ui/icon";
 import { haptic } from "@/ui/motion";
 import { useToast } from "@/ui/toast";
