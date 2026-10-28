@@ -45,6 +45,10 @@ Valeurs nutritionnelles : table [Ciqual](https://ciqual.anses.fr) de l'Anses (li
 ouverte Etalab) et [Open Food Facts](https://world.openfoodfacts.org) (ODbL) pour les
 produits du commerce.
 
+## Licence
+
+Code publié pour consultation uniquement, tous droits réservés : voir `LICENSE`.
+
 ## Déploiement
 
 L'hébergement retenu ne coûte rien hors IA (détails et alternatives dans
