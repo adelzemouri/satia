@@ -45,6 +45,7 @@ export function AiEntry({
   barcodeHref,
   dictationTitle,
   onDraft,
+  onWrite,
 }: {
   availability: AiAvailability;
   /** Le scan de code-barres complète les trois grandes entrées de l'écran d'ajout. */
@@ -52,6 +53,8 @@ export function AiEntry({
   /** En-tête de l'écran de dictée plein écran (titre et choix du repas). */
   dictationTitle?: ReactNode;
   onDraft: (draft: MealDraft, photoPreview: string | null) => void;
+  /** Écrire le repas se fait dans le grand champ de l'écran d'ajout : la dictée à corriger y est versée. */
+  onWrite: (text: string, dictated: boolean) => void;
 }) {
   const t = useTranslations("aiEntry");
   const locale = useLocale();
@@ -60,9 +63,8 @@ export function AiEntry({
   const [note, setNote] = useState("");
   const [text, setText] = useState("");
   const [dictated, setDictated] = useState(false);
-  const [describing, setDescribing] = useState(false);
   // Repas dicté : la phrase reste en grand (DictationHalo) jusqu'à l'analyse, même quand la
-  // dictée s'arrête ; le champ texte ne revient que pour corriger.
+  // dictée s'arrête ; pour corriger, elle part dans le grand champ de l'écran d'ajout.
   const [voice, setVoice] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -83,14 +85,16 @@ export function AiEntry({
     if (!availability.available) return;
     setError(null);
     if (start.kind === "photo") {
-      setDescribing(false);
+      setVoice(false);
       setPhoto({ file: start.file, preview: URL.createObjectURL(start.file) });
       return;
     }
     setPhoto(null);
-    setDescribing(true);
-    if (start.kind === "write") return setVoice(false);
-    if (speech.supported && !speech.listening) dictate();
+    if (start.kind === "write" || !speech.supported) {
+      setVoice(false);
+      return onWrite("", false);
+    }
+    if (!speech.listening) dictate();
   });
   useEffect(() => onQuickStart(quickStart), []);
 
@@ -110,15 +114,16 @@ export function AiEntry({
         <h2 id="ai-title" className="sr-only">
           {t("title")}
         </h2>
-        <div className="grid grid-cols-4 gap-2">{barcodeTile}</div>
+        <div className="grid grid-cols-3 gap-2">{barcodeTile}</div>
         <p className="text-sm text-text-muted">{errorText(availability.reason)}</p>
       </section>
     );
   }
 
+  // Sans dictée dans ce navigateur, la voix renvoie au grand champ.
   const speak = () => {
-    setDescribing(true);
-    if (speech.supported && !speech.listening) dictate();
+    if (!speech.supported) return onWrite("", false);
+    if (!speech.listening) dictate();
   };
 
   const choosePhoto = (event: ChangeEvent<HTMLInputElement>) => {
@@ -132,7 +137,15 @@ export function AiEntry({
   const cancel = () => {
     speech.stop();
     setVoice(false);
-    setDescribing(false);
+  };
+
+  // « Corriger le texte » ou « Écrire à la place » : la phrase dictée passe dans le grand champ.
+  const edit = () => {
+    speech.stop();
+    setVoice(false);
+    onWrite(text, dictated);
+    setText("");
+    setDictated(false);
   };
 
   const finish = (result: DraftState, preview: string | null) => {
@@ -196,11 +209,11 @@ export function AiEntry({
           </div>
         </div>
       ) : (
-        !describing && (
+        !voice && (
           <>
             {/* Une seule rangée : l'appareil photo complet est déjà derrière le + ; ici, sans « capture »,
-                le téléphone propose lui-même l'appareil photo ou la galerie. */}
-            <div className="grid grid-cols-4 gap-2">
+                le téléphone propose lui-même l'appareil photo ou la galerie. Écrire, c'est le grand champ. */}
+            <div className="grid grid-cols-3 gap-2">
               <label className={tileClass(true, "cursor-pointer focus-within:outline-2")}>
                 <Icon name="camera" size={24} />
                 {t("photo")}
@@ -211,23 +224,12 @@ export function AiEntry({
                 {t("voice")}
               </button>
               {barcodeTile}
-              <button
-                type="button"
-                onClick={() => {
-                  setVoice(false);
-                  setDescribing(true);
-                }}
-                className={tileClass(false)}
-              >
-                <Icon name="edit" size={24} />
-                {t("writeShort")}
-              </button>
             </div>
           </>
         )
       )}
 
-      {!photo && describing && voice && (
+      {!photo && voice && (
         <DictationScreen
           title={dictationTitle}
           onClose={cancel}
@@ -238,41 +240,8 @@ export function AiEntry({
           pending={pending}
           onMic={dictate}
           onStop={speech.stop}
-          onEdit={() => setVoice(false)}
+          onEdit={edit}
         />
-      )}
-      {!photo && describing && !voice && (
-        <form action={analyzeText} className="flex flex-col gap-3 rounded-[var(--radius-card)] bg-surface p-4">
-          <label className="flex flex-col gap-1.5">
-            <span className="font-semibold">{t("describe")}</span>
-            <textarea
-              value={text}
-              onChange={(event) => {
-                setText(event.target.value);
-                if (!event.target.value) setDictated(false);
-              }}
-              rows={2}
-              maxLength={500}
-              placeholder={t("describeHint")}
-              className="rounded-2xl border border-border bg-surface px-3 py-2 text-base"
-            />
-          </label>
-          {speech.error && <p className="text-sm text-text-muted">{errorText(speech.error)}</p>}
-          <div className="flex flex-wrap gap-2">
-            <Button type="submit" disabled={pending || text.trim().length < 2}>
-              {pending ? t("analyzing") : t("analyzeText")}
-            </Button>
-            {speech.supported && (
-              <Button variant="secondary" onClick={dictate} disabled={pending}>
-                <Icon name="mic" />
-                {t("dictate")}
-              </Button>
-            )}
-            <Button variant="ghost" onClick={cancel} disabled={pending}>
-              {t("cancel")}
-            </Button>
-          </div>
-        </form>
       )}
       <p className="sr-only" aria-live="polite">
         {pending ? t("analyzing") : ""}

@@ -282,6 +282,9 @@ test("ajout manuel d'un repas depuis la base Ciqual", async ({ page }) => {
   await page.getByRole("link", { name: "Ajouter au déjeuner" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Ajouter");
   await expect(page.getByLabel("Pour quel repas ?")).toHaveValue("lunch");
+  // Le grand champ écrit pour Pépin ; un lien bascule vers la recherche dans la base.
+  await expect(page.getByLabel("Qu'as-tu mangé ?")).toBeVisible();
+  await page.getByRole("button", { name: "Chercher un aliment précis" }).click();
   const search = page.getByLabel("Rechercher un aliment");
   await search.fill("poire");
   // La croix vide le champ sans lui faire perdre le focus (le clavier reste ouvert).
@@ -515,6 +518,7 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
 
   // L'eau notée dans un repas compte aussi dans le compteur.
   await page.goto("/add?slot=lunch");
+  await page.getByRole("button", { name: "Chercher un aliment précis" }).click();
   await page.getByLabel("Rechercher un aliment").fill("eau du robinet");
   await page
     .getByRole("button", { name: /^Eau du robinet/ })
@@ -815,8 +819,9 @@ test("saisie d'un repas par photo (LLM simulé), avec écran de confirmation", a
 test("saisie en texte libre, avec changement d'aliment et nom du plat", async ({ page }) => {
   await signIn(page, ADMIN);
   await page.goto("/add?slot=dinner");
-  await page.getByRole("button", { name: "Écrire", exact: true }).click();
-  await page.getByLabel("Décris ton repas").fill("riz et poulet");
+  // Le repas s'écrit dans le grand champ, Pépin le compte ; on vérifie avant l'ajout.
+  await page.getByLabel("Qu'as-tu mangé ?").fill("riz et poulet");
+  await expectNoA11yViolations(page);
   await page.getByRole("button", { name: "Analyser", exact: true }).click();
   await expect(page.getByRole("heading", { name: "On vérifie ensemble ?" })).toBeVisible();
   // Remplacer l'aliment nommé dans le plat renomme le plat.
@@ -873,24 +878,26 @@ test("dictée : arrêter puis relancer, même quand le navigateur ne signale pas
   });
   await signIn(page, ADMIN);
   await page.goto("/add?slot=dinner");
-  await page.getByRole("button", { name: "Écrire", exact: true }).click();
   // Pendant la dictée, la phrase s'écrit en grand ; à l'arrêt, elle reste en grand avec Analyser,
   // et le micro permet de compléter. Le champ ne revient que pour corriger.
   const listening = page.getByRole("group", { name: "Dictée en cours" });
   const dictation = page.getByRole("group", { name: "Dictée", exact: true });
-  await page.getByRole("button", { name: "Dicter" }).click();
+  await page.getByRole("button", { name: "Voix" }).click();
   await expect(listening).toContainText("deux œufs");
   await expectNoA11yViolations(page);
   await page.getByRole("button", { name: "Arrêter la dictée" }).click();
   await expect(dictation).toContainText("deux œufs");
-  await expect(page.getByLabel("Décris ton repas")).toHaveCount(0);
+  await expect(page.getByLabel("Qu'as-tu mangé ?")).toHaveValue("");
   await expectNoA11yViolations(page);
   await page.getByRole("button", { name: "Compléter la dictée" }).click();
   await expect(listening).toContainText("deux œufs et du pain");
   await page.getByRole("button", { name: "Arrêter la dictée" }).click();
   await expect(dictation).toContainText("deux œufs et du pain");
   await page.getByRole("button", { name: "Corriger le texte" }).click();
-  await expect(page.getByLabel("Décris ton repas")).toHaveValue("deux œufs et du pain");
+  // Pour corriger, la phrase passe dans le grand champ, Pépin prêt à la compter.
+  await expect(page.getByLabel("Qu'as-tu mangé ?")).toHaveValue("deux œufs et du pain");
+  await expect(page.getByLabel("Qu'as-tu mangé ?")).toBeFocused();
+  await expect(page.getByRole("button", { name: "Analyser", exact: true })).toBeVisible();
 });
 
 test("dictée : le micro qui décroche laisse réessayer d'un toucher, sans retomber sur le champ", async ({ page }) => {
@@ -931,7 +938,7 @@ test("dictée : le micro qui décroche laisse réessayer d'un toucher, sans reto
   const dictation = page.getByRole("group", { name: "Dictée", exact: true });
   await expect(dictation).toContainText("Dictée interrompue");
   await expect(dictation.getByRole("alert")).toContainText("Le micro est indisponible");
-  await expect(page.getByLabel("Décris ton repas")).toHaveCount(0);
+  await expect(page.getByLabel("Qu'as-tu mangé ?")).toHaveValue("");
   await page.getByRole("button", { name: "Réessayer la dictée" }).click();
   await expect(dictation).toContainText("un sandwich au fromage");
   await expect(dictation).toContainText("C'est noté");
@@ -966,7 +973,7 @@ test("dictée : un mot que le téléphone ne reconnaît pas est signalé, avec l
   await expect(dictation.getByRole("alert")).toContainText("Je n'ai reconnu aucun mot");
   await expectNoA11yViolations(page);
   await page.getByRole("button", { name: "Écrire à la place" }).click();
-  await expect(page.getByLabel("Décris ton repas")).toBeVisible();
+  await expect(page.getByLabel("Qu'as-tu mangé ?")).toBeFocused();
 });
 
 test("coach : dicter un message puis l'envoyer avec Entrée", async ({ page }) => {
@@ -1614,9 +1621,8 @@ test("recettes favorites : étoile sur la vignette et la fiche, filtre, annulati
   await withServerAction(page, () => page.getByRole("button", { name: "Retirer Minestrone des favoris" }).click());
   await expect(page.getByRole("button", { name: "Ajouter Minestrone aux favoris" })).toBeVisible();
 
-  // La recette favorite se retrouve dans l'onglet Favoris de « Écrire ».
+  // La recette favorite se retrouve dans l'onglet Favoris de la page Ajouter.
   await page.goto("/add");
-  await page.getByRole("button", { name: "Écrire", exact: true }).click();
   await page.getByRole("tab", { name: "Favoris" }).click();
   await expect(page.getByRole("button", { name: /^Harira/ })).toBeVisible();
   await expect(page.getByRole("button", { name: /^Minestrone/ })).toHaveCount(0);

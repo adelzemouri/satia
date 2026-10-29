@@ -599,6 +599,25 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 046 — Ajouter : un grand champ « Qu'as-tu mangé ? » que Pépin compte
+
+- **Date** : 2026-10-29 · **Statut** : adoptée
+- **Contexte** : sur l'écran Ajouter, le grand champ était la recherche d'aliments, qui
+  oblige à trouver le nom exact. Décrire son repas (« Écrire », analysé par l'IA) marchait
+  mieux mais n'était qu'une petite tuile. Adel veut un seul champ, compté par Pépin à chaque fois.
+- **Décision** : le champ du haut devient « Qu'as-tu mangé ? ». Analyser (ou Entrée) envoie
+  toujours la phrase au modèle texte, puis l'écran « On vérifie ensemble ? » permet de corriger
+  avant l'ajout. Pas de liste en direct pendant la frappe. La tuile Écrire disparaît (Photo,
+  Voix, Scanner restent) ; « Écrire mon repas » du + et « Corriger le texte » de la dictée
+  remplissent ce champ. Un lien « Chercher un aliment précis » bascule le même champ en recherche
+  dans la base (Ciqual, recettes, Open Food Facts). Sans IA disponible (plafond atteint,
+  fournisseur absent), le champ est d'office une recherche.
+- **Conséquences** : chaque repas écrit coûte un appel texte (environ 0,1 à 0,2 centime, soit
+  ~1000 repas pour le plafond de 2 $) et 2 à 3 s d'attente, même pour un seul aliment ; Récents,
+  Favoris, Mes aliments et Mes repas restent les ajouts gratuits en un toucher.
+
+---
+
 ## Modèle
 
 ```markdown

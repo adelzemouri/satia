@@ -1,8 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { type ReactNode, useState, useTransition } from "react";
+import { type ReactNode, useRef, useState, useTransition } from "react";
 
+import { analyzeTextAction } from "@/features/ai/actions";
 import { type AiAvailability, AiEntry } from "@/features/ai/ai-entry";
 import type { MealDraft } from "@/features/ai/draft";
 import { MealConfirmation } from "@/features/ai/meal-confirmation";
@@ -13,9 +14,9 @@ import { Link } from "@/i18n/navigation";
 import { Alert } from "@/ui/alert";
 import { Button, buttonClass } from "@/ui/button";
 import { Icon } from "@/ui/icon";
-import { SearchInput } from "@/ui/search-input";
 
 import { FoodList } from "./food-list";
+import { MealQueryField } from "./meal-query-field";
 import type { FoodItem, OffItem, RecentItem } from "./food-types";
 import { QuickAddButton } from "./quick-add-button";
 import { RecentMore } from "./recent-more";
@@ -29,7 +30,8 @@ const TABS = ["recent", "favorites", "mine"] as const;
 type Tab = (typeof TABS)[number];
 
 /**
- * Écran d'ajout : la recherche en haut, puis photo, voix et code-barres, les suggestions du
+ * Écran d'ajout : en haut, un grand champ où l'on écrit un aliment ou tout son repas (la base
+ * répond en direct, Pépin analyse la phrase si on le demande), puis photo, voix et code-barres, les suggestions du
  * moment et les aliments récents (ajoutables d'un geste avec la dernière portion), favoris et personnels.
  */
 export function FoodPicker({
@@ -66,6 +68,12 @@ export function FoodPicker({
   const [error, setError] = useState<string | null>(null);
   const [draft, setDraft] = useState<{ draft: MealDraft; preview: string | null } | null>(null);
   const [pending, startTransition] = useTransition();
+  const [analyzing, startAnalysis] = useTransition();
+  // Phrase venue d'une dictée corrigée : l'analyse la compte comme saisie vocale.
+  const [fromVoice, setFromVoice] = useState(false);
+  const field = useRef<HTMLTextAreaElement>(null);
+  const aiOn = ai?.availability.available ?? false;
+  const [searchMode, setSearchMode] = useState(false);
   const { results, loading } = useFoodSearch(query);
   const more = useRecentPages(initialRecent);
   const recent = more.items ?? [];
@@ -76,6 +84,32 @@ export function FoodPicker({
     startTransition(async () => {
       const result = await setFavoriteAction(food.id, favorite);
       if (result?.error) setError(result.error);
+    });
+  };
+
+  const changeQuery = (value: string) => {
+    setQuery(value);
+    if (!value) setFromVoice(false);
+  };
+
+  // Écrire mon repas (depuis le +, ou une dictée à corriger) : la phrase va dans le grand champ.
+  const write = (text: string, dictated: boolean) => {
+    setSearchMode(false);
+    setQuery(text);
+    setFromVoice(dictated);
+    requestAnimationFrame(() => field.current?.focus());
+  };
+
+  const analyze = () => {
+    const text = query.trim();
+    if (!writing || text.length < 2 || analyzing) return;
+    startAnalysis(async () => {
+      setError(null);
+      const result = await analyzeTextAction({ text, method: fromVoice ? "voice" : "text" }).catch(() => ({
+        error: "network",
+      }));
+      if ("error" in result) setError(result.error);
+      else setDraft({ draft: result.draft, preview: null });
     });
   };
 
@@ -138,18 +172,36 @@ export function FoodPicker({
       <FoodList foods={foods} favoriteIds={favoriteIds} onSelect={setSelected} onToggleFavorite={toggleFavorite} />
     );
 
-  const searching = query.trim().length > 0;
+  // Avec l'IA, le grand champ part toujours chez Pépin ; la recherche dans la base reste à un lien
+  // (aliment précis, produit du commerce) et prend le relais toute seule quand l'IA est coupée.
+  const writing = aiOn && !searchMode;
+  const searching = !writing && query.trim().length > 0;
   const barcodeHref = { pathname: "/scan", query: { date, slot } };
 
   return (
     <div data-wide className="flex flex-col gap-5">
-      <label className="focus-within:outline-focus flex min-h-14 items-center gap-3 rounded-2xl border border-border bg-surface px-4 focus-within:outline-3">
-        <span className="text-text-muted">
-          <Icon name="search" />
-        </span>
-        <span className="sr-only">{t("searchLabel")}</span>
-        <SearchInput value={query} onValueChange={setQuery} placeholder={t("searchHint")} autoComplete="off" />
-      </label>
+      <div className="flex flex-col gap-1.5">
+        <MealQueryField
+          value={query}
+          onValueChange={changeQuery}
+          ai={writing}
+          onSubmit={analyze}
+          analyzing={analyzing}
+          inputRef={field}
+        />
+        {aiOn && (
+          <button
+            type="button"
+            onClick={() => {
+              setSearchMode(!searchMode);
+              field.current?.focus();
+            }}
+            className="self-start px-1 py-1 text-sm font-semibold text-primary underline-offset-4 hover:underline"
+          >
+            {searchMode ? t("backToWrite") : t("searchInstead")}
+          </button>
+        )}
+      </div>
 
       {error && <Alert>{errorText(error)}</Alert>}
 
@@ -223,6 +275,7 @@ export function FoodPicker({
                   </header>
                 }
                 onDraft={(value, preview) => setDraft({ draft: value, preview })}
+                onWrite={write}
               />
             ) : (
               <Link href={barcodeHref} className={buttonClass("secondary")}>
