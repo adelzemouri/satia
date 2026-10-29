@@ -803,6 +803,11 @@ le pourquoi de chacun est dans `docs/DECISIONS.md`.
   `/api/foods/<id>/photo` après contrôle d'accès.
 - **Mes repas** (`saved_meals`) : un repas enregistré se rajoute en un geste, se modifie et
   se partage au foyer.
+- **Écran Ajouter** (`food-picker.tsx`, `meal-query-field.tsx`) : en haut, un grand champ
+  « Qu'as-tu mangé ? » ; Analyser (ou Entrée) envoie toujours la phrase au modèle texte, puis
+  l'écran de vérification. Photo, Voix et Scanner dessous ; « Écrire mon repas » du + et la
+  dictée à corriger remplissent ce champ. Le lien « Chercher un aliment précis » le bascule en
+  recherche dans la base, ce qu'il est d'office sans IA disponible (DECISIONS 046).
 - **Reconnaissance par l'IA** : les libellés renvoyés par le LLM sont rapprochés de Ciqual
   par `src/domain/search.ts` (variantes du nom, féculents comptés cuits, tous les mots
   d'abord) ; une recette qui contient seulement l'aliment n'est pas retenue. L'écran de
