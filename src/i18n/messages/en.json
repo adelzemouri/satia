@@ -2052,16 +2052,20 @@
     },
     "inbox": {
       "title": "Feedback received",
-      "new": "{count, plural, one {# new} other {# new}}",
+      "new": "{count} to handle",
       "empty": "No messages yet. Your guests can write to you from Me › “Feedback or a bug?”.",
       "handle": "Mark as handled",
       "reopen": "Reopen",
-      "handled": "Handled",
       "screenshot": "View screenshot",
       "details": "Technical detail",
       "copy": "Copy for Claude",
       "copied": "Copied",
-      "version": "version {version}"
+      "version": "version {version}",
+      "allDone": "Nothing to handle. Handled messages are below.",
+      "showMore": "{count, plural, one {Show the other one} other {Show # more}}",
+      "showLess": "Show less",
+      "handledList": "Handled ({count})",
+      "movedToHandled": "Moved to “Handled”"
     }
   }
 }

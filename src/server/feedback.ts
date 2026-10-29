@@ -142,29 +142,19 @@ function withServerMessage(errorDetail: string | null, serverMessages: Map<strin
   return serverMessage ? `${errorDetail}\nServeur : ${serverMessage}` : errorDetail;
 }
 
-/** Boîte de réception de l'admin : non traités d'abord, puis les plus récents. */
-export async function listFeedback(householdId: string, limit = 30): Promise<FeedbackItem[]> {
-  const rows = await db()
-    .select({
-      id: feedbackMessages.id,
-      kind: feedbackMessages.kind,
-      message: feedbackMessages.message,
-      page: feedbackMessages.page,
-      appVersion: feedbackMessages.appVersion,
-      userAgent: feedbackMessages.userAgent,
-      errorDetail: feedbackMessages.errorDetail,
-      screenshotKey: feedbackMessages.screenshotKey,
-      handledAt: feedbackMessages.handledAt,
-      createdAt: feedbackMessages.createdAt,
-      name: user.name,
-      firstName: profiles.firstName,
-    })
-    .from(feedbackMessages)
-    .innerJoin(user, eq(user.id, feedbackMessages.userId))
-    .leftJoin(profiles, eq(profiles.userId, feedbackMessages.userId))
-    .where(eq(feedbackMessages.householdId, householdId))
-    .orderBy(isNotNull(feedbackMessages.handledAt), desc(feedbackMessages.createdAt))
-    .limit(limit);
+/** Assez pour tout montrer en temps normal, sans charger des années de messages. */
+const INBOX_LIMITS = { open: 100, handled: 20 };
+
+/**
+ * Boîte de réception de l'admin : tous les messages à traiter (les plus récents d'abord), puis
+ * les derniers traités, que la carte range à part.
+ */
+export async function listFeedback(householdId: string): Promise<FeedbackItem[]> {
+  const [open, handled] = await Promise.all([
+    feedbackRows(householdId, false, INBOX_LIMITS.open),
+    feedbackRows(householdId, true, INBOX_LIMITS.handled),
+  ]);
+  const rows = [...open, ...handled];
   // Un bug parti de l'écran d'erreur ne porte que le digest : on y joint le vrai message du serveur.
   const digests = rows.map((row) => digestOf(row.errorDetail)).filter((digest) => digest !== null);
   const serverMessages = await serverErrorMessages([...new Set(digests)]);
@@ -183,6 +173,35 @@ export async function listFeedback(householdId: string, limit = 30): Promise<Fee
       createdAt: row.createdAt,
     })),
   );
+}
+
+function feedbackRows(householdId: string, handled: boolean, limit: number) {
+  return db()
+    .select({
+      id: feedbackMessages.id,
+      kind: feedbackMessages.kind,
+      message: feedbackMessages.message,
+      page: feedbackMessages.page,
+      appVersion: feedbackMessages.appVersion,
+      userAgent: feedbackMessages.userAgent,
+      errorDetail: feedbackMessages.errorDetail,
+      screenshotKey: feedbackMessages.screenshotKey,
+      handledAt: feedbackMessages.handledAt,
+      createdAt: feedbackMessages.createdAt,
+      name: user.name,
+      firstName: profiles.firstName,
+    })
+    .from(feedbackMessages)
+    .innerJoin(user, eq(user.id, feedbackMessages.userId))
+    .leftJoin(profiles, eq(profiles.userId, feedbackMessages.userId))
+    .where(
+      and(
+        eq(feedbackMessages.householdId, householdId),
+        handled ? isNotNull(feedbackMessages.handledAt) : isNull(feedbackMessages.handledAt),
+      ),
+    )
+    .orderBy(handled ? desc(feedbackMessages.handledAt) : desc(feedbackMessages.createdAt))
+    .limit(limit);
 }
 
 export async function unreadFeedbackCount(householdId: string): Promise<number> {

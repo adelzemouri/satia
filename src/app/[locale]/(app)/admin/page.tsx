@@ -43,8 +43,6 @@ export default async function AdminPage({ params }: PageProps<"/[locale]/admin">
     aiStatus(llmConfig()),
     listFeedback(admin.householdId),
   ]);
-  const tf = await getTranslations("feedback.inbox");
-  const unread = feedback.filter((item) => !item.handled).length;
   const t = await getTranslations("admin");
   const format = await getFormatter();
   const monthCost = (userId: string) => t("monthCost", { cost: formatUsd(format, costs.get(userId) ?? 0) });
@@ -69,14 +67,6 @@ export default async function AdminPage({ params }: PageProps<"/[locale]/admin">
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
 
       <Card aria-labelledby="remarques">
-        <h2 id="remarques" className="flex scroll-mt-6 flex-wrap items-center gap-2 text-xl font-semibold">
-          {tf("title")}
-          {unread > 0 && (
-            <span className="rounded-full bg-accent px-2.5 py-0.5 text-sm font-bold text-on-accent tabular-nums">
-              {tf("new", { count: unread })}
-            </span>
-          )}
-        </h2>
         <FeedbackInbox
           items={feedback.map(({ createdAt, ...item }) => ({
             ...item,
