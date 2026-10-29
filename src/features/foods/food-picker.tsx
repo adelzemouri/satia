@@ -42,6 +42,7 @@ export function FoodPicker({
   mine,
   initialFood = null,
   inputMethod = "manual",
+  initialSearch = false,
   ai,
   suggestions,
 }: {
@@ -52,6 +53,8 @@ export function FoodPicker({
   mine: FoodItem[];
   initialFood?: FoodItem | null;
   inputMethod?: "manual" | "barcode";
+  /** Ouvre le champ en recherche dans la base plutôt qu'en « Qu'as-tu mangé ? ». */
+  initialSearch?: boolean;
   /** Saisie par photo, voix ou texte libre ; absente, seul l'ajout manuel est proposé. */
   ai?: { availability: AiAvailability };
   /** Repas habituel et idée du moment, affichés tant qu'aucune recherche n'est en cours. */
@@ -73,7 +76,7 @@ export function FoodPicker({
   const [fromVoice, setFromVoice] = useState(false);
   const field = useRef<HTMLTextAreaElement>(null);
   const aiOn = ai?.availability.available ?? false;
-  const [searchMode, setSearchMode] = useState(false);
+  const [searchMode, setSearchMode] = useState(initialSearch);
   const { results, loading } = useFoodSearch(query);
   const more = useRecentPages(initialRecent);
   const recent = more.items ?? [];

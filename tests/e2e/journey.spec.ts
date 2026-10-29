@@ -394,7 +394,9 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
   await expect(page.getByText("Granola maison")).toBeVisible();
 
   await page.getByRole("button", { name: "Ajouter un repas" }).click();
-  await page.getByRole("link", { name: "Chercher", exact: true }).click();
+  await page.getByRole("link", { name: "Écrire", exact: true }).click();
+  // « Écrire » de l'éventail place le curseur dans le grand champ.
+  await expect(page.getByLabel("Qu'as-tu mangé ?")).toBeFocused();
   await page.getByRole("tab", { name: "Mes aliments" }).click();
   await page.getByRole("button", { name: "Ajouter Granola maison aux favoris" }).click();
   await page.getByRole("tab", { name: "Favoris" }).click();
@@ -408,7 +410,7 @@ test("aliment personnel, favori, eau et poids", async ({ page }) => {
 
   // Le + des récents rajoute la dernière portion d'un geste.
   await page.getByRole("button", { name: "Ajouter un repas" }).click();
-  await page.getByRole("link", { name: "Chercher", exact: true }).click();
+  await page.getByRole("link", { name: "Écrire", exact: true }).click();
   await expect(page.getByText("1 portion · 212 kcal")).toBeVisible();
   await withServerAction(page, () => page.getByRole("button", { name: "Ajouter Granola maison" }).click());
   await expect(page.getByRole("button", { name: "Granola maison ajouté" })).toBeVisible();
@@ -726,7 +728,7 @@ test("le + ouvre l'éventail, puis l'appareil photo, et la photo prise part vers
     await expect(close).toBeVisible({ timeout: 2000 });
   }).toPass({ timeout: 20_000 });
   await expect(nav.getByRole("button", { name: "Voix" })).toBeVisible();
-  await expect(nav.getByRole("link", { name: "Chercher" })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Écrire" })).toBeVisible();
   await expectNoA11yViolations(page);
   await nav.getByRole("button", { name: "Photo" }).click();
   await expect(camera).toBeVisible();

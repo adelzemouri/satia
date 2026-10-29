@@ -36,6 +36,7 @@
     "addVoice": "Voice",
     "addBarcode": "Barcode",
     "addSearch": "Search",
+    "addWrite": "Write",
     "addClose": "Close the add options"
   },
   "home": {
