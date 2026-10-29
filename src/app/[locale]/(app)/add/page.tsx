@@ -75,6 +75,7 @@ export default async function AddPage({ params, searchParams }: PageProps<"/[loc
         mine={mine.map(toItem)}
         initialFood={preselected && toItem(preselected)}
         inputMethod={query.via === "barcode" ? "barcode" : "manual"}
+        initialSearch={query.mode === "search"}
         ai={availability ? { availability } : undefined}
         suggestions={
           <>

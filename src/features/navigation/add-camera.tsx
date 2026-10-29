@@ -235,7 +235,8 @@ export function AddCamera({ ai, initialMode, onClose }: { ai: boolean; initialMo
             </button>
           )}
           <Link
-            href={{ pathname: "/add", query: { date, slot } }}
+            // Écrire son repas a son bouton (crayon) : ici, la recherche d'un aliment précis.
+            href={{ pathname: "/add", query: { date, slot, mode: "search" } }}
             onClick={onClose}
             className={`${PILL} text-white/85`}
           >
