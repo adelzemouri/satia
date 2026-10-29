@@ -38,26 +38,37 @@ const STOPWORDS = new Set([
   "morceau",
   "morceaux",
   "portion",
+  // Mots courts qui disent le contenant ou le mode de culture, pas l'aliment.
+  "bio",
+  "bol",
+  "pot",
 ]);
 
-/** Racines des mots significatifs : « tomates cerises » → tomat, ceris. */
+/** Précisions que Ciqual sous-entend : un œuf est un œuf de poule. */
+const IMPLIED: readonly [RegExp, string][] = [[/\boeufs? de poule\b/g, "oeuf"]];
+
+/**
+ * Racines des mots significatifs, sans le pluriel : « tomates cerises » → tomat, ceris ;
+ * « œufs durs » → oeuf, dur. Les mots de trois lettres comptent (eau, riz, thé, dur, cru).
+ */
 function stems(text: string): string[] {
-  return text
+  const plain = IMPLIED.reduce((value, [pattern, replacement]) => value.replace(pattern, replacement), text);
+  return plain
     .split(" ")
-    .filter((word) => word.length >= 4 && !STOPWORDS.has(word))
-    .map((word) => word.slice(0, 5));
+    .filter((word) => word.length >= 3 && !STOPWORDS.has(word))
+    .map((word) => (word.length > 3 ? word.replace(/[sx]$/, "") : word).slice(0, 5));
 }
 
 /**
  * Vrai quand le nom de l'aliment trouvé laisse de côté un mot de ce que l'IA a reconnu :
  * « coulis de tomate » ne doit pas devenir un coulis de fruits rouges. Une formulation Ciqual
- * (« linguine » → « pâtes sèches ») compte comme le nom reconnu.
+ * (« linguine » → « pâtes sèches ») compte comme le nom reconnu ; elle élargit le contrôle sans
+ * le durcir : « eau » reste bon pour une eau minérale même si sa variante dit « du robinet ».
  */
 export function looksUnrelated(label: string, foodName: string): boolean {
   const normalized = normalizeForSearch(label);
   const found = new Set(stems(normalizeForSearch(foodName)));
-  const forms = [normalized, ...searchVariants(normalized)].map(stems).filter((list) => list.length > 0);
-  if (forms.length === 0) return false;
+  const forms = [normalized, ...searchVariants(normalized)].map(stems);
   return !forms.some((list) => list.every((stem) => found.has(stem)));
 }
 
