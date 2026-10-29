@@ -43,6 +43,8 @@ export const ICONS = {
   check: "m5 12.5 4.5 4.5L19 7",
   alert: "M12 4 3 20h18L12 4Zm0 6v4.5M12 17.5v.01",
   share: "M12 15V4m0 0L8 8m4-4 4 4M5 12v7h14v-7",
+  addSquare: "M5 5h14v14H5V5Zm7 3.5v7M8.5 12h7",
+  phone: "M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm4 5.5v5M9.5 11h5",
   search: "M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm9 2-4-4",
   chart: "M4 20V11M10 20V5M16 20v-6M3 20h18",
   timer: "M12 21a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm0-7V11M10 3h4",

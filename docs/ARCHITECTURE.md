@@ -885,3 +885,8 @@ le pourquoi de chacun est dans `docs/DECISIONS.md`.
   badges quand ils semblent se contredire (`qualityVerdict`). Les marqueurs NOVA 4 viennent du
   champ `nova_groups_markers` d'Open Food Facts, gardés dans `foods.nova_markers` ; un produit
   enregistré avant ce champ est relu sur OFF après l'affichage de sa fiche.
+- **Ajout à l'écran d'accueil** (`src/features/install/`) : fiche ouverte par les liens
+  `#installer` (`InstallHost`, monté dans le layout de l'app), avec les gestes de l'appareil
+  détecté (`detectPlatform`), le bouton natif quand `beforeinstallprompt` existe et, sur
+  ordinateur, un QR code vers `/profile#installer`. Montrée une fois après l'inscription
+  (`/onboarding/install`) ; la ligne de Moi est masquée en `display-mode: standalone`.

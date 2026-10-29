@@ -10,6 +10,8 @@ export type HubLink = {
   hint?: string;
   /** Réglage en cours, affiché à droite avant le chevron (« 2 L », « 16:8 »). */
   value?: ReactNode;
+  /** Ligne masquée quand Pommelia est ouverte depuis son icône (installation déjà faite). */
+  hideWhenInstalled?: boolean;
 };
 
 /**
@@ -22,7 +24,10 @@ export function HubLinks({ label, links }: { label: string; links: HubLink[] }) 
     <nav aria-label={label} className="overflow-hidden rounded-[var(--radius-card)] bg-surface">
       <ul className="flex flex-col">
         {links.map((link) => (
-          <li key={link.label}>
+          <li
+            key={link.label}
+            className={link.hideWhenInstalled ? "[@media(display-mode:standalone)]:hidden" : undefined}
+          >
             <Link
               href={link.href}
               className="relative flex min-h-16 items-center gap-4 px-5 py-2 transition-colors before:absolute before:start-[4.75rem] before:end-0 before:top-0 before:h-px hover:bg-surface-muted hover:before:opacity-0 focus-visible:bg-surface-muted focus-visible:outline-offset-[-3px] focus-visible:before:opacity-0 in-[li+li]:before:bg-border in-[li:has(:focus-visible)+li]:before:opacity-0 in-[li:hover+li]:before:opacity-0"

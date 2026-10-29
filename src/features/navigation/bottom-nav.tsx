@@ -56,7 +56,7 @@ export function BottomNav({ ai }: { ai: boolean }) {
   const setFanOpen = useCallback((open: boolean) => setFanPath(open ? pathname : null), [pathname]);
   const [camera, setCamera] = useState<CameraMode | null>(null);
   // Pendant l'onboarding, on va au bout avant de pouvoir partir ailleurs dans l'app.
-  if (pathname === "/onboarding" || pathname.startsWith("/profile/goals/")) return null;
+  if (pathname.startsWith("/onboarding") || pathname.startsWith("/profile/goals/")) return null;
   return (
     <>
       {/* Fond flouté sous l'éventail : on lit mieux les actions, et un toucher dessus le referme. */}

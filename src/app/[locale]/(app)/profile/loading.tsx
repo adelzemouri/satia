@@ -21,7 +21,7 @@ export default function ProfileLoading() {
       </div>
       <div className="flex flex-col gap-3 lg:col-start-1 lg:row-start-3">
         <Bone className="mt-2 h-6 w-24" />
-        <HubLinksBone count={4} hints />
+        <HubLinksBone count={5} hints />
       </div>
       <div className="lg:col-start-2 lg:row-start-3 lg:pt-12">
         <Bone className="h-12 w-full rounded-full lg:max-w-xs" />

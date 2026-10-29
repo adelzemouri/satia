@@ -2062,5 +2062,53 @@
       "copied": "Copied",
       "version": "version {version}"
     }
+  },
+  "install": {
+    "entry": "Add to home screen",
+    "entryHint": "Open Pommelia like an app",
+    "title": "Pommelia on your home screen",
+    "titleDesktop": "Pommelia on your phone",
+    "intro": "It then opens full screen, like an app, without the browser bar. You only do this once.",
+    "close": "Close",
+    "done": "Got it",
+    "switchToAndroid": "Using an Android phone?",
+    "switchToIos": "Using an iPhone?",
+    "ios": {
+      "label": "Steps on iPhone",
+      "share": "Tap <b>Share</b> <icon></icon> in Safari. If you can't see it, it's in the <b>⋯</b> menu at the bottom right.",
+      "shareIcon": "(square with an up arrow)",
+      "add": "Choose <b>Add to Home Screen</b> <icon></icon>. Scroll the list or tap <b>More</b> if needed.",
+      "addIcon": "(square with a plus)",
+      "confirm": "Leave <b>Open as Web App</b> on if it shows, then tap <b>Add</b>. The Pommelia icon joins your other apps.",
+      "chrome": "In Chrome on iPhone it works the same way: Share is at the top right."
+    },
+    "android": {
+      "label": "Steps on Android",
+      "button": "Install Pommelia",
+      "buttonHint": "Your browser asks you to confirm, and you're done.",
+      "installed": "Pommelia is on your home screen.",
+      "fallbackTitle": "Button doing nothing?",
+      "manualTitle": "In Chrome",
+      "menu": "Tap the <b>⋮</b> menu at the top right of Chrome.",
+      "add": "Choose <b>Install app</b> or <b>Add to Home screen</b>, then confirm.",
+      "samsung": "In Samsung Internet, the menu is at the bottom right (☰)."
+    },
+    "desktop": {
+      "qr": "QR code that opens Pommelia on your phone",
+      "scan": "Point your phone's camera at this code. Pommelia opens and shows how to add it to your home screen.",
+      "computerTitle": "On this computer too",
+      "computerHint": "Your browser can open Pommelia in its own window, with an icon in the Dock or taskbar.",
+      "computerButton": "Install on this computer",
+      "installed": "Pommelia is installed on this computer."
+    },
+    "welcome": {
+      "ready": "Your account is ready",
+      "title": "Keep Pommelia at your fingertips",
+      "titleDesktop": "Take Pommelia on your phone",
+      "intro": "Add it to your home screen: it will open full screen, like an app.",
+      "introDesktop": "It's designed for your phone, camera included. Add it to the phone's home screen: it will open full screen, like an app.",
+      "go": "Go to home",
+      "later": "You'll find these steps again in Me, under Settings."
+    }
   }
 }

@@ -27,5 +27,6 @@ export async function saveOnboardingAction(input: OnboardingInput): Promise<Acti
   } catch (error) {
     return toActionState(error);
   }
-  return redirect({ href: "/", locale: await getLocale() });
+  // Dernier écran, vu une seule fois : comment garder Pommelia sur l'écran d'accueil.
+  return redirect({ href: "/onboarding/install", locale: await getLocale() });
 }

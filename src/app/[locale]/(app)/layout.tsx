@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { RouteMemory } from "@/features/feedback/route-memory";
+import { InstallHost } from "@/features/install/install-host";
 import { BackButton } from "@/features/navigation/back-button";
 import { BottomNav } from "@/features/navigation/bottom-nav";
 import { SideNav } from "@/features/navigation/side-nav";
@@ -40,6 +41,7 @@ export default async function AppLayout({ children, params }: LayoutProps<"/[loc
           </main>
         </div>
         <SideNav />
+        <InstallHost />
         <BottomNav ai={llmConfig().provider !== "none"} />
       </ToastProvider>
     </OfflineProvider>
