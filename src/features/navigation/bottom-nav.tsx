@@ -2,13 +2,13 @@
 
 import { useLinkStatus } from "next/link";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import { Link, usePathname } from "@/i18n/navigation";
 import { Icon, type ICONS } from "@/ui/icon";
-import { haptic } from "@/ui/motion";
 
-import { AddCamera } from "./add-camera";
+import { AddCamera, type CameraMode } from "./add-camera";
+import { AddFan } from "./add-fan";
 
 type TabKey = "home" | "kitchen" | "add" | "progress" | "profile";
 
@@ -46,15 +46,25 @@ function isActive(pathname: string, tab: (typeof TABS)[number]): boolean {
   );
 }
 
-/** Barre de navigation inférieure ; le + central ouvre l'appareil photo, avec les autres façons d'ajouter un repas. */
+/** Barre de navigation inférieure ; le + central ouvre en éventail les façons d'ajouter un repas. */
 export function BottomNav({ ai }: { ai: boolean }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
-  const [cameraOpen, setCameraOpen] = useState(false);
+  // L'éventail du + est ouvert pour la page où on l'a ouvert : changer de page le referme.
+  const [fanPath, setFanPath] = useState<string | null>(null);
+  const fanOpen = fanPath === pathname;
+  const setFanOpen = useCallback((open: boolean) => setFanPath(open ? pathname : null), [pathname]);
+  const [camera, setCamera] = useState<CameraMode | null>(null);
   // Pendant l'onboarding, on va au bout avant de pouvoir partir ailleurs dans l'app.
-  if (pathname === "/onboarding" || pathname.startsWith("/profile/goals/")) return null;
+  if (pathname.startsWith("/onboarding") || pathname.startsWith("/profile/goals/")) return null;
   return (
     <>
+      {/* Fond flouté sous l'éventail : on lit mieux les actions, et un toucher dessus le referme. */}
+      <div
+        aria-hidden="true"
+        onClick={() => setFanOpen(false)}
+        className={`fixed inset-0 z-10 bg-bg/70 backdrop-blur-[3px] transition-opacity ease-out-strong lg:hidden ${fanOpen ? "opacity-100 duration-200" : "pointer-events-none opacity-0 duration-150"}`}
+      />
       <nav
         aria-label={t("main")}
         style={{ viewTransitionName: "bottom-nav" }}
@@ -66,18 +76,7 @@ export function BottomNav({ ai }: { ai: boolean }) {
             if (tab.key === "add")
               return (
                 <li key={tab.key} className="flex items-center justify-center">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      haptic();
-                      setCameraOpen(true);
-                    }}
-                    aria-haspopup="dialog"
-                    aria-label={t("addMeal")}
-                    className="-mt-3 flex size-12 items-center justify-center rounded-full bg-primary text-on-primary shadow-md shadow-primary/30 transition-transform duration-[120ms] ease-out-strong active:scale-[0.94]"
-                  >
-                    <Icon name="plus" size={26} />
-                  </button>
+                  <AddFan open={fanOpen} onOpenChange={setFanOpen} ai={ai} onCamera={setCamera} />
                 </li>
               );
             return (
@@ -96,7 +95,7 @@ export function BottomNav({ ai }: { ai: boolean }) {
           })}
         </ul>
       </nav>
-      {cameraOpen && <AddCamera ai={ai} onClose={() => setCameraOpen(false)} />}
+      {camera && <AddCamera ai={ai} initialMode={camera} onClose={() => setCamera(null)} />}
     </>
   );
 }

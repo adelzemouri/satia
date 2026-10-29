@@ -11,6 +11,19 @@ export function storedPhotoUrl(imageUrl: string | null | undefined): string | nu
 }
 
 /**
+ * Photo d'une recette du catalogue à ouvrir en grand (la visionneuse prend la version 960 px),
+ * ou `null` quand la recette n'a que son illustration dessinée.
+ */
+export function recipePhotoSrc(
+  recipe: Pick<CatalogRecipe, "slug">,
+  imageUrl: string | null | undefined,
+): string | null {
+  const stored = storedPhotoUrl(imageUrl);
+  if (stored) return stored;
+  return RECIPE_PHOTOS.has(recipe.slug) ? `/recipes/${recipe.slug}-480.webp` : null;
+}
+
+/**
  * Visuel d'une recette du catalogue : la photo refaite par l'admin s'il y en a une, sinon sa
  * photo d'origine (générée pour l'app, servie en WebP dans deux tailles), ou l'illustration
  * dessinée si la recette n'a pas encore de photo.

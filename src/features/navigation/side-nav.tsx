@@ -47,7 +47,7 @@ export function SideNav() {
     return () => window.removeEventListener("keydown", onKey);
   }, [router]);
 
-  if (pathname === "/onboarding") return null;
+  if (pathname.startsWith("/onboarding")) return null;
 
   const items: Item[] = [
     { href: "/", label: t("nav.home"), icon: "home" },

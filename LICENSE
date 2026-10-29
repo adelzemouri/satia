@@ -1,0 +1,16 @@
+Copyright (c) 2026 Adel Zemouri. Tous droits réservés. / All rights reserved.
+
+Le code source, les textes, les recettes, les illustrations et le design de Pommelia
+sont publiés pour consultation uniquement. Aucune licence n'est accordée : toute copie,
+modification, redistribution ou utilisation, en tout ou partie, est interdite sans
+l'accord écrit préalable de l'auteur.
+
+The Pommelia source code, texts, recipes, illustrations and design are published for
+viewing only. No license is granted: copying, modifying, redistributing or using them,
+in whole or in part, is prohibited without the author's prior written permission.
+
+Exceptions, sous leurs propres licences / Exceptions, under their own licenses:
+- .claude/skills/ : voir .claude/skills/LICENSE-emilkowalski.
+- Données nutritionnelles Ciqual (Anses, Licence Ouverte Etalab) et
+  Open Food Facts (Open Database License, ODbL) : voir README.md.
+- Dépendances tierces : chacune sous sa propre licence (voir package.json).

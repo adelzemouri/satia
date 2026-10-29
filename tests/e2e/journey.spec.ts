@@ -122,10 +122,35 @@ test("onboarding complet d'un adulte avec plan expliqué", async ({ page }) => {
   await expectNoA11yViolations(page);
   await page.getByRole("button", { name: "C'est parti !" }).click();
 
+  // Une seule fois, juste après l'inscription : comment garder Pommelia sur l'écran d'accueil.
+  await expect(page).toHaveURL(/\/onboarding\/install$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Garde Pommelia à portée de pouce");
+  await expect(page.getByRole("list", { name: "Étapes sur Android" })).toBeVisible();
+  await page.getByRole("button", { name: "Tu as un iPhone ?" }).click();
+  await expect(page.getByRole("list", { name: "Étapes sur iPhone" })).toContainText("Sur l'écran d'accueil");
+  await expect(page.getByRole("navigation", { name: "Navigation principale" })).toHaveCount(0);
+  await expectNoA11yViolations(page);
+  await page.getByRole("link", { name: "Aller à l'accueil" }).click();
+
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bonjour Adel");
   await expect(page.getByText("kcal restantes", { exact: true })).toBeVisible();
   await expect(page.getByText("Protéines", { exact: true })).toBeVisible();
   await expectNoA11yViolations(page);
+});
+
+test("Moi explique comment ajouter Pommelia à l'écran d'accueil", async ({ page }) => {
+  await signIn(page, ADMIN);
+  await page.getByRole("link", { name: "Moi", exact: true }).click();
+  await page.getByRole("link", { name: /^Installer sur l'écran d'accueil/ }).click();
+  const sheet = page.getByRole("dialog", { name: "Pommelia sur ton écran d'accueil" });
+  await expect(sheet.getByRole("list", { name: "Étapes sur Android" })).toBeVisible();
+  await expectNoA11yViolations(page);
+  await sheet.getByRole("button", { name: "J'ai compris" }).click();
+  await expect(sheet).toBeHidden();
+  // Sur ordinateur, un QR code ouvre la même fiche sur le téléphone.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/profile#installer");
+  await expect(page.getByRole("dialog", { name: "Pommelia sur ton écran d'accueil" })).toBeVisible();
 });
 
 test("le thème choisi dans le profil est appliqué et conservé", async ({ page }) => {
@@ -679,17 +704,29 @@ const MEAL_PNG = Buffer.from(
   "base64",
 );
 
-test("le + ouvre l'appareil photo et la photo prise part vers l'écran d'ajout", async ({ page, context }) => {
+test("le + ouvre l'éventail, puis l'appareil photo, et la photo prise part vers l'écran d'ajout", async ({
+  page,
+  context,
+}) => {
   await context.grantPermissions(["camera"]);
   await signIn(page, ADMIN);
   await page.goto("/journal");
+  const nav = page.getByRole("navigation", { name: "Navigation principale" });
   const plus = page.getByRole("button", { name: "Ajouter un repas" });
+  const close = page.getByRole("button", { name: "Fermer les façons d'ajouter" });
   const camera = page.getByRole("dialog", { name: "Ajouter un repas" });
-  // Le bouton peut être touché avant l'hydratation de la page : on recommence au besoin.
+  // Le bouton peut être touché avant l'hydratation de la page : on recommence au besoin, sans
+  // retoucher un éventail déjà ouvert (le + s'appelle alors « Fermer »).
   await expect(async () => {
-    if (!(await camera.isVisible())) await plus.click({ timeout: 2000 });
-    await expect(camera).toBeVisible({ timeout: 2000 });
+    if (!(await close.isVisible())) await plus.click({ timeout: 2000 });
+    await expect(close).toBeVisible({ timeout: 2000 });
   }).toPass({ timeout: 20_000 });
+  await expect(nav.getByRole("button", { name: "Voix" })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Chercher" })).toBeVisible();
+  await expectNoA11yViolations(page);
+  await nav.getByRole("button", { name: "Photo" }).click();
+  await expect(camera).toBeVisible();
+  await expect(close).toBeHidden();
   // Caméra simulée de Chromium : le déclencheur s'active quand l'image arrive.
   const shutter = camera.getByRole("button", { name: "Prendre la photo" });
   await expect(shutter).toBeEnabled({ timeout: 10_000 });
@@ -711,6 +748,7 @@ test("le + ouvre l'appareil photo et la photo prise part vers l'écran d'ajout",
 
   // La galerie passe par le même chemin.
   await plus.click();
+  await nav.getByRole("button", { name: "Photo" }).click();
   await camera
     .getByLabel("Choisir dans mes photos")
     .setInputFiles({ name: "repas.png", mimeType: "image/png", buffer: MEAL_PNG });
@@ -1096,6 +1134,13 @@ test("bêta : l'admin invite quelqu'un dans un foyer à part et suit s'il revien
   await page.goto("/admin");
   await page.getByLabel("Pour qui ? (ex. : Maman, Léo)").fill("Sami");
   await page.getByRole("radio", { name: /^Foyer à part/ }).check();
+  // Réseau coupé pendant l'envoi (Safari : « Load failed ») : message dans le formulaire, pas d'écran d'erreur.
+  await page.route("**/admin", (route) => (route.request().method() === "POST" ? route.abort() : route.fallback()));
+  await page.getByRole("button", { name: "Créer le lien" }).click();
+  await expect(page.getByText("La connexion a été coupée avant la réponse.", { exact: false })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Administration");
+  await expect(page.getByLabel("Pour qui ? (ex. : Maman, Léo)")).toHaveValue("Sami");
+  await page.unrouteAll();
   await page.getByRole("button", { name: "Créer le lien" }).click();
   const url = (await page.locator("code").first().textContent())!.trim();
 

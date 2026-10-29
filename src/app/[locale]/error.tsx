@@ -15,8 +15,34 @@ declare global {
   }
 }
 
-/** Écran affiché quand une page plante : on propose de recharger plutôt qu'un écran blanc. */
-export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+/** Une seule relance automatique par période, pour ne jamais boucler sur une erreur durable. */
+const AUTO_RETRY_KEY = "pommelia-error-retried-at";
+const AUTO_RETRY_GAP_MS = 30_000;
+
+function claimAutoRetry(): boolean {
+  try {
+    const last = Number(sessionStorage.getItem(AUTO_RETRY_KEY)) || 0;
+    if (Date.now() - last < AUTO_RETRY_GAP_MS) return false;
+    sessionStorage.setItem(AUTO_RETRY_KEY, String(Date.now()));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Écran affiché quand une page plante : on propose de recharger plutôt qu'un écran blanc.
+ * Une erreur du serveur (base qui se réveille, coupure passagère) porte un `digest` : on redemande
+ * la page une fois, sans rien afficher d'alarmant, avant de montrer l'écran d'erreur.
+ */
+export default function ErrorPage({
+  error,
+  retry,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+  retry: () => void;
+}) {
   const t = useTranslations("crash");
   const tf = useTranslations("feedback");
   const pathname = usePathname();
@@ -24,10 +50,31 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
   const [reported, setReported] = useState(false);
   // Fichiers d'une ancienne version : un rechargement suffit, sans rien demander.
   const staleVersion = CHUNK_RECOVERY_PATTERN.test(`${error.name} ${error.message}`);
+  const [retrying, setRetrying] = useState(Boolean(error.digest) && !staleVersion);
 
   useEffect(() => {
     if (staleVersion) window.__recoverApp?.();
   }, [staleVersion]);
+
+  useEffect(() => {
+    if (!retrying) return;
+    if (claimAutoRetry()) retry();
+    // sessionStorage n'existe qu'au navigateur : la décision ne peut se prendre qu'ici.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    else setRetrying(false);
+    // Une fois par affichage de l'écran : la relance elle-même ne doit pas en déclencher une autre.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (retrying) {
+    return (
+      <main className="mx-auto flex min-h-dvh max-w-md items-center justify-center px-6 text-center">
+        <p role="status" className="text-text-muted">
+          {t("retrying")}
+        </p>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
@@ -35,7 +82,8 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
       <p className="text-text-muted">{staleVersion ? t("recovering") : t("body")}</p>
       <div className="flex flex-wrap justify-center gap-3">
         <Button onClick={() => window.location.reload()}>{t("reload")}</Button>
-        <Button variant="secondary" onClick={reset}>
+        {/* `retry` redemande la page au serveur ; `reset` ne ferait que réafficher la même erreur. */}
+        <Button variant="secondary" onClick={retry}>
           {t("retry")}
         </Button>
       </div>

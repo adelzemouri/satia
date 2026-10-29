@@ -45,6 +45,10 @@ Valeurs nutritionnelles : table [Ciqual](https://ciqual.anses.fr) de l'Anses (li
 ouverte Etalab) et [Open Food Facts](https://world.openfoodfacts.org) (ODbL) pour les
 produits du commerce.
 
+## Licence
+
+Code publié pour consultation uniquement, tous droits réservés : voir `LICENSE`.
+
 ## Déploiement
 
 L'hébergement retenu ne coûte rien hors IA (détails et alternatives dans
@@ -55,7 +59,8 @@ L'hébergement retenu ne coûte rien hors IA (détails et alternatives dans
 | Application     | Vercel Hobby, région `fra1`      | Next.js, cron quotidien de purge des photos  |
 | Base de données | Neon Free (Francfort)            | PostgreSQL, branche `main` = production      |
 | Stockage objet  | Cloudflare R2 (bucket privé, UE) | Photos de repas et de progression, dumps     |
-| Tâches et CI    | GitHub Actions (dépôt public)    | Tests, rappels toutes les 15 min, sauvegarde |
+| Tâches et CI    | GitHub Actions (dépôt public)    | Tests, build, sauvegarde quotidienne         |
+| Rappels         | cron-job.org                     | Appelle `/api/cron/notify` toutes les 15 min |
 
 ### Mise en place depuis zéro
 

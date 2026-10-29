@@ -14,6 +14,7 @@ import {
   unreadFeedbackCount,
 } from "@/server/feedback";
 import { setPushSenderForTests } from "@/server/notifications";
+import { purgeServerErrors, recordServerError } from "@/server/server-errors";
 
 import { resetDatabase } from "./helpers";
 
@@ -91,6 +92,34 @@ describe("remarques et bugs", () => {
     expect((await listFeedback(admin.householdId))[0]!.handled).toBe(true);
   });
 
+  it("liste tous les messages à traiter, du plus récent au plus ancien, puis les derniers traités", async () => {
+    const { admin, guest } = await setup();
+    // La limite quotidienne d'envois ne compte pas ici : on écrit directement en base.
+    const base = Date.parse("2026-10-20T08:00:00Z");
+    const rows = await db()
+      .insert(feedbackMessages)
+      .values(
+        Array.from({ length: 4 }, (_, i) => ({
+          userId: guest.id,
+          householdId: admin.householdId,
+          kind: "remark" as const,
+          message: `Message ${i + 1}`,
+          createdAt: new Date(base + i * 3_600_000),
+        })),
+      )
+      .returning({ id: feedbackMessages.id });
+    await setFeedbackHandled(admin.householdId, rows[1]!.id, true);
+    await setFeedbackHandled(admin.householdId, rows[3]!.id, true);
+
+    const list = await listFeedback(admin.householdId);
+    expect(list.map((item) => [item.message, item.handled])).toEqual([
+      ["Message 3", false],
+      ["Message 1", false],
+      ["Message 4", true],
+      ["Message 2", true],
+    ]);
+  });
+
   it("refuse un message vide ou une capture qui n'est pas une image", async () => {
     const { guest } = await setup();
     await expect(sendFeedback(guest.id, { kind: "remark", message: "   " }, context)).rejects.toThrow();
@@ -124,5 +153,31 @@ describe("remarques et bugs", () => {
 
     await deleteUser(guest.id);
     expect(await db().select().from(feedbackMessages)).toEqual([]);
+  });
+
+  it("joint le vrai message du serveur à un bug parti de l'écran d'erreur", async () => {
+    const { admin, guest } = await setup();
+    const cause = Object.assign(new Error("write CONNECTION_CLOSED"), { code: "CONNECTION_CLOSED" });
+    const error = Object.assign(new Error("Failed query: select 1", { cause }), { digest: "3914836991" });
+    await recordServerError(error, "/?_rsc=abc");
+    await recordServerError(error, "/");
+    await sendFeedback(
+      guest.id,
+      {
+        kind: "bug",
+        message: "J'ai juste ouvert l'appli",
+        errorDetail: "digest 3914836991 · Error: Minified React error #441",
+      },
+      context,
+    );
+    const [item] = await listFeedback(admin.householdId);
+    expect(item!.errorDetail).toBe(
+      "digest 3914836991 · Error: Minified React error #441\n" +
+        "Serveur : Error: Failed query: select 1\ncause: Error: write CONNECTION_CLOSED [CONNECTION_CLOSED]",
+    );
+    expect(await purgeServerErrors()).toBe(0);
+    expect(await purgeServerErrors(new Date(Date.now() + 31 * 86_400_000))).toBe(1);
+    const [later] = await listFeedback(admin.householdId);
+    expect(later!.errorDetail).toBe("digest 3914836991 · Error: Minified React error #441");
   });
 });

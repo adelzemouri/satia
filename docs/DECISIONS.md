@@ -20,7 +20,7 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 | 007 | 2026-10-02 | Voix transcrite par le navigateur, aucune API payante | adoptée |
 | 008 | 2026-10-02 | Pas d'e-mail : l'admin transmet les liens | adoptée |
 | 009 | 2026-10-02 | Sexe obligatoire, gel de streak automatique | adoptée |
-| 010 | 2026-10-02 | Rappels déclenchés par GitHub Actions toutes les 15 min | adoptée |
+| 010 | 2026-10-02 | Rappels déclenchés toutes les 15 min (GitHub Actions, puis cron-job.org) | adoptée, révisée |
 | 011 | 2026-10-03 | L'app s'appelle Pommelia, le dépôt garde « satia » | adoptée |
 | 012 | 2026-10-03 | Une seule version en production, pas de version parallèle | adoptée |
 | 013 | 2026-10-05 | Budget hebdomadaire retiré, budget quotidien pour tous | adoptée |
@@ -138,6 +138,10 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 - **Conséquences** : GitHub peut retarder un passage et suspend les workflows planifiés
   après 60 jours sans activité. Passer à un service de cron externe gratuit
   (cron-job.org) est envisagé ; il suffira de lui faire appeler la même route.
+- **Révision** : GitHub Actions ne passait en pratique que toutes les 3 à 6 h. `notify.yml`
+  a été retiré : c'est désormais cron-job.org qui appelle
+  `https://www.pommelia.fr/api/cron/notify` toutes les 15 minutes (adresse finale, il ne
+  suit pas les redirections).
 
 ## 011 — L'app s'appelle Pommelia, le dépôt garde « satia »
 
@@ -323,7 +327,7 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ## 030 — Le + ouvre un éventail d'actions
 
-- **Date** : 2026-10-14 · **Statut** : remplacée par 035
+- **Date** : 2026-10-14 · **Statut** : remplacée par 035, puis rétablie par 043
 - **Contexte** : Adel trouve le + de la barre du bas trop gros et voudrait qu'il s'anime. Il
   ouvrait la page Ajouter, qui attend une dizaine de lectures en base avant de s'afficher.
 - **Décision** : un + plus petit qui tourne en × et fait jaillir en éventail la photo, la
@@ -409,7 +413,7 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ## 035 — Le + ouvre l'appareil photo
 
-- **Date** : 2026-10-18 · **Statut** : adoptée (remplace 030)
+- **Date** : 2026-10-18 · **Statut** : remplacée par 043
 - **Contexte** : Adel aime l'appareil photo intégré d'une appli du marché : le + ouvre la
   caméra tout de suite, avec les autres façons d'ajouter en bas. L'éventail demandait une
   touche de plus pour la photo et une page à part pour le code-barres.
@@ -536,6 +540,62 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 - **Contexte** : Adel veut un numéro de version en bas de Moi, qui reste valable si l'app ouvre au public, sans intervention humaine. L'app est remise en ligne à chaque fusion sur `main`, sans sorties numérotées.
 - **Décision** : « Version 1.N · date », où N est le nombre de commits de `main` (`git rev-list --count`, historique récupéré en entier sur Vercel) et la date celle du build, figés par `next.config.ts`. Le premier chiffre (`APP_MAJOR_VERSION`) ne change qu'à la main, pour une étape. Pas de semver calculé depuis les titres de commits (robot qui écrit dans le dépôt, minutes de CI, numéro pas plus parlant). Les remarques enregistrent « 1.N · sha ».
 - **Conséquences** : un commit poussé directement sur `main` compte aussi. Si l'historique ne peut pas être récupéré (Docker, build hors Vercel), l'app affiche le code court du commit à la place, sans casser le build.
+
+---
+
+## 043 — Retour de l'éventail du +
+
+- **Date** : 2026-10-23 · **Statut** : adoptée (remplace 035, rétablit 030)
+- **Contexte** : Adel préfère l'éventail : le + qui tourne en × et fait sortir les façons
+  d'ajouter, plutôt qu'une caméra qui s'allume à chaque toucher.
+- **Décision** : le + rouvre l'éventail de 030 (Photo, Voix, Code-barres, Chercher ; sans IA,
+  Code-barres et Chercher). Photo et Code-barres ouvrent l'appareil photo de 035 sur le bon
+  mode, qui garde les récents, la galerie et « Écrire mon repas ». Voix et Chercher mènent à
+  l'écran d'ajout, comme avant.
+- **Conséquences** : la photo demande une touche de plus qu'avec 035, mais la caméra ne
+  s'allume plus quand on veut seulement chercher ou dicter. Le code-barres passe par
+  l'appareil photo du + au lieu de la page `/scan`, qui reste en place. Sur ordinateur, rien
+  ne change : « Ajouter un repas » de la barre latérale ouvre la page Ajouter.
+
+---
+
+## 044 — Erreurs du serveur : relance, message gardé, pas de cache
+
+- **Date** : 2026-10-24 · **Statut** : adoptée
+- **Contexte** : Adel a vu « Minified React error #441 » en ouvrant l'app. C'est une erreur du
+  rendu serveur dont la production ne transmet qu'un `digest`, et les journaux de Vercel Hobby
+  ne gardent qu'une heure : impossible d'en retrouver la cause. Le bouton « Réessayer »
+  appelait `reset`, qui réaffiche la même réponse sans redemander la page au serveur. Et la
+  page en erreur arrive en 200 : le service worker la gardait pour le hors-ligne.
+- **Décision** : l'écran d'erreur redemande la page une fois tout seul quand l'erreur vient du
+  serveur (au plus une fois par 30 s), avec « Un instant… » à la place du message d'erreur ;
+  « Réessayer » utilise `retry` (rafraîchit depuis le serveur). `onRequestError`
+  (`src/instrumentation.ts`) garde le message de chaque erreur, cause comprise, dans
+  `server_errors`, par digest, 30 jours ; la boîte des remarques le joint au bug signalé
+  (« Serveur : … »), donc aussi à « Copier pour Claude ». Le service worker ne met plus en
+  cache une page dont le flux contient une erreur.
+- **Conséquences** : une coupure passagère (base qui se réveille…) ne se voit plus. Les
+  messages gardés peuvent contenir le texte d'une requête SQL ; ils restent en base, visibles
+  des seuls admins via les bugs signalés. Si la base elle-même est en cause, le message n'est
+  pas gardé (il reste une heure dans les journaux de Vercel).
+
+---
+
+## 045 — Expliquer l'ajout à l'écran d'accueil, sans bannière
+
+- **Date** : 2026-10-29 · **Statut** : adoptée (remplace 020 pour le besoin, pas pour la bannière)
+- **Contexte** : les invités de la bêta ne savent pas que Pommelia peut s'ouvrir comme une app.
+  Sur iPhone, il faut passer par Partager puis « Sur l'écran d'accueil » ; sur Android, Chrome
+  sait installer en un bouton. La bannière permanente reste écartée (020).
+- **Décision** : une ligne « Installer sur l'écran d'accueil » en fin de Réglages dans Moi
+  ouvre une fiche (`#installer`, comme `#remarque`) avec les gestes du téléphone détecté
+  (bascule iPhone/Android possible). Sur Android et sur ordinateur, `beforeinstallprompt`
+  donne un bouton « Installer ». Sur ordinateur, la fiche montre un QR code vers
+  `/profile#installer`. Le même contenu s'affiche une seule fois, à `/onboarding/install`,
+  juste après l'inscription. La ligne disparaît quand l'app est ouverte depuis son icône.
+- **Conséquences** : les intitulés de Safari changent selon la version d'iOS, d'où les
+  formulations « s'il n'est pas visible… ». Le mini-bandeau d'installation de Chrome est
+  remplacé par notre bouton (l'événement est retenu pour lui).
 
 ---
 

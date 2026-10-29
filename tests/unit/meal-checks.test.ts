@@ -14,6 +14,15 @@ describe("contrôle des aliments proposés par l'IA", () => {
     expect(line("oignon vert", { nameFr: "Ciboule ou Ciboulette, fraîche", kcal: 30 }, 15, 4)).toEqual([]);
   });
 
+  it("ne soupçonne pas une précision que le nom de la base sous-entend", () => {
+    // « eau » se cherche aussi comme « eau du robinet » : la variante ne doit pas exclure l'eau minérale.
+    expect(line("eau", { nameFr: "Eau minérale", kcal: 0 }, 250, 0)).toEqual([]);
+    expect(line("verre d'eau", { nameFr: "Eau du robinet", kcal: 0 }, 250, 0)).toEqual([]);
+    expect(line("œuf de poule dur", { nameFr: "Oeuf, dur", kcal: 134 }, 165, 221)).toEqual([]);
+    expect(line("œufs durs", { nameFr: "Oeuf, dur", kcal: 134 }, 165, 221)).toEqual([]);
+    expect(line("bol de riz", { nameFr: "Riz blanc, cuit", kcal: 130 })).toEqual([]);
+  });
+
   it("signale un aliment sans rapport avec ce qui a été reconnu", () => {
     expect(looksUnrelated("sauce au saumon", "Crème brûlée")).toBe(true);
     expect(line("saumon", { nameFr: "Julienne ou Lingue, cuite", kcal: 100 })).toEqual(["unrelated"]);
@@ -28,6 +37,11 @@ describe("contrôle des aliments proposés par l'IA", () => {
     ).toEqual(["unrelated"]);
     expect(line("coulis de tomate", { nameFr: "Tomate, coulis, appertisé", kcal: 44 }, 60, 26)).toEqual([]);
     expect(line("œuf entier cru", { nameFr: "Oeuf, cru", kcal: 140 }, 120, 168)).toEqual([]);
+    // Les mots courts comptent aussi : de l'eau n'est pas du thé, un œuf dur n'est pas cru.
+    expect(line("eau", { nameFr: "Thé infusé, non sucré", kcal: 1 }, 250, 3)).toEqual(["unrelated"]);
+    expect(line("riz", { nameFr: "Thon, au naturel", kcal: 110 })).toEqual(["unrelated"]);
+    expect(line("œuf de poule dur", { nameFr: "Oeuf, cru", kcal: 140 }, 165, 231)).toEqual(["unrelated"]);
+    expect(line("œuf de caille", { nameFr: "Oeuf, dur", kcal: 134 }, 30, 40)).toEqual(["unrelated"]);
   });
 
   it("signale des pâtes ou du riz comptés secs", () => {

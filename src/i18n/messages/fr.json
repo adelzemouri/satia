@@ -35,7 +35,8 @@
     "addPhoto": "Photo",
     "addVoice": "Voix",
     "addBarcode": "Code-barres",
-    "addSearch": "Chercher"
+    "addSearch": "Chercher",
+    "addClose": "Fermer les façons d'ajouter"
   },
   "home": {
     "greeting": "Bonjour {name}",
@@ -536,7 +537,7 @@
     "pushMissing": "Pour activer les notifications, ajoute ces deux variables dans Vercel (Production), puis redéploie :",
     "pushGenerate": "Générer une paire de clés",
     "pushPrivateWarning": "Garde la clé privée secrète : colle-la uniquement dans Vercel.",
-    "pushSchedule": "L'envoi des rappels passe par la tâche planifiée « Notifications » de GitHub Actions (toutes les 15 minutes).",
+    "pushSchedule": "Les rappels sont déclenchés toutes les 15 minutes par cron-job.org, un service gratuit.",
     "demo": "Compte démo",
     "demoHint": "Pour faire essayer Pommelia : un compte fictif (Camille) avec cinq semaines de repas, de pesées et d'activité, dans un foyer à part. Les jours sans saisie se remplissent tout seuls à chaque visite, sans rien effacer. Le visiteur ne voit rien de tes données et n'a pas accès à l'administration.",
     "demoNone": "Aucun compte démo pour l'instant.",
@@ -591,6 +592,7 @@
   },
   "errors": {
     "generic": "Une erreur est survenue. Réessaie dans un instant.",
+    "network": "La connexion a été coupée avant la réponse. Vérifie ton réseau, puis réessaie.",
     "required": "Ce champ est obligatoire.",
     "invalid_email": "Adresse e-mail invalide.",
     "password_too_short": "Le mot de passe doit contenir au moins {min} caractères.",
@@ -1977,7 +1979,8 @@
     "body": "Ce n'est pas de ta faute. Un rechargement règle presque toujours le problème.",
     "recovering": "Mise à jour de l'app, un instant…",
     "reload": "Recharger",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "retrying": "Un instant…"
   },
   "notFound": {
     "title": "Cette page n'existe pas",
@@ -2049,16 +2052,68 @@
     },
     "inbox": {
       "title": "Remarques reçues",
-      "new": "{count, plural, one {# nouvelle} other {# nouvelles}}",
+      "new": "{count} à traiter",
       "empty": "Aucun message pour l'instant. Tes invités peuvent t'écrire depuis Moi › « Une remarque, un bug ? ».",
       "handle": "Marquer comme traité",
       "reopen": "Rouvrir",
-      "handled": "Traité",
       "screenshot": "Voir la capture",
       "details": "Détail technique",
       "copy": "Copier pour Claude",
       "copied": "Copié",
-      "version": "version {version}"
+      "version": "version {version}",
+      "allDone": "Rien à traiter. Les messages traités sont rangés plus bas.",
+      "showMore": "{count, plural, one {Voir l'autre} other {Voir les # autres}}",
+      "showLess": "Voir moins",
+      "handledList": "Traités ({count})",
+      "movedToHandled": "Rangé dans « Traités »"
+    }
+  },
+  "install": {
+    "entry": "Installer sur l'écran d'accueil",
+    "entryHint": "Ouvre Pommelia comme une app",
+    "title": "Pommelia sur ton écran d'accueil",
+    "titleDesktop": "Pommelia sur ton téléphone",
+    "intro": "Elle s'ouvre alors en plein écran, comme une app, sans la barre du navigateur. À faire une seule fois.",
+    "close": "Fermer",
+    "done": "J'ai compris",
+    "switchToAndroid": "Tu as un téléphone Android ?",
+    "switchToIos": "Tu as un iPhone ?",
+    "ios": {
+      "label": "Étapes sur iPhone",
+      "share": "Touche <b>Partager</b> <icon></icon> dans Safari. S'il n'est pas visible, il est dans le menu <b>⋯</b> en bas à droite.",
+      "shareIcon": "(carré avec une flèche vers le haut)",
+      "add": "Choisis <b>Sur l'écran d'accueil</b> <icon></icon>. Au besoin, fais défiler la liste ou touche <b>Plus</b>.",
+      "addIcon": "(carré avec un plus)",
+      "confirm": "Laisse <b>Ouvrir comme app web</b> activé s'il apparaît, puis touche <b>Ajouter</b>. L'icône de Pommelia rejoint tes autres apps.",
+      "chrome": "Dans Chrome sur iPhone, c'est pareil : Partager est en haut à droite."
+    },
+    "android": {
+      "label": "Étapes sur Android",
+      "button": "Installer Pommelia",
+      "buttonHint": "Ton navigateur te demande de confirmer, et c'est fait.",
+      "installed": "Pommelia est sur ton écran d'accueil.",
+      "fallbackTitle": "Le bouton ne fait rien ?",
+      "manualTitle": "Dans Chrome",
+      "menu": "Touche le menu <b>⋮</b> en haut à droite de Chrome.",
+      "add": "Choisis <b>Installer l'application</b> ou <b>Ajouter à l'écran d'accueil</b>, puis confirme.",
+      "samsung": "Sur Samsung Internet, le menu est en bas à droite (☰)."
+    },
+    "desktop": {
+      "qr": "QR code qui ouvre Pommelia sur ton téléphone",
+      "scan": "Vise ce code avec l'appareil photo de ton téléphone. Pommelia s'ouvre et t'indique les gestes pour l'ajouter à l'écran d'accueil.",
+      "computerTitle": "Sur cet ordinateur aussi",
+      "computerHint": "Ton navigateur peut ouvrir Pommelia dans sa propre fenêtre, avec une icône dans le Dock ou la barre des tâches.",
+      "computerButton": "Installer sur cet ordinateur",
+      "installed": "Pommelia est installée sur cet ordinateur."
+    },
+    "welcome": {
+      "ready": "Ton compte est prêt",
+      "title": "Garde Pommelia à portée de pouce",
+      "titleDesktop": "Emporte Pommelia sur ton téléphone",
+      "intro": "Ajoute-la à ton écran d'accueil : elle s'ouvrira en plein écran, comme une app.",
+      "introDesktop": "Elle est pensée pour le téléphone, appareil photo compris. Ajoute-la à son écran d'accueil : elle s'ouvrira en plein écran, comme une app.",
+      "go": "Aller à l'accueil",
+      "later": "Tu retrouveras ces étapes dans Moi, rubrique Réglages."
     }
   }
 }

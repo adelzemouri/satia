@@ -118,14 +118,14 @@ en UE, sans surcoût.
 | App + previews par PR | Vercel Hobby | fonctions en `fra1` (Francfort) | 0 € | Usage personnel non commercial ; 4 h de CPU actif / mois ; fonctions ≤ 300 s ; cron 1×/jour max |
 | PostgreSQL | Neon Free | `aws-eu-central-1` (Francfort) | 0 € | 1 Go ; 100 CU-h / mois ; mise en veille après 5 min ; restauration sur 6 h seulement |
 | Photos + sauvegardes | Cloudflare R2 | juridiction `eu` | 0 € | 10 Go ; 1 M écritures et 10 M lectures / mois ; sortie gratuite |
-| Tâches planifiées | Vercel Cron (quotidien) + GitHub Actions `schedule` (plus fréquent) | — | 0 € | Minutes Actions gratuites depuis que le dépôt est public (2026-10-10) |
+| Tâches planifiées | Vercel Cron (quotidien) + cron-job.org (toutes les 15 min) | — | 0 € | Gratuit ; GitHub Actions `schedule` sautait trop de passages |
 
 Compensations des limites :
 - **Sauvegardes** : la restauration Neon gratuite ne couvre que 6 h. Un workflow
   GitHub Actions quotidien fait un `pg_dump` chiffré vers R2 (rétention 30 jours).
   La procédure de restauration est documentée en phase 15, testée dès la phase 0.
-- **Cron fréquents** (rappels, v2) : un workflow Actions appelle toutes les 15 min
-  une route `/api/cron/*` protégée par `CRON_SECRET`.
+- **Cron fréquents** (rappels) : cron-job.org appelle toutes les 15 min
+  `/api/cron/notify`, protégée par `CRON_SECRET` (voir « Rappels » plus bas).
 - **Portabilité** : le `Dockerfile` (sortie `standalone`) et `docker compose`
   (app + Postgres + RustFS, un S3 local) restent la référence locale ; changer pour un hébergeur
   à conteneurs (Scaleway, Fly, Render…) ne demande que de nouvelles variables d'env.
@@ -885,3 +885,8 @@ le pourquoi de chacun est dans `docs/DECISIONS.md`.
   badges quand ils semblent se contredire (`qualityVerdict`). Les marqueurs NOVA 4 viennent du
   champ `nova_groups_markers` d'Open Food Facts, gardés dans `foods.nova_markers` ; un produit
   enregistré avant ce champ est relu sur OFF après l'affichage de sa fiche.
+- **Ajout à l'écran d'accueil** (`src/features/install/`) : fiche ouverte par les liens
+  `#installer` (`InstallHost`, monté dans le layout de l'app), avec les gestes de l'appareil
+  détecté (`detectPlatform`), le bouton natif quand `beforeinstallprompt` existe et, sur
+  ordinateur, un QR code vers `/profile#installer`. Montrée une fois après l'inscription
+  (`/onboarding/install`) ; la ligne de Moi est masquée en `display-mode: standalone`.
