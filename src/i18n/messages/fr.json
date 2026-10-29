@@ -2052,16 +2052,20 @@
     },
     "inbox": {
       "title": "Remarques reçues",
-      "new": "{count, plural, one {# nouvelle} other {# nouvelles}}",
+      "new": "{count} à traiter",
       "empty": "Aucun message pour l'instant. Tes invités peuvent t'écrire depuis Moi › « Une remarque, un bug ? ».",
       "handle": "Marquer comme traité",
       "reopen": "Rouvrir",
-      "handled": "Traité",
       "screenshot": "Voir la capture",
       "details": "Détail technique",
       "copy": "Copier pour Claude",
       "copied": "Copié",
-      "version": "version {version}"
+      "version": "version {version}",
+      "allDone": "Rien à traiter. Les messages traités sont rangés plus bas.",
+      "showMore": "{count, plural, one {Voir l'autre} other {Voir les # autres}}",
+      "showLess": "Voir moins",
+      "handledList": "Traités ({count})",
+      "movedToHandled": "Rangé dans « Traités »"
     }
   }
 }
