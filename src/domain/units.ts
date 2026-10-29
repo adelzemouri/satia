@@ -33,6 +33,17 @@ export function availableUnits(food: ConversionInfo): Unit[] {
   return UNITS.filter((unit) => toGrams(1, unit, food) !== null);
 }
 
+/**
+ * Vrai quand « n pièces » de l'aliment pèsent à peu près le poids estimé (entre la moitié et
+ * le double) : sinon le poids à la pièce connu ne décrit pas ce qui est dans l'assiette
+ * (5 tomates cerises ≠ 5 tomates) et la quantité reste en grammes.
+ */
+export function piecesMatchGrams(count: number, pieceGrams: number, grams: number): boolean {
+  if (!(count > 0 && pieceGrams > 0 && grams > 0)) return false;
+  const ratio = (count * pieceGrams) / grams;
+  return ratio >= 0.5 && ratio <= 2;
+}
+
 const COUNT_WORDS: [CountUnit, string][] = [
   ["slice", "tranches?|slices?"],
   [

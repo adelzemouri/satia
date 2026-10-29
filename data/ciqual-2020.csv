@@ -98,8 +98,8 @@ code,name_fr,name_en,group_fr,kcal,protein_g,carbs_g,fat_g,fiber_g,sugars_g,salt
 4017,"Pomme de terre, purée à base de flocons, reconstituée avec lait entier, matière grasse","Potato puree, made from flakes, reconstituted with whole milk, with added fat",pommes de terre et autres tubercules,97.9,1.92,10.2,5.18,1.47,1.68,0.56,,
 4018,"Pomme de terre, purée, avec lait et beurre, non salée","Potato puree, with milk and butter, unsalted",pommes de terre et autres tubercules,88.8,1.89,14.2,2.4,1.5,1.41,0.11,,
 4019,"Pomme de terre, purée à base de flocons, reconstituée avec lait demi-écrémé et eau, non salée","Potato puree, made from flakes, reconstituted with semi-skimmed milk and water, unsalted",pommes de terre et autres tubercules,67.3,2.63,12.1,0.53,1.8,1.71,0.23,,
-4020,"Pomme de terre dauphine, surgelée, crue","Dauphine potato, frozen, raw",pommes de terre et autres tubercules,285,4.62,25.6,17.7,2.34,1.96,1.17,,"{""piece"":120}"
-4021,"Pomme de terre dauphine, surgelée, cuite","Dauphine potato, frozen, cooked",pommes de terre et autres tubercules,302,4.5,30.2,17.7,2,3.5,1.32,,"{""piece"":120}"
+4020,"Pomme de terre dauphine, surgelée, crue","Dauphine potato, frozen, raw",pommes de terre et autres tubercules,285,4.62,25.6,17.7,2.34,1.96,1.17,,
+4021,"Pomme de terre dauphine, surgelée, cuite","Dauphine potato, frozen, cooked",pommes de terre et autres tubercules,302,4.5,30.2,17.7,2,3.5,1.32,,
 4022,"Pomme de terre, flocons déshydratés, nature","Potato flakes, dehydrated, plain",pommes de terre et autres tubercules,361,8.04,76.1,0.46,10.3,2.35,0.55,,
 4023,"Pomme de terre nouvelle, crue","New potato, raw",pommes de terre et autres tubercules,76.4,1.88,15.9,0.3,1.3,0.2,0.06,,"{""piece"":120}"
 4025,"Potatoes ou Wedges ou Quartiers de pommes de terre épicés, surgelées, cuites","Potato chip, quarter, spiced, frozen, cooked",pommes de terre et autres tubercules,174,3.25,25.3,5.8,3.4,0,0.76,,
@@ -109,14 +109,14 @@ code,name_fr,name_en,group_fr,kcal,protein_g,carbs_g,fat_g,fiber_g,sugars_g,salt
 4029,"Pomme de terre primeur, sans peau, bouillie/cuite à l'eau","Early potato, boiled/cooked in water, peeled",pommes de terre et autres tubercules,71.6,1.84,14.9,0,2.13,,,,"{""piece"":120}"
 4030,"Frites de pommes de terre, surgelées, rôties/cuites au four","French fries or chips, frozen, roasted/baked",pommes de terre et autres tubercules,213,3.75,32.6,6.6,4.2,0.29,0.39,,
 4032,"Frites de pommes de terre, surgelées, cuites en friteuse","French fries or chips, frozen, deep-fried",pommes de terre et autres tubercules,285,3.28,39.4,11.9,3.9,0.69,0.07,,
-4034,"Pomme de terre duchesse, surgelée, cuite","Duchesse potato, frozen, cooked",pommes de terre et autres tubercules,218,3.44,29.5,8.5,4.8,,0.99,,"{""piece"":120}"
+4034,"Pomme de terre duchesse, surgelée, cuite","Duchesse potato, frozen, cooked",pommes de terre et autres tubercules,218,3.44,29.5,8.5,4.8,,0.99,,
 4035,"Pomme de terre noisette, surgelée, cuite","Mashed potato balls pre-fried, frozen, cooked",pommes de terre et autres tubercules,191,2.81,28.5,6.6,3.4,0.2,0.87,,
 4036,Pomme de terre sautée/poêlée à la graisse de canard,"Potato, sautéed/pan-fried, with goose fat",pommes de terre et autres tubercules,213,2.54,21.9,12.1,2.89,1.59,0.67,,"{""piece"":120}"
 4037,"Chips de pommes de terre nature ou aromatisées, à l'ancienne","Potato crisps, ""à l'ancienne"" (old-fashioned style)",pommes de terre et autres tubercules,570,5.62,49.8,37.6,4.51,1.38,1.78,,
 4038,"Chips de pommes de terre et assimilés nature ou aromatisées, allégées en matière grasse","Potato crisps and related, reduced fat",pommes de terre et autres tubercules,463,6.58,62.1,19.8,5.19,2.49,1.22,,
 4039,Rostis ou Galette de pomme de terre,Rostis or Potatoes cake,pommes de terre et autres tubercules,182,2.38,22.5,8.3,3.3,0.2,0.82,,
 4041,"Aligot (purée de pomme de terre à la tomme fraîche), préemballé","Mashed potatoes w fresh tome cheese, prepacked",plats composés,195,8.06,9.5,13.3,1.3,0.57,1,,
-4042,"Pomme de terre duchesse, surgelée, crue","Duchesse potato, frozen, raw",pommes de terre et autres tubercules,178,2.8,23.2,7.72,2.13,0.73,0.93,,"{""piece"":120}"
+4042,"Pomme de terre duchesse, surgelée, crue","Duchesse potato, frozen, raw",pommes de terre et autres tubercules,178,2.8,23.2,7.72,2.13,0.73,0.93,,
 4043,"Pomme de terre sautée/ rissolée, pré-frites, surgelée, crue","Potato, pre-fried into cubes, frozen, raw",pommes de terre et autres tubercules,135,2.32,20.9,4.2,2.41,0.42,0.17,,
 4044,"Frites de pommes de terre, surgelées, préfrites, pour cuisson rôtie/ au four","French fries or chips, frozen, pre-fried, raw, intended to be roasted/baked",pommes de terre et autres tubercules,154,2.41,23.4,5.09,2.58,0.35,0.28,,
 4045,"Frites de pommes de terre, surgelées, préfrites, pour cuisson micro-ondes","French fries or chips, frozen, pre-fried, aw, intended to be microwaved",pommes de terre et autres tubercules,254,3.5,34,10.8,3.83,0.23,0.27,,
@@ -814,7 +814,7 @@ code,name_fr,name_en,group_fr,kcal,protein_g,carbs_g,fat_g,fiber_g,sugars_g,salt
 12848,Valençay (fromage de chèvre),"Valençay cheese, from goat's milk",fromages et assimilés,306,19.3,0,25.5,0,,1.32,,
 12999,Fromage (aliment moyen),Cheese (average),fromages et assimilés,338,21.8,0.56,27.4,0,0.27,1.28,,"{""portion"":30}"
 13000,"Abricot, dénoyauté, cru","Apricot, pitted, raw",fruits,45.9,0.81,9.01,0,1.7,6.7,,,"{""piece"":40}"
-13001,"Abricot, dénoyauté, sec","Apricot, pitted, dried",fruits,239,2.88,59.1,0.5,8.3,34.3,,,"{""piece"":40}"
+13001,"Abricot, dénoyauté, sec","Apricot, pitted, dried",fruits,239,2.88,59.1,0.5,8.3,34.3,,,
 13002,"Ananas, pulpe, cru","Pineapple, pulp, raw",fruits,54.4,0,11.7,0,1.2,10.5,,,
 13004,"Avocat, pulpe, cru","Avocado, pulp, raw",légumes,205,1.56,0.83,20.6,3.6,0.4,0.02,,"{""piece"":150}"
 13005,"Banane, pulpe, crue","Banana, pulp, raw",fruits,90.5,1.06,19.7,0,2.7,15.6,,,"{""piece"":120}"
@@ -950,7 +950,7 @@ code,name_fr,name_en,group_fr,kcal,protein_g,carbs_g,fat_g,fiber_g,sugars_g,salt
 13614,"Pamplemousse chinois, pulpe, cru","Pummelo, pulp, raw",fruits,37.88,0.76,8.62,0.04,1,,0,,
 13620,"Pomme Golden, pulpe et peau, crue","Apple, var. Golden, pulp and skin, raw",fruits,57.1,0,12.8,0,1.4,11.5,,,"{""piece"":150}"
 13621,"Raisin noir Muscat, cru","Grape, red, Muscat, raw",fruits,90.1,0.69,20,0,2.7,19.6,,,
-13623,"Abricot, dénoyauté, sec, moelleux (réhydraté à 35-45%)","Apricot, pitted, dried, rehydrated to 35-45% water",fruits,200,2.31,51.1,0.4,3.5,29.9,,,"{""piece"":40}"
+13623,"Abricot, dénoyauté, sec, moelleux (réhydraté à 35-45%)","Apricot, pitted, dried, rehydrated to 35-45% water",fruits,200,2.31,51.1,0.4,3.5,29.9,,,
 13704,"Abricot au sirop (sans précision sur léger ou classique), appertisé, égoutté (aliment moyen)","Apricot, canned in syrup (sugar content unknown), drained",fruits,69.05,0.5,16.2,0.25,1.4,15.3,0.03,,
 13705,"Macédoine ou cocktail ou salade de fruits, au sirop (sans précision sur léger ou classique), appertisé, égouttée (aliment moyen)","Fruit cocktail or salad, canned in syrup (sugar content unknown), drained",fruits,68.05,0.25,16.2,0.25,2.02,13.2,0.02,,
 13713,"Abricot au sirop léger, appertisé, non égoutté","Apricot, canned in light syrup, not drained",fruits,59.63,0.81,14,0.04,0.83,14,0.03,,
@@ -1468,13 +1468,13 @@ code,name_fr,name_en,group_fr,kcal,protein_g,carbs_g,fat_g,fiber_g,sugars_g,salt
 20169,"Tomate, pulpe, appertisée","Tomato pulp, canned",légumes,26.1,1.2,3.63,0,1.8,3.2,0.07,,
 20170,"Tomate, purée, appertisée","Tomato puree, canned",légumes,47.1,1.4,7.54,0.4,2.38,3.64,0.51,,
 20171,"Laitue romaine, crue","Cos or romaine lettuce, raw",légumes,12.46,1.24,1.2,0.3,2.1,1.19,0.02,,
-20172,"Tomate cerise, crue","Tomato, cherry, raw",légumes,33.7,1.31,5.62,0,1.2,4.8,,,"{""piece"":100}"
+20172,"Tomate cerise, crue","Tomato, cherry, raw",légumes,33.7,1.31,5.62,0,1.2,4.8,,,"{""piece"":15}"
 20173,"Pois mange-tout ou pois gourmand, cru","Snow pea, raw",légumes,39.55,3.08,6.2,0.27,2.63,4,0.01,,
 20180,"Oignon, séché","Onion, dried",légumes,339.94,8.95,75,0.46,9.2,37.4,0.05,,
 20181,"Panais, cru","Parsnip, raw",légumes,58.3,1.54,10.1,0.4,4.7,4.8,0.02,,
 20188,"Bambou, pousses, appertisées, égouttées","Bamboo shoots, canned, drained",légumes,15.39,1.61,1.9,0.15,1.25,1.15,0.19,,
 20189,"Tomate, séchée","Tomato, dried",légumes,256.91,14.2,43.3,2.99,12.3,37.6,0.62,,
-20192,"Tomate côtelée ou coeur de boeuf, crue","Tomato, beef heart, raw",légumes,19.8,0.5,3.23,0,0.9,2.8,,,"{""piece"":100}"
+20192,"Tomate côtelée ou coeur de boeuf, crue","Tomato, beef heart, raw",légumes,19.8,0.5,3.23,0,0.9,2.8,,,"{""piece"":250}"
 20194,"Haricots blancs à la sauce tomate, appertisés","Haricot beans with tomato sauce, canned",plats composés,62.68,4.67,10.1,0.4,5.5,1.65,0.93,,"{""portion"":150}"
 20195,"Haricot beurre, cru","Butter bean or yellow bean, raw",légumes,31.24,1.85,5.6,0.16,2.45,,0.02,,"{""portion"":150}"
 20196,"Topinambour, cru","Jerusalem artichoke, raw",pommes de terre et autres tubercules,60.7,1.94,11.5,0.31,2.1,9.6,0.01,,
@@ -1716,20 +1716,20 @@ code,name_fr,name_en,group_fr,kcal,protein_g,carbs_g,fat_g,fiber_g,sugars_g,salt
 21800,"Chevreau, cru","Young goat, raw",viandes crues,103,20.6,0,2.31,0,,0.21,,
 21801,"Chevreau, cuit","Young goat, cooked",viandes cuites,136,27.1,0,3.03,0,0,0.22,,
 22000,"Oeuf, cru","Egg, raw",œufs,140,12.7,0.27,9.83,0,0.27,0.31,,"{""piece"":55}"
-22001,"Oeuf, blanc (blanc d'oeuf), cru","Egg white, raw",œufs,48.1,10.8,0.85,0.19,0,0.71,0.42,,"{""piece"":55}"
-22002,"Oeuf, jaune (jaune d'oeuf), cru","Egg yolk, raw",œufs,307,15.5,1.09,26.7,0,0.56,0.05,,"{""piece"":55}"
+22001,"Oeuf, blanc (blanc d'oeuf), cru","Egg white, raw",œufs,48.1,10.8,0.85,0.19,0,0.71,0.42,,"{""piece"":33}"
+22002,"Oeuf, jaune (jaune d'oeuf), cru","Egg yolk, raw",œufs,307,15.5,1.09,26.7,0,0.56,0.05,,"{""piece"":18}"
 22003,"Oeuf, jaune (jaune d'oeuf), en poudre","Egg yolk, powder",œufs,660,34.1,2.77,57,0,0.07,0.37,,
 22004,"Oeuf, blanc (blanc d'oeuf), en poudre","Egg white, powder",œufs,356,81.2,7.73,0,0,5.4,3.2,,
-22008,"Oeuf, blanc (blanc d'oeuf), cuit","Egg white, cooked",œufs,47.3,10.3,1.12,0.17,0,0.7,0.39,,"{""piece"":55}"
-22009,"Oeuf, jaune (jaune d'oeuf), cuit","Egg yolk, cooked",œufs,340,16,1.31,30.1,0,0.55,0.04,,"{""piece"":55}"
+22008,"Oeuf, blanc (blanc d'oeuf), cuit","Egg white, cooked",œufs,47.3,10.3,1.12,0.17,0,0.7,0.39,,"{""piece"":33}"
+22009,"Oeuf, jaune (jaune d'oeuf), cuit","Egg yolk, cooked",œufs,340,16,1.31,30.1,0,0.55,0.04,,"{""piece"":18}"
 22010,"Oeuf, dur","Egg, hard-boiled",œufs,134,13.5,0.52,8.62,0,0.52,0.31,,"{""piece"":55}"
 22011,"Oeuf, poché","Egg, poached",œufs,138,12.5,0.71,9.47,0,0.37,0.2,,"{""piece"":55}"
 22013,"Oeuf, en poudre","Egg, powder",œufs,582,47.9,3.11,42,0,0.3,1.25,,
 22014,"Oeuf, à la coque","Egg, soft-boiled",œufs,142,12.2,1.08,9.82,0,0.77,0.2,,"{""piece"":55}"
-22050,"Oeuf de caille, cru","Quail egg, raw",œufs,154,13.1,0.41,11.1,0,0.4,0.35,,"{""piece"":55}"
-22060,"Oeuf de cane, cru","Duck egg, raw",œufs,181,13,1.31,13.8,0,0.93,0.37,,"{""piece"":55}"
-22070,"Oeuf d'oie, cru","Goose egg, raw",œufs,180,13.8,1.4,13.3,0,0.94,0.35,,"{""piece"":55}"
-22080,"Oeuf de dinde, cru","Turkey egg, raw",œufs,166,13.7,1.13,11.9,0,1,0.38,,"{""piece"":55}"
+22050,"Oeuf de caille, cru","Quail egg, raw",œufs,154,13.1,0.41,11.1,0,0.4,0.35,,"{""piece"":10}"
+22060,"Oeuf de cane, cru","Duck egg, raw",œufs,181,13,1.31,13.8,0,0.93,0.37,,"{""piece"":70}"
+22070,"Oeuf d'oie, cru","Goose egg, raw",œufs,180,13.8,1.4,13.3,0,0.94,0.35,,"{""piece"":150}"
+22080,"Oeuf de dinde, cru","Turkey egg, raw",œufs,166,13.7,1.13,11.9,0,1,0.38,,"{""piece"":80}"
 22501,"Oeuf, au plat, frit, salé","Egg, fried, salted",œufs,204,14.3,0.74,16,0,0.4,0.36,,"{""piece"":55}"
 22502,"Oeuf, brouillé, avec matière grasse","Egg, scrambled, with added fat",œufs,145,9.99,1.62,11,0,1.43,0.36,,"{""piece"":55}"
 22505,"Oeuf, au plat, sans matière grasse","Egg, fried without added fat",œufs,147,13.8,1.01,9.72,0,,0.4,,"{""piece"":55}"
@@ -2244,7 +2244,7 @@ code,name_fr,name_en,group_fr,kcal,protein_g,carbs_g,fat_g,fiber_g,sugars_g,salt
 26001,"Bar rayé ou bar d'Amérique, cru","American bass, raw",poissons crus,113,20.3,0,3.58,0,0,0.19,,
 26002,"Carrelet ou plie, pané, frit","European plaice, breaded, fried",produits à base de poissons et produits de la mer,242,13.4,8.86,16.8,1,,0.66,,
 26003,"Carrelet ou plie, cuit à la vapeur","European plaice, steamed",poissons cuits,93,19,0,1.89,0,0,,,
-26004,"Oeufs de lompe, semi-conserve","Lump roe, semi-preserved",produits à base de poissons et produits de la mer,111,10.4,1,7.27,0,0,4.87,,"{""piece"":55}"
+26004,"Oeufs de lompe, semi-conserve","Lump roe, semi-preserved",produits à base de poissons et produits de la mer,111,10.4,1,7.27,0,0,4.87,,
 26005,"Caviar, semi-conserve","Caviar, semi-preserved",produits à base de poissons et produits de la mer,254,25,0,17.1,0,0,,,
 26006,"Lieu ou colin d'Alaska, cru","Alaska pollock, raw",poissons crus,70.8,16.3,0,0.61,,0,0.48,,
 26008,"Églefin, cuit à la vapeur","Haddock, steamed",poissons cuits,89,20.9,0,0.6,0,0,0.18,,
@@ -2291,7 +2291,7 @@ code,name_fr,name_en,group_fr,kcal,protein_g,carbs_g,fat_g,fiber_g,sugars_g,salt
 26053,"Thon, cru","Tuna, raw",poissons crus,144,24,0,5.38,0,0,0.12,,"{""portion"":120}"
 26054,"Poisson en sauce, surgelé","Fish, in sauce, frozen",plats composés,132,13.3,3.18,7.05,1.25,1.3,0.82,,
 26055,"Carrelet ou plie, cru","European plaice, raw",poissons crus,88.6,20,0,0.94,0,0,0.2,,
-26056,"Oeufs de cabillaud, fumés, semi-conserve","Cod roe, smoked, semi-preserved",produits à base de poissons et produits de la mer,146,26.9,0.1,4.2,0,,0.73,,"{""piece"":55}"
+26056,"Oeufs de cabillaud, fumés, semi-conserve","Cod roe, smoked, semi-preserved",produits à base de poissons et produits de la mer,146,26.9,0.1,4.2,0,,0.73,,
 26057,"Limande, crue","Common dab, raw",poissons crus,80.8,18.3,0,0.85,0,0,0.28,,
 26058,"Sole, crue","Common sole, raw",poissons crus,77.3,18,0,0.6,0,0,0.19,,
 26059,"Sole, cuite à la vapeur","Common sole, steamed",poissons cuits,94.6,20.3,0,1.48,0,0,0.41,,
@@ -2437,7 +2437,7 @@ code,name_fr,name_en,group_fr,kcal,protein_g,carbs_g,fat_g,fiber_g,sugars_g,salt
 26272,"Pizza au poulet, préemballée","Pizza, chicken, prepacked","pizzas, tartes et crêpes salées",215,9.95,27.5,6.68,2.32,2.96,1.16,,"{""portion"":150}"
 26273,"Pizza type raclette ou tartiflette, préemballée","Pizza with raclette or tartiflette cheese and lardoons, prepacked","pizzas, tartes et crêpes salées",276,11.8,27.5,12.7,2.4,2.77,1.55,,"{""portion"":150}"
 26274,"Pizza au speck ou jambon cru, préemballée","Pizza, cured ham, prepacked","pizzas, tartes et crêpes salées",240,12.2,25.7,9.43,1.6,3.47,1.74,,"{""portion"":150}"
-26275,"Oeufs de saumon, semi-conserve","Salmon roe, semi-preserved",produits à base de poissons et produits de la mer,224,30.8,1.5,10.5,0,,2.34,,"{""piece"":55}"
+26275,"Oeufs de saumon, semi-conserve","Salmon roe, semi-preserved",produits à base de poissons et produits de la mer,224,30.8,1.5,10.5,0,,2.34,,
 26999,"Anguille, cuite (aliment moyen)","Eel, cooked (average)",poissons cuits,213,22.1,0,13.8,0,0,,,
 27000,"Anguille, rôtie/cuite au four","Eel, roasted/baked",poissons cuits,229,23.6,0,15,0,0,0.16,,
 27001,"Anguille, bouillie/cuite à l'eau","Eel, boiled/cooked in water",poissons cuits,197,20.5,0,12.7,0,0,,,
@@ -2949,8 +2949,8 @@ code,name_fr,name_en,group_fr,kcal,protein_g,carbs_g,fat_g,fiber_g,sugars_g,salt
 51510,"Frik (blé dur immature concassé), cru","Frik (crushed immature durum wheat), raw","pâtes, riz et céréales",323,9.62,55.8,2.25,19.3,,0.01,,
 51511,"Frik (blé dur immature concassé), cuit, non salé","Frik (crushed immature durum wheat), cooked, unsalted","pâtes, riz et céréales",76,2.04,14,0.48,3.5,,0.01,,
 51550,"Khatfa feuille de brick, préemballée","Khatfa (phyllo or filo pastry), prepacked",produits céréaliers,283,7,59,1.5,2.5,2,3.25,,
-53100,"Banane plantain, crue","Plantain banana, raw",légumes,127.03,1.28,29.6,0.39,2.3,,0.01,,"{""piece"":120}"
-53101,"Banane plantain, cuite","Plantain banana, cooked",pommes de terre et autres tubercules,125,0.79,28.9,0.18,2.3,14,0.01,,"{""piece"":120}"
+53100,"Banane plantain, crue","Plantain banana, raw",légumes,127.03,1.28,29.6,0.39,2.3,,0.01,,"{""piece"":250}"
+53101,"Banane plantain, cuite","Plantain banana, cooked",pommes de terre et autres tubercules,125,0.79,28.9,0.18,2.3,14,0.01,,"{""piece"":250}"
 53200,"Taro, tubercule, cru","Taro, tuber, raw",pommes de terre et autres tubercules,107,1.5,22.8,0.2,4.1,0.4,0.03,,
 53201,"Taro, tubercule, cuit","Taro, tuber, cooked",pommes de terre et autres tubercules,131,0.52,29.5,0.11,5.1,0.49,0.04,,
 53502,"Igname, épluchée, crue","Yam or Indian potato, peeled, raw",pommes de terre et autres tubercules,111,1.53,23.8,0.17,4.1,0.5,0.02,,
