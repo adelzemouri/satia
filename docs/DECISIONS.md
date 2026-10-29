@@ -20,7 +20,7 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 | 007 | 2026-10-02 | Voix transcrite par le navigateur, aucune API payante | adoptée |
 | 008 | 2026-10-02 | Pas d'e-mail : l'admin transmet les liens | adoptée |
 | 009 | 2026-10-02 | Sexe obligatoire, gel de streak automatique | adoptée |
-| 010 | 2026-10-02 | Rappels déclenchés par GitHub Actions toutes les 15 min | adoptée |
+| 010 | 2026-10-02 | Rappels déclenchés toutes les 15 min (GitHub Actions, puis cron-job.org) | adoptée, révisée |
 | 011 | 2026-10-03 | L'app s'appelle Pommelia, le dépôt garde « satia » | adoptée |
 | 012 | 2026-10-03 | Une seule version en production, pas de version parallèle | adoptée |
 | 013 | 2026-10-05 | Budget hebdomadaire retiré, budget quotidien pour tous | adoptée |
@@ -138,6 +138,10 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 - **Conséquences** : GitHub peut retarder un passage et suspend les workflows planifiés
   après 60 jours sans activité. Passer à un service de cron externe gratuit
   (cron-job.org) est envisagé ; il suffira de lui faire appeler la même route.
+- **Révision** : GitHub Actions ne passait en pratique que toutes les 3 à 6 h. `notify.yml`
+  a été retiré : c'est désormais cron-job.org qui appelle
+  `https://www.pommelia.fr/api/cron/notify` toutes les 15 minutes (adresse finale, il ne
+  suit pas les redirections).
 
 ## 011 — L'app s'appelle Pommelia, le dépôt garde « satia »
 
