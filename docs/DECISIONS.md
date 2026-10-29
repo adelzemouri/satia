@@ -581,6 +581,24 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 045 — Expliquer l'ajout à l'écran d'accueil, sans bannière
+
+- **Date** : 2026-10-29 · **Statut** : adoptée (remplace 020 pour le besoin, pas pour la bannière)
+- **Contexte** : les invités de la bêta ne savent pas que Pommelia peut s'ouvrir comme une app.
+  Sur iPhone, il faut passer par Partager puis « Sur l'écran d'accueil » ; sur Android, Chrome
+  sait installer en un bouton. La bannière permanente reste écartée (020).
+- **Décision** : une ligne « Installer sur l'écran d'accueil » en fin de Réglages dans Moi
+  ouvre une fiche (`#installer`, comme `#remarque`) avec les gestes du téléphone détecté
+  (bascule iPhone/Android possible). Sur Android et sur ordinateur, `beforeinstallprompt`
+  donne un bouton « Installer ». Sur ordinateur, la fiche montre un QR code vers
+  `/profile#installer`. Le même contenu s'affiche une seule fois, à `/onboarding/install`,
+  juste après l'inscription. La ligne disparaît quand l'app est ouverte depuis son icône.
+- **Conséquences** : les intitulés de Safari changent selon la version d'iOS, d'où les
+  formulations « s'il n'est pas visible… ». Le mini-bandeau d'installation de Chrome est
+  remplacé par notre bouton (l'événement est retenu pour lui).
+
+---
+
 ## Modèle
 
 ```markdown

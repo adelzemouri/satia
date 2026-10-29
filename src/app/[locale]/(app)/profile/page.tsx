@@ -2,6 +2,7 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 
 import { APP_NAME } from "@/config/app";
 import { FEEDBACK_HASH, FeedbackHost } from "@/features/feedback/feedback-host";
+import { INSTALL_HASH } from "@/features/install/platform";
 import { HubLinks } from "@/features/navigation/hub-links";
 import { PrivateText } from "@/ui/private";
 import { LogoutForm } from "@/features/offline/logout-form";
@@ -185,6 +186,14 @@ export default async function ProfilePage({ params }: PageProps<"/[locale]/profi
               hint: t(user.twoFactorEnabled ? "securityOn" : "securityOff"),
             },
             { href: "/profile/account", icon: "download", label: t("data"), hint: t("dataHint") },
+            // En dernier : masquée une fois installée, elle ne laisse pas de séparateur orphelin.
+            {
+              href: { pathname: "/profile", hash: INSTALL_HASH },
+              icon: "phone",
+              label: tAll("install.entry"),
+              hint: tAll("install.entryHint"),
+              hideWhenInstalled: true,
+            },
           ]}
         />
       </div>

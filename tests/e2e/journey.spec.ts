@@ -122,10 +122,35 @@ test("onboarding complet d'un adulte avec plan expliqué", async ({ page }) => {
   await expectNoA11yViolations(page);
   await page.getByRole("button", { name: "C'est parti !" }).click();
 
+  // Une seule fois, juste après l'inscription : comment garder Pommelia sur l'écran d'accueil.
+  await expect(page).toHaveURL(/\/onboarding\/install$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Garde Pommelia à portée de pouce");
+  await expect(page.getByRole("list", { name: "Étapes sur Android" })).toBeVisible();
+  await page.getByRole("button", { name: "Tu as un iPhone ?" }).click();
+  await expect(page.getByRole("list", { name: "Étapes sur iPhone" })).toContainText("Sur l'écran d'accueil");
+  await expect(page.getByRole("navigation", { name: "Navigation principale" })).toHaveCount(0);
+  await expectNoA11yViolations(page);
+  await page.getByRole("link", { name: "Aller à l'accueil" }).click();
+
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bonjour Adel");
   await expect(page.getByText("kcal restantes", { exact: true })).toBeVisible();
   await expect(page.getByText("Protéines", { exact: true })).toBeVisible();
   await expectNoA11yViolations(page);
+});
+
+test("Moi explique comment ajouter Pommelia à l'écran d'accueil", async ({ page }) => {
+  await signIn(page, ADMIN);
+  await page.getByRole("link", { name: "Moi", exact: true }).click();
+  await page.getByRole("link", { name: /^Installer sur l'écran d'accueil/ }).click();
+  const sheet = page.getByRole("dialog", { name: "Pommelia sur ton écran d'accueil" });
+  await expect(sheet.getByRole("list", { name: "Étapes sur Android" })).toBeVisible();
+  await expectNoA11yViolations(page);
+  await sheet.getByRole("button", { name: "J'ai compris" }).click();
+  await expect(sheet).toBeHidden();
+  // Sur ordinateur, un QR code ouvre la même fiche sur le téléphone.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/profile#installer");
+  await expect(page.getByRole("dialog", { name: "Pommelia sur ton écran d'accueil" })).toBeVisible();
 });
 
 test("le thème choisi dans le profil est appliqué et conservé", async ({ page }) => {
