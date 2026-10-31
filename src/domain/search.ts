@@ -71,6 +71,12 @@ export function searchStems(normalized: string): string[] {
     .slice(0, 6);
 }
 
+/**
+ * « Pâte » désigne aussi ce qui n'est pas un féculent cuit : pâte à tartiner, pâte feuilletée,
+ * pâte de fruits, et sans accents « pâté ». Ces noms ne sont ni des pâtes ni pesés cuits.
+ */
+const NOT_PASTA =
+  /\bpates? (?:a (?:tartiner|pizza|crepes?|tarte|pain|modeler)|feuilletee|brisee|sablee|d amandes?|de (?:fruits?|coings?|campagne|foie|lapin|canard|porc)|en croute)\b/;
 const STARCH =
   /\b(?:pates?|riz|semoule|couscous|quinoa|boulgour|lentilles?|nouilles?|polenta|pois chiches?|haricots? secs?)\b/;
 const RAW = /\b(?:cru|crue|crus|crues)\b/;
@@ -79,7 +85,11 @@ const COOKED = /\bcuit/;
 /** Féculent (pâtes, riz, légumineuses…) que l'on pèse d'ordinaire cuit, sauf « cru » explicite. */
 export function isCookedStarchLabel(label: string): boolean {
   const normalized = normalizeForSearch(label);
-  return [normalized, ...searchVariants(normalized)].some((text) => STARCH.test(text)) && !RAW.test(normalized);
+  return isStarch(normalized) && !RAW.test(normalized);
+}
+
+function isStarch(normalized: string): boolean {
+  return [normalized, ...searchVariants(normalized)].some((text) => STARCH.test(text.replace(NOT_PASTA, "")));
 }
 
 /**
@@ -89,7 +99,7 @@ export function isCookedStarchLabel(label: string): boolean {
  */
 export function pickForLabel<T extends { nameFr: string }>(label: string, results: readonly T[]): T | null {
   const normalized = normalizeForSearch(label);
-  const starch = [normalized, ...searchVariants(normalized)].some((text) => STARCH.test(text));
+  const starch = isStarch(normalized);
   // « Eau de vie » est plus court que « Eau du robinet » et sortirait en premier.
   if (PLAIN_WATER.test(normalized)) {
     const water = results.find((food) => normalizeForSearch(food.nameFr).startsWith("eau du robinet"));
