@@ -34,8 +34,16 @@ function runEndingAt(loggedDays: ReadonlySet<string>, end: string): Run {
 }
 
 export function computeStreak(loggedDays: ReadonlySet<string>, today: string): Streak {
-  const { days, frozenDays } = runEndingAt(loggedDays, loggedDays.has(today) ? today : addDays(today, -1));
-  return { days, frozenDays };
+  if (loggedDays.has(today)) {
+    const { days, frozenDays } = runEndingAt(loggedDays, today);
+    return { days, frozenDays };
+  }
+  // Rien encore aujourd'hui : la série vaut ce qu'elle vaudrait avec un repas saisi aujourd'hui,
+  // moins ce jour-là. Ainsi un jour manqué hier, qu'un gel couvrira dès le premier repas, ne fait
+  // pas tomber la série à 0 le matin.
+  const withToday = new Set(loggedDays).add(today);
+  const { days, frozenDays } = runEndingAt(withToday, today);
+  return { days: days - 1, frozenDays };
 }
 
 /** Lundi de la semaine ISO du jour donné. */

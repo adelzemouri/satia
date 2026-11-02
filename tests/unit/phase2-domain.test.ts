@@ -107,6 +107,19 @@ describe("computeStreak", () => {
     expect(computeStreak(days("2026-09-28", "2026-10-01", "2026-10-02"), "2026-10-02").days).toBe(2);
   });
 
+  it("garde la série le matin quand hier est manqué mais qu'un gel le couvrira", () => {
+    // Samedi saisi, dimanche manqué, lundi matin rien encore : la série ne tombe pas à 0.
+    const logged = days("2026-10-30", "2026-10-31");
+    expect(computeStreak(logged, "2026-11-02")).toEqual({ days: 2, frozenDays: ["2026-11-01"] });
+    logged.add("2026-11-02");
+    expect(computeStreak(logged, "2026-11-02")).toEqual({ days: 3, frozenDays: ["2026-11-01"] });
+  });
+
+  it("tombe à zéro le matin après deux jours manqués d'affilée", () => {
+    // Mercredi et jeudi manqués, vendredi matin : aucun gel ne peut relier les deux.
+    expect(computeStreak(days("2026-09-28", "2026-09-29"), "2026-10-02").days).toBe(0);
+  });
+
   it("vaut zéro sans saisie récente", () => {
     expect(computeStreak(days("2026-09-20"), "2026-10-02").days).toBe(0);
   });
