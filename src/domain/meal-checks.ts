@@ -44,8 +44,11 @@ const STOPWORDS = new Set([
   "pot",
 ]);
 
-/** Précisions que Ciqual sous-entend : un œuf est un œuf de poule. */
-const IMPLIED: readonly [RegExp, string][] = [[/\boeufs? de poule\b/g, "oeuf"]];
+/** Précisions que Ciqual sous-entend : un œuf est un œuf de poule, le lait du lait de vache. */
+const IMPLIED: readonly [RegExp, string][] = [
+  [/\boeufs? de poule\b/g, "oeuf"],
+  [/\blait de vache\b/g, "lait"],
+];
 
 /**
  * Mots différents pour le même aliment, ramenés à une seule racine : l'IA dit « cacao » là où
