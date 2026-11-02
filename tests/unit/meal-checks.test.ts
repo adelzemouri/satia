@@ -55,6 +55,19 @@ describe("contrôle des aliments proposés par l'IA", () => {
     expect(line("œuf de caille", { nameFr: "Oeuf, dur", kcal: 134 }, 30, 40)).toEqual(["unrelated"]);
   });
 
+  it("accepte les précisions que la base sous-entend", () => {
+    // Le lait de Ciqual est du lait de vache ; un café infusé est un café prêt à boire.
+    const milk = { nameFr: "Lait demi-écrémé, UHT", kcal: 47 };
+    expect(line("lait de vache demi-écrémé", milk, 100, 47)).toEqual([]);
+    const coffee = { nameFr: "Café, non instantané, non sucré, prêt à boire", kcal: 1 };
+    expect(line("café, infusé", coffee, 150, 2)).toEqual([]);
+    // Le reste du nom compte toujours : un lait de chèvre, du café moulu.
+    expect(line("lait de chèvre", milk, 100, 47)).toEqual(["unrelated"]);
+    expect(line("café, infusé", { nameFr: "Café, moulu", kcal: 300 }, 150, 450)).toContain("unrelated");
+    // Un thé infusé n'est pas des feuilles de thé : « infusé » n'est pas ignoré partout.
+    expect(line("thé infusé", { nameFr: "Thé noir, en feuilles", kcal: 300 }, 250, 750)).toContain("unrelated");
+  });
+
   it("signale des pâtes ou du riz comptés secs", () => {
     expect(line("pâtes", { nameFr: "Pâtes sèches, crues", kcal: 351 }, 280, 983)).toEqual(["dry", "heavy"]);
     expect(line("riz cru", { nameFr: "Riz blanc, cru", kcal: 350 }, 80, 280)).toEqual([]);

@@ -31,7 +31,7 @@ const SYNONYMS: readonly [RegExp, string][] = [
   // (60 fois plus calorique à poids égal), ni un café au lait.
   [/^(?:un |une )?(?:cafe )?(?:expresso|espresso|ristretto)$|^(?:un )?cafe serre$/, "cafe expresso non instantane"],
   [
-    /^(?:un )?(?:cafe(?: (?:allonge|long|filtre|noir|nature|americain|sans sucre|non sucre))?|americano)$/,
+    /^(?:un )?(?:cafe(?: (?:allonge|long|filtre|infuse|noir|nature|americain|sans sucre|non sucre))?|americano)$/,
     "cafe non instantane non sucre",
   ],
   // L'oignon vert (cébette) se dit « ciboule » dans Ciqual.
