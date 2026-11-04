@@ -47,3 +47,7 @@ next-env.d.ts
 /playwright-report
 /public/sw.js
 /public/swe-worker*
+
+# carte du code générée par la skill floorplan (locale, jamais commitée)
+/floorplan/
+/CLAUDE.local.md
