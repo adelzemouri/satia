@@ -24,5 +24,7 @@ export default defineConfig([
     "public/sw.js",
     "playwright-report/**",
     "test-results/**",
+    ".claude/skills/**",
+    "floorplan/**",
   ]),
 ]);
