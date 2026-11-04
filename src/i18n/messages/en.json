@@ -60,7 +60,6 @@
     "viewSlot": "See {name}",
     "openJournal": "See the full diary",
     "streak": "{days, plural, =0 {No streak yet: logging a meal today starts one.} one {# day in a row} other {# days in a row}}",
-    "streakFrozen": "A rest day was covered this week, your streak goes on.",
     "streakShort": "{days} d",
     "more": "Shortcuts",
     "activityBurned": "Including {kcal} kcal burned through activity.",
