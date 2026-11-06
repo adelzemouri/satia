@@ -11,6 +11,7 @@ import { llmConfig } from "@/llm/config";
 import { requireUser } from "@/server/session";
 import { FillsGate } from "@/ui/fills-gate";
 import { ToastProvider } from "@/ui/toast";
+import { ViewportRepair } from "@/ui/viewport-repair";
 
 export default async function AppLayout({ children, params }: LayoutProps<"/[locale]">) {
   const user = await requireUser(toLocale((await params).locale));
@@ -42,6 +43,7 @@ export default async function AppLayout({ children, params }: LayoutProps<"/[loc
         </div>
         <SideNav />
         <InstallHost />
+        <ViewportRepair />
         <BottomNav ai={llmConfig().provider !== "none"} />
       </ToastProvider>
     </OfflineProvider>
