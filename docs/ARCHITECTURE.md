@@ -867,6 +867,11 @@ le pourquoi de chacun est dans `docs/DECISIONS.md`.
   jours (un jour coloré dès qu'un repas est noté), son état (première semaine, repas notés cette
   semaine, rien depuis N jours) et trois chiffres : invités, actifs sur 7 jours, encore là après
   3 semaines. Seules les dates de `meal_entries` sont lues, jamais le contenu des repas.
+  Toucher un invité ouvre sa fiche (`BetaGuestRow`, `guestDetails`) : dernière visite
+  (`sessions.updated_at`, rafraîchi au plus une fois par jour, ou dernier aliment noté), part de
+  chaque façon de noter (`input_method`), fonctions utilisées sur 28 jours (messages à Pépin,
+  plats ajoutés au menu, idées frigo, séances), appareil (user-agent de la dernière session),
+  rappels activés et coût IA du mois. Toujours rien du contenu des repas, du poids ni des objectifs.
 - **Remarques et bugs** (`feedback_messages`, `src/server/feedback.ts`) : « Une remarque, un
   bug ? » dans Moi ouvre une fiche (type, texte, capture facultative) ; l'écran d'erreur propose
   « Signaler ce bug » avec le détail technique. Le message va au foyer de la personne, ou à
