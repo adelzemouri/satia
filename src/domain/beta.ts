@@ -75,3 +75,62 @@ export function betaSummary(guests: GuestActivity[]) {
     veterans: veterans.length,
   };
 }
+
+/** Façons de noter un aliment, regroupées pour la fiche d'un invité. */
+export const ENTRY_WAYS = ["photo", "search", "text", "barcode", "reuse"] as const;
+export type EntryWay = (typeof ENTRY_WAYS)[number];
+
+const WAY_OF: Record<string, EntryWay> = {
+  photo: "photo",
+  manual: "search",
+  text: "text",
+  voice: "text",
+  barcode: "barcode",
+  copy: "reuse",
+  shared: "reuse",
+};
+
+export type EntryShare = { way: EntryWay; count: number; percent: number };
+
+/**
+ * Part de chaque façon de noter, de la plus utilisée à la moins utilisée (les absentes sont
+ * omises). Les pourcentages arrondis font toujours 100 en tout.
+ */
+export function entryShares(countsByMethod: Iterable<{ method: string; count: number }>): EntryShare[] {
+  const totals = new Map<EntryWay, number>();
+  for (const { method, count } of countsByMethod) {
+    const way = WAY_OF[method];
+    if (way && count > 0) totals.set(way, (totals.get(way) ?? 0) + count);
+  }
+  const all = [...totals.values()].reduce((sum, count) => sum + count, 0);
+  if (all === 0) return [];
+  const shares = [...totals]
+    .map(([way, count]) => ({ way, count, exact: (count * 100) / all }))
+    .sort((a, b) => b.count - a.count || ENTRY_WAYS.indexOf(a.way) - ENTRY_WAYS.indexOf(b.way));
+  // Plus grands restes : on arrondit vers le bas puis on distribue les points manquants.
+  const floors = shares.map((share) => Math.floor(share.exact));
+  let missing = 100 - floors.reduce((sum, value) => sum + value, 0);
+  const byRemainder = shares
+    .map((share, index) => ({ index, remainder: share.exact - floors[index]! }))
+    .sort((a, b) => b.remainder - a.remainder);
+  for (const { index } of byRemainder) {
+    if (missing <= 0) break;
+    floors[index]! += 1;
+    missing -= 1;
+  }
+  return shares.map((share, index) => ({ way: share.way, count: share.count, percent: floors[index]! }));
+}
+
+export type GuestDevice = "iphone" | "android" | "computer";
+
+/** Appareil d'après le navigateur de la dernière session (un iPad récent se dit Mac : « ordinateur »). */
+export function deviceFromUserAgent(userAgent: string | null | undefined): GuestDevice | null {
+  if (!userAgent) return null;
+  if (/iPhone|iPod/i.test(userAgent)) return "iphone";
+  if (/Android/i.test(userAgent)) return "android";
+  return "computer";
+}
+
+/** Fonctions dont la fiche d'un invité dit s'il s'en sert (sur 28 jours). */
+export const GUEST_FEATURES = ["coach", "menu", "fridge", "training"] as const;
+export type GuestFeature = (typeof GUEST_FEATURES)[number];

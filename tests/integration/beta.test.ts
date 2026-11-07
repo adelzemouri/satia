@@ -2,10 +2,10 @@ import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { db } from "@/db/client";
-import { mealEntries, user } from "@/db/schema";
+import { coachMessages, llmCalls, mealEntries, pushSubscriptions, session, user } from "@/db/schema";
 import { addDays } from "@/domain/energy";
 import { acceptInvite, createAccessLink, listGuests, setupFirstAdmin } from "@/server/accounts";
-import { guestActivities } from "@/server/beta";
+import { guestActivities, guestDetails } from "@/server/beta";
 
 import { resetDatabase } from "./helpers";
 
@@ -74,5 +74,55 @@ describe("suivi des invités de la bêta", () => {
       status: { kind: "idle", days: 35 },
     });
     expect(await guestActivities([], TODAY)).toEqual(new Map());
+
+    // La fiche : façons de noter, fonctions, appareil et rappels, sans rien du contenu des repas.
+    await db()
+      .insert(mealEntries)
+      .values([
+        { ...entry(sami!.id, addDays(TODAY, -1)), inputMethod: "photo" as const },
+        { ...entry(sami!.id, addDays(TODAY, -2)), inputMethod: "voice" as const },
+      ]);
+    await db()
+      .insert(coachMessages)
+      .values([
+        { userId: sami!.id, role: "user", content: "Bonjour", createdAt: new Date(`${TODAY}T08:00:00Z`) },
+        { userId: sami!.id, role: "coach", content: "Salut", createdAt: new Date(`${TODAY}T08:00:01Z`) },
+      ]);
+    await db()
+      .insert(llmCalls)
+      .values({
+        userId: sami!.id,
+        feature: "fridge",
+        provider: "mock",
+        model: "mock",
+        tokensIn: 10,
+        tokensOut: 5,
+        costUsdMicros: 100,
+        latencyMs: 10,
+        status: "ok",
+        createdAt: new Date(`${TODAY}T09:00:00Z`),
+      });
+    await db()
+      .insert(pushSubscriptions)
+      .values({ userId: sami!.id, endpoint: "https://push.test/1", p256dh: "k", auth: "a" });
+    await db()
+      .insert(session)
+      .values({
+        token: "jeton-test",
+        userId: sami!.id,
+        expiresAt: new Date("2099-01-01T00:00:00Z"),
+        userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)",
+      });
+
+    const details = await guestDetails([sami!.id, nora!.id], TODAY);
+    expect(details.get(sami!.id)).toMatchObject({
+      entryCount: 5,
+      features: { coach: 1, menu: 0, fridge: 1, training: 0 },
+      device: "iphone",
+      reminders: true,
+    });
+    expect(details.get(sami!.id)!.entries.map((share) => share.way)).toEqual(["search", "photo", "text"]);
+    expect(details.get(sami!.id)!.lastSeen).toBeInstanceOf(Date);
+    expect(details.get(nora!.id)).toMatchObject({ entryCount: 0, entries: [], reminders: false });
   });
 });

@@ -1161,11 +1161,18 @@ test("bêta : l'admin invite quelqu'un dans un foyer à part et suit s'il revien
 
   await page.reload();
   const beta = page.getByRole("region", { name: "Invités de la bêta" });
-  await expect(beta.getByText("Sami", { exact: true })).toBeVisible();
+  // Le titre de la fiche (fermée) porte aussi le prénom : on vise la ligne visible.
+  await expect(beta.getByText("Sami", { exact: true }).filter({ visible: true })).toBeVisible();
   await expect(beta.getByText("Première semaine")).toBeVisible();
   await expect(beta.getByRole("img", { name: "0 jour noté sur 1 jour" })).toBeVisible();
-  await expect(beta.getByText("Aucune saisie")).toBeVisible();
+  await expect(beta.getByText("Dernière visite : aujourd'hui")).toBeVisible();
+  await beta.getByRole("button", { name: "Voir la fiche de Sami" }).click();
+  const sheet = page.getByRole("dialog", { name: "Sami" });
+  await expect(sheet.getByText("Aucun aliment noté ces 28 derniers jours.")).toBeVisible();
+  await expect(sheet.getByRole("listitem").filter({ hasText: "Pépin" })).toContainText("jamais");
   await expectNoA11yViolations(page);
+  await sheet.getByRole("button", { name: "Fermer" }).click();
+  await expect(sheet).toBeHidden();
 });
 
 test("bilan qualité de la semaine", async ({ page }) => {

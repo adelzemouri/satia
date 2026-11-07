@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { betaSummary, guestActivity } from "@/domain/beta";
+import { betaSummary, deviceFromUserAgent, entryShares, guestActivity } from "@/domain/beta";
 
 const TODAY = "2026-10-18";
 
@@ -42,5 +42,48 @@ describe("betaSummary", () => {
       guestActivity([], "2026-10-16", TODAY), // nouveau, rien encore
     ]);
     expect(summary).toEqual({ total: 4, active: 2, retained: 1, veterans: 2 });
+  });
+});
+
+describe("entryShares", () => {
+  it("regroupe les façons de noter et fait toujours 100 % en tout", () => {
+    const shares = entryShares([
+      { method: "manual", count: 17 },
+      { method: "photo", count: 8 },
+      { method: "voice", count: 2 },
+      { method: "text", count: 2 },
+      { method: "barcode", count: 2 },
+    ]);
+    expect(shares.map((share) => share.way)).toEqual(["search", "photo", "text", "barcode"]);
+    expect(shares.find((share) => share.way === "text")?.count).toBe(4);
+    expect(shares.reduce((sum, share) => sum + share.percent, 0)).toBe(100);
+  });
+
+  it("met la copie d'un repas et les plats partagés ensemble, et rend une liste vide sans saisie", () => {
+    expect(
+      entryShares([
+        { method: "copy", count: 1 },
+        { method: "shared", count: 1 },
+      ]),
+    ).toEqual([{ way: "reuse", count: 2, percent: 100 }]);
+    expect(entryShares([])).toEqual([]);
+  });
+
+  it("répartit les restes des arrondis sur les plus grandes parts", () => {
+    const shares = entryShares([
+      { method: "photo", count: 1 },
+      { method: "manual", count: 1 },
+      { method: "barcode", count: 1 },
+    ]);
+    expect(shares.map((share) => share.percent)).toEqual([34, 33, 33]);
+  });
+});
+
+describe("deviceFromUserAgent", () => {
+  it("reconnaît iPhone, Android et ordinateur", () => {
+    expect(deviceFromUserAgent("Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)")).toBe("iphone");
+    expect(deviceFromUserAgent("Mozilla/5.0 (Linux; Android 15; Pixel 9)")).toBe("android");
+    expect(deviceFromUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0)")).toBe("computer");
+    expect(deviceFromUserAgent(null)).toBeNull();
   });
 });

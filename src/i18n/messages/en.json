@@ -561,7 +561,7 @@
     "guestBudgetTitle": "Good to know",
     "guestBudgetHint": "The monthly AI budget is shared by the whole app. Their photos and coach Pépin use it too.",
     "guests": "Beta guests",
-    "guestsHint": "Each one has their own space. You only see whether they come back, never what they eat or their weight.",
+    "guestsHint": "Each one has their own space. You see when and how they use the app, never what they eat or their weight.",
     "guestRole": "Separate household",
     "guestRemoveConfirm": "Delete {name}'s account and all their data?",
     "aiThisMonth": "AI this month: {spent} of {budget}",
@@ -580,13 +580,60 @@
       "statusActive": "Logged this week",
       "statusIdle": "{days, plural, one {Nothing for # day} other {Nothing for # days}}",
       "strip": "{logged, plural, one {# day} other {# days}} logged out of {possible, plural, one {# day} other {the last # days}}",
-      "logged": "{logged, plural, one {# day} other {# days}} logged out of {possible}",
-      "last": "Last entry: {when}",
-      "lastNever": "No entries yet",
       "today": "today",
       "yesterday": "yesterday",
       "daysAgo": "{days} days ago",
-      "manage": "Manage account"
+      "manage": "Manage account",
+      "seen": "Last visit: {when}",
+      "seenNever": "Never came back",
+      "mostly": "mostly by {way}",
+      "open": "See details",
+      "openLabel": "See {name}'s details",
+      "close": "Close",
+      "stripCaption": "{logged, plural, one {# day logged} other {# days logged}} out of {possible} · last 28 days",
+      "lastSeen": "Last visit",
+      "lastMeal": "Last meal logged",
+      "never": "never",
+      "ways": "How they log",
+      "waysCount": "{count, plural, one {# food} other {# foods}}, 28 days",
+      "waysNone": "No food logged in the last 28 days.",
+      "way": {
+        "photo": "Photo",
+        "search": "Search",
+        "text": "Typed or dictated",
+        "barcode": "Barcode",
+        "reuse": "Reused meal"
+      },
+      "wayLower": {
+        "photo": "photo",
+        "search": "search",
+        "text": "typing or dictation",
+        "barcode": "barcode",
+        "reuse": "reused meals"
+      },
+      "features": "Features used",
+      "featuresWindow": "28 days",
+      "feature": {
+        "coach": "Pépin",
+        "menu": "Menu",
+        "fridge": "Fridge",
+        "training": "Training"
+      },
+      "featureCount": {
+        "coach": "{count, plural, one {# message} other {# messages}}",
+        "menu": "{count, plural, one {# dish planned} other {# dishes planned}}",
+        "fridge": "{count, plural, one {# idea asked} other {# ideas asked}}",
+        "training": "{count, plural, one {# session} other {# sessions}}"
+      },
+      "device": {
+        "iphone": "iPhone",
+        "android": "Android",
+        "computer": "Computer"
+      },
+      "deviceUnknown": "Unknown device",
+      "remindersOn": "Reminders on",
+      "remindersOff": "Reminders off",
+      "aiMonth": "AI this month: {cost}"
     }
   },
   "errors": {
