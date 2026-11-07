@@ -13,7 +13,7 @@ describe("formulations Ciqual d'une recherche", () => {
   });
 
   it("cherche un café du quotidien comme une boisson prête à boire", () => {
-    for (const text of ["café", "Un café", "café allongé", "café long", "café noir", "americano"]) {
+    for (const text of ["café", "Un café", "café allongé", "café long", "café noir", "café, infusé", "americano"]) {
       expect(variants(text)).toEqual(["cafe non instantane non sucre"]);
     }
     for (const text of ["espresso", "un expresso", "café serré", "ristretto"]) {

@@ -163,7 +163,6 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
               </p>
             </div>
           </div>
-          {streak.frozenDays.length > 0 && <p className="text-sm text-text-muted">{t("home.streakFrozen")}</p>}
         </div>
         <WeekStrip days={days} today={today} goalKcal={summary.goal?.kcal ?? null} locale={locale} />
       </header>

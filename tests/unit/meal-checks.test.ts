@@ -23,6 +23,17 @@ describe("contrôle des aliments proposés par l'IA", () => {
     expect(line("bol de riz", { nameFr: "Riz blanc, cuit", kcal: 130 })).toEqual([]);
   });
 
+  it("ne prend pas une pâte à tartiner pour des pâtes sèches", () => {
+    // Le cacao de l'IA est le chocolat de la base ; une pâte à tartiner n'est pas un féculent.
+    const spread = { nameFr: "Pâte à tartiner chocolat et noisette", kcal: 545 };
+    expect(line("pâte à tartiner noisette cacao", spread, 20, 109)).toEqual([]);
+    expect(line("pâte feuilletée", { nameFr: "Pâte feuilletée, crue", kcal: 400 }, 50, 200)).toEqual([]);
+    expect(line("pâté de campagne", { nameFr: "Pâté de campagne", kcal: 300 }, 40, 120)).toEqual([]);
+    expect(line("yogourt nature", { nameFr: "Yaourt, lait entier, nature", kcal: 85 }, 125, 106)).toEqual([]);
+    // Les pâtes, elles, restent contrôlées.
+    expect(line("pâtes à la carbonara", { nameFr: "Pâtes sèches, crues", kcal: 351 }, 100, 351)).toContain("dry");
+  });
+
   it("signale un aliment sans rapport avec ce qui a été reconnu", () => {
     expect(looksUnrelated("sauce au saumon", "Crème brûlée")).toBe(true);
     expect(line("saumon", { nameFr: "Julienne ou Lingue, cuite", kcal: 100 })).toEqual(["unrelated"]);
@@ -42,6 +53,19 @@ describe("contrôle des aliments proposés par l'IA", () => {
     expect(line("riz", { nameFr: "Thon, au naturel", kcal: 110 })).toEqual(["unrelated"]);
     expect(line("œuf de poule dur", { nameFr: "Oeuf, cru", kcal: 140 }, 165, 231)).toEqual(["unrelated"]);
     expect(line("œuf de caille", { nameFr: "Oeuf, dur", kcal: 134 }, 30, 40)).toEqual(["unrelated"]);
+  });
+
+  it("accepte les précisions que la base sous-entend", () => {
+    // Le lait de Ciqual est du lait de vache ; un café infusé est un café prêt à boire.
+    const milk = { nameFr: "Lait demi-écrémé, UHT", kcal: 47 };
+    expect(line("lait de vache demi-écrémé", milk, 100, 47)).toEqual([]);
+    const coffee = { nameFr: "Café, non instantané, non sucré, prêt à boire", kcal: 1 };
+    expect(line("café, infusé", coffee, 150, 2)).toEqual([]);
+    // Le reste du nom compte toujours : un lait de chèvre, du café moulu.
+    expect(line("lait de chèvre", milk, 100, 47)).toEqual(["unrelated"]);
+    expect(line("café, infusé", { nameFr: "Café, moulu", kcal: 300 }, 150, 450)).toContain("unrelated");
+    // Un thé infusé n'est pas des feuilles de thé : « infusé » n'est pas ignoré partout.
+    expect(line("thé infusé", { nameFr: "Thé noir, en feuilles", kcal: 300 }, 250, 750)).toContain("unrelated");
   });
 
   it("signale des pâtes ou du riz comptés secs", () => {

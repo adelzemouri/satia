@@ -44,8 +44,17 @@ const STOPWORDS = new Set([
   "pot",
 ]);
 
-/** Précisions que Ciqual sous-entend : un œuf est un œuf de poule. */
-const IMPLIED: readonly [RegExp, string][] = [[/\boeufs? de poule\b/g, "oeuf"]];
+/** Précisions que Ciqual sous-entend : un œuf est un œuf de poule, le lait du lait de vache. */
+const IMPLIED: readonly [RegExp, string][] = [
+  [/\boeufs? de poule\b/g, "oeuf"],
+  [/\blait de vache\b/g, "lait"],
+];
+
+/**
+ * Mots différents pour le même aliment, ramenés à une seule racine : l'IA dit « cacao » là où
+ * la base dit « chocolat » (pâte à tartiner, boisson), « yogourt » là où elle dit « yaourt ».
+ */
+const SAME_STEM: Readonly<Record<string, string>> = { cacao: "choco", yogou: "yaour", yoghu: "yaour" };
 
 /**
  * Racines des mots significatifs, sans le pluriel : « tomates cerises » → tomat, ceris ;
@@ -56,7 +65,8 @@ function stems(text: string): string[] {
   return plain
     .split(" ")
     .filter((word) => word.length >= 3 && !STOPWORDS.has(word))
-    .map((word) => (word.length > 3 ? word.replace(/[sx]$/, "") : word).slice(0, 5));
+    .map((word) => (word.length > 3 ? word.replace(/[sx]$/, "") : word).slice(0, 5))
+    .map((stem) => SAME_STEM[stem] ?? stem);
 }
 
 /**
