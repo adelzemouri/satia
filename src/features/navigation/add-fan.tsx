@@ -101,7 +101,9 @@ export function AddFan({
   const photo = item(0, "camera", t("addPhoto"), true);
   const voice = item(1, "mic", t("addVoice"));
   const barcode = item(ai ? 2 : 0, "barcode", t("addBarcode"));
-  const search = item(ai ? 3 : 1, "search", t("addSearch"));
+  // Avec l'IA, l'écran d'ajout s'ouvre sur « Qu'as-tu mangé ? » : on y écrit son repas. Sans IA,
+  // ce même champ est une recherche.
+  const search = item(ai ? 3 : 1, ai ? "edit" : "search", t(ai ? "addWrite" : "addSearch"));
 
   return (
     <div className="relative flex justify-center">
@@ -145,7 +147,15 @@ export function AddFan({
         >
           {barcode.content}
         </button>
-        <Link href="/add" onClick={() => onOpenChange(false)} style={search.style} className={search.className}>
+        <Link
+          href="/add"
+          onClick={() => {
+            onOpenChange(false);
+            if (ai) requestQuickStart({ kind: "write" });
+          }}
+          style={search.style}
+          className={search.className}
+        >
           {search.content}
         </Link>
       </div>
