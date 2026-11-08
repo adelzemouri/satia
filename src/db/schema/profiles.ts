@@ -12,6 +12,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import type { MealTimes } from "@/domain/meals";
 import type { ACTIVITY_LEVELS } from "@/domain/profile";
 import { DEFAULT_NOTIFICATION_PREFS, type NotificationPrefs } from "@/domain/notifications";
 import { BUDGET_MODES, COACH_STYLES, DIETS, GOALS, PACES, SEXES } from "@/domain/profile";
@@ -35,8 +36,8 @@ export const profiles = pgTable("profiles", {
   pace: text({ enum: PACES }).notNull(),
   diet: text({ enum: DIETS }).notNull(),
   foodsToAvoid: text().notNull().default(""),
-  /** Horaires habituels « HH:MM » par repas, pour les rappels. */
-  mealTimes: jsonb().$type<Record<"breakfast" | "lunch" | "dinner", string>>().notNull(),
+  /** Horaires habituels « HH:MM » par repas, pour les rappels (petit-déjeuner null : n'en prend pas). */
+  mealTimes: jsonb().$type<MealTimes>().notNull(),
   /** Objectif d'eau en verres de 250 ml. */
   waterGoalGlasses: smallint().notNull().default(8),
   /** Budget calorique quotidien, ou hebdomadaire (réparti sur les jours restants). */

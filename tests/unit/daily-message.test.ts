@@ -30,6 +30,18 @@ describe("dailyMessage", () => {
     expect(dailyMessage({ ...base, hour: 21, loggedToday: true, mainMealsLogged: 3 })).toEqual({ key: "dayComplete" });
   });
 
+  it("sans petit-déjeuner : matin neutre, déjeuner et dîner suffisent", () => {
+    const skip = { ...base, noBreakfast: true };
+    expect(dailyMessage(skip)).toEqual({ key: "morningNoBreakfast" });
+    expect(dailyMessage({ ...skip, hour: 12, loggedToday: true, mainMealsLogged: 0 })).toEqual({ key: "lunch" });
+    expect(dailyMessage({ ...skip, hour: 12, loggedToday: true, mainMealsLogged: 1, waterGoal: 0 }).key).not.toBe(
+      "lunch",
+    );
+    expect(dailyMessage({ ...skip, hour: 21, loggedToday: true, mainMealsLogged: 2 })).toEqual({
+      key: "dayCompleteNoBreakfast",
+    });
+  });
+
   it("le soir, parle de ce qui reste sans jamais reprocher un dépassement", () => {
     const evening = { ...base, hour: 19, loggedToday: true, mainMealsLogged: 2 };
     expect(dailyMessage({ ...evening, remainingKcal: 612 })).toEqual({ key: "eveningRoom", kcal: 610 });

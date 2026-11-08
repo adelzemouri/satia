@@ -618,6 +618,15 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 047 — Sans petit-déjeuner : un horaire null plutôt qu'un réglage à part
+
+- **Date** : 2026-11-08 · **Statut** : adoptée
+- **Contexte** : l'inscription demandait une heure de petit-déjeuner à tout le monde. Qui n'en prend pas recevait un rappel chaque matin, voyait un anneau vide visant 25 % de l'objectif, un déjeuner « trop gros » et jamais « journée complète ». Les horaires n'étaient plus modifiables après l'inscription.
+- **Décision** : `profiles.meal_times.breakfast` vaut `null` pour « Je ne prends pas de petit-déjeuner » (case à l'inscription et dans Moi › Notifications, où les horaires se changent désormais). Pas de rappel du matin ; sur l'accueil l'anneau du petit-déj reste, en pointillés et sans cible, et sa part va au déjeuner, au dîner et à la collation au prorata (`slotShares`) ; « journée complète » demande 2 repas ; message du matin neutre ; Pépin le sait. Pas de détection automatique (opaque, se tromperait sur un oubli).
+- **Conséquences** : pas de migration (colonne jsonb). Le menu généré décochait déjà le petit-déjeuner par défaut.
+
+---
+
 ## Modèle
 
 ```markdown

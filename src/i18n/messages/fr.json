@@ -79,8 +79,10 @@
     "daily": {
       "streak": "{days} jours d'affilée : ta régularité fait toute la différence.",
       "dayComplete": "Les trois repas sont notés : ta journée est complète, bravo.",
+      "dayCompleteNoBreakfast": "Déjeuner et dîner notés : ta journée est complète, bravo.",
       "waterDone": "Objectif d'eau atteint, ton corps te dit merci.",
       "morning": "Belle journée qui commence ! Un petit-déjeuner noté et c'est parti.",
+      "morningNoBreakfast": "Belle journée qui commence ! Note ce que tu prends, quand tu veux.",
       "lunch": "C'est l'heure du déjeuner : une assiette colorée et le tour est joué.",
       "afternoon": "Petit creux ? Un fruit ou un yaourt tient bien jusqu'au dîner.",
       "eveningRoom": "Il te reste environ {kcal, number} kcal pour ce soir, de quoi te faire plaisir.",
@@ -362,10 +364,12 @@
     },
     "meals": {
       "title": "Tes horaires de repas habituels",
-      "hint": "Ils serviront plus tard pour des rappels discrets.",
+      "hint": "Si rien n'est noté 30 minutes après, Pépin peut t'envoyer un petit rappel (dans Moi › Notifications).",
       "breakfast": "Petit-déjeuner",
       "lunch": "Déjeuner",
-      "dinner": "Dîner"
+      "dinner": "Dîner",
+      "noBreakfast": "Je ne prends pas de petit-déjeuner",
+      "noBreakfastHint": "C'est noté : pas de rappel le matin. Tu pourras toujours noter un café si l'envie te prend."
     },
     "disclaimer": {
       "title": "Avant de commencer",
@@ -1389,7 +1393,7 @@
     "homeBadge": "Accueil",
     "homeBadgeLabel": "aussi une carte sur l'accueil",
     "meals": "Repas non saisis",
-    "mealsHint": "30 minutes après ton horaire habituel, si rien n'est noté.",
+    "mealsHint": "30 minutes après tes horaires de repas, si rien n'est noté.",
     "water": "Hydratation",
     "waterHint": "En fin de matinée, d'après-midi et à 18 h, si tu es en retard sur ton objectif.",
     "weeklyReview": "Bilan de la semaine",
@@ -1467,7 +1471,10 @@
     "measurements": "Mensurations",
     "measurementsHint": "Une fois par mois.",
     "progressPhoto": "Photo de progrès",
-    "progressPhotoHint": "Une fois par mois, facultative et privée."
+    "progressPhotoHint": "Une fois par mois, facultative et privée.",
+    "mealTimes": "Mes horaires de repas",
+    "mealTimesHint": "Pour les rappels de repas, et pour adapter l'accueil si tu ne prends pas de petit-déjeuner.",
+    "noBreakfast": "Je ne prends pas de petit-déjeuner"
   },
   "plan": {
     "thisWeek": "Cette semaine",

@@ -26,6 +26,7 @@ import { CoachAvatar } from "@/features/coach/coach-avatar";
 import { Alert } from "@/ui/alert";
 import { Button } from "@/ui/button";
 import { Card } from "@/ui/card";
+import { CheckCard } from "@/ui/check-card";
 import { Field } from "@/ui/field";
 import { OptionList } from "@/ui/option-list";
 
@@ -45,6 +46,8 @@ type Draft = {
   diet: Diet | null;
   foodsToAvoid: string;
   mealTimes: { breakfast: string; lunch: string; dinner: string };
+  /** « Je ne prends pas de petit-déjeuner » : pas d'horaire ni de rappel le matin. */
+  noBreakfast: boolean;
   budgetMode: BudgetMode;
   disclaimerAccepted: boolean;
 };
@@ -85,6 +88,7 @@ const INITIAL: Draft = {
   diet: "omnivore",
   foodsToAvoid: "",
   mealTimes: { breakfast: "07:30", lunch: "12:30", dinner: "19:30" },
+  noBreakfast: false,
   budgetMode: "daily",
   disclaimerAccepted: false,
 };
@@ -107,7 +111,7 @@ function toInput(draft: Draft): OnboardingInput {
     pace: draft.pace,
     diet: draft.diet!,
     foodsToAvoid: draft.foodsToAvoid,
-    mealTimes: draft.mealTimes,
+    mealTimes: { ...draft.mealTimes, breakfast: draft.noBreakfast ? null : draft.mealTimes.breakfast },
     budgetMode: draft.budgetMode,
     disclaimerAccepted: draft.disclaimerAccepted as true,
   };
@@ -145,7 +149,9 @@ function validateStep(step: Step, draft: Draft, today: string): string | null {
     case "diet":
       return draft.diet ? null : "required";
     case "meals":
-      return Object.values(draft.mealTimes).every((time) => /^([01]\d|2[0-3]):[0-5]\d$/.test(time))
+      return Object.values(toInput(draft).mealTimes).every(
+        (time) => time === null || /^([01]\d|2[0-3]):[0-5]\d$/.test(time),
+      )
         ? null
         : "invalid_time";
     case "disclaimer":
@@ -367,17 +373,25 @@ export function OnboardingWizard({ defaultFirstName }: { defaultFirstName: strin
           <fieldset className="flex flex-col gap-3">
             <legend className="mb-2 font-semibold">{t("meals.title")}</legend>
             <p className="text-sm text-text-muted">{t("meals.hint")}</p>
-            <div className="grid grid-cols-3 gap-3">
-              {(["breakfast", "lunch", "dinner"] as const).map((meal) => (
-                <Field
-                  key={meal}
-                  label={t(`meals.${meal}`)}
-                  type="time"
-                  value={draft.mealTimes[meal]}
-                  onChange={(e) => update({ mealTimes: { ...draft.mealTimes, [meal]: e.target.value } })}
-                />
-              ))}
+            <div className={`grid gap-3 ${draft.noBreakfast ? "grid-cols-2" : "grid-cols-3"}`}>
+              {(draft.noBreakfast ? (["lunch", "dinner"] as const) : (["breakfast", "lunch", "dinner"] as const)).map(
+                (meal) => (
+                  <Field
+                    key={meal}
+                    label={t(`meals.${meal}`)}
+                    type="time"
+                    value={draft.mealTimes[meal]}
+                    onChange={(e) => update({ mealTimes: { ...draft.mealTimes, [meal]: e.target.value } })}
+                  />
+                ),
+              )}
             </div>
+            <CheckCard
+              checked={draft.noBreakfast}
+              onChange={(noBreakfast) => update({ noBreakfast })}
+              label={t("meals.noBreakfast")}
+            />
+            {draft.noBreakfast && <p className="text-sm text-text-muted">{t("meals.noBreakfastHint")}</p>}
           </fieldset>
         );
       case "disclaimer":

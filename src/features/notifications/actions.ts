@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
+import type { MealTimes } from "@/domain/meals";
 import type { NotificationPrefs } from "@/domain/notifications";
 import { type ActionState, toActionState } from "@/server/action-result";
 import {
@@ -12,6 +13,7 @@ import {
   sendTestNotification,
   setNotificationPrefs,
 } from "@/server/notifications";
+import { setMealTimes } from "@/server/profile";
 import { enforceRateLimit } from "@/server/rate-limit";
 import { publicOrigin } from "@/server/request";
 import { getCurrentUser } from "@/server/session";
@@ -37,8 +39,11 @@ export async function removePushSubscriptionAction(endpoint: string): Promise<Ac
   return run((userId) => removeSubscription(userId, endpoint));
 }
 
-export async function setNotificationPrefsAction(prefs: NotificationPrefs): Promise<ActionState> {
-  return run((userId) => setNotificationPrefs(userId, prefs));
+export async function setNotificationPrefsAction(prefs: NotificationPrefs, mealTimes: MealTimes): Promise<ActionState> {
+  return run(async (userId) => {
+    await setMealTimes(userId, mealTimes);
+    await setNotificationPrefs(userId, prefs);
+  });
 }
 
 export async function sendTestNotificationAction(): Promise<ActionState> {

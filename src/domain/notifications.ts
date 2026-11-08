@@ -114,7 +114,8 @@ export type ReminderInput = {
   /** 1 = lundi … 7 = dimanche. */
   weekday: number;
   prefs: NotificationPrefs;
-  mealTimes: Record<ReminderSlot, string>;
+  /** Petit-déjeuner null : la personne n'en prend pas, pas de rappel. */
+  mealTimes: { [slot in ReminderSlot]: string | null };
   loggedSlots: ReadonlySet<string>;
   waterGlasses: number;
   waterGoal: number;
@@ -144,8 +145,9 @@ export function dueReminders(input: ReminderInput): Reminder[] {
   const due: Reminder[] = [];
   if (prefs.meals) {
     for (const slot of ["breakfast", "lunch", "dinner"] as const) {
-      if (input.loggedSlots.has(slot)) continue;
-      if (within(time, minutesOf(input.mealTimes[slot]) + MEAL_DELAY, MEAL_WINDOW - MEAL_DELAY)) {
+      const at = input.mealTimes[slot];
+      if (at === null || input.loggedSlots.has(slot)) continue;
+      if (within(time, minutesOf(at) + MEAL_DELAY, MEAL_WINDOW - MEAL_DELAY)) {
         due.push({ kind: "meal", key: `${input.date}:${slot}`, slot });
       }
     }

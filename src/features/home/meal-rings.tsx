@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { MEAL_SLOTS, type MealSlot } from "@/db/schema";
-import { SLOT_SHARES } from "@/domain/coach";
+import { slotShares } from "@/domain/coach";
 import { Link } from "@/i18n/navigation";
 import { Icon } from "@/ui/icon";
 import { MiniRing } from "@/ui/mini-ring";
@@ -15,18 +15,23 @@ export async function MealRings({
   goalKcal,
   current,
   date,
+  noBreakfast,
 }: {
   kcalBySlot: Record<MealSlot, number>;
   goalKcal: number | null;
   current: MealSlot;
   date: string;
+  /** Sans petit-déjeuner : son anneau reste pour noter un café, sans cible, et sa part va aux autres repas. */
+  noBreakfast: boolean;
 }) {
   const t = await getTranslations();
+  const shares = slotShares(noBreakfast);
   return (
     <ul className="grid grid-cols-4 gap-2">
       {MEAL_SLOTS.map((slot) => {
         const kcal = Math.round(kcalBySlot[slot]);
-        const target = goalKcal ? Math.round(goalKcal * SLOT_SHARES[slot]) : 0;
+        const target = goalKcal ? Math.round(goalKcal * shares[slot]) : 0;
+        const optional = shares[slot] === 0;
         const percent = target > 0 ? (kcal / target) * 100 : 0;
         const filled = kcalBySlot[slot] > 0;
         const highlight = slot === current && !filled;
@@ -42,7 +47,7 @@ export async function MealRings({
               aria-label={filled ? t("home.viewSlot", { slot, name }) : t("home.addTo", { slot, name })}
               className="flex w-full flex-col items-center gap-1.5 rounded-2xl px-1 py-2 text-center"
             >
-              <MiniRing percent={percent} size={56} stroke={5}>
+              <MiniRing percent={percent} size={56} stroke={5} dashed={optional}>
                 <span
                   className={`flex size-8 items-center justify-center rounded-full ${
                     highlight ? "bg-pomme text-on-pomme" : filled ? "bg-primary-soft text-primary" : "text-primary"

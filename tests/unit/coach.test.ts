@@ -7,6 +7,7 @@ import {
   mentionsMedicalTopic,
   mentionsRiskyPractice,
   promptLine,
+  slotShares,
   suggestDish,
   suggestsDailyBelowFloor,
   weekStats,
@@ -80,6 +81,16 @@ describe("contexte du coach", () => {
     expect(context).not.toContain("Poids");
     expect(context).not.toContain("Semaine");
     expect(context.split("\n").length).toBeLessThanOrEqual(6);
+  });
+});
+
+describe("parts de l'objectif par repas", () => {
+  it("sans petit-déjeuner, sa part va aux autres repas et le total reste entier", () => {
+    const shares = slotShares(true);
+    expect(shares.breakfast).toBe(0);
+    expect(shares.lunch + shares.dinner + shares.snack).toBeCloseTo(1);
+    expect(Math.round(2000 * shares.lunch)).toBe(933);
+    expect(Object.values(slotShares(false)).reduce((a, b) => a + b, 0)).toBeCloseTo(1);
   });
 });
 

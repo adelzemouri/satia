@@ -7,7 +7,8 @@ import { goals, profiles } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { checkTargetWeight, computePlan, type Plan } from "@/domain/energy";
 import { goalChangesWeight } from "@/domain/profile";
-import { type OnboardingInput, onboardingSchema } from "@/features/onboarding/schema";
+import type { MealTimes } from "@/domain/meals";
+import { mealTimesSchema, type OnboardingInput, onboardingSchema } from "@/features/onboarding/schema";
 
 import { DomainError } from "./errors";
 import { latestWeight } from "./journal";
@@ -115,5 +116,13 @@ export async function setTargetWeight(userId: string, targetWeightKg: number | n
       targetWeightKg: targetWeightKg === null ? null : Math.round(targetWeightKg * 10) / 10,
       updatedAt: new Date(),
     })
+    .where(eq(profiles.userId, userId));
+}
+
+/** Horaires habituels des repas (rappels, accueil) ; petit-déjeuner null pour qui n'en prend pas. */
+export async function setMealTimes(userId: string, mealTimes: MealTimes): Promise<void> {
+  await db()
+    .update(profiles)
+    .set({ mealTimes: mealTimesSchema.parse(mealTimes), updatedAt: new Date() })
     .where(eq(profiles.userId, userId));
 }

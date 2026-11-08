@@ -9,12 +9,15 @@ export function MiniRing({
   size = 44,
   stroke = 5,
   tone = "primary",
+  dashed = false,
   children,
 }: {
   percent: number;
   size?: number;
   stroke?: number;
   tone?: "primary" | "accent" | "muted";
+  /** Piste en pointillés, sans cible : un repas facultatif. */
+  dashed?: boolean;
   children?: ReactNode;
 }) {
   const radius = (size - stroke) / 2;
@@ -29,8 +32,9 @@ export function MiniRing({
           cy={size / 2}
           r={radius}
           fill="none"
-          strokeWidth={stroke}
-          className="stroke-surface-muted"
+          strokeWidth={dashed ? 2 : stroke}
+          strokeDasharray={dashed ? "4 5" : undefined}
+          className={dashed ? "stroke-border" : "stroke-surface-muted"}
         />
         {percent > 0 && (
           <circle

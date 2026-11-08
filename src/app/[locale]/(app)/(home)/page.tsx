@@ -5,7 +5,7 @@ import { after } from "next/server";
 import { APP_TIMEZONE, COACH_NAME } from "@/config/app";
 import { todayIso } from "@/domain/dates";
 import { dailyMessage, STREAK_MILESTONES } from "@/domain/daily-message";
-import { slotAt } from "@/domain/meals";
+import { skipsBreakfast, slotAt, upcomingSlot } from "@/domain/meals";
 import { withDefaultPrefs } from "@/domain/notifications";
 import { dueRituals, freshVictory, nextWeighDay, parseSnoozes, SNOOZE_COOKIE, weighStatus } from "@/domain/rituals";
 import { suggestedQuestions } from "@/domain/coach-questions";
@@ -70,7 +70,8 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const streakInfo = streakStats(logged, today);
   const streak = streakInfo.current;
   // Le repas du moment est mis en avant : c'est le plus probable à saisir maintenant.
-  const current = slotAt(now, APP_TIMEZONE);
+  const noBreakfast = skipsBreakfast(profile.mealTimes);
+  const current = upcomingSlot(slotAt(now, APP_TIMEZONE), noBreakfast);
   const ideas = ideasForSlot(catalog, current, `${user.id}:${today}`, 4);
   const t = await getTranslations();
   const hour = Number(
@@ -78,9 +79,11 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   );
   const message = dailyMessage({
     hour,
-    mainMealsLogged: (["breakfast", "lunch", "dinner"] as const).filter(
-      (slot) => summary.bySlot[slot].entries.length > 0,
-    ).length,
+    mainMealsLogged: (noBreakfast
+      ? (["lunch", "dinner"] as const)
+      : (["breakfast", "lunch", "dinner"] as const)
+    ).filter((slot) => summary.bySlot[slot].entries.length > 0).length,
+    noBreakfast,
     loggedToday: summary.entries.length > 0,
     remainingKcal: summary.goal ? summary.goal.kcal - summary.totals.kcal : null,
     waterGlasses: summary.water.glasses,
@@ -186,7 +189,13 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
               {t("home.openJournal")}
             </Link>
           </div>
-          <MealRings kcalBySlot={kcalBySlot} goalKcal={summary.goal?.kcal ?? null} current={current} date={today} />
+          <MealRings
+            kcalBySlot={kcalBySlot}
+            goalKcal={summary.goal?.kcal ?? null}
+            current={current}
+            date={today}
+            noBreakfast={noBreakfast}
+          />
         </Card>
 
         {/* Les rendez-vous (pesée, mensurations) viennent sous l'anneau : ils ne servent qu'une fois par semaine. */}
