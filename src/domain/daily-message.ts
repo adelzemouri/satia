@@ -8,8 +8,10 @@ export const STREAK_MILESTONES = [3, 7, 14, 21, 30, 50, 75, 100, 150, 200, 365] 
 export type DailyContext = {
   /** Heure locale (0–23). */
   hour: number;
-  /** Repas principaux (petit-déjeuner, déjeuner, dîner) déjà notés aujourd'hui. */
+  /** Repas principaux attendus (petit-déjeuner, déjeuner, dîner) déjà notés aujourd'hui. */
   mainMealsLogged: number;
+  /** Ne prend pas de petit-déjeuner : deux repas principaux suffisent, et le matin n'en parle pas. */
+  noBreakfast?: boolean;
   /** Une saisie existe-t-elle aujourd'hui (tous repas confondus) ? */
   loggedToday: boolean;
   /** Calories restantes ; négatif au-delà de l'objectif, null sans objectif. */
@@ -24,8 +26,10 @@ export type DailyContext = {
 export type DailyMessage =
   | { key: "streak"; days: number }
   | { key: "dayComplete" }
+  | { key: "dayCompleteNoBreakfast" }
   | { key: "waterDone" }
   | { key: "morning" }
+  | { key: "morningNoBreakfast" }
   | { key: "lunch" }
   | { key: "afternoon" }
   | { key: "eveningRoom"; kcal: number }
@@ -44,10 +48,13 @@ export function dailyMessage(context: DailyContext): DailyMessage {
   if (loggedToday && (STREAK_MILESTONES as readonly number[]).includes(streakDays)) {
     return { key: "streak", days: streakDays };
   }
-  if (mainMealsLogged >= 3) return { key: "dayComplete" };
+  const noBreakfast = context.noBreakfast ?? false;
+  const mainMeals = noBreakfast ? 2 : 3;
+  if (mainMealsLogged >= mainMeals) return { key: noBreakfast ? "dayCompleteNoBreakfast" : "dayComplete" };
   if (context.waterGoal > 0 && context.waterGlasses >= context.waterGoal) return { key: "waterDone" };
-  if (hour < 11 && !loggedToday) return { key: "morning" };
-  if (hour >= 11 && hour < 14 && mainMealsLogged < 2) return { key: "lunch" };
+  if (hour < 11 && !loggedToday) return { key: noBreakfast ? "morningNoBreakfast" : "morning" };
+  // Le déjeuner est le seul repas attendu avant 14 h sans petit-déjeuner, le second sinon.
+  if (hour >= 11 && hour < 14 && mainMealsLogged < mainMeals - 1) return { key: "lunch" };
   if (hour >= 18 && remainingKcal !== null) {
     // Au-delà de l'objectif : pas de reproche, on regarde vers demain.
     if (remainingKcal < 0) return { key: "eveningFull" };

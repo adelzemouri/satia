@@ -15,6 +15,9 @@ import {
 
 const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "invalid_time");
 
+/** Horaires des repas ; petit-déjeuner null pour qui n'en prend pas. */
+export const mealTimesSchema = z.object({ breakfast: time.nullable(), lunch: time, dinner: time });
+
 /** Réponses du questionnaire, validées à l'identique côté client et côté serveur. */
 export const onboardingSchema = z
   .object({
@@ -32,7 +35,7 @@ export const onboardingSchema = z
     pace: z.enum(PACES),
     diet: z.enum(DIETS, "required"),
     foodsToAvoid: z.string().trim().max(500),
-    mealTimes: z.object({ breakfast: time, lunch: time, dinner: time }),
+    mealTimes: mealTimesSchema,
     budgetMode: z.enum(BUDGET_MODES),
     disclaimerAccepted: z.literal(true, "disclaimer_required"),
   })

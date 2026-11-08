@@ -25,7 +25,7 @@ export default async function NotificationsPage({ params }: PageProps<"/[locale]
       <p className="text-text-muted">{t("hint")}</p>
       <Card>
         <DeviceSubscription publicKey={vapidPublicKey()} devices={devices} />
-        <NotificationPrefsForm prefs={withDefaultPrefs(profile.notificationPrefs)} />
+        <NotificationPrefsForm prefs={withDefaultPrefs(profile.notificationPrefs)} mealTimes={profile.mealTimes} />
       </Card>
     </>
   );

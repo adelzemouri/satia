@@ -82,6 +82,8 @@ export type CoachContextInput = {
   targetKg: number | null;
   diet: string;
   foodsToAvoid: string;
+  /** Ne prend pas de petit-déjeuner : le coach n'en propose pas. */
+  noBreakfast?: boolean;
   fiberG: number;
   fruitVegPortions: number;
   feeling: { hunger: number | null; energy: number | null; mood: number | null };
@@ -106,7 +108,7 @@ export function coachContext(input: CoachContextInput): string {
     input.trendKg !== null
       ? `Poids (tendance) : ${input.trendKg} kg${input.targetKg !== null ? `, cible ${input.targetKg} kg` : ""}.`
       : null,
-    `Alimentation : ${input.diet}${input.foodsToAvoid ? `, à éviter : ${input.foodsToAvoid}` : ""}.`,
+    `Alimentation : ${input.diet}${input.foodsToAvoid ? `, à éviter : ${input.foodsToAvoid}` : ""}${input.noBreakfast ? ", ne prend pas de petit-déjeuner" : ""}.`,
     feelingLine(input.feeling),
     ...(input.history ?? []),
   ];
@@ -164,16 +166,36 @@ export type DishCandidate = {
 export const SLOT_SHARES: Record<MealSlot, number> = { breakfast: 0.25, lunch: 0.35, snack: 0.1, dinner: 0.3 };
 
 /**
+ * Parts de l'objectif par repas. Sans petit-déjeuner, sa part se répartit sur les autres repas
+ * au prorata : le total du jour ne change pas.
+ */
+export function slotShares(noBreakfast: boolean): Record<MealSlot, number> {
+  if (!noBreakfast) return SLOT_SHARES;
+  const rest = 1 - SLOT_SHARES.breakfast;
+  return {
+    breakfast: 0,
+    lunch: SLOT_SHARES.lunch / rest,
+    snack: SLOT_SHARES.snack / rest,
+    dinner: SLOT_SHARES.dinner / rest,
+  };
+}
+
+/**
  * Plat suggéré sans appel au LLM : une recette ou un favori adapté au repas qui vient (déjà
  * noté à ce repas, ou jamais noté et proposé au déjeuner ou au dîner seulement), dont une
  * portion tient dans la part de ce repas et dans le reste du jour, qui change chaque jour.
  */
 export function suggestDish(
   candidates: readonly DishCandidate[],
-  { slot, goalKcal, remainingKcal }: { slot: MealSlot; goalKcal: number; remainingKcal: number },
+  {
+    slot,
+    goalKcal,
+    remainingKcal,
+    noBreakfast = false,
+  }: { slot: MealSlot; goalKcal: number; remainingKcal: number; noBreakfast?: boolean },
   seed: string,
 ): DishCandidate | null {
-  const budget = Math.min(remainingKcal, Math.round(goalKcal * SLOT_SHARES[slot] * 1.2));
+  const budget = Math.min(remainingKcal, Math.round(goalKcal * slotShares(noBreakfast)[slot] * 1.2));
   if (budget < 80) return null;
   const fitting = candidates
     .filter((dish) => (dish.slots.length > 0 ? dish.slots.includes(slot) : slot === "lunch" || slot === "dinner"))

@@ -3,11 +3,13 @@
 import { useLocale, useTranslations } from "next-intl";
 import { type ReactNode, useState, useTransition } from "react";
 
+import type { MealTimes } from "@/domain/meals";
 import type { NotificationPrefs } from "@/domain/notifications";
 import { useErrorText } from "@/features/auth/use-error-text";
 import { SelectField } from "@/features/body/select-field";
 import { Alert } from "@/ui/alert";
 import { Button } from "@/ui/button";
+import { CheckCard } from "@/ui/check-card";
 import { Field } from "@/ui/field";
 
 import { setNotificationPrefsAction } from "./actions";
@@ -71,8 +73,10 @@ function Toggle({
 }
 
 /** Types de rappels et plage silencieuse (communs à tous les appareils). */
-export function NotificationPrefsForm({ prefs }: { prefs: NotificationPrefs }) {
+export function NotificationPrefsForm({ prefs, mealTimes }: { prefs: NotificationPrefs; mealTimes: MealTimes }) {
   const t = useTranslations("notifications");
+  const tSlots = useTranslations("slots");
+  const [noBreakfast, setNoBreakfast] = useState(mealTimes.breakfast === null);
   const locale = useLocale();
   // Lundi 1er janvier 2024 : les sept jours suivants donnent les noms des jours dans la langue.
   const weekdays = Array.from({ length: 7 }, (_, index) => ({
@@ -91,24 +95,49 @@ export function NotificationPrefsForm({ prefs }: { prefs: NotificationPrefs }) {
       action={(formData) =>
         startTransition(async () => {
           setState(
-            await setNotificationPrefsAction({
-              meals: formData.get("meals") === "on",
-              water: formData.get("water") === "on",
-              weeklyReview: formData.get("weeklyReview") === "on",
-              fasting: formData.get("fasting") === "on",
-              treatment: formData.get("treatment") === "on",
-              weighIn: formData.get("weighIn") === "on",
-              weighDay: Number(formData.get("weighDay")),
-              measurements: formData.get("measurements") === "on",
-              progressPhoto: formData.get("progressPhoto") === "on",
-              quietStart: String(formData.get("quietStart")),
-              quietEnd: String(formData.get("quietEnd")),
-            }),
+            await setNotificationPrefsAction(
+              {
+                meals: formData.get("meals") === "on",
+                water: formData.get("water") === "on",
+                weeklyReview: formData.get("weeklyReview") === "on",
+                fasting: formData.get("fasting") === "on",
+                treatment: formData.get("treatment") === "on",
+                weighIn: formData.get("weighIn") === "on",
+                weighDay: Number(formData.get("weighDay")),
+                measurements: formData.get("measurements") === "on",
+                progressPhoto: formData.get("progressPhoto") === "on",
+                quietStart: String(formData.get("quietStart")),
+                quietEnd: String(formData.get("quietEnd")),
+              },
+              {
+                breakfast: noBreakfast ? null : String(formData.get("breakfast")),
+                lunch: String(formData.get("lunch")),
+                dinner: String(formData.get("dinner")),
+              },
+            ),
           );
         })
       }
       className="flex flex-col gap-3"
     >
+      <fieldset className="flex flex-col gap-3">
+        <legend className="mb-1 font-semibold">{t("mealTimes")}</legend>
+        <p className="-mt-1 text-sm text-text-muted">{t("mealTimesHint")}</p>
+        <div className={`grid gap-3 ${noBreakfast ? "grid-cols-2" : "grid-cols-3"}`}>
+          {!noBreakfast && (
+            <Field
+              label={tSlots("breakfast")}
+              name="breakfast"
+              type="time"
+              defaultValue={mealTimes.breakfast ?? "07:30"}
+              required
+            />
+          )}
+          <Field label={tSlots("lunch")} name="lunch" type="time" defaultValue={mealTimes.lunch} required />
+          <Field label={tSlots("dinner")} name="dinner" type="time" defaultValue={mealTimes.dinner} required />
+        </div>
+        <CheckCard checked={noBreakfast} onChange={setNoBreakfast} label={t("noBreakfast")} />
+      </fieldset>
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1 font-semibold">{t("types")}</legend>
         <p className="text-sm text-text-muted">{t("typesHint")}</p>

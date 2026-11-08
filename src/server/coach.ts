@@ -35,7 +35,7 @@ import { longHistoryLines, metabolismLine } from "@/domain/coach-history";
 import { type CoachTopic, coachTopicSchema, dayTopicLine, foodTopicLine, mealTopicLine } from "@/domain/coach-topic";
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
-import { type MealSlot, slotAt } from "@/domain/meals";
+import { type MealSlot, skipsBreakfast, slotAt } from "@/domain/meals";
 import { weekQuality } from "@/domain/quality";
 import { CATEGORY_SLOTS, catalogRecipeFor } from "@/domain/recipes/catalog";
 import { isoWeekStart } from "@/domain/streak";
@@ -173,6 +173,7 @@ export async function coachContextFor(userId: string, today: string = todayIso()
     targetKg: profile.targetWeightKg,
     diet: profile.diet,
     foodsToAvoid: profile.foodsToAvoid,
+    noBreakfast: skipsBreakfast(profile.mealTimes),
     fiberG: quality.fiberG,
     fruitVegPortions: quality.fruitVegPortions,
     feeling,
@@ -424,7 +425,9 @@ export async function suggestedDish(
   date: string,
 ): Promise<SuggestedDish | null> {
   if (remainingKcal < 80) return null;
-  const pool = await dishPool(userId);
+  const [pool, profile] = await Promise.all([dishPool(userId), getProfile(userId)]);
+  // Sans petit-déjeuner, le déjeuner et le dîner ont une part plus grande de l'objectif.
+  const noBreakfast = profile ? skipsBreakfast(profile.mealTimes) : false;
   if (pool.length === 0) return null;
   const history = await db()
     .selectDistinct({ foodId: mealEntries.foodId, slot: mealEntries.slot })
@@ -455,7 +458,7 @@ export async function suggestedDish(
   const pictured = candidates.filter((candidate) =>
     candidate.catalogSlug ? RECIPE_PHOTOS.has(candidate.catalogSlug) : Boolean(candidate.imageUrl),
   );
-  const day = { slot, goalKcal, remainingKcal };
+  const day = { slot, goalKcal, remainingKcal, noBreakfast };
   const seed = `${userId}:${date}`;
   const dish =
     suggestDish(

@@ -110,6 +110,12 @@ test("onboarding complet d'un adulte avec plan expliqué", async ({ page }) => {
   await expect(page.getByLabel("Omnivore")).toBeChecked();
   await page.getByLabel("Sans porc").check();
   await page.getByLabel("Aliments que tu préfères éviter").fill("coriandre");
+  // Qui ne prend pas de petit-déjeuner n'a pas d'horaire à donner pour lui.
+  await expect(page.getByLabel("Petit-déjeuner", { exact: true })).toBeVisible();
+  await page.getByLabel("Je ne prends pas de petit-déjeuner").check();
+  await expect(page.getByLabel("Petit-déjeuner", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("C'est noté : pas de rappel le matin.", { exact: false })).toBeVisible();
+  await page.getByLabel("Je ne prends pas de petit-déjeuner").uncheck();
   await next.click(); // horaires par défaut
   await next.click();
   await expect(alertIn(page)).toHaveText("Merci de confirmer avoir lu ce message.");
@@ -267,6 +273,25 @@ test("réglages des notifications et génération des clés côté admin", async
   await page.reload();
   await expect(card.getByLabel("Hydratation")).not.toBeChecked();
   await expect(card.getByLabel("De", { exact: true })).toHaveValue("21:30");
+
+  // Les horaires de repas se changent ici ; sans petit-déjeuner, l'accueil ne lui donne plus de cible.
+  await card.getByLabel("Je ne prends pas de petit-déjeuner").check();
+  await expect(card.getByLabel("Petit-déjeuner", { exact: true })).toHaveCount(0);
+  await card.getByLabel("Dîner").fill("20:15");
+  await card.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(card.getByText("Préférences enregistrées.")).toBeVisible();
+  await page.reload();
+  await expect(card.getByLabel("Je ne prends pas de petit-déjeuner")).toBeChecked();
+  await expect(card.getByLabel("Dîner")).toHaveValue("20:15");
+  await page.goto("/");
+  const breakfastRing = page.getByRole("link", { name: "Ajouter au petit-déjeuner" });
+  await expect(breakfastRing).toContainText("0 kcal");
+  await expect(breakfastRing).not.toContainText("/");
+  await page.goto("/profile/notifications");
+  await card.getByLabel("Je ne prends pas de petit-déjeuner").uncheck();
+  await expect(card.getByLabel("Petit-déjeuner", { exact: true })).toHaveValue("07:30");
+  await card.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(card.getByText("Préférences enregistrées.")).toBeVisible();
 
   await page.goto("/admin");
   const push = page.getByRole("region", { name: "Notifications" });

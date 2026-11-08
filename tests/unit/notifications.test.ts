@@ -48,6 +48,13 @@ describe("rappels de repas", () => {
   it("se désactive avec la préférence", () => {
     expect(at("13:00", { prefs: { ...DEFAULT_NOTIFICATION_PREFS, meals: false } })).toEqual([]);
   });
+
+  it("ne rappelle pas le petit-déjeuner à qui n'en prend pas", () => {
+    const noBreakfast = { breakfast: null, lunch: "12:30", dinner: "19:30" };
+    expect(at("08:00")).toEqual([{ kind: "meal", key: "2026-10-26:breakfast", slot: "breakfast" }]);
+    expect(at("08:00", { mealTimes: noBreakfast })).toEqual([]);
+    expect(at("13:00", { mealTimes: noBreakfast })).toEqual([{ kind: "meal", key: "2026-10-26:lunch", slot: "lunch" }]);
+  });
 });
 
 describe("rappels d'hydratation", () => {

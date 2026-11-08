@@ -79,8 +79,10 @@
     "daily": {
       "streak": "{days} days in a row: your consistency makes all the difference.",
       "dayComplete": "All three meals are logged: your day is complete, well done.",
+      "dayCompleteNoBreakfast": "Lunch and dinner are logged: your day is complete, well done.",
       "waterDone": "Water goal reached, your body says thanks.",
       "morning": "A new day begins! Log a breakfast and off you go.",
+      "morningNoBreakfast": "A new day begins! Log what you have, whenever you like.",
       "lunch": "Lunchtime: a colourful plate and you're all set.",
       "afternoon": "Feeling peckish? A piece of fruit or a yoghurt keeps you going until dinner.",
       "eveningRoom": "About {kcal, number} kcal left for tonight, room for something you enjoy.",
@@ -362,10 +364,12 @@
     },
     "meals": {
       "title": "Your usual meal times",
-      "hint": "They will be used later for gentle reminders.",
+      "hint": "If nothing is logged 30 minutes later, Pépin can send you a gentle reminder (in Me › Notifications).",
       "breakfast": "Breakfast",
       "lunch": "Lunch",
-      "dinner": "Dinner"
+      "dinner": "Dinner",
+      "noBreakfast": "I don't eat breakfast",
+      "noBreakfastHint": "Got it: no morning reminder. You can still log a coffee whenever you like."
     },
     "disclaimer": {
       "title": "Before we start",
@@ -1389,7 +1393,7 @@
     "homeBadge": "Home",
     "homeBadgeLabel": "also a card on the home screen",
     "meals": "Unlogged meals",
-    "mealsHint": "30 minutes after your usual time, if nothing is logged.",
+    "mealsHint": "30 minutes after your meal times, if nothing is logged.",
     "water": "Hydration",
     "waterHint": "Late morning, afternoon and at 6 pm, if you're behind your goal.",
     "weeklyReview": "Weekly review",
@@ -1467,7 +1471,10 @@
     "measurements": "Measurements",
     "measurementsHint": "Once a month.",
     "progressPhoto": "Progress photo",
-    "progressPhotoHint": "Once a month, optional and private."
+    "progressPhotoHint": "Once a month, optional and private.",
+    "mealTimes": "My meal times",
+    "mealTimesHint": "For meal reminders, and to adapt the home screen if you skip breakfast.",
+    "noBreakfast": "I don't eat breakfast"
   },
   "plan": {
     "thisWeek": "This week",
