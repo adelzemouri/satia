@@ -645,6 +645,15 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 050 — « Mon métabolisme » commence par l'essentiel
+
+- **Date** : 2026-11-09 · **Statut** : adoptée
+- **Contexte** : la page donnait la dépense réelle, l'objectif et les bilans, mais ne comparait jamais ce qui est mangé à l'objectif. En prise de poids, on voyait l'objectif baisser chaque semaine sans comprendre pourquoi le poids baissait aussi. Le graphique n'avait ni légende ni axes.
+- **Décision** : un bloc « L'essentiel » en tête (toute la largeur sur ordinateur) : l'écart moyen entre l'apport et l'objectif, ce que ça donne sur la balance selon le but (perte, maintien, prise), un conseil sans culpabiliser, et une règle qui place « mangé », « ta dépense » et « objectif » (sous la dépense on perd, au-dessus on prend). Calcul pur `metabolismSummary` (domain/adaptive.ts), sous 100 kcal d'écart l'apport « colle ». « Ton objectif » montre dépense + marge = objectif. Graphique : objectif et dépense mesurée, avec légende, repères en kcal et dates ; la courbe de la formule n'y figure plus (elle reste dans « Comparer avec la formule »). Bilans sur une ligne par semaine, semaines sans mesure regroupées. En prise de poids sous l'objectif, un lien pose à Pépin « Comment ajouter des calories facilement à mes repas ? » (question hors rotation de l'accueil). Maquette : https://claude.ai/artifact/RLZmvstdT4YTcTfXvQf33v.
+- **Conséquences** : aucun appel IA de plus (sauf si l'on clique sur le lien vers Pépin). La marge affichée est l'écart réel entre objectif et dépense : elle peut s'éloigner de la marge visée (+150/+300) tant que l'ajustement est limité à 150 kcal par semaine.
+
+---
+
 ## Modèle
 
 ```markdown
