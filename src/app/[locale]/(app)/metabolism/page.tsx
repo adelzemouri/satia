@@ -11,6 +11,7 @@ import {
 } from "@/domain/adaptive";
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
+import type { Goal } from "@/domain/profile";
 import { isoWeekStart } from "@/domain/streak";
 import { GoalLockForm } from "@/features/adaptive/goal-lock-form";
 import { TdeeChart } from "@/features/adaptive/tdee-chart";
@@ -121,13 +122,20 @@ export default async function MetabolismPage({ params }: PageProps<"/[locale]/me
           {t("howTitle")}
         </h2>
         <p>{t("how1", { days: WINDOW_DAYS })}</p>
-        <p>{t("how2")}</p>
+        <p>{t(`how2.${howDirection(overview.profileGoal)}`)}</p>
         <p>{t("how3")}</p>
       </Card>
 
       <p className="text-sm text-text-muted">{t("disclaimer", { appName: APP_NAME })}</p>
     </Columns>
   );
+}
+
+/** L'explication suit l'objectif : on vise une baisse, une hausse ou un poids stable. */
+function howDirection(goal: Goal): "lose" | "gain" | "steady" {
+  if (goal === "lose_weight") return "lose";
+  if (goal === "gain_muscle") return "gain";
+  return "steady";
 }
 
 /** La dépense réelle et son calcul en trois lignes ; les chiffres de la formule restent repliés. */

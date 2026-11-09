@@ -123,7 +123,12 @@ describe("objectif adaptatif", () => {
     expect(after.kcal).toBe(before.kcal + 150);
     expect(after.proteinG).toBe(before.proteinG);
     const overview = await metabolismOverview(userId, today);
-    expect(overview).toMatchObject({ goalKcal: after.kcal, goalSource: "adaptive", goalLocked: false });
+    expect(overview).toMatchObject({
+      goalKcal: after.kcal,
+      goalSource: "adaptive",
+      goalLocked: false,
+      profileGoal: "lose_weight",
+    });
     expect(overview?.history).toHaveLength(1);
   });
 

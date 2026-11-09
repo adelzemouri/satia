@@ -8,7 +8,7 @@ import { goals, largerDays, mealEntries, metabolismChecks, profiles, weightEntri
 import { adaptGoal, type Measurement, type MissingData, measureExpenditure, WINDOW_DAYS } from "@/domain/adaptive";
 import { todayIso } from "@/domain/dates";
 import { addDays, computePlan, macrosFor } from "@/domain/energy";
-import { type ActivityLevel, BUDGET_MODES, type BudgetMode } from "@/domain/profile";
+import { type ActivityLevel, BUDGET_MODES, type BudgetMode, type Goal as ProfileGoal } from "@/domain/profile";
 import { isoWeekStart } from "@/domain/streak";
 import { type WeekBudget, weekDates, weeklyBudget } from "@/domain/weekly-budget";
 import { weightTrend } from "@/domain/weight-trend";
@@ -177,6 +177,8 @@ export type MetabolismOverview = {
   goalKcal: number;
   goalSource: Goal["source"];
   goalLocked: boolean;
+  /** Objectif du profil (perte, maintien, prise) : oriente l'explication de l'ajustement. */
+  profileGoal: ProfileGoal;
   history: {
     weekStart: string;
     status: (typeof metabolismChecks.$inferSelect)["status"];
@@ -216,6 +218,7 @@ export async function metabolismOverview(
     goalKcal: ctx.goal.kcal,
     goalSource: ctx.goal.source,
     goalLocked: ctx.profile.goalLocked,
+    profileGoal: ctx.profile.goal,
     history: history.reverse(),
   };
 }
