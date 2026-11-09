@@ -344,6 +344,38 @@ main[tabindex="-1"]:focus {
   }
 }
 
+/* Fin de séance : quelques pépins et feuilles apparaissent au-dessus de Pépin, une seule fois. */
+.training-confetti {
+  position: absolute;
+  width: 0.55rem;
+  height: 0.8rem;
+  border-radius: 50% 50% 45% 45%;
+  background: #7a4b2c;
+  opacity: 0.8;
+  animation: training-confetti-in 420ms var(--ease-pop) both;
+}
+
+.training-confetti-leaf {
+  width: 0.9rem;
+  height: 0.5rem;
+  border-radius: 0 100% 0 100%;
+  background: var(--color-primary);
+  opacity: 0.6;
+}
+
+@keyframes training-confetti-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.75rem) scale(0.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .training-confetti {
+    animation: none;
+  }
+}
+
 /* Dictée : le micro respire tant qu'il écoute, rebondit et lance une onde à chaque mot reçu. */
 .dictation-breathe {
   animation: dictation-breathe 2.4s ease-in-out infinite;

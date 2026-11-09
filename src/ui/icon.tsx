@@ -61,15 +61,9 @@ export const ICONS = {
     "M12 4c.6 3.6 2.4 5.4 6 6-3.6.6-5.4 2.4-6 6-.6-3.6-2.4-5.4-6-6 3.6-.6 5.4-2.4 6-6ZM18.5 15.5c.3 1.4.9 2 2.3 2.3-1.4.3-2 .9-2.3 2.3-.3-1.4-.9-2-2.3-2.3 1.4-.3 2-.9 2.3-2.3Z",
 } as const;
 
-export function Icon({
-  name,
-  size = 22,
-  filled = false,
-}: {
-  name: keyof typeof ICONS;
-  size?: number;
-  filled?: boolean;
-}) {
+export type IconName = keyof typeof ICONS;
+
+export function Icon({ name, size = 22, filled = false }: { name: IconName; size?: number; filled?: boolean }) {
   return (
     <svg
       aria-hidden="true"

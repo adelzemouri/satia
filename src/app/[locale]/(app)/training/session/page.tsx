@@ -1,13 +1,17 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { todayIso } from "@/domain/dates";
+import { isoWeekStart } from "@/domain/streak";
 import { exerciseById } from "@/domain/training/exercises";
+import { fallbackTitleIndex } from "@/domain/training/pepin";
+import { personalRecords, trainingStreak } from "@/domain/training/program";
 import { FOCUSES, type Focus, type PlannedSession } from "@/domain/training/types";
 import { type PlayerSession, type PlayerStep, SessionPlayer } from "@/features/training/session-player";
 import { Link, redirect } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
+import { getProfile } from "@/server/profile";
 import { requireUser } from "@/server/session";
-import { getTrainingProfile, type SessionSpec, sessionFor } from "@/server/training";
+import { getTrainingProfile, type SessionSpec, sessionFor, trainingHistory, trainingWeeks } from "@/server/training";
 import { Card } from "@/ui/card";
 
 function intParam(value: unknown, min: number, max: number): number | null {
@@ -84,32 +88,36 @@ export default async function TrainingSessionPage({ params, searchParams }: Page
   const kind: PlayerSession["kind"] =
     spec.kind === "program" ? ((spec.variant ?? 0) > 0 ? "replacement" : "program") : spec.kind;
   const title =
-    kind === "express" ? t("home.express") : (kind === "program" && session.title) || t(`focus.${session.focus}`);
+    kind === "express"
+      ? t("home.express")
+      : (kind === "program" && session.title) ||
+        t(`titles.${session.focus}.${String(fallbackTitleIndex(session.day)) as "0"}`);
+  const steps = toSteps(session);
+  const ids = new Set(steps.map((step) => step.exerciseId));
+  const [history, weeks, profile] = await Promise.all([
+    trainingHistory(user.id, 3650),
+    trainingWeeks(user.id),
+    getProfile(user.id),
+  ]);
+  const weekStart = isoWeekStart(todayIso());
 
   return (
-    <>
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="font-display text-3xl font-extrabold tracking-tight">{title}</h1>
-        <Link href="/training" className="font-semibold text-primary underline-offset-4 hover:underline">
-          {t("session.quit")}
-        </Link>
-      </div>
-      <p className="text-text-muted">
-        {t("minutes", { count: session.minutes })} · {t("exercises", { count: session.main.length })}
-      </p>
-      <Card>
-        <SessionPlayer
-          session={{
-            kind,
-            focus: session.focus,
-            title,
-            minutes: session.minutes,
-            tip: kind === "program" ? (session.tip ?? null) : null,
-            steps: toSteps(session),
-          }}
-        />
-      </Card>
+    <div data-wide className="flex flex-col gap-6 lg:mx-auto lg:w-full lg:max-w-5xl">
+      <SessionPlayer
+        session={{
+          kind,
+          focus: session.focus,
+          title,
+          minutes: session.minutes,
+          tip: kind === "program" ? (session.tip ?? null) : null,
+          steps,
+          firstSession: weeks.size === 0,
+          weeksIfDone: trainingStreak(new Set([...weeks, weekStart]), weekStart),
+          firstName: profile?.firstName ?? user.name,
+          records: personalRecords(history).filter((record) => ids.has(record.exerciseId)),
+        }}
+      />
       <p className="text-sm text-text-muted">{t("disclaimer")}</p>
-    </>
+    </div>
   );
 }

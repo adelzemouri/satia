@@ -1395,16 +1395,25 @@ test("espace Training : profil sportif, séance express guidée, suivi et biblio
   const today = page.getByRole("region", { name: "Séance du jour" });
   await expect(today.getByRole("link", { name: "Démarrer la séance" })).toBeVisible();
   await expectNoA11yViolations(page);
-  await today.getByRole("link", { name: "Remplacer" }).click();
-  await expect(page.getByRole("heading", { name: "Séance de remplacement" })).toBeVisible();
+  // Pépin accueille la toute première séance.
+  await expect(page.getByText(/Première séance \? On y va tranquille/)).toBeVisible();
+  await today.getByRole("link", { name: "Changer de séance" }).click();
+  await expect(page.getByRole("region", { name: "Séance de remplacement" })).toBeVisible();
   await page.getByRole("link", { name: "Revenir à la séance prévue" }).click();
-  await expect(page.getByRole("heading", { name: "Séance du jour" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Séance du jour" })).toBeVisible();
 
-  await page.getByRole("link", { name: "Séance express (10 min)" }).click();
+  // « À la demande » s'ouvre dans un panneau, durée et type en pastilles.
+  await page.getByRole("button", { name: /^À la demande/ }).click();
+  const onDemand = page.getByRole("dialog", { name: "Séance à la demande" });
+  await expect(onDemand.getByRole("radio", { name: "20 min" })).toBeChecked();
+  await expectNoA11yViolations(page);
+  await onDemand.getByRole("button", { name: "Fermer" }).click();
+
+  await page.getByRole("link", { name: /^Séance express/ }).click();
   await expect(page.getByRole("heading", { name: "Au programme" })).toBeVisible();
   await expectNoA11yViolations(page);
   await page.getByRole("button", { name: "C'est parti" }).click();
-  const stepLabel = (n: number) => page.getByText(new RegExp(`^Étape ${n} sur 7`));
+  const stepLabel = (n: number) => page.getByText(new RegExp(`Étape ${n} sur 7`));
   const setDone = page.getByRole("button", { name: "Série faite" });
   await expect(stepLabel(1)).toBeVisible();
   await expectNoA11yViolations(page);
@@ -1412,7 +1421,8 @@ test("espace Training : profil sportif, séance express guidée, suivi et biblio
   await expect(stepLabel(2)).toBeVisible();
   await setDone.click();
   await expect(stepLabel(3)).toBeVisible();
-  await page.getByRole("button", { name: "Douleur ou zone à ménager" }).click();
+  await page.getByRole("button", { name: "Douleur" }).click();
+  await page.getByRole("button", { name: "Mettre cet exercice de côté" }).click();
   await expect(page.getByText(/Exercice mis de côté/)).toBeVisible();
   for (const step of [4, 5]) {
     await expect(stepLabel(step)).toBeVisible();
@@ -1424,8 +1434,10 @@ test("espace Training : profil sportif, séance express guidée, suivi et biblio
   await setDone.click();
   await expect(stepLabel(7)).toBeVisible();
   await setDone.click();
-  await expect(page.getByRole("heading", { name: "Séance terminée, bravo !" })).toBeVisible();
-  await page.getByText("Bien", { exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Première séance faite !" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Tes premiers repères" })).toBeVisible();
+  await page.getByText("Juste bien", { exact: true }).click();
+  await expect(page.getByText(/Noté : on garde ce rythme/)).toBeVisible();
   await expectNoA11yViolations(page);
   await page.getByRole("button", { name: "Enregistrer la séance" }).click();
 

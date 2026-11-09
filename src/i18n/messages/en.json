@@ -1702,14 +1702,14 @@
       "today": "Today's workout",
       "rest": "Rest day: recovery is part of the program.",
       "start": "Start the workout",
-      "replace": "Swap",
+      "replace": "Change workout",
       "replaceHint": "Another workout of the same type and length.",
       "replaced": "Swapped workout",
       "backToPlanned": "Back to the planned workout",
       "express": "Express workout (10 min)",
-      "expressHint": "A short circuit for busy days.",
+      "expressHint": "A 10-minute circuit for busy days.",
       "onDemand": "Workout on demand",
-      "onDemandHint": "Pick a length, the rest is prepared for you.",
+      "onDemandHint": "You pick the length and the type.",
       "duration": "Length",
       "type": "Workout type",
       "noEquipment": "No equipment",
@@ -1717,12 +1717,26 @@
       "week": "This week's program",
       "doneDay": "Done",
       "streak": "{count, plural, =0 {Your first workout starts your streak of active weeks.} one {# active week in a row} other {# active weeks in a row}}",
-      "personalizing": "The coach is preparing tips for the week…",
+      "personalizing": "Pépin is preparing tips for the week…",
       "doneToday": "Workout done today: {kcal} kcal added to your daily budget.",
       "library": "Exercises",
       "history": "My progress",
       "profile": "My training profile",
-      "restShort": "Rest"
+      "restShort": "Rest",
+      "todayTag": "Today · {day}",
+      "myWeek": "My week",
+      "planned": "{count, plural, =0 {No workout planned} one {# workout planned} other {# workouts planned}}",
+      "weeksActive": "{count, plural, one {# active week} other {# active weeks}}",
+      "dayPlanned": "{day}: {title}",
+      "dayRest": "{day}: rest",
+      "dayDone": "{day}: workout done",
+      "other": "Something else?",
+      "expressTitle": "Express workout",
+      "onDemandTitle": "On demand",
+      "libraryHint": "Every exercise, with its instructions.",
+      "historyHint": "Your consistency and your marks.",
+      "close": "Close",
+      "more": "{count, plural, one {+# exercise} other {+# exercises}}"
     },
     "snack": {
       "beforeTitle": "Before the workout",
@@ -1757,20 +1771,43 @@
       "harder": "Harder: {text}",
       "pain": "Pain or area to protect",
       "painDone": "Exercise set aside: it won't be suggested again. Moving on.",
-      "finishTitle": "Workout done, well done!",
+      "finishTitle": "Workout done!",
       "elapsed": "Duration: {minutes} min",
       "feeling": "How was it?",
       "feelings": {
         "easy": "Too easy",
-        "good": "Good",
+        "good": "Just right",
         "hard": "Too hard"
       },
-      "feelingHint": "Your feedback adjusts next week's difficulty.",
+      "feelingHint": "How it felt sets next week.",
       "save": "Save the workout",
       "saved": "Workout saved.",
       "quit": "Leave the workout",
       "awake": "Screen kept on during the workout.",
-      "unavailable": "This workout is no longer in the program."
+      "unavailable": "This workout is no longer in the program.",
+      "phaseCount": "{phase} · {current} of {total}",
+      "quitShort": "Quit",
+      "easierShort": "Gentler",
+      "howShort": "How to",
+      "painShort": "Pain",
+      "painTitle": "Pain, or an area to protect?",
+      "painHint": "This exercise will be set aside and won't be suggested again. We move on.",
+      "painConfirm": "Set this exercise aside",
+      "harderShort": "Harder: {text}",
+      "repsLess": "One rep less",
+      "repsMore": "One rep more",
+      "finishFirst": "First workout done!",
+      "finishFirstBody": "You just laid the first stone, {name}.",
+      "finishBody": "One more for your week, {name}.",
+      "statMinutes": "{count, plural, one {minute} other {minutes}}",
+      "statExercises": "{count, plural, one {exercise} other {exercises}}",
+      "statWeeks": "{count, plural, one {active week} other {active weeks}}",
+      "firstMarks": "Your first marks",
+      "newMarks": "What moved",
+      "markKg": "{value} kg",
+      "markReps": "{value} reps",
+      "markSeconds": "{value} s",
+      "markBefore": "was {value}"
     },
     "history": {
       "title": "My progress",
@@ -1826,6 +1863,58 @@
       "label": "Movement illustration: {name}",
       "pause": "Pause the animation",
       "play": "Play the animation"
+    },
+    "pepin": {
+      "says": "{name} says:",
+      "first": "First workout? We'll take it easy. Nothing counts against you: at the end, tell me if it was too easy or too hard, and I'll adjust.",
+      "firstLater": "Your first workout is waiting for you on {day}. We'll take it easy, and how it feels will set what comes next.",
+      "done": "Workout done today, well done. {kcal} kcal added to your daily budget.",
+      "rest": "Rest day: muscles get stronger during recovery too.",
+      "restNext": "Rest day: muscles get stronger during recovery too. Next workout on {day}.",
+      "today": {
+        "0": "Your workout is ready. Go at your own pace: the gentler version is always there.",
+        "1": "Today we move a little. Even a shorter workout counts.",
+        "2": "Warm-up, workout, cool-down: I'm with you at every step.",
+        "3": "Keep some water close by, and start whenever you like."
+      },
+      "snackBefore": "Last meal more than 3 hours ago? A banana or some applesauce an hour before is perfect.",
+      "snackAfter": "After the workout, think protein: plain yogurt and a handful of almonds, or a glass of milk and a fruit.",
+      "snackAfterPlant": "After the workout, think protein: soy yogurt and a handful of almonds, or roasted chickpeas and a fruit.",
+      "overview": "Warm-up, {count, plural, one {# exercise} other {# exercises}}, then a cool-down. If a move doesn't suit you, there's always a gentler version.",
+      "restSet": "Catch your breath, set {current} is coming.",
+      "feelings": {
+        "easy": "Got it: I'll make next week a little harder.",
+        "good": "Got it: we keep this pace, with a tiny step up.",
+        "hard": "Got it: I'll lighten next week. Well done for finishing."
+      },
+      "restExercise": "Catch your breath. Next: {name}."
+    },
+    "titles": {
+      "full_body": {
+        "0": "Full body, gently",
+        "1": "Full body, in rhythm",
+        "2": "Full body, steady"
+      },
+      "upper": {
+        "0": "Upper body, easy does it",
+        "1": "Arms and shoulders at work",
+        "2": "Upper body, strong core"
+      },
+      "lower": {
+        "0": "Strong legs",
+        "1": "Lower body, well grounded",
+        "2": "Legs and glutes"
+      },
+      "cardio": {
+        "0": "Cardio at your pace",
+        "1": "A little cardio boost",
+        "2": "Cardio in rhythm"
+      },
+      "mobility": {
+        "0": "Mobility, nice and loose",
+        "1": "Loosen everything up",
+        "2": "Stretch and breathe"
+      }
     }
   },
   "body": {

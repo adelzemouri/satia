@@ -627,6 +627,15 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 048 — Pépin coach sportif, avec des phrases écrites à l'avance
+
+- **Date** : 2026-11-09 · **Statut** : adoptée
+- **Contexte** : l'espace Entraînement était jugé « trop basique, sans personnalité » : sept cartes de même poids, un coach anonyme, une fin de séance réduite à trois boutons radio.
+- **Décision** : Pépin devient le coach sportif (consigne du modèle comprise). Ses phrases sur l'accueil, pendant la séance (le geste clé de l'exercice, « Ensuite : … » au repos) et en réponse au ressenti sont écrites à l'avance (`domain/training/pepin.ts`, messages `training.pepin`), sans appel IA de plus. Sans IA, les séances reçoivent des titres écrits à l'avance par type. Fin de séance : premiers repères puis « ce qui a bougé », chaque exercice dans sa propre unité (kg, répétitions ou secondes), jamais de recul affiché ; ressenti en jauge d'effort (trois barres) plutôt qu'en emoji. Séance en plein écran sur téléphone (sans barre du bas, on sort par « Quitter »). Maquette : https://claude.ai/artifact/JgzhiSZhUx3WYby95yAnpg.
+- **Conséquences** : coût IA inchangé (toujours un appel par semaine au plus). Les phrases tournent sur 4 variantes : elles finiront par se répéter. Mon suivi et la bibliothèque d'exercices suivent dans une seconde étape.
+
+---
+
 ## Modèle
 
 ```markdown
