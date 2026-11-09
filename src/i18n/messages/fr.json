@@ -1104,14 +1104,57 @@
   },
   "metabolism": {
     "title": "Mon métabolisme",
-    "intro": "L'app compare ce que tu manges à l'évolution de ton poids pour mesurer ce que tu dépenses vraiment.",
+    "intro": "Ce que tu manges, ce que tu dépenses et ce que ça donne sur ta balance.",
+    "summary": {
+      "title": "L'essentiel · {days} derniers jours",
+      "intake": {
+        "below": "Tu manges en moyenne {gap, number} kcal de moins que ton objectif.",
+        "on": "Tu manges en moyenne ce que prévoit ton objectif, à {gap, number} kcal près.",
+        "above": "Tu manges en moyenne {gap, number} kcal de plus que ton objectif."
+      },
+      "weight": {
+        "lose": {
+          "down": "Ton poids baisse ({change, number, ::sign-always .00} kg par semaine), comme prévu.",
+          "stable": "Résultat : ton poids reste stable au lieu de baisser.",
+          "up": "Résultat : ton poids monte un peu ({change, number, ::sign-always .00} kg par semaine) au lieu de baisser."
+        },
+        "gain": {
+          "up": "Ton poids monte ({change, number, ::sign-always .00} kg par semaine), comme prévu.",
+          "stable": "Résultat : ton poids reste stable au lieu de monter.",
+          "down": "Résultat : ton poids baisse un peu ({change, number, ::sign-always .00} kg par semaine) au lieu de monter."
+        },
+        "steady": {
+          "stable": "Ton poids reste stable, comme prévu.",
+          "down": "Résultat : ton poids baisse un peu ({change, number, ::sign-always .00} kg par semaine).",
+          "up": "Résultat : ton poids monte un peu ({change, number, ::sign-always .00} kg par semaine)."
+        }
+      },
+      "advice": {
+        "gain": {
+          "below": "Pour prendre du poids comme tu le souhaites, ajoute environ <b>{gap, number} kcal par jour</b>. Rien ne presse : tu peux y aller petit à petit.",
+          "above": "Tu manges un peu plus que ton objectif : ton poids peut monter plus vite que prévu. Ton objectif suffit."
+        },
+        "lose": {
+          "below": "Tu manges sous ton objectif : pas besoin d'en faire plus, ton objectif suffit pour avancer en douceur.",
+          "above": "Pour perdre au rythme prévu, ton objectif reste le bon repère : rien ne presse, un petit pas à la fois."
+        },
+        "steady": {
+          "below": "Pour rester stable, vise ton objectif : environ <b>{gap, number} kcal de plus par jour</b>.",
+          "above": "Pour rester stable, ton objectif reste le bon repère, sans rien changer d'un coup."
+        }
+      },
+      "askPepin": "Demander des idées à {name}",
+      "scaleLabel": "Ce que tu manges, ta dépense et ton objectif, sur une même règle",
+      "eaten": "mangé",
+      "burned": "ta dépense",
+      "target": "objectif",
+      "losing": "◂ tu perds",
+      "gaining": "tu prends ▸",
+      "scaleHint": "Sous ta dépense, ton poids baisse. Au-dessus, il monte."
+    },
     "expenditure": "Ta dépense réelle",
     "perDay": "par jour",
-    "direction": {
-      "stable": "Ton poids est resté stable, donc tu dépenses à peu près ce que tu manges.",
-      "down": "Ton poids baisse, donc tu dépenses un peu plus que ce que tu manges.",
-      "up": "Ton poids monte, donc tu dépenses un peu moins que ce que tu manges."
-    },
+    "expenditureHint": "Ce que ton corps brûle vraiment, mesuré avec tes repas et ta balance.",
     "calcLabel": "Calcul de ta dépense réelle",
     "calcIntake": "Mangé en moyenne",
     "calcIntakeDetail": "sur les {days} derniers jours",
@@ -1140,13 +1183,37 @@
       "manual": "Choisi manuellement.",
       "adaptive": "Ajusté d'après ta dépense mesurée."
     },
+    "goalCalcLabel": "Calcul de ton objectif",
+    "goalMargin": {
+      "lose": "Pour perdre du poids",
+      "gain": "Pour prendre du poids",
+      "steady": "Pour rester stable",
+      "manual": "Différence avec ta dépense"
+    },
+    "goalTotal": "Objectif",
+    "goalFollows": {
+      "lose": "Ton objectif suit ta dépense réelle, en gardant la différence qui te fait perdre en douceur.",
+      "gain": "Ton objectif suit ta dépense réelle : si elle baisse, il baisse aussi, en gardant la marge pour prendre du poids.",
+      "steady": "Ton objectif suit ta dépense réelle, pour que ton poids reste stable."
+    },
     "lockedHint": "Ton objectif est figé : le bilan de la semaine ne le modifie plus.",
-    "unlockedHint": "Prochain bilan {date} : l'objectif se rapprochera de ta dépense réelle, de 150 kcal au plus, jamais sous le plancher.",
+    "unlockedHint": "Prochain bilan {date} : l'objectif se recalera sur ta dépense, de 150 kcal au plus, jamais sous le plancher.",
     "lock": "Figer mon objectif",
     "unlock": "Laisser l'objectif s'ajuster",
-    "history": "Bilans de la semaine",
-    "chart": "Dépense estimée (pointillés) et dépense mesurée (trait plein), semaine après semaine",
+    "history": "Semaine après semaine",
+    "chart": "Ton objectif et ta dépense mesurée, semaine après semaine",
+    "chartGoal": "Objectif",
+    "chartMeasured": "Dépense mesurée",
     "weekOf": "Semaine du {date}",
+    "row": {
+      "measured": "dépense {value, number}",
+      "change": "{before, number} → {after, number}",
+      "same": "{after, number}",
+      "locked": "figé · {after, number}"
+    },
+    "rowLabel": "Semaine du {date} : dépense mesurée {measured, number} kcal, objectif {before, number} puis {after, number} kcal.",
+    "pending": "{count, plural, one {Pas encore assez de données : objectif inchangé.} other {Pas encore assez de données ({count} semaines) : objectif inchangé.}}",
+    "pendingInconsistent": "Données incomplètes : objectif inchangé.",
     "status": {
       "adjusted": "Dépense mesurée {measured, number} kcal : objectif ajusté de {before, number} à {after, number} kcal.",
       "unchanged": "Dépense mesurée {measured, number} kcal : ton objectif de {after, number} kcal reste adapté.",
@@ -1348,7 +1415,8 @@
       "moreFiber": "Où trouver plus de fibres ?",
       "eatingOut": "Comment garder le cap au restaurant ?",
       "weekSoFar": "Comment se passe ma semaine ?",
-      "hydration": "Des astuces pour boire plus d'eau ?"
+      "hydration": "Des astuces pour boire plus d'eau ?",
+      "addCalories": "Comment ajouter des calories facilement à mes repas ?"
     },
     "subtitle": "Ton coach nutrition",
     "askCoach": "Demander à {name}",

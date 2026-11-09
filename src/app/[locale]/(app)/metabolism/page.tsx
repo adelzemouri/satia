@@ -2,8 +2,12 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { APP_NAME } from "@/config/app";
 import {
+  checkRows,
   daysBetween,
+  type GoalKind,
+  goalKind,
   type Measurement,
+  metabolismSummary,
   MIN_DAYS,
   type MissingData,
   weightDirection,
@@ -11,9 +15,9 @@ import {
 } from "@/domain/adaptive";
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
-import type { Goal } from "@/domain/profile";
 import { isoWeekStart } from "@/domain/streak";
 import { GoalLockForm } from "@/features/adaptive/goal-lock-form";
+import { MetabolismSummaryCard } from "@/features/adaptive/metabolism-summary";
 import { TdeeChart } from "@/features/adaptive/tdee-chart";
 import { redirect } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
@@ -32,6 +36,7 @@ export default async function MetabolismPage({ params }: PageProps<"/[locale]/me
   if (!overview) return redirect({ href: "/onboarding", locale });
   const t = await getTranslations("metabolism");
   const { measurement } = overview;
+  const kind: GoalKind = goalKind(overview.profileGoal);
   /** Ce qui manquait pour un bilan, en une phrase (« 4 jours de suivi et 1 pesée sur la période »). */
   const missingList = (missing: MissingData) =>
     new Intl.ListFormat(locale, { type: "conjunction" }).format(
@@ -46,6 +51,21 @@ export default async function MetabolismPage({ params }: PageProps<"/[locale]/me
     <Columns>
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
       <p className="text-text-muted">{t("intro")}</p>
+
+      {measurement.status === "measured" && (
+        <MetabolismSummaryCard
+          summary={metabolismSummary({
+            averageIntake: measurement.averageIntake,
+            tdee: measurement.tdee,
+            goalKcal: overview.goalKcal,
+            weeklyChangeKg: measurement.weeklyChangeKg,
+            goal: overview.profileGoal,
+          })}
+          measurement={measurement}
+          goalKcal={overview.goalKcal}
+          days={daysBetween(measurement.from, measurement.to) + 1}
+        />
+      )}
 
       <Card aria-labelledby="expenditure-title">
         <h2 id="expenditure-title" className="text-xl font-semibold">
@@ -82,10 +102,37 @@ export default async function MetabolismPage({ params }: PageProps<"/[locale]/me
         <h2 id="goal-title" className="text-xl font-semibold">
           {t("goal")}
         </h2>
-        <p className="font-display text-3xl font-extrabold tracking-tight">
+        <p className="font-display text-4xl font-extrabold tracking-tight tabular-nums">
           {t("kcalPerDay", { value: overview.goalKcal })}
         </p>
-        <p className="text-text-muted">{t(`source.${overview.goalSource}`)}</p>
+        {measurement.status === "measured" ? (
+          <>
+            <dl
+              aria-label={t("goalCalcLabel")}
+              className="flex flex-col gap-2 rounded-2xl bg-surface-muted p-3 tabular-nums"
+            >
+              <div className="flex items-baseline justify-between gap-3">
+                <dt>{t("calcTotal")}</dt>
+                <dd className="font-semibold whitespace-nowrap">{t("kcalPerDay", { value: measurement.tdee })}</dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-3">
+                <dt>{t(`goalMargin.${overview.goalSource === "manual" ? "manual" : kind}`)}</dt>
+                <dd className="font-semibold whitespace-nowrap">
+                  {t("calcCorrection", { value: overview.goalKcal - measurement.tdee })}
+                </dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-3 border-t border-border pt-2 font-bold">
+                <dt>{t("goalTotal")}</dt>
+                <dd className="whitespace-nowrap text-primary">{t("kcalPerDay", { value: overview.goalKcal })}</dd>
+              </div>
+            </dl>
+            <p className="text-text-muted">
+              {overview.goalSource === "adaptive" ? t(`goalFollows.${kind}`) : t(`source.${overview.goalSource}`)}
+            </p>
+          </>
+        ) : (
+          <p className="text-text-muted">{t(`source.${overview.goalSource}`)}</p>
+        )}
         <GoalLockForm
           locked={overview.goalLocked}
           nextCheck={formatDay(addDays(isoWeekStart(todayIso()), 7), locale)}
@@ -97,22 +144,58 @@ export default async function MetabolismPage({ params }: PageProps<"/[locale]/me
           <h2 id="history-title" className="text-xl font-semibold">
             {t("history")}
           </h2>
-          <TdeeChart points={overview.history} label={t("chart")} />
-          <ul className="flex flex-col divide-y divide-border">
-            {[...overview.history].reverse().map((check) => (
-              <li key={check.weekStart} className="flex flex-col gap-0.5 py-2">
-                <span className="font-semibold">{t("weekOf", { date: formatDay(check.weekStart, locale) })}</span>
-                <span className="text-sm text-text-muted">
-                  {check.status === "insufficient" && check.missing
-                    ? t("status.insufficientDetail", { list: missingList(check.missing) })
-                    : t(`status.${check.status}`, {
-                        before: check.kcalBefore,
-                        after: check.kcalAfter,
-                        measured: check.measuredTdee ?? 0,
-                      })}
-                </span>
-              </li>
-            ))}
+          <TdeeChart
+            points={overview.history.flatMap((check) =>
+              check.measuredTdee === null || check.status === "inconsistent"
+                ? []
+                : [
+                    {
+                      label: formatDay(check.weekStart, locale, "short"),
+                      goal: check.kcalAfter,
+                      measured: check.measuredTdee,
+                    },
+                  ],
+            )}
+            label={t("chart")}
+            legend={{ goal: t("chartGoal"), measured: t("chartMeasured") }}
+            locale={locale}
+          />
+          <ul className="flex flex-col divide-y divide-border tabular-nums">
+            {checkRows(overview.history).map((row) =>
+              row.kind === "week" ? (
+                <li key={row.check.weekStart} className="grid grid-cols-[1fr_auto_auto] items-baseline gap-x-3 py-2.5">
+                  <span className="font-semibold">{formatDay(row.check.weekStart, locale, "short")}</span>
+                  <span className="text-sm text-text-muted">
+                    {t("row.measured", { value: row.check.measuredTdee ?? 0 })}
+                  </span>
+                  <span className="text-right font-semibold">
+                    {t(
+                      row.check.status === "locked"
+                        ? "row.locked"
+                        : row.check.kcalBefore === row.check.kcalAfter
+                          ? "row.same"
+                          : "row.change",
+                      { before: row.check.kcalBefore, after: row.check.kcalAfter },
+                    )}
+                  </span>
+                </li>
+              ) : (
+                <li key={row.to} className="flex flex-col gap-0.5 py-2.5">
+                  <span className="font-semibold">
+                    {row.from === row.to
+                      ? formatDay(row.to, locale, "short")
+                      : `${formatDay(row.from, locale, "short")} → ${formatDay(row.to, locale, "short")}`}
+                  </span>
+                  <span className="text-sm text-text-muted">
+                    {row.checks.length === 1 && row.checks[0]!.missing
+                      ? t("status.insufficientDetail", { list: missingList(row.checks[0]!.missing) })
+                      : row.checks.every((check) => check.status === "inconsistent")
+                        ? t("pendingInconsistent")
+                        : t("pending", { count: row.checks.length })}
+                  </span>
+                </li>
+              ),
+            )}
           </ul>
         </Card>
       )}
@@ -122,20 +205,13 @@ export default async function MetabolismPage({ params }: PageProps<"/[locale]/me
           {t("howTitle")}
         </h2>
         <p>{t("how1", { days: WINDOW_DAYS })}</p>
-        <p>{t(`how2.${howDirection(overview.profileGoal)}`)}</p>
+        <p>{t(`how2.${kind}`)}</p>
         <p>{t("how3")}</p>
       </Card>
 
       <p className="text-sm text-text-muted">{t("disclaimer", { appName: APP_NAME })}</p>
     </Columns>
   );
-}
-
-/** L'explication suit l'objectif : on vise une baisse, une hausse ou un poids stable. */
-function howDirection(goal: Goal): "lose" | "gain" | "steady" {
-  if (goal === "lose_weight") return "lose";
-  if (goal === "gain_muscle") return "gain";
-  return "steady";
 }
 
 /** La dépense réelle et son calcul en trois lignes ; les chiffres de la formule restent repliés. */
@@ -156,7 +232,7 @@ async function MeasuredExpenditure({
         {t("kcalPerDay", { value: measurement.tdee })}{" "}
         <span className="font-sans text-base font-medium tracking-normal text-text-muted">{t("perDay")}</span>
       </p>
-      <p>{t(`direction.${direction}`)}</p>
+      <p className="text-text-muted">{t("expenditureHint")}</p>
       <dl aria-label={t("calcLabel")} className="flex flex-col gap-2 rounded-2xl bg-surface-muted p-3 tabular-nums">
         <div className="flex items-baseline justify-between gap-3">
           <dt className="min-w-0">

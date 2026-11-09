@@ -142,3 +142,91 @@ export function weightDirection(weeklyChangeKg: number): WeightDirection {
   if (Math.abs(weeklyChangeKg) < STABLE_WEIGHT_KG_PER_WEEK) return "stable";
   return weeklyChangeKg < 0 ? "down" : "up";
 }
+
+/** Sous 100 kcal d'écart, on considère que l'apport moyen colle à l'objectif. */
+export const ON_TARGET_KCAL = 100;
+
+export type GoalKind = "lose" | "gain" | "steady";
+
+/** L'objectif du profil ramené à son sens : on vise une baisse, une hausse ou un poids stable. */
+export function goalKind(goal: Goal): GoalKind {
+  if (goal === "lose_weight") return "lose";
+  if (goal === "gain_muscle") return "gain";
+  return "steady";
+}
+
+export type MetabolismSummary = {
+  kind: GoalKind;
+  /** Apport moyen moins objectif : négatif si l'on mange sous l'objectif. */
+  gapKcal: number;
+  intake: "below" | "on" | "above";
+  direction: WeightDirection;
+  /** Le poids va dans le sens visé (ou reste stable quand c'est le but). */
+  asPlanned: boolean;
+  /** Échelle de « mangé », « dépense » et « objectif », en % de la largeur. */
+  scale: { intake: number; tdee: number; goal: number };
+};
+
+/**
+ * L'essentiel de « Mon métabolisme » en une comparaison : ce qui est mangé face à
+ * l'objectif, et ce que ça donne sur la balance. Calcul pur, aucun appel LLM.
+ */
+export function metabolismSummary(input: {
+  averageIntake: number;
+  tdee: number;
+  goalKcal: number;
+  weeklyChangeKg: number;
+  goal: Goal;
+}): MetabolismSummary {
+  const kind = goalKind(input.goal);
+  const gapKcal = Math.round(input.averageIntake - input.goalKcal);
+  const intake = Math.abs(gapKcal) < ON_TARGET_KCAL ? "on" : gapKcal < 0 ? "below" : "above";
+  const direction = weightDirection(input.weeklyChangeKg);
+  const wanted: WeightDirection = kind === "lose" ? "down" : kind === "gain" ? "up" : "stable";
+  return {
+    kind,
+    gapKcal,
+    intake,
+    direction,
+    asPlanned: direction === wanted,
+    scale: scalePositions([input.averageIntake, input.tdee, input.goalKcal]),
+  };
+}
+
+/** Place les trois valeurs sur une échelle qui laisse de la marge de chaque côté (au moins 600 kcal). */
+function scalePositions([intake, tdee, goal]: [number, number, number]): MetabolismSummary["scale"] {
+  const low = Math.min(intake, tdee, goal);
+  const high = Math.max(intake, tdee, goal);
+  const span = Math.max(600, (high - low) * 1.6);
+  const start = (low + high) / 2 - span / 2;
+  const at = (kcal: number) => Math.round(((kcal - start) / span) * 1000) / 10;
+  return { intake: at(intake), tdee: at(tdee), goal: at(goal) };
+}
+
+/** Un bilan hebdomadaire tel qu'enregistré (les champs utiles au regroupement). */
+export type WeeklyCheck = {
+  weekStart: string;
+  status: "adjusted" | "unchanged" | "locked" | "insufficient" | "inconsistent";
+  measuredTdee: number | null;
+};
+
+export type CheckRow<T extends WeeklyCheck> =
+  { kind: "week"; check: T } | { kind: "pending"; from: string; to: string; checks: T[] };
+
+/**
+ * Bilans du plus récent au plus ancien ; les semaines d'affilée sans dépense mesurée
+ * (pas assez de données, données incomplètes) tiennent sur une seule ligne.
+ */
+export function checkRows<T extends WeeklyCheck>(history: readonly T[]): CheckRow<T>[] {
+  const rows: CheckRow<T>[] = [];
+  for (const check of [...history].sort((a, b) => b.weekStart.localeCompare(a.weekStart))) {
+    const measured = check.status !== "insufficient" && check.status !== "inconsistent";
+    const last = rows.at(-1);
+    if (measured) rows.push({ kind: "week", check });
+    else if (last?.kind === "pending") {
+      last.from = check.weekStart;
+      last.checks.push(check);
+    } else rows.push({ kind: "pending", from: check.weekStart, to: check.weekStart, checks: [check] });
+  }
+  return rows;
+}
