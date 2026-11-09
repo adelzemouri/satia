@@ -654,6 +654,15 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 052 — Mise en page plus calme, d'après les skills Impeccable et Emil Kowalski
+
+- **Date** : 2026-11-09 · **Statut** : adoptée
+- **Contexte** : l'accueil empilait beaucoup de cartes et de pastilles ; les étiquettes en capitales et les dégradés chargeaient l'écran. Adel a validé la maquette « Avec les skills » du canevas de design, et demandé de retirer la bande des 7 jours.
+- **Décision** : accueil sans bande des 7 jours (la date ouvre le journal), un seul bouton plein « Ajouter mon <repas du moment> », eau, pas, activité, jeûne et traitement en lignes d'une seule carte « Aussi aujourd'hui », jauge d'équilibre sans dégradé, contexte des rendez-vous sous le titre. Journal sans étiquette « BILAN DU JOUR » visible (gardée pour les lecteurs d'écran). Confirmation d'un repas : total et « Ajouter au journal » collés en bas. Listes de Progrès et Moi : icônes sans pastille. Pépin : une seule zone de saisie avec dictée et envoi en boutons ronds, bulle de l'utilisateur en couleur pleine. Les couleurs, le fond et les titres en Fraunces viennent de la décision « personnalité » menée à part.
+- **Conséquences** : la semaine se consulte depuis le journal et « Ma série ». Aucun appel IA de plus.
+
+---
+
 ## Modèle
 
 ```markdown
