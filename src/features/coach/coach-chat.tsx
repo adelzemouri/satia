@@ -81,7 +81,7 @@ export function CoachChat({
     speech.start();
   };
 
-  const send = (value = text) => {
+  const send = (value = text, afterSent?: () => void) => {
     const message = value.trim();
     if (!message || pending) return;
     speech.stop();
@@ -94,6 +94,7 @@ export function CoachChat({
     startTransition(async () => {
       const result = await sendCoachMessageAction(message);
       setSent(null);
+      afterSent?.();
       if (result?.error) {
         setError(result.error);
         if (typed) setText((current) => current || message);
@@ -102,13 +103,13 @@ export function CoachChat({
   };
 
   // Question venue de l'accueil : posée une seule fois, puis retirée de l'adresse pour qu'un
-  // rechargement de la page ne la renvoie pas.
+  // rechargement de la page ne la renvoie pas. L'adresse change après la réponse : changée
+  // avant, la navigation qu'elle déclenche pouvait écraser la conversation mise à jour.
   const asked = useRef(false);
   useEffect(() => {
     if (!ask || asked.current) return;
     asked.current = true;
-    window.history.replaceState(null, "", window.location.pathname);
-    send(t(`questions.${ask}`));
+    send(t(`questions.${ask}`), () => window.history.replaceState(null, "", window.location.pathname));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ask]);
 
