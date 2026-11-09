@@ -23,7 +23,8 @@ export function BackButton() {
   const t = useTranslations("nav");
   const pathname = usePathname();
   const router = useRouter();
-  if (isTabRoot(pathname)) return null;
+  // La séance d'entraînement a son propre « Quitter ».
+  if (isTabRoot(pathname) || pathname === "/training/session") return null;
 
   return (
     <Link

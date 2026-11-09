@@ -1706,14 +1706,14 @@
       "today": "Séance du jour",
       "rest": "Jour de repos : la récupération fait partie du programme.",
       "start": "Démarrer la séance",
-      "replace": "Remplacer",
+      "replace": "Changer de séance",
       "replaceHint": "Une autre séance du même type et de la même durée.",
       "replaced": "Séance de remplacement",
       "backToPlanned": "Revenir à la séance prévue",
       "express": "Séance express (10 min)",
-      "expressHint": "Un circuit court, quand le temps manque.",
+      "expressHint": "Un circuit de 10 min, quand le temps manque.",
       "onDemand": "Séance à la demande",
-      "onDemandHint": "Choisis une durée, le reste est préparé pour toi.",
+      "onDemandHint": "Tu choisis la durée et le type.",
       "duration": "Durée",
       "type": "Type de séance",
       "noEquipment": "Sans matériel",
@@ -1721,12 +1721,26 @@
       "week": "Programme de la semaine",
       "doneDay": "Faite",
       "streak": "{count, plural, =0 {Ta première séance lance ta série de semaines actives.} one {# semaine active d'affilée} other {# semaines actives d'affilée}}",
-      "personalizing": "Le coach prépare ses conseils pour la semaine…",
+      "personalizing": "Pépin prépare ses conseils pour la semaine…",
       "doneToday": "Séance faite aujourd'hui : {kcal} kcal ajoutées à ton budget du jour.",
       "library": "Exercices",
       "history": "Mon suivi",
       "profile": "Mon profil sportif",
-      "restShort": "Repos"
+      "restShort": "Repos",
+      "todayTag": "Aujourd'hui · {day}",
+      "myWeek": "Ma semaine",
+      "planned": "{count, plural, =0 {Aucune séance prévue} one {# séance prévue} other {# séances prévues}}",
+      "weeksActive": "{count, plural, one {# semaine active} other {# semaines actives}}",
+      "dayPlanned": "{day} : {title}",
+      "dayRest": "{day} : repos",
+      "dayDone": "{day} : séance faite",
+      "other": "Autre envie ?",
+      "expressTitle": "Séance express",
+      "onDemandTitle": "À la demande",
+      "libraryHint": "Tous les exercices, avec leurs consignes.",
+      "historyHint": "Ta régularité et tes repères.",
+      "close": "Fermer",
+      "more": "{count, plural, one {+# exercice} other {+# exercices}}"
     },
     "snack": {
       "beforeTitle": "Avant la séance",
@@ -1761,20 +1775,43 @@
       "harder": "Plus difficile : {text}",
       "pain": "Douleur ou zone à ménager",
       "painDone": "Exercice mis de côté : il ne te sera plus proposé. On passe à la suite.",
-      "finishTitle": "Séance terminée, bravo !",
+      "finishTitle": "Séance faite !",
       "elapsed": "Durée : {minutes} min",
       "feeling": "Comment c'était ?",
       "feelings": {
         "easy": "Trop facile",
-        "good": "Bien",
+        "good": "Juste bien",
         "hard": "Trop dur"
       },
-      "feelingHint": "Ton ressenti ajuste la difficulté de la semaine suivante.",
+      "feelingHint": "Ton ressenti règle la semaine suivante.",
       "save": "Enregistrer la séance",
       "saved": "Séance enregistrée.",
       "quit": "Quitter la séance",
       "awake": "Écran maintenu allumé pendant la séance.",
-      "unavailable": "Cette séance n'est plus au programme."
+      "unavailable": "Cette séance n'est plus au programme.",
+      "phaseCount": "{phase} · {current} sur {total}",
+      "quitShort": "Quitter",
+      "easierShort": "Plus doux",
+      "howShort": "Comment faire",
+      "painShort": "Douleur",
+      "painTitle": "Une douleur, une zone à ménager ?",
+      "painHint": "L'exercice sera mis de côté et ne te sera plus proposé. On passe à la suite.",
+      "painConfirm": "Mettre cet exercice de côté",
+      "harderShort": "Plus difficile : {text}",
+      "repsLess": "Une répétition de moins",
+      "repsMore": "Une répétition de plus",
+      "finishFirst": "Première séance faite !",
+      "finishFirstBody": "Tu viens de poser la première pierre, {name}.",
+      "finishBody": "Encore une de plus dans ta semaine, {name}.",
+      "statMinutes": "{count, plural, one {minute} other {minutes}}",
+      "statExercises": "{count, plural, one {exercice} other {exercices}}",
+      "statWeeks": "{count, plural, one {semaine active} other {semaines actives}}",
+      "firstMarks": "Tes premiers repères",
+      "newMarks": "Ce qui a bougé",
+      "markKg": "{value} kg",
+      "markReps": "{value} rép.",
+      "markSeconds": "{value} s",
+      "markBefore": "avant {value}"
     },
     "history": {
       "title": "Mon suivi",
@@ -1830,6 +1867,58 @@
       "label": "Illustration du mouvement : {name}",
       "pause": "Mettre l'animation en pause",
       "play": "Relancer l'animation"
+    },
+    "pepin": {
+      "says": "{name} dit :",
+      "first": "Première séance ? On y va tranquille. Rien ne compte contre toi : à la fin, dis-moi si c'était trop facile ou trop dur, et j'ajuste la suite.",
+      "firstLater": "Ta première séance t'attend {day}. On ira tranquille, et c'est ton ressenti qui réglera la suite.",
+      "done": "Séance faite aujourd'hui, bravo. {kcal} kcal s'ajoutent à ton budget du jour.",
+      "rest": "Jour de repos : les muscles se renforcent aussi pendant la récupération.",
+      "restNext": "Jour de repos : les muscles se renforcent aussi pendant la récupération. Prochaine séance {day}.",
+      "today": {
+        "0": "Ta séance est prête. Va à ton rythme : la version plus douce est toujours là.",
+        "1": "Aujourd'hui, on bouge un peu. Même une séance raccourcie compte.",
+        "2": "Échauffement, séance, retour au calme : je t'accompagne à chaque étape.",
+        "3": "Un peu d'eau à portée de main, et c'est parti quand tu veux."
+      },
+      "snackBefore": "Ton dernier repas date de plus de 3 h ? Une banane ou une compote 1 h avant, et c'est parfait.",
+      "snackAfter": "Après la séance, pense aux protéines : un yaourt nature et une poignée d'amandes, ou un verre de lait et un fruit.",
+      "snackAfterPlant": "Après la séance, pense aux protéines : un yaourt au soja et une poignée d'amandes, ou des pois chiches grillés et un fruit.",
+      "overview": "Échauffement, {count, plural, one {# exercice} other {# exercices}}, puis retour au calme. Si un mouvement ne te va pas, il y a toujours une version plus douce.",
+      "restSet": "Souffle un peu, la série {current} arrive.",
+      "feelings": {
+        "easy": "Noté : je corse un peu la semaine prochaine.",
+        "good": "Noté : on garde ce rythme, avec une toute petite marche en plus.",
+        "hard": "Noté : j'allège la semaine prochaine. Bravo d'être allé au bout."
+      },
+      "restExercise": "Souffle un peu. Ensuite : {name}."
+    },
+    "titles": {
+      "full_body": {
+        "0": "Corps entier, en douceur",
+        "1": "Corps entier, tout en rythme",
+        "2": "Corps entier, bien posé"
+      },
+      "upper": {
+        "0": "Haut du corps, tranquille",
+        "1": "Bras et épaules en action",
+        "2": "Haut du corps, bien gainé"
+      },
+      "lower": {
+        "0": "Jambes solides",
+        "1": "Bas du corps, bien ancré",
+        "2": "Jambes et fessiers"
+      },
+      "cardio": {
+        "0": "Cardio, à ton souffle",
+        "1": "Petit coup de cardio",
+        "2": "Cardio en rythme"
+      },
+      "mobility": {
+        "0": "Mobilité, tout en souplesse",
+        "1": "On dénoue tout",
+        "2": "Souplesse et respiration"
+      }
     }
   },
   "body": {
