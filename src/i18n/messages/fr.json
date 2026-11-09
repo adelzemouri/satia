@@ -2047,7 +2047,7 @@
     "duration": "Durée (min)",
     "date": "Date",
     "save": "Enregistrer",
-    "intensityHint": "Légère : tu parles sans effort. Modérée : tu parles, mais tu ne chantes plus. Soutenue : quelques mots à la fois.",
+    "intensityHint": "Légère : tu restes à l'aise. Modérée : tu respires plus vite, mais tu peux parler. Soutenue : tu parles difficilement.",
     "types": {
       "walking": "Marche",
       "running": "Course à pied",
