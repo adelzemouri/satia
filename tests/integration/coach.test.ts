@@ -2,25 +2,20 @@ import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { db } from "@/db/client";
-import { coachMessages, coachReviews, foods, llmCalls, mealEntries, user } from "@/db/schema";
+import { coachMessages, foods, llmCalls, mealEntries, user } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
 import { CATEGORY_SLOTS, catalogRecipe } from "@/domain/recipes/catalog";
-import { isoWeekStart } from "@/domain/streak";
 import type { OnboardingInput } from "@/features/onboarding/schema";
 import { setupFirstAdmin } from "@/server/accounts";
 import {
   clearCoachMessages,
   coachTopicLine,
   coachContextFor,
-  ensureWeeklyReview,
-  lastWeekReview,
   listCoachMessages,
   sendCoachMessage,
   suggestedDish,
-  weeklyReviewIsStale,
 } from "@/server/coach";
-import { collectUserData } from "@/server/data-export";
 import { createRecipe, searchFoods } from "@/server/foods";
 import { addEntry } from "@/server/journal";
 import { saveOnboarding } from "@/server/profile";
@@ -148,63 +143,6 @@ describe("coach", () => {
     await setAiSettings({ enabled: false, monthlyBudgetUsd: null });
     await expect(sendCoachMessage(userId, "Une idée ?")).rejects.toMatchObject({ reason: "disabled" });
     expect(await listCoachMessages(userId)).toEqual([]);
-  });
-
-  it("rédige le bilan de la semaine écoulée une seule fois, avec assez de jours saisis", async () => {
-    const userId = await setupUser();
-    const lastMonday = addDays(isoWeekStart(today), -7);
-    // L'onboarding date d'aujourd'hui : on recule l'objectif pour couvrir la semaine écoulée.
-    await db().execute(`update goals set effective_from = '${addDays(lastMonday, -1)}'`);
-    const lentils = await firstFood(userId, "lentille cuite");
-
-    await addEntry(userId, { date: lastMonday, slot: "lunch", foodId: lentils.id, quantity: 300, unit: "g" });
-    await addEntry(userId, {
-      date: addDays(lastMonday, 1),
-      slot: "lunch",
-      foodId: lentils.id,
-      quantity: 300,
-      unit: "g",
-    });
-    expect(await ensureWeeklyReview(userId, today)).toBeNull();
-    expect(await db().select().from(llmCalls)).toEqual([]);
-
-    await addEntry(userId, {
-      date: addDays(lastMonday, 2),
-      slot: "lunch",
-      foodId: lentils.id,
-      quantity: 300,
-      unit: "g",
-    });
-    const review = await ensureWeeklyReview(userId, today);
-    expect(review).toMatchObject({ weekStart: lastMonday });
-    expect(review!.content.summary).toContain("régularité");
-    expect(await ensureWeeklyReview(userId, today)).toEqual(review);
-    expect(await lastWeekReview(userId, today)).toEqual(review);
-    expect(await db().select().from(llmCalls)).toHaveLength(1);
-    expect(await db().select().from(coachReviews)).toHaveLength(1);
-
-    expect(await weeklyReviewIsStale(review!, userId, today)).toBe(false);
-
-    // Un repas de la semaine corrigé après coup : le bilan est réécrit une fois, pas plus.
-    await addEntry(userId, {
-      date: addDays(lastMonday, 3),
-      slot: "dinner",
-      foodId: lentils.id,
-      quantity: 200,
-      unit: "g",
-    });
-    expect(await weeklyReviewIsStale(review!, userId, today)).toBe(true);
-    const rewritten = await ensureWeeklyReview(userId, today);
-    expect(rewritten!.content.source).toContain("Jours saisis : 4/7");
-    expect(rewritten!.content.source).toMatch(/But : .+\./);
-    expect(rewritten!.content.source).toMatch(/soit \d+ kcal par jour \(\d+ %\) sous l'objectif/);
-    expect(await weeklyReviewIsStale(rewritten!, userId, today)).toBe(false);
-    expect(await ensureWeeklyReview(userId, today)).toEqual(rewritten);
-    expect(await db().select().from(llmCalls)).toHaveLength(2);
-    expect(await db().select().from(coachReviews)).toHaveLength(1);
-
-    const data = await collectUserData(userId);
-    expect(data.coachReviews).toHaveLength(1);
   });
 
   it("suggère un plat adapté au repas et au reste du jour, sans LLM", async () => {

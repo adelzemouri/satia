@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import type { CoachTopic } from "@/domain/coach-topic";
 import { type ActionState, toActionState } from "@/server/action-result";
-import { clearCoachMessages, ensureWeeklyReview, sendCoachMessage } from "@/server/coach";
+import { clearCoachMessages, sendCoachMessage } from "@/server/coach";
 import { getCurrentUser } from "@/server/session";
 
 async function run(fn: (userId: string) => Promise<unknown>): Promise<ActionState> {
@@ -43,9 +43,4 @@ export async function askCoachAction(
 
 export async function clearCoachMessagesAction(): Promise<ActionState> {
   return run(clearCoachMessages);
-}
-
-/** Rédige le bilan de la semaine écoulée s'il manque (au plus un appel au LLM par semaine). */
-export async function ensureWeeklyReviewAction(): Promise<ActionState> {
-  return run(ensureWeeklyReview);
 }

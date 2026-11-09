@@ -429,7 +429,7 @@
     "versionLink": "(voir cette modification sur GitHub, nouvel onglet)",
     "title": "Profil",
     "preferencesHint": "Thème et langue",
-    "notificationsHint": "Rappels de repas, d'eau et bilan de la semaine",
+    "notificationsHint": "Rappels de repas, d'eau et de pesée",
     "securityOn": "Double authentification activée",
     "securityOff": "Ajoute la double authentification",
     "dataHint": "Export et suppression du compte",
@@ -1312,12 +1312,6 @@
   "coach": {
     "title": "Coach",
     "intro": "Pose tes questions sur tes repas, ton objectif ou tes habitudes. Le coach connaît ta journée en cours, rien de plus.",
-    "reviewTitle": "Bilan de la semaine dernière",
-    "reviewLoading": "Le coach prépare ton bilan de la semaine…",
-    "reviewEmpty": "Pas encore de bilan : il faut au moins 3 jours saisis la semaine dernière. Il sera prêt lundi prochain si tu continues.",
-    "reviewRefreshing": "Tes repas de la semaine ont changé : le coach met ton bilan à jour…",
-    "highlights": "Ce qui a bien marché",
-    "ideas": "Des idées pour cette semaine",
     "chatTitle": "Discuter",
     "conversation": "Conversation avec le coach",
     "earlier": "Messages précédents ({count})",
@@ -1400,8 +1394,6 @@
     "mealsHint": "30 minutes après tes horaires de repas, si rien n'est noté.",
     "water": "Hydratation",
     "waterHint": "En fin de matinée, d'après-midi et à 18 h, si tu es en retard sur ton objectif.",
-    "weeklyReview": "Bilan de la semaine",
-    "weeklyReviewHint": "Le lundi matin, quand ton bilan est prêt.",
     "quiet": "Plage silencieuse",
     "quietStart": "De",
     "quietEnd": "À",
@@ -1425,10 +1417,6 @@
       "water": {
         "title": "Un verre d'eau ?",
         "body": "{glasses} verre(s) sur {goal} pour l'instant. Un petit verre maintenant ?"
-      },
-      "weeklyReview": {
-        "title": "Ton bilan de la semaine",
-        "body": "Ton coach a préparé ton bilan de la semaine dernière."
       },
       "test": {
         "title": "Pommelia",

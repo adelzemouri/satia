@@ -42,13 +42,6 @@ export const foodEstimatesSchema = z.object({
 /** Réponse du coach dans le chat. */
 export const coachReplySchema = z.object({ reply: z.string().trim().min(1).max(1500) });
 
-/** Bilan hebdomadaire du coach. */
-export const weeklyReviewSchema = z.object({
-  summary: z.string().trim().min(1).max(800),
-  highlights: z.array(z.string().trim().min(1).max(240)).max(3),
-  ideas: z.array(z.string().trim().min(1).max(240)).max(2),
-});
-
 const ingredient = z.object({ name: z.string().trim().min(1).max(80), grams: z.number().positive().max(2000) });
 
 /** Menu proposé par le coach : un repas par créneau, recette existante (par numéro) ou nouveau plat. */

@@ -22,7 +22,7 @@ import {
 } from "./prompts/meal";
 import { providerFor } from "./providers";
 import { recipeImagePrompt } from "./prompts/recipe-image";
-import { COACH_SYSTEM, WEEKLY_REVIEW_SYSTEM } from "./prompts/coach";
+import { COACH_SYSTEM } from "./prompts/coach";
 import { FRIDGE_SYSTEM, MENU_PLAN_SYSTEM, RECIPE_STEPS_SYSTEM } from "./prompts/planning";
 import { TRAINING_PLAN_SYSTEM } from "./prompts/training";
 import {
@@ -35,7 +35,6 @@ import {
   menuPlanSchema,
   recipeStepsSchema,
   trainingPlanSchema,
-  weeklyReviewSchema,
 } from "./schemas";
 import { AiUnavailableError, type LlmImage, LlmProviderError, type LlmUsage } from "./types";
 import { recordCall } from "./usage";
@@ -274,23 +273,6 @@ export async function coachReply(userId: string, user: string): Promise<string> 
     maxOutputTokens: COACH_OUTPUT_TOKENS,
   });
   return result.data.reply;
-}
-
-export type WeeklyReview = z.infer<typeof weeklyReviewSchema>;
-
-/** Bilan de la semaine écoulée : un seul appel par utilisateur et par semaine. */
-export async function writeWeeklyReview(userId: string, data: string): Promise<WeeklyReview> {
-  const result = await callLlm({
-    userId,
-    feature: "weekly_review",
-    kind: "text",
-    system: WEEKLY_REVIEW_SYSTEM,
-    user: data,
-    schemaName: "weekly_review",
-    schema: weeklyReviewSchema,
-    maxOutputTokens: COACH_OUTPUT_TOKENS,
-  });
-  return result.data;
 }
 
 export type MenuPlan = z.infer<typeof menuPlanSchema>;

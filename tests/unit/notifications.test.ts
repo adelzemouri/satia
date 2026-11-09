@@ -12,13 +12,11 @@ const base: ReminderInput = {
   date: "2026-10-26",
   time: "12:00",
   weekday: 1,
-  weekStart: "2026-10-26",
   prefs: DEFAULT_NOTIFICATION_PREFS,
   mealTimes: { breakfast: "07:30", lunch: "12:30", dinner: "19:30" },
   loggedSlots: new Set(),
   waterGlasses: 8,
   waterGoal: 8,
-  reviewReady: false,
 };
 const at = (time: string, extra: Partial<ReminderInput> = {}) => dueReminders({ ...base, time, ...extra });
 
@@ -69,14 +67,9 @@ describe("rappels d'hydratation", () => {
   });
 });
 
-describe("bilan de la semaine", () => {
-  it("est annoncé le lundi matin quand il est prêt", () => {
-    expect(at("09:30", { reviewReady: true, loggedSlots: new Set(["breakfast"]) })).toEqual([
-      { kind: "weekly_review", key: "2026-10-26" },
-    ]);
-    expect(at("09:30", { reviewReady: false, loggedSlots: new Set(["breakfast"]) })).toEqual([]);
-    expect(at("09:30", { reviewReady: true, weekday: 2, loggedSlots: new Set(["breakfast"]) })).toEqual([]);
-    expect(at("14:00", { reviewReady: true, loggedSlots: new Set(["lunch"]) })).toEqual([]);
+describe("ancien bilan du lundi", () => {
+  it("n'est plus annoncé", () => {
+    expect(at("09:30", { loggedSlots: new Set(["breakfast"]) })).toEqual([]);
   });
 });
 

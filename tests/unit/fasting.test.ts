@@ -159,9 +159,13 @@ describe("rappels de jeûne et de traitement", () => {
     const prefs = { ...DEFAULT_NOTIFICATION_PREFS, fasting: false, treatment: false };
     expect(dueReminders({ ...base, prefs, time: "09:10" })).toEqual([]);
     expect(dueReminders({ ...base, prefs, time: "12:20" })).toEqual([]);
+    // weeklyReview (bilan du lundi retiré) est ignoré.
     const old = { meals: false, water: true, weeklyReview: true, quietStart: "22:00", quietEnd: "07:30" };
     expect(withDefaultPrefs(old)).toEqual({
-      ...old,
+      meals: false,
+      water: true,
+      quietStart: "22:00",
+      quietEnd: "07:30",
       fasting: true,
       treatment: true,
       weighIn: true,

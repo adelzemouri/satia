@@ -47,7 +47,7 @@ export function CoachChat({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [shown, setShown] = useState(PAGE);
-  // La conversation défile dans son propre cadre : la page reste en haut (bilan de la semaine),
+  // La conversation défile dans son propre cadre : la page reste en haut,
   // et seul le cadre se place sur le dernier message.
   const scroller = useRef<HTMLDivElement>(null);
   const keepOffset = useRef<number | null>(null);

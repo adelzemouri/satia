@@ -7,7 +7,6 @@ import { z } from "zod";
 import { APP_TIMEZONE } from "@/config/app";
 import { db } from "@/db/client";
 import { mealEntries, notificationLog, profiles, pushSubscriptions, user } from "@/db/schema";
-import { addDays } from "@/domain/energy";
 import { fastEventsOn } from "@/domain/fasting";
 import {
   dueReminders,
@@ -17,7 +16,6 @@ import {
   withDefaultPrefs,
 } from "@/domain/notifications";
 import { ritualsToNotify } from "@/domain/rituals";
-import { isoWeekStart } from "@/domain/streak";
 import en from "@/i18n/messages/en.json";
 import fr from "@/i18n/messages/fr.json";
 
@@ -32,7 +30,6 @@ const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 export const notificationPrefsSchema = z.object({
   meals: z.boolean(),
   water: z.boolean(),
-  weeklyReview: z.boolean(),
   fasting: z.boolean(),
   treatment: z.boolean(),
   weighIn: z.boolean(),
@@ -195,8 +192,6 @@ export function reminderPayload(reminder: Reminder, locale: Locale): PushPayload
         url: "/",
         tag: "water",
       };
-    case "weekly_review":
-      return { title: m.weeklyReview.title, body: m.weeklyReview.body, url: "/coach", tag: "weekly-review" };
     case "fast_start":
       return { title: m.fastStart.title, body: m.fastStart.body, url: "/fasting", tag: "fasting" };
     case "fast_end":
@@ -228,17 +223,12 @@ export async function sendTestNotification(userId: string, origin: string): Prom
   );
 }
 
-/** Au moins 3 jours saisis la semaine écoulée : le bilan du coach pourra être rédigé. */
-const REVIEW_MIN_DAYS = 3;
-
 /**
  * Tâche planifiée (toutes les 15 minutes environ) : calcule les rappels dus pour chaque
  * personne abonnée et les envoie une seule fois. Renvoie le nombre de notifications délivrées.
  */
 export async function runNotifications(now: Date, origin: string): Promise<{ sent: number }> {
   const { date, time, weekday } = localClock(now, APP_TIMEZONE);
-  const weekStart = isoWeekStart(date);
-  const lastWeek = addDays(weekStart, -7);
   await db()
     .delete(notificationLog)
     .where(lt(notificationLog.sentAt, new Date(now.getTime() - 30 * 86_400_000)));
@@ -261,23 +251,12 @@ export async function runNotifications(now: Date, origin: string): Promise<{ sen
   for (const person of people) {
     const prefs = withDefaultPrefs(person.prefs);
     const wantsRituals = prefs.weighIn || prefs.measurements || prefs.progressPhoto;
-    const [slots, water, reviewDays, fastEvents, treatments, rituals] = await Promise.all([
+    const [slots, water, fastEvents, treatments, rituals] = await Promise.all([
       db()
         .selectDistinct({ slot: mealEntries.slot })
         .from(mealEntries)
         .where(and(eq(mealEntries.userId, person.userId), eq(mealEntries.date, date))),
       Promise.all([waterOn(person.userId, date), mealWaterGlasses(person.userId, date)]),
-      weekday === 1 && prefs.weeklyReview
-        ? db()
-            .select({ count: sql<number>`count(distinct ${mealEntries.date})::int` })
-            .from(mealEntries)
-            .where(
-              and(
-                eq(mealEntries.userId, person.userId),
-                sql`${mealEntries.date} between ${lastWeek} and ${addDays(lastWeek, 6)}`,
-              ),
-            )
-        : [{ count: 0 }],
       prefs.fasting
         ? Promise.all([getFastingPlan(person.userId), fastingAllowed(person.userId)]).then(([plan, allowed]) =>
             allowed ? fastEventsOn(plan, date) : [],
@@ -292,13 +271,11 @@ export async function runNotifications(now: Date, origin: string): Promise<{ sen
       date,
       time,
       weekday,
-      weekStart,
       prefs,
       mealTimes: person.mealTimes,
       loggedSlots: new Set(slots.map((row) => row.slot)),
       waterGlasses: water[0] + water[1],
       waterGoal: person.waterGoal,
-      reviewReady: (reviewDays[0]?.count ?? 0) >= REVIEW_MIN_DAYS,
       fastEvents,
       treatments,
       rituals,

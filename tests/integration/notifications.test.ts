@@ -142,7 +142,7 @@ describe("notifications", () => {
     expect(await runNotifications(monday("20:35"), "https://pommelia.example")).toEqual({ sent: 0 });
   });
 
-  it("rappelle de boire et annonce le bilan quand la semaine écoulée a assez de jours", async () => {
+  it("rappelle de boire, sans annoncer de bilan de Pépin le lundi", async () => {
     const userId = await setupUser();
     await saveSubscription(userId, subscription("a"), null);
     const [bread] = await searchFoods(userId, "pain baguette");
@@ -151,11 +151,10 @@ describe("notifications", () => {
     }
     await runNotifications(monday("11:10"), "https://pommelia.example");
     // Lundi : c'est aussi le jour de pesée par défaut.
-    expect(sent.map((entry) => entry.payload.tag).sort()).toEqual(["ritual-weigh", "water", "weekly-review"]);
+    expect(sent.map((entry) => entry.payload.tag).sort()).toEqual(["ritual-weigh", "water"]);
     expect(sent.find((entry) => entry.payload.tag === "water")!.payload.body).toBe(
       "0 verre(s) sur 8 pour l'instant. Un petit verre maintenant ?",
     );
-    expect(sent.find((entry) => entry.payload.tag === "weekly-review")!.payload.url).toBe("/coach");
   });
 
   it("rappelle la pesée le jour choisi, une fois, sauf si elle est faite", async () => {
