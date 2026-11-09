@@ -2047,7 +2047,7 @@
     "duration": "Duration (min)",
     "date": "Date",
     "save": "Save",
-    "intensityHint": "Light: you talk easily. Moderate: you can talk but not sing. Vigorous: a few words at a time.",
+    "intensityHint": "Light: you stay comfortable. Moderate: you breathe faster but can still talk. Vigorous: talking is hard.",
     "types": {
       "walking": "Walking",
       "running": "Running",
