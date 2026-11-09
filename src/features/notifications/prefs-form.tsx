@@ -99,7 +99,6 @@ export function NotificationPrefsForm({ prefs, mealTimes }: { prefs: Notificatio
               {
                 meals: formData.get("meals") === "on",
                 water: formData.get("water") === "on",
-                weeklyReview: formData.get("weeklyReview") === "on",
                 fasting: formData.get("fasting") === "on",
                 treatment: formData.get("treatment") === "on",
                 weighIn: formData.get("weighIn") === "on",
@@ -146,12 +145,6 @@ export function NotificationPrefsForm({ prefs, mealTimes }: { prefs: Notificatio
           <Toggle key={name} name={name} label={t(name)} hint={t(hint)} checked={prefs[name]} />
         ))}
         <GroupTitle>{t("groupWeek")}</GroupTitle>
-        <Toggle
-          name="weeklyReview"
-          label={t("weeklyReview")}
-          hint={t("weeklyReviewHint")}
-          checked={prefs.weeklyReview}
-        />
         <Toggle name="weighIn" label={t("weighIn")} hint={t("weighInHint")} checked={prefs.weighIn} badge={badge} />
         <div className="pl-8">
           <SelectField label={t("weighDay")} name="weighDay" options={weekdays} defaultValue={String(prefs.weighDay)} />

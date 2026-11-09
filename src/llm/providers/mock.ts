@@ -18,11 +18,6 @@ const RESPONSES: Record<string, unknown | ((request: LlmRequest) => unknown)> = 
         ?.replace(/^Moi : /, "") ?? ""
     } ». Un bol de lentilles et des crudités tiennent bien dans ton budget.`,
   }),
-  weekly_review: {
-    summary: "Belle régularité cette semaine : tes repas sont bien saisis.",
-    highlights: ["Des petits-déjeuners réguliers", "Une bonne hydratation"],
-    ideas: ["Ajoute une portion de légumes au déjeuner"],
-  },
   // Un nouveau plat le premier jour au dîner, la première recette de la liste le lendemain midi.
   menu_plan: {
     meals: [

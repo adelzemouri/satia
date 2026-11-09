@@ -5,6 +5,7 @@ import type { RitualKind, RitualPrefs } from "./rituals";
 export const NOTIFICATION_KINDS = [
   "meal",
   "water",
+  // Ancien bilan du lundi de Pépin (retiré) : gardé pour les envois déjà journalisés.
   "weekly_review",
   "fast_start",
   "fast_end",
@@ -17,7 +18,6 @@ export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 export type NotificationPrefs = RitualPrefs & {
   meals: boolean;
   water: boolean;
-  weeklyReview: boolean;
   /** Début et fin des fenêtres de jeûne prévues au planning. */
   fasting: boolean;
   /** Prises de traitement aux jours et heures choisis. */
@@ -30,7 +30,6 @@ export type NotificationPrefs = RitualPrefs & {
 export const DEFAULT_NOTIFICATION_PREFS: NotificationPrefs = {
   meals: true,
   water: true,
-  weeklyReview: true,
   fasting: true,
   treatment: true,
   weighIn: true,
@@ -42,8 +41,10 @@ export const DEFAULT_NOTIFICATION_PREFS: NotificationPrefs = {
 };
 
 /** Préférences enregistrées avant l'ajout d'un type de rappel : les nouveaux types prennent leur défaut. */
+/** Préférences complétées par les valeurs par défaut ; les clés retirées depuis (weeklyReview) sont ignorées. */
 export function withDefaultPrefs(prefs: Partial<NotificationPrefs> | null | undefined): NotificationPrefs {
-  return { ...DEFAULT_NOTIFICATION_PREFS, ...prefs };
+  const known = Object.entries(prefs ?? {}).filter(([key]) => key in DEFAULT_NOTIFICATION_PREFS);
+  return { ...DEFAULT_NOTIFICATION_PREFS, ...Object.fromEntries(known) };
 }
 
 export function minutesOf(time: string): number {
@@ -89,9 +90,6 @@ export const WATER_CHECKPOINTS = [
   { time: "18:00", share: 0.8 },
 ] as const;
 const WATER_WINDOW = 120;
-/** Le bilan de la semaine est annoncé le lundi matin. */
-const REVIEW_FROM = "09:00";
-const REVIEW_UNTIL = "13:00";
 /** Un rappel de jeûne ou de traitement reste valable une heure après l'heure prévue. */
 const EVENT_WINDOW = 60;
 /** Les rituels du jour (pesée, mensurations, photo) sont rappelés en matinée. */
@@ -103,7 +101,6 @@ export type ReminderSlot = "breakfast" | "lunch" | "dinner";
 export type Reminder =
   | { kind: "meal"; key: string; slot: ReminderSlot }
   | { kind: "water"; key: string; glasses: number; goal: number }
-  | { kind: "weekly_review"; key: string }
   | { kind: "fast_start" | "fast_end"; key: string }
   | { kind: "treatment"; key: string; name: string }
   | { kind: "ritual"; key: string; ritual: RitualKind };
@@ -119,9 +116,6 @@ export type ReminderInput = {
   loggedSlots: ReadonlySet<string>;
   waterGlasses: number;
   waterGoal: number;
-  /** Le bilan de la semaine écoulée a assez de données pour être rédigé. */
-  reviewReady: boolean;
-  weekStart: string;
   /** Débuts et fins de jeûne prévus aujourd'hui (heure locale). */
   fastEvents?: readonly { kind: "fast_start" | "fast_end"; time: string; key: string }[];
   /** Traitements à rappeler aujourd'hui, avec leur heure, s'ils n'ont pas encore été notés. */
@@ -167,14 +161,6 @@ export function dueReminders(input: ReminderInput): Reminder[] {
         goal: input.waterGoal,
       });
     }
-  }
-  if (
-    prefs.weeklyReview &&
-    input.reviewReady &&
-    input.weekday === 1 &&
-    within(time, minutesOf(REVIEW_FROM), minutesOf(REVIEW_UNTIL) - minutesOf(REVIEW_FROM))
-  ) {
-    due.push({ kind: "weekly_review", key: input.weekStart });
   }
   if (prefs.fasting) {
     for (const event of input.fastEvents ?? []) {

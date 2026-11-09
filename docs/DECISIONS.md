@@ -636,6 +636,15 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 049 — Plus de bilan de la semaine sur la page de Pépin
+
+- **Date** : 2026-11-09 · **Statut** : adoptée
+- **Contexte** : la page de Pépin affichait un « Bilan de la semaine dernière » rédigé par l'IA, en plus des bilans de « Mon métabolisme » (ajustement de l'objectif) et du bilan qualité. Trois « bilans » aux chiffres différents prêtaient à confusion.
+- **Décision** : le bilan rédigé par Pépin disparaît de sa page, avec la notification du lundi matin qui l'annonçait et son interrupteur dans les notifications. La page de Pépin n'a plus que la conversation, en une colonne centrée aussi sur ordinateur.
+- **Conséquences** : un appel IA de moins par personne et par semaine. La table `coach_reviews` et ses lignes restent (toujours dans l'export) ; le type de notification `weekly_review` reste lisible dans le journal des envois.
+
+---
+
 ## Modèle
 
 ```markdown

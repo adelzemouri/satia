@@ -183,6 +183,13 @@
       "when": 1792858420830,
       "tag": "0025_server_errors",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1794238890605,
+      "tag": "0026_notification_prefs_default",
+      "breakpoints": true
     }
   ]
 }

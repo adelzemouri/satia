@@ -429,7 +429,7 @@
     "versionLink": "(see this change on GitHub, new tab)",
     "title": "Profile",
     "preferencesHint": "Theme and language",
-    "notificationsHint": "Meal and water reminders, weekly review",
+    "notificationsHint": "Meal, water and weigh-in reminders",
     "securityOn": "Two-factor authentication on",
     "securityOff": "Add two-factor authentication",
     "dataHint": "Export and account deletion",
@@ -1312,12 +1312,6 @@
   "coach": {
     "title": "Coach",
     "intro": "Ask about your meals, your goal or your habits. The coach knows your current day, nothing more.",
-    "reviewTitle": "Last week's review",
-    "reviewLoading": "The coach is preparing your weekly review…",
-    "reviewEmpty": "No review yet: it needs at least 3 logged days last week. It will be ready next Monday if you keep going.",
-    "reviewRefreshing": "Your meals for that week changed: the coach is updating your review…",
-    "highlights": "What went well",
-    "ideas": "Ideas for this week",
     "chatTitle": "Chat",
     "conversation": "Conversation with the coach",
     "earlier": "Earlier messages ({count})",
@@ -1400,8 +1394,6 @@
     "mealsHint": "30 minutes after your meal times, if nothing is logged.",
     "water": "Hydration",
     "waterHint": "Late morning, afternoon and at 6 pm, if you're behind your goal.",
-    "weeklyReview": "Weekly review",
-    "weeklyReviewHint": "On Monday morning, when your review is ready.",
     "quiet": "Quiet hours",
     "quietStart": "From",
     "quietEnd": "To",
@@ -1425,10 +1417,6 @@
       "water": {
         "title": "A glass of water?",
         "body": "{glasses} of {goal} glasses so far. A small glass now?"
-      },
-      "weeklyReview": {
-        "title": "Your weekly review",
-        "body": "Your coach has prepared last week's review."
       },
       "test": {
         "title": "Pommelia",

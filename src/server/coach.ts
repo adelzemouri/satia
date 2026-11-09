@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, desc, eq, gte, inArray, lte, notInArray, sum } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, lte, notInArray } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
@@ -12,14 +12,12 @@ import {
   dailyCheckins,
   dailySteps,
   mealEntries,
-  metabolismChecks,
   trainingSessions,
   weightEntries,
 } from "@/db/schema";
 import {
   asksBelowFloor,
   coachContext,
-  type DayStats,
   type DishCandidate,
   mealHistoryLines,
   mentionsMedicalTopic,
@@ -28,7 +26,6 @@ import {
   suggestsDailyBelowFloor,
   workoutRequest,
   suggestDish,
-  weekStats,
 } from "@/domain/coach";
 import { APP_TIMEZONE } from "@/config/app";
 import { longHistoryLines, metabolismLine } from "@/domain/coach-history";
@@ -36,18 +33,16 @@ import { type CoachTopic, coachTopicSchema, dayTopicLine, foodTopicLine, mealTop
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
 import { type MealSlot, skipsBreakfast, slotAt } from "@/domain/meals";
-import { weekQuality } from "@/domain/quality";
 import { CATEGORY_SLOTS, catalogRecipeFor } from "@/domain/recipes/catalog";
-import { isoWeekStart } from "@/domain/streak";
 import { weightTrend } from "@/domain/weight-trend";
 import { RECIPE_PHOTOS } from "@/features/recipes/recipe-photos";
-import { AiUnavailableError, coachReply, writeWeeklyReview } from "@/llm";
+import { AiUnavailableError, coachReply } from "@/llm";
 
 import { metabolismOverview, weekBudget } from "./adaptive";
 import { dishPool, getFoodDetails } from "./foods";
 import { daySummary, entriesOn } from "./journal";
-import { getGoalOn, getProfile } from "./profile";
-import { checkinOn, dayQualityFor, qualityItems } from "./quality";
+import { getProfile } from "./profile";
+import { checkinOn, dayQualityFor } from "./quality";
 import { getCalorieFloors } from "./settings";
 import { coachWorkoutLine } from "./training";
 
@@ -275,140 +270,6 @@ export async function sendCoachMessage(userId: string, text: string, topic?: Coa
 
 export async function clearCoachMessages(userId: string): Promise<void> {
   await db().delete(coachMessages).where(eq(coachMessages.userId, userId));
-}
-
-// --- Bilan hebdomadaire ------------------------------------------------------------
-
-export type CoachReview = typeof coachReviews.$inferSelect;
-
-/** Bilan de la semaine écoulée, s'il a déjà été rédigé. */
-export async function lastWeekReview(userId: string, today: string = todayIso()): Promise<CoachReview | null> {
-  const weekStart = addDays(isoWeekStart(today), -7);
-  const [row] = await db()
-    .select()
-    .from(coachReviews)
-    .where(and(eq(coachReviews.userId, userId), eq(coachReviews.weekStart, weekStart)));
-  return row ?? null;
-}
-
-/** Il faut au moins 3 jours saisis la semaine écoulée pour qu'un bilan ait du sens. */
-const MIN_DAYS_FOR_REVIEW = 3;
-
-/** Écart à l'objectif en clair, pour que le bilan ne dise pas « proche » d'un écart de 10 %. */
-function gapLine(averageKcal: number, goalKcal: number): string {
-  const gap = averageKcal - goalKcal;
-  const percent = Math.round((Math.abs(gap) / goalKcal) * 100);
-  if (percent < 5) return "soit à moins de 5 % de l'objectif";
-  return `soit ${Math.abs(gap)} kcal par jour (${percent} %) ${gap < 0 ? "sous" : "au-dessus de"} l'objectif`;
-}
-
-/** Données de la semaine écoulée, en lignes courtes pour le prompt ; null s'il y a trop peu de saisies. */
-export async function weeklyReviewData(userId: string, today: string = todayIso()): Promise<string | null> {
-  const from = addDays(isoWeekStart(today), -7);
-  const to = addDays(from, 6);
-  const [goal, profile] = await Promise.all([getGoalOn(userId, to), getProfile(userId)]);
-  if (!goal || !profile) return null;
-  const [intakes, checkins, items, check] = await Promise.all([
-    db()
-      .select({
-        date: mealEntries.date,
-        kcal: sum(mealEntries.kcal).mapWith(Number),
-        proteinG: sum(mealEntries.proteinG).mapWith(Number),
-      })
-      .from(mealEntries)
-      .where(and(eq(mealEntries.userId, userId), gte(mealEntries.date, from), lte(mealEntries.date, to)))
-      .groupBy(mealEntries.date),
-    db()
-      .select({ date: dailyCheckins.date, energy: dailyCheckins.energy, mood: dailyCheckins.mood })
-      .from(dailyCheckins)
-      .where(and(eq(dailyCheckins.userId, userId), gte(dailyCheckins.date, from), lte(dailyCheckins.date, to))),
-    qualityItems(userId, from, to),
-    db()
-      .select()
-      .from(metabolismChecks)
-      .where(and(eq(metabolismChecks.userId, userId), eq(metabolismChecks.weekStart, isoWeekStart(today)))),
-  ]);
-  const byDate = new Map(intakes.map((row) => [row.date, row]));
-  const energyByDate = new Map(checkins.map((row) => [row.date, row.energy]));
-  const days: DayStats[] = Array.from({ length: 7 }, (_, index) => {
-    const date = addDays(from, index);
-    const intake = byDate.get(date);
-    return {
-      date,
-      kcal: intake?.kcal ?? 0,
-      proteinG: intake?.proteinG ?? 0,
-      logged: intake !== undefined,
-      energy: energyByDate.get(date) ?? null,
-    };
-  });
-  const stats = weekStats(days, goal.proteinG);
-  if (stats.daysLogged < MIN_DAYS_FOR_REVIEW) return null;
-  const quality = weekQuality(items);
-  const moods = checkins.flatMap((row) => (row.mood === null ? [] : [row.mood]));
-  const metabolism = check[0];
-
-  return [
-    `Semaine du ${from} au ${to}. Jours saisis : ${stats.daysLogged}/7.`,
-    `But : ${GOAL_LABELS[profile.goal]}.`,
-    `Apport moyen : ${stats.averageKcal} kcal par jour (objectif ${goal.kcal}), ${gapLine(stats.averageKcal, goal.kcal)}. Protéines : ${stats.averageProteinG} g (objectif ${goal.proteinG}).`,
-    quality &&
-      `Fibres ${quality.fiberPerDay} g/j, fruits et légumes ${quality.fruitVegPortionsPerDay} portions/j, sel ${quality.saltPerDay} g/j` +
-        (quality.ultraProcessedShare !== null
-          ? `, ultra-transformés ${Math.round(quality.ultraProcessedShare * 100)} % des calories connues.`
-          : "."),
-    metabolism?.status === "adjusted" &&
-      `Objectif ajusté de ${metabolism.kcalBefore} à ${metabolism.kcalAfter} kcal d'après la dépense mesurée (${metabolism.measuredTdee} kcal).`,
-    stats.energyLowProtein !== null &&
-      stats.energyOtherDays !== null &&
-      `Énergie moyenne : ${stats.energyLowProtein}/5 les jours pauvres en protéines, ${stats.energyOtherDays}/5 les autres.`,
-    moods.length > 0 &&
-      `Humeur moyenne : ${Math.round((moods.reduce((a, b) => a + b, 0) / moods.length) * 10) / 10}/5.`,
-  ]
-    .filter(Boolean)
-    .join("\n");
-}
-
-/**
- * Le bilan affiché ne correspond plus aux repas de la semaine (corrigés après sa rédaction) :
- * il sera réécrit. Lecture seule, sans LLM.
- */
-export async function weeklyReviewIsStale(
-  review: CoachReview,
-  userId: string,
-  today: string = todayIso(),
-): Promise<boolean> {
-  const data = await weeklyReviewData(userId, today);
-  return data !== null && review.content.source !== data;
-}
-
-/**
- * Bilan de la semaine écoulée : rédigé à la première visite du coach (1 appel au LLM par
- * utilisateur et par semaine), puis réécrit seulement si les repas de cette semaine ont changé
- * depuis. Null s'il y a trop peu de données ou si l'IA est indisponible (le bilan déjà rédigé
- * reste alors affiché).
- */
-export async function ensureWeeklyReview(userId: string, today: string = todayIso()): Promise<CoachReview | null> {
-  const [existing, profile, data] = await Promise.all([
-    lastWeekReview(userId, today),
-    getProfile(userId),
-    weeklyReviewData(userId, today),
-  ]);
-  if (existing && (data === null || existing.content.source === data)) return existing;
-  if (!profile || !data) return null;
-  try {
-    const content = { ...(await writeWeeklyReview(userId, data)), source: data };
-    await db()
-      .insert(coachReviews)
-      .values({ userId, weekStart: addDays(isoWeekStart(today), -7), content })
-      .onConflictDoUpdate({
-        target: [coachReviews.userId, coachReviews.weekStart],
-        set: { content, createdAt: new Date() },
-      });
-  } catch (error) {
-    if (error instanceof AiUnavailableError) return existing;
-    throw error;
-  }
-  return lastWeekReview(userId, today);
 }
 
 // --- Plat suggéré ---------------------------------------------------------------------

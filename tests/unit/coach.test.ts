@@ -10,7 +10,6 @@ import {
   slotShares,
   suggestDish,
   suggestsDailyBelowFloor,
-  weekStats,
 } from "@/domain/coach";
 
 describe("garde-fous du coach", () => {
@@ -91,42 +90,6 @@ describe("parts de l'objectif par repas", () => {
     expect(shares.lunch + shares.dinner + shares.snack).toBeCloseTo(1);
     expect(Math.round(2000 * shares.lunch)).toBe(933);
     expect(Object.values(slotShares(false)).reduce((a, b) => a + b, 0)).toBeCloseTo(1);
-  });
-});
-
-describe("statistiques de la semaine", () => {
-  const day = (date: string, proteinG: number, energy: number | null, logged = true) => ({
-    date,
-    kcal: logged ? 1800 : 0,
-    proteinG,
-    logged,
-    energy,
-  });
-
-  it("compare l'énergie des jours pauvres en protéines aux autres", () => {
-    const stats = weekStats(
-      [
-        day("2026-10-19", 50, 2),
-        day("2026-10-20", 60, 3),
-        day("2026-10-21", 110, 4),
-        day("2026-10-22", 100, 5),
-        day("2026-10-23", 0, null, false),
-      ],
-      100,
-    );
-    expect(stats).toEqual({
-      daysLogged: 4,
-      averageKcal: 1800,
-      averageProteinG: 80,
-      energyLowProtein: 2.5,
-      energyOtherDays: 4.5,
-    });
-  });
-
-  it("n'affiche pas de lien sur une seule journée", () => {
-    const stats = weekStats([day("2026-10-19", 50, 2), day("2026-10-20", 110, 4)], 100);
-    expect(stats.energyLowProtein).toBeNull();
-    expect(stats.energyOtherDays).toBeNull();
   });
 });
 

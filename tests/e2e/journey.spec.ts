@@ -1214,13 +1214,13 @@ test("bilan qualité de la semaine", async ({ page }) => {
   await expectNoA11yViolations(page);
 });
 
-test("coach : bilan, conversation (LLM simulé), garde-fou", async ({ page }) => {
+test("coach : conversation (LLM simulé), garde-fou", async ({ page }) => {
   await signInWithTotp(page);
   await page.getByRole("link", { name: "Moi", exact: true }).click();
   await page.getByRole("link", { name: "Coach", exact: true }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pépin");
-  // Le foyer de test vient d'être créé : pas assez de jours la semaine dernière pour un bilan.
-  await expect(page.getByText(/Pas encore de bilan/)).toBeVisible();
+  // Plus de bilan de la semaine sur la page de Pépin : seulement la conversation.
+  await expect(page.getByRole("heading", { name: "Bilan de la semaine dernière" })).toHaveCount(0);
   await expectNoA11yViolations(page);
 
   await page.getByLabel("Ton message").fill("Que manger ce soir ?");

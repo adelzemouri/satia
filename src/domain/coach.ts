@@ -124,36 +124,6 @@ function feelingLine(feeling: CoachContextInput["feeling"]): string | null {
   return parts.length > 0 ? `Ressenti : ${parts.join(", ")}.` : null;
 }
 
-export type DayStats = { date: string; kcal: number; proteinG: number; logged: boolean; energy: number | null };
-
-export type WeekStats = {
-  daysLogged: number;
-  averageKcal: number;
-  averageProteinG: number;
-  /** Énergie moyenne les jours pauvres en protéines (< 80 % de l'objectif) et les autres. */
-  energyLowProtein: number | null;
-  energyOtherDays: number | null;
-};
-
-export function weekStats(days: readonly DayStats[], proteinGoalG: number): WeekStats {
-  const logged = days.filter((day) => day.logged);
-  const average = (values: number[]) =>
-    values.length > 0 ? Math.round((values.reduce((sum, value) => sum + value, 0) / values.length) * 10) / 10 : null;
-  const energy = (low: boolean) => {
-    const values = logged
-      .filter((day) => day.energy !== null && day.proteinG < proteinGoalG * 0.8 === low)
-      .map((day) => day.energy!);
-    return values.length >= 2 ? average(values) : null;
-  };
-  return {
-    daysLogged: logged.length,
-    averageKcal: Math.round(average(logged.map((day) => day.kcal)) ?? 0),
-    averageProteinG: Math.round(average(logged.map((day) => day.proteinG)) ?? 0),
-    energyLowProtein: energy(true),
-    energyOtherDays: energy(false),
-  };
-}
-
 export type DishCandidate = {
   id: string;
   name: string;
