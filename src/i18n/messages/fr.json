@@ -1829,10 +1829,28 @@
       "summary": "{minutes} min · {kcal} kcal",
       "delete": "Supprimer",
       "deleteLabel": "Supprimer la séance du {date}",
-      "start": "Commencer une séance"
+      "start": "Commencer une séance",
+      "pepinNone": "Ta première séance posera tes premiers repères. Ensuite, je te montrerai ce qui bouge.",
+      "pepinSteady": "{count, plural, one {# séance au compteur} other {# séances au compteur}}. La régularité, c'est déjà une belle victoire.",
+      "pepinProgress": "Depuis le début, {exercise} : de {from} à {to}, et ça, c'est du solide !",
+      "regularity": "Régularité",
+      "weekLabel": "Semaine du {date} : {count, plural, =0 {aucune séance} one {# séance} other {# séances}}",
+      "marks": "Mes repères",
+      "marksHint": "Chaque exercice dans sa propre unité : répétitions, secondes ou kilos.",
+      "kinds": {
+        "all": "Tous",
+        "strength": "Force",
+        "core": "Gainage",
+        "cardio": "Cardio",
+        "mobility": "Souplesse"
+      },
+      "kindsLabel": "Familles d'exercices",
+      "markGain": "+{value} depuis le début",
+      "markFirst": "Premier repère",
+      "noMarksKind": "Pas encore de repère dans cette famille."
     },
     "library": {
-      "title": "Bibliothèque d'exercices",
+      "title": "Exercices",
       "intro": "Tous les exercices de l'app, avec leurs consignes et une variante plus douce.",
       "muscle": "Groupe",
       "equipment": "Matériel",
@@ -1861,7 +1879,8 @@
       "noCustom": "Aucun exercice personnel.",
       "stress": "Zones sollicitées : {list}",
       "filtersLabel": "Filtrer les exercices",
-      "levelShort": "Niv. {level}"
+      "levelShort": "Niv. {level}",
+      "search": "Chercher un exercice"
     },
     "art": {
       "label": "Illustration du mouvement : {name}",

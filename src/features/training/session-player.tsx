@@ -18,6 +18,7 @@ import { haptic } from "@/ui/motion";
 
 import { logSessionAction, setExerciseExcludedAction } from "./actions";
 import { ExerciseAnimation } from "./exercise-animation";
+import { EffortBars } from "./effort-bars";
 import { ExerciseArt } from "./exercise-art";
 import { PepinSays } from "./pepin-says";
 
@@ -64,21 +65,6 @@ const FINISH_CONFETTI = Array.from({ length: 14 }, (_, index) => ({
   turn: (index * 67) % 180,
   leaf: index % 3 === 1,
 })).filter((piece) => piece.left < 30 || piece.left > 70);
-
-/** Jauge d'effort : trois barres qui montent ; la plus haute passe en rouge pomme. */
-function EffortBars({ level }: { level: number }) {
-  return (
-    <span aria-hidden="true" className="flex h-7 items-end gap-1">
-      {[1, 2, 3].map((bar) => (
-        <span
-          key={bar}
-          className={`w-2 rounded-full ${bar <= level ? (level === 3 ? "bg-pomme" : "bg-primary") : "bg-border"}`}
-          style={{ height: `${bar * 33}%` }}
-        />
-      ))}
-    </span>
-  );
-}
 
 const inputClass = "min-h-12 w-full rounded-2xl border border-border bg-surface px-4 text-base";
 
@@ -454,7 +440,7 @@ export function SessionPlayer({ session }: { session: PlayerSession }) {
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-2 font-bold">{t("session.feeling")}</legend>
           <div className="grid grid-cols-3 gap-2">
-            {FEELINGS.map((value, level) => (
+            {FEELINGS.map((value) => (
               <label key={value} className={feelingClass}>
                 <input
                   type="radio"
@@ -464,7 +450,7 @@ export function SessionPlayer({ session }: { session: PlayerSession }) {
                   onChange={() => setFeeling(value)}
                   className="sr-only"
                 />
-                <EffortBars level={level + 1} />
+                <EffortBars feeling={value} />
                 {t(`session.feelings.${value}`)}
               </label>
             ))}

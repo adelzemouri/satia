@@ -5,14 +5,20 @@ import { EQUIPMENT, type Equipment, type Muscle, MUSCLES } from "@/domain/traini
 import { CustomExercises } from "@/features/training/custom-exercises";
 import { RestoreExerciseButton } from "@/features/training/exclusion-button";
 import { ExerciseArt } from "@/features/training/exercise-art";
-import { getPathname, Link } from "@/i18n/navigation";
+import { LibrarySearch } from "@/features/training/library-search";
+import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { requireUser } from "@/server/session";
 import { getTrainingProfile, listCustomExercises } from "@/server/training";
-import { buttonClass } from "@/ui/button";
 import { Card } from "@/ui/card";
 
-const selectClass = "min-h-12 rounded-2xl border border-border bg-surface px-3 text-base";
+/** Recherche sans accents ni majuscules (« planche » trouve « Planche »). */
+function normalize(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
+}
 
 export default async function TrainingLibraryPage({ params, searchParams }: PageProps<"/[locale]/training/library">) {
   const locale = toLocale((await params).locale);
@@ -22,6 +28,7 @@ export default async function TrainingLibraryPage({ params, searchParams }: Page
   const muscle = MUSCLES.includes(query.muscle as Muscle) ? (query.muscle as Muscle) : null;
   const equipment = EQUIPMENT.includes(query.equipment as Equipment) ? (query.equipment as Equipment) : null;
   const level = ["1", "2", "3"].includes(String(query.level)) ? Number(query.level) : null;
+  const search = typeof query.q === "string" ? query.q.trim().slice(0, 60) : "";
   const [profile, custom] = await Promise.all([getTrainingProfile(user.id), listCustomExercises(user.id)]);
   const t = await getTranslations("training");
 
@@ -30,21 +37,24 @@ export default async function TrainingLibraryPage({ params, searchParams }: Page
       (!muscle || exercise.muscle === muscle) &&
       (!equipment ||
         (equipment === "none" ? exercise.equipment.length === 0 : exercise.equipment.includes(equipment))) &&
-      (!level || exercise.level === level),
+      (!level || exercise.level === level) &&
+      (!search || normalize(exercise.name).includes(normalize(search))),
   );
 
   // Filtres de l'ordinateur : des liens qui gardent les deux autres critères, sans bouton « Filtrer ».
   const current = { muscle, equipment, level: level ? String(level) : null };
   const filterHref = (key: keyof typeof current, value: string | null) => {
     const next = { ...current, [key]: value };
-    const search = Object.fromEntries(
-      Object.entries(next).filter((entry): entry is [string, string] => Boolean(entry[1])),
+    const kept = Object.fromEntries(
+      Object.entries({ ...next, q: search || null }).filter((entry): entry is [string, string] => Boolean(entry[1])),
     );
-    return { pathname: "/training/library" as const, query: search };
+    return { pathname: "/training/library" as const, query: kept };
   };
   const chip = (active: boolean) =>
-    `flex min-h-9 items-center rounded-full px-3 text-sm font-semibold ${
-      active ? "bg-primary text-on-primary" : "bg-surface-muted text-text hover:bg-border"
+    `flex min-h-10 shrink-0 items-center rounded-full border-2 px-3.5 text-sm font-semibold whitespace-nowrap lg:min-h-9 lg:border-0 lg:px-3 ${
+      active
+        ? "border-primary bg-primary text-on-primary"
+        : "border-border bg-surface text-text lg:bg-surface-muted [@media(hover:hover)]:hover:bg-border"
     }`;
   const groups: { key: keyof typeof current; title: string; options: { value: string; label: string }[] }[] = [
     {
@@ -69,17 +79,19 @@ export default async function TrainingLibraryPage({ params, searchParams }: Page
       <span data-wide hidden />
       <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("library.title")}</h1>
       <p className="text-text-muted">{t("library.intro")}</p>
+      <LibrarySearch initial={search} label={t("library.search")} />
 
-      {/* Ordinateur : les filtres en colonne à gauche, restant visibles pendant le défilement. */}
-      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:items-start lg:gap-6">
+      {/* Téléphone : une rangée de pastilles par critère, qui défile de côté. Ordinateur : les
+          filtres en colonne à gauche, restant visibles pendant le défilement. */}
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:items-start lg:gap-6">
         <nav
           aria-label={t("library.filtersLabel")}
-          className="hidden flex-col gap-4 rounded-[var(--radius-card)] bg-surface p-4 lg:sticky lg:top-8 lg:row-span-2 lg:flex"
+          className="flex flex-col gap-3 lg:sticky lg:top-8 lg:row-span-2 lg:gap-4 lg:rounded-[var(--radius-card)] lg:bg-surface lg:p-4"
         >
           {groups.map((group) => (
-            <div key={group.key} className="flex flex-col gap-2">
+            <div key={group.key} className="flex flex-col gap-1.5 lg:gap-2">
               <h2 className="text-sm font-semibold text-text-muted">{group.title}</h2>
-              <ul className="flex flex-wrap gap-1.5">
+              <ul className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 lg:pb-0">
                 {[{ value: null, label: t("library.all") }, ...group.options].map((option) => {
                   const active = current[group.key] === option.value;
                   return (
@@ -99,78 +111,37 @@ export default async function TrainingLibraryPage({ params, searchParams }: Page
             </div>
           ))}
         </nav>
-        <Card className="lg:hidden">
-          <form
-            action={getPathname({ href: "/training/library", locale })}
-            method="get"
-            className="flex flex-col gap-3"
-          >
-            <div className="grid grid-cols-3 gap-2">
-              <label className="flex flex-col gap-1.5">
-                <span className="font-semibold">{t("library.muscle")}</span>
-                <select name="muscle" defaultValue={muscle ?? ""} className={selectClass}>
-                  <option value="">{t("library.all")}</option>
-                  {MUSCLES.map((value) => (
-                    <option key={value} value={value}>
-                      {t(`muscles.${value}`)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="flex flex-col gap-1.5">
-                <span className="font-semibold">{t("library.equipment")}</span>
-                <select name="equipment" defaultValue={equipment ?? ""} className={selectClass}>
-                  <option value="">{t("library.all")}</option>
-                  {EQUIPMENT.map((value) => (
-                    <option key={value} value={value}>
-                      {t(`equipment.${value}`)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="flex flex-col gap-1.5">
-                <span className="font-semibold">{t("library.level")}</span>
-                <select name="level" defaultValue={level ? String(level) : ""} className={selectClass}>
-                  <option value="">{t("library.all")}</option>
-                  {[1, 2, 3].map((value) => (
-                    <option key={value} value={value}>
-                      {t("library.levelValue", { level: value })}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-            <button type="submit" className={buttonClass("secondary")}>
-              {t("library.filter")}
-            </button>
-          </form>
-        </Card>
 
         <p className="font-semibold lg:col-start-2" role="status">
           {t("library.count", { count: list.length })}
         </p>
-        <ul className="flex flex-col gap-2 lg:col-start-2 lg:grid lg:grid-cols-3 xl:grid-cols-4">
+        <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:col-start-2 lg:gap-4 xl:grid-cols-4">
           {list.map((exercise) => (
             <li key={exercise.id}>
               <Link
                 href={`/training/library/${exercise.id}`}
-                className="flex items-center gap-3 rounded-[var(--radius-card)] border border-border bg-surface p-3 hover:bg-surface-muted"
+                className="flex h-full flex-col gap-2 rounded-[var(--radius-card)] bg-surface p-2 [@media(hover:hover)]:hover:bg-surface-muted"
               >
-                <ExerciseArt
-                  exerciseId={exercise.id}
-                  muscle={exercise.muscle}
-                  size={64}
-                  className="shrink-0 lg:size-12"
-                />
-                <span className="flex min-w-0 flex-col">
-                  <span className="font-semibold lg:text-sm lg:leading-snug">{exercise.name}</span>
-                  <span className="text-sm text-text-muted lg:text-xs">
+                <ExerciseArt exerciseId={exercise.id} muscle={exercise.muscle} className="h-auto w-full rounded-xl" />
+                <span className="flex min-w-0 flex-col gap-0.5 px-1 pb-1">
+                  <span className="leading-snug font-semibold">{exercise.name}</span>
+                  <span className="flex items-center gap-1.5 text-xs text-text-muted">
+                    <span
+                      className="flex gap-0.5"
+                      role="img"
+                      aria-label={t("library.levelValue", { level: exercise.level })}
+                    >
+                      {[1, 2, 3].map((dot) => (
+                        <span
+                          key={dot}
+                          className={`size-1.5 rounded-full ${dot <= exercise.level ? "bg-primary" : "bg-border"}`}
+                        />
+                      ))}
+                    </span>
                     {t(`muscles.${exercise.muscle}`)} ·{" "}
                     {exercise.equipment.length === 0
                       ? t("equipment.none")
-                      : exercise.equipment.map((item) => t(`equipment.${item}`)).join(", ")}{" "}
-                    · <span className="lg:hidden">{t("library.levelValue", { level: exercise.level })}</span>
-                    <span className="max-lg:hidden">{t("library.levelShort", { level: exercise.level })}</span>
+                      : exercise.equipment.map((item) => t(`equipment.${item}`)).join(", ")}
                   </span>
                 </span>
               </Link>
