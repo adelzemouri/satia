@@ -13,6 +13,8 @@ export const COACH_QUESTIONS = [
   "eatingOut",
   "weekSoFar",
   "hydration",
+  // Posée seulement depuis « Mon métabolisme », quand on mange sous un objectif de prise de poids.
+  "addCalories",
 ] as const;
 export type CoachQuestion = (typeof COACH_QUESTIONS)[number];
 
@@ -39,7 +41,7 @@ function hash(text: string): number {
 export function suggestedQuestions(hour: number, seed: string, count = 3): CoachQuestion[] {
   const first = questionOfTheMoment(hour);
   const timed: readonly CoachQuestion[] = ["breakfastIdea", "lunchBox", "snackIdea", "dinnerIdea"];
-  const others = COACH_QUESTIONS.filter((question) => !timed.includes(question));
+  const others = COACH_QUESTIONS.filter((question) => !timed.includes(question) && question !== "addCalories");
   const start = hash(seed) % others.length;
   const rotated = [...others.slice(start), ...others.slice(0, start)];
   return [first, ...rotated].slice(0, count);

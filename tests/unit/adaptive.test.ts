@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { adaptGoal, measureExpenditure, weightDirection } from "@/domain/adaptive";
+import { adaptGoal, checkRows, measureExpenditure, metabolismSummary, weightDirection } from "@/domain/adaptive";
 import { addDays } from "@/domain/energy";
 import { weeklyBudget } from "@/domain/weekly-budget";
 
@@ -169,5 +169,77 @@ describe("sens de la tendance de poids", () => {
     expect(weightDirection(-0.3)).toBe("down");
     expect(weightDirection(-0.1)).toBe("down");
     expect(weightDirection(0.25)).toBe("up");
+  });
+});
+
+describe("l'essentiel de « Mon métabolisme »", () => {
+  it("prise de poids : sous l'objectif et poids en baisse", () => {
+    const summary = metabolismSummary({
+      averageIntake: 1861,
+      tdee: 1978,
+      goalKcal: 2270,
+      weeklyChangeKg: -0.11,
+      goal: "gain_muscle",
+    });
+    expect(summary).toMatchObject({
+      kind: "gain",
+      gapKcal: -409,
+      intake: "below",
+      direction: "down",
+      asPlanned: false,
+    });
+    // Mangé < dépense < objectif, dans cet ordre et dans l'échelle.
+    expect(summary.scale.intake).toBeGreaterThan(0);
+    expect(summary.scale.intake).toBeLessThan(summary.scale.tdee);
+    expect(summary.scale.tdee).toBeLessThan(summary.scale.goal);
+    expect(summary.scale.goal).toBeLessThan(100);
+  });
+
+  it("à moins de 100 kcal de l'objectif, l'apport colle", () => {
+    const summary = metabolismSummary({
+      averageIntake: 1730,
+      tdee: 2240,
+      goalKcal: 1790,
+      weeklyChangeKg: -0.45,
+      goal: "lose_weight",
+    });
+    expect(summary).toMatchObject({ kind: "lose", intake: "on", direction: "down", asPlanned: true });
+  });
+
+  it("maintien : un poids stable est le but", () => {
+    const summary = metabolismSummary({
+      averageIntake: 2150,
+      tdee: 2100,
+      goalKcal: 2100,
+      weeklyChangeKg: 0.02,
+      goal: "eat_balanced",
+    });
+    expect(summary).toMatchObject({ kind: "steady", intake: "on", direction: "stable", asPlanned: true });
+    // Trois valeurs proches : l'échelle garde au moins 600 kcal de large.
+    expect(summary.scale.goal - summary.scale.intake).toBeLessThan(10);
+  });
+});
+
+describe("liste des bilans", () => {
+  it("regroupe les semaines d'affilée sans mesure, du plus récent au plus ancien", () => {
+    const check = (weekStart: string, status: "adjusted" | "insufficient" | "inconsistent") => ({
+      weekStart,
+      status,
+      measuredTdee: status === "adjusted" ? 2000 : null,
+    });
+    const rows = checkRows([
+      check("2026-09-28", "insufficient"),
+      check("2026-10-05", "insufficient"),
+      check("2026-10-12", "inconsistent"),
+      check("2026-10-19", "adjusted"),
+      check("2026-10-26", "insufficient"),
+      check("2026-11-02", "adjusted"),
+    ]);
+    expect(rows.map((row) => (row.kind === "week" ? row.check.weekStart : `${row.from}→${row.to}`))).toEqual([
+      "2026-11-02",
+      "2026-10-26→2026-10-26",
+      "2026-10-19",
+      "2026-09-28→2026-10-12",
+    ]);
   });
 });
