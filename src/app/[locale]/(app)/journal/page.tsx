@@ -136,19 +136,14 @@ export default async function JournalPage({ params, searchParams }: PageProps<"/
         )}
       </nav>
 
-      {/* Le bilan du jour se distingue des repas : fond vert pâle, étiquette et titre en Fraunces. */}
+      {/* Le bilan du jour se distingue des repas : fond vert pâle et titre en Fraunces (sans étiquette
+          en capitales au-dessus : le titre suffit, « Bilan du jour » reste lu par les lecteurs d'écran). */}
       <Card aria-labelledby="day-total" tone="highlight">
         <div className="flex items-end justify-between gap-3">
-          <div className="flex flex-col gap-0.5">
-            <p className="text-xs font-bold tracking-wider text-primary uppercase">{t("journal.dayBalance")}</p>
-            <h2
-              id="day-total"
-              className="font-display text-2xl font-extrabold tracking-tight first-letter:uppercase"
-              aria-live="polite"
-            >
-              {dayTitle}
-            </h2>
-          </div>
+          <h2 id="day-total" className="font-display text-2xl font-extrabold tracking-tight" aria-live="polite">
+            <span className="sr-only">{t("journal.dayBalance")} : </span>
+            <span className="inline-block first-letter:uppercase">{dayTitle}</span>
+          </h2>
           {date === today && yesterdayEntries.length > 0 && summary.entries.length === 0 && (
             <CopyButton
               fromDate={yesterday}

@@ -70,11 +70,13 @@ function CardHead({ eyebrow, title, id }: { eyebrow: string; title: string; id: 
   return (
     <div className="flex items-center gap-3">
       <CoachAvatar size={52} />
+      {/* Le titre d'abord, le contexte (« Ce mois-ci », le jour de pesée) en petit dessous, sans
+          étiquette en capitales au-dessus du titre. */}
       <div className="min-w-0">
-        <p className="text-xs font-extrabold tracking-wider text-text-muted uppercase">{eyebrow}</p>
         <h2 id={id} className="font-display text-xl leading-tight font-extrabold tracking-tight text-balance">
           {title}
         </h2>
+        <p className="text-sm text-text-muted first-letter:uppercase">{eyebrow}</p>
       </div>
     </div>
   );
