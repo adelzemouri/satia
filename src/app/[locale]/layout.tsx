@@ -8,6 +8,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { APP_NAME, BRAND_COLORS } from "@/config/app";
 import { splashStartupImages } from "@/config/splash";
+import { DAY_MOMENT_SCRIPT } from "@/domain/day-moment";
 import { CHUNK_RECOVERY_SCRIPT } from "@/features/offline/chunk-recovery";
 import { parseTheme, THEME_COOKIE } from "@/features/preferences/theme";
 import { routing } from "@/i18n/routing";
@@ -57,9 +58,12 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       lang={locale}
       data-theme={theme === "system" ? undefined : theme}
       className={`${sans.variable} ${title.variable} h-full antialiased`}
+      // data-moment est posé par DAY_MOMENT_SCRIPT avant l'hydratation.
+      suppressHydrationWarning
     >
       <head>
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: CHUNK_RECOVERY_SCRIPT }} />
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: DAY_MOMENT_SCRIPT }} />
       </head>
       <body className="min-h-full bg-bg text-text">
         <NextIntlClientProvider>

@@ -4,7 +4,7 @@
 export default function GlobalError() {
   return (
     <html lang="fr">
-      <body style={{ margin: 0, fontFamily: "system-ui, sans-serif", background: "#F2F4F3", color: "#14201D" }}>
+      <body style={{ margin: 0, fontFamily: "system-ui, sans-serif", background: "#F6F1E7", color: "#1C1A16" }}>
         <main
           style={{
             minHeight: "100dvh",

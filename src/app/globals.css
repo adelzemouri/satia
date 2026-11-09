@@ -67,6 +67,33 @@ html {
 
 body {
   font-family: var(--font-sans);
+  /* Contexte d'empilement propre : la lueur (z-index -1) passe au-dessus du fond du body, sous tout le reste. */
+  position: relative;
+  isolation: isolate;
+}
+
+/* Lueur du moment en haut de page : elle défile avec la page et s'efface avant les chiffres.
+   Sur ordinateur, la barre latérale (fond carte) la recouvre à gauche. */
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 32rem;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(90% 75% at 15% 0%, var(--color-wash) 0%, transparent 70%),
+    radial-gradient(70% 60% at 95% 5%, var(--color-wash) 0%, transparent 65%);
+}
+
+/* Titres de section et de carte en Fraunces arrondie, comme les grands titres. Une étiquette
+   discrète qui doit rester en texte courant prend `font-sans`. */
+@layer base {
+  h2 {
+    font-family: var(--font-display);
+    font-variation-settings: "SOFT" 100;
+    font-optical-sizing: auto;
+  }
 }
 
 /* Titres et grands chiffres en Fraunces, version arrondie (axe SOFT) : l'identité « gourmande ». */
