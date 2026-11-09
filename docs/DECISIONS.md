@@ -654,11 +654,20 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 051 — Fond crème et lueur du moment
+
+- **Date** : 2026-11-09 · **Statut** : adoptée
+- **Contexte** : Adel trouvait l'appli sans personnalité, avec un fond uni. Le fond gris-vert froid s'était éloigné du fond crème « marché du dimanche » du PRD. Un fond chargé (photo, motif sur toute la page) aurait gêné la lecture des chiffres. Maquette : https://claude.ai/artifact/CUoEP9QqUhMXkCCH7LWpEF (piste B choisie).
+- **Décision** : neutres crème en clair, olive très foncé en sombre. Une lueur douce en haut de page suit l'heure de l'appareil (abricot de 5 h à 11 h, vert tendre jusqu'à 17 h, prune ensuite) : `data-moment` sur `<html>` posé par un petit script en ligne (`src/domain/day-moment.ts`), couleur `--color-wash`, dégradé en `body::before`. Tous les `h2` passent en Fraunces arrondie ; une petite étiquette garde `font-sans`.
+- **Conséquences** : uniquement du CSS, aucune image ni appel IA. Les contrastes restent vérifiés par `tests/unit/tokens.test.ts`. Couleur de thème (barre du navigateur, manifest) alignée sur la crème.
+
+---
+
 ## 052 — Mise en page plus calme, d'après les skills Impeccable et Emil Kowalski
 
 - **Date** : 2026-11-09 · **Statut** : adoptée
 - **Contexte** : l'accueil empilait beaucoup de cartes et de pastilles ; les étiquettes en capitales et les dégradés chargeaient l'écran. Adel a validé la maquette « Avec les skills » du canevas de design, et demandé de retirer la bande des 7 jours.
-- **Décision** : accueil sans bande des 7 jours (la date ouvre le journal), un seul bouton plein « Ajouter mon <repas du moment> », eau, pas, activité, jeûne et traitement en lignes d'une seule carte « Aussi aujourd'hui », jauge d'équilibre sans dégradé, contexte des rendez-vous sous le titre. Journal sans étiquette « BILAN DU JOUR » visible (gardée pour les lecteurs d'écran). Confirmation d'un repas : total et « Ajouter au journal » collés en bas. Listes de Progrès et Moi : icônes sans pastille. Pépin : une seule zone de saisie avec dictée et envoi en boutons ronds, bulle de l'utilisateur en couleur pleine. Les couleurs, le fond et les titres en Fraunces viennent de la décision « personnalité » menée à part.
+- **Décision** : accueil sans bande des 7 jours (la date ouvre le journal), un seul bouton plein « Ajouter mon <repas du moment> », eau, pas, activité, jeûne et traitement en lignes d'une seule carte « Aussi aujourd'hui », jauge d'équilibre sans dégradé, contexte des rendez-vous sous le titre. Journal sans étiquette « BILAN DU JOUR » visible (gardée pour les lecteurs d'écran). Confirmation d'un repas : total et « Ajouter au journal » collés en bas. Listes de Progrès et Moi : icônes sans pastille. Pépin : une seule zone de saisie avec dictée et envoi en boutons ronds, bulle de l'utilisateur en couleur pleine. Les couleurs, le fond et les titres en Fraunces viennent de la décision 051.
 - **Conséquences** : la semaine se consulte depuis le journal et « Ma série ». Aucun appel IA de plus.
 
 ---

@@ -39,7 +39,7 @@ export function HabitualMealCard({
     >
       <div className="flex items-center gap-3">
         <div className="flex min-w-0 flex-1 flex-col">
-          <h2 id="habitual-title" className="text-sm font-bold text-primary">
+          <h2 id="habitual-title" className="font-sans text-sm font-bold text-primary">
             {t("habitual.title", { slot: meal.slot })}
           </h2>
           <p className="font-bold">{meal.labels.join(", ")}</p>

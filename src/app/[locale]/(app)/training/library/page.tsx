@@ -90,7 +90,7 @@ export default async function TrainingLibraryPage({ params, searchParams }: Page
         >
           {groups.map((group) => (
             <div key={group.key} className="flex flex-col gap-1.5 lg:gap-2">
-              <h2 className="text-sm font-semibold text-text-muted">{group.title}</h2>
+              <h2 className="font-sans text-sm font-semibold text-text-muted">{group.title}</h2>
               <ul className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 lg:pb-0">
                 {[{ value: null, label: t("library.all") }, ...group.options].map((option) => {
                   const active = current[group.key] === option.value;

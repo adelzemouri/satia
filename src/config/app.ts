@@ -14,8 +14,8 @@ export const COACH_NAME = "Pépin";
 
 /** Couleurs utilisées hors CSS (manifest, balise theme-color). */
 export const BRAND_COLORS = {
-  light: "#F2F4F3",
-  dark: "#0F1513",
+  light: "#F6F1E7",
+  dark: "#12140E",
 } as const;
 
 /** Fuseau horaire de référence pour « aujourd'hui » (usage familial en France). */
