@@ -1829,10 +1829,28 @@
       "summary": "{minutes} min · {kcal} kcal",
       "delete": "Delete",
       "deleteLabel": "Delete the workout of {date}",
-      "start": "Start a session"
+      "start": "Start a session",
+      "pepinNone": "Your first workout will set your first marks. Then I'll show you what moves.",
+      "pepinSteady": "{count, plural, one {# workout done} other {# workouts done}}. Consistency is already a fine win.",
+      "pepinProgress": "Since the start, {exercise}: from {from} to {to}. That's solid.",
+      "regularity": "Consistency",
+      "weekLabel": "Week of {date}: {count, plural, =0 {no workout} one {# workout} other {# workouts}}",
+      "marks": "My marks",
+      "marksHint": "Each exercise in its own unit: reps, seconds or kilos.",
+      "kinds": {
+        "all": "All",
+        "strength": "Strength",
+        "core": "Core",
+        "cardio": "Cardio",
+        "mobility": "Mobility"
+      },
+      "kindsLabel": "Exercise families",
+      "markGain": "+{value} since the start",
+      "markFirst": "First mark",
+      "noMarksKind": "No mark in this family yet."
     },
     "library": {
-      "title": "Exercise library",
+      "title": "Exercises",
       "intro": "Every exercise in the app, with instructions and a gentler variant. Exercise descriptions are in French.",
       "muscle": "Group",
       "equipment": "Equipment",
@@ -1861,7 +1879,8 @@
       "noCustom": "No personal exercise.",
       "stress": "Areas loaded: {list}",
       "filtersLabel": "Filter exercises",
-      "levelShort": "Lvl {level}"
+      "levelShort": "Lvl {level}",
+      "search": "Search an exercise"
     },
     "art": {
       "label": "Movement illustration: {name}",

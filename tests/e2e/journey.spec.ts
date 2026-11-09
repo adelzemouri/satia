@@ -1442,7 +1442,8 @@ test("espace Training : profil sportif, séance express guidée, suivi et biblio
   await page.getByRole("button", { name: "Enregistrer la séance" }).click();
 
   await expect(page).toHaveURL(/\/training\/history$/);
-  await expect(page.getByText("1 semaine active d'affilée")).toBeVisible();
+  await expect(page.getByText("1 semaine active", { exact: true })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Mes repères" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Séances" }).getByText("Séance express (10 min)")).toBeVisible();
   await expectNoA11yViolations(page);
 
@@ -1451,6 +1452,10 @@ test("espace Training : profil sportif, séance express guidée, suivi et biblio
 
   await page.goto("/training/library?muscle=core");
   await expect(page.getByRole("link", { name: /Planche sur les avant-bras/ })).toBeVisible();
+  // La recherche filtre sans bouton, en gardant le groupe choisi.
+  await page.getByRole("searchbox", { name: "Chercher un exercice" }).fill("avant-bras");
+  await expect(page).toHaveURL(/q=avant-bras/);
+  await expect(page.getByRole("status").filter({ hasText: /exercice/ })).toHaveText(/^1 exercice$/);
   await expectNoA11yViolations(page);
   const excluded = page.getByRole("region", { name: "Exercices mis de côté" });
   await expect(excluded).toBeVisible();
