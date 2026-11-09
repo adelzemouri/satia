@@ -1104,14 +1104,57 @@
   },
   "metabolism": {
     "title": "My metabolism",
-    "intro": "The app compares what you eat with how your weight changes to measure what you really burn.",
+    "intro": "What you eat, what you burn, and what it means on the scale.",
+    "summary": {
+      "title": "The essentials · last {days} days",
+      "intake": {
+        "below": "On average you eat {gap, number} kcal less than your goal.",
+        "on": "On average you eat what your goal plans, within {gap, number} kcal.",
+        "above": "On average you eat {gap, number} kcal more than your goal."
+      },
+      "weight": {
+        "lose": {
+          "down": "Your weight is going down ({change, number, ::sign-always .00} kg per week), as planned.",
+          "stable": "As a result, your weight stays stable instead of going down.",
+          "up": "As a result, your weight is going up a little ({change, number, ::sign-always .00} kg per week) instead of down."
+        },
+        "gain": {
+          "up": "Your weight is going up ({change, number, ::sign-always .00} kg per week), as planned.",
+          "stable": "As a result, your weight stays stable instead of going up.",
+          "down": "As a result, your weight is going down a little ({change, number, ::sign-always .00} kg per week) instead of up."
+        },
+        "steady": {
+          "stable": "Your weight stays stable, as planned.",
+          "down": "As a result, your weight is going down a little ({change, number, ::sign-always .00} kg per week).",
+          "up": "As a result, your weight is going up a little ({change, number, ::sign-always .00} kg per week)."
+        }
+      },
+      "advice": {
+        "gain": {
+          "below": "To gain weight as you wish, add about <b>{gap, number} kcal a day</b>. No rush: you can go step by step.",
+          "above": "You eat a little more than your goal: your weight may go up faster than planned. Your goal is enough."
+        },
+        "lose": {
+          "below": "You eat below your goal: no need to do more, your goal is enough to progress gently.",
+          "above": "To lose at the planned pace, your goal remains the right guide: no rush, one small step at a time."
+        },
+        "steady": {
+          "below": "To stay stable, aim for your goal: about <b>{gap, number} kcal more a day</b>.",
+          "above": "To stay stable, your goal remains the right guide, without changing everything at once."
+        }
+      },
+      "askPepin": "Ask {name} for ideas",
+      "scaleLabel": "What you eat, what you burn and your goal, on one ruler",
+      "eaten": "eaten",
+      "burned": "you burn",
+      "target": "goal",
+      "losing": "◂ you lose",
+      "gaining": "you gain ▸",
+      "scaleHint": "Below what you burn, your weight goes down. Above it, it goes up."
+    },
     "expenditure": "Your real expenditure",
     "perDay": "per day",
-    "direction": {
-      "stable": "Your weight stayed stable, so you burn about what you eat.",
-      "down": "Your weight is going down, so you burn a little more than you eat.",
-      "up": "Your weight is going up, so you burn a little less than you eat."
-    },
+    "expenditureHint": "What your body really burns, measured from your meals and your scale.",
     "calcLabel": "How your real expenditure is calculated",
     "calcIntake": "Eaten on average",
     "calcIntakeDetail": "over the last {days} days",
@@ -1140,13 +1183,37 @@
       "manual": "Set manually.",
       "adaptive": "Adjusted from your measured expenditure."
     },
+    "goalCalcLabel": "How your goal is calculated",
+    "goalMargin": {
+      "lose": "To lose weight",
+      "gain": "To gain weight",
+      "steady": "To stay stable",
+      "manual": "Gap with what you burn"
+    },
+    "goalTotal": "Goal",
+    "goalFollows": {
+      "lose": "Your goal follows your real expenditure, keeping the gap that makes you lose gently.",
+      "gain": "Your goal follows your real expenditure: if it goes down, so does your goal, keeping the margin to gain weight.",
+      "steady": "Your goal follows your real expenditure, so your weight stays stable."
+    },
     "lockedHint": "Your goal is locked: the weekly check no longer changes it.",
     "unlockedHint": "Next check-in {date}: your goal will move toward your real expenditure, by 150 kcal at most, never below the floor.",
     "lock": "Lock my goal",
     "unlock": "Let my goal adjust",
-    "history": "Weekly checks",
-    "chart": "Estimated expenditure (dashed) and measured expenditure (solid), week by week",
+    "history": "Week by week",
+    "chart": "Your goal and your measured expenditure, week by week",
+    "chartGoal": "Goal",
+    "chartMeasured": "Measured expenditure",
     "weekOf": "Week of {date}",
+    "row": {
+      "measured": "burned {value, number}",
+      "change": "{before, number} → {after, number}",
+      "same": "{after, number}",
+      "locked": "locked · {after, number}"
+    },
+    "rowLabel": "Week of {date}: measured expenditure {measured, number} kcal, goal {before, number} then {after, number} kcal.",
+    "pending": "{count, plural, one {Not enough data yet: goal unchanged.} other {Not enough data yet ({count} weeks): goal unchanged.}}",
+    "pendingInconsistent": "Incomplete data: goal unchanged.",
     "status": {
       "adjusted": "Measured expenditure {measured, number} kcal: goal adjusted from {before, number} to {after, number} kcal.",
       "unchanged": "Measured expenditure {measured, number} kcal: your goal of {after, number} kcal still fits.",
@@ -1348,7 +1415,8 @@
       "moreFiber": "Where can I find more fibre?",
       "eatingOut": "How do I stay on track at a restaurant?",
       "weekSoFar": "How is my week going?",
-      "hydration": "Tips to drink more water?"
+      "hydration": "Tips to drink more water?",
+      "addCalories": "How can I easily add calories to my meals?"
     },
     "subtitle": "Your nutrition coach",
     "askCoach": "Ask {name}",
