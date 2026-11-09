@@ -1,19 +1,20 @@
 /*
- * Design tokens Pommelia — piste « Net » : fond clair et sobre, vert canard, cartes blanches sans bordure,
- * rouge pomme pour les bons moments, titres en Fraunces.
+ * Design tokens Pommelia — fond crème « marché du dimanche » (olive très foncé en sombre), vert canard,
+ * cartes claires sans bordure, rouge pomme pour les bons moments, titres en Fraunces. Une lueur douce
+ * en haut de page suit le moment de la journée (--color-wash, voir plus bas et globals.css).
  * Les couples texte/fond sont vérifiés WCAG AA par tests/unit/tokens.test.ts.
  */
 :root,
 [data-theme="light"] {
   color-scheme: light;
-  --color-bg: #f2f4f3; /* gris très clair, légèrement vert */
-  --color-surface: #ffffff;
-  --color-surface-muted: #e8eeec;
-  --color-border: #d6dfdb;
-  --color-text: #111816;
-  --color-text-muted: #56625d;
+  --color-bg: #f6f1e7; /* crème */
+  --color-surface: #fffdf9;
+  --color-surface-muted: #efe8db;
+  --color-border: #e4dccb;
+  --color-text: #1c1a16; /* anthracite chaud */
+  --color-text-muted: #5c574c;
   --color-primary: #0b6e66; /* vert canard */
-  --color-primary-soft: #d7ece9;
+  --color-primary-soft: #dcebe3;
   --color-on-primary: #ffffff;
   --color-accent: #b3412c; /* brique, pour les dépassements et les actions destructives */
   --color-accent-soft: #f7e0da;
@@ -29,21 +30,21 @@
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --color-bg: #0f1513;
-  --color-surface: #18201d;
-  --color-surface-muted: #222c28;
-  --color-border: #33403b;
-  --color-text: #eef3f1;
-  --color-text-muted: #a9b5b0;
+  --color-bg: #12140e;
+  --color-surface: #1c1f17;
+  --color-surface-muted: #272b21;
+  --color-border: #373c2f;
+  --color-text: #f1efe6;
+  --color-text-muted: #b3b0a2;
   --color-primary: #5fc9bc;
-  --color-primary-soft: #173430;
-  --color-on-primary: #0f1513;
+  --color-primary-soft: #1b322d;
+  --color-on-primary: #12140e;
   --color-accent: #f08a70;
   --color-accent-soft: #45231b;
-  --color-on-accent: #0f1513;
+  --color-on-accent: #12140e;
   --color-pomme: #f29a80;
   --color-pomme-soft: #3d211a;
-  --color-on-pomme: #0f1513;
+  --color-on-pomme: #12140e;
   --color-focus: #93b4ff;
   --color-protein: #f08a70;
   --color-carbs: #e0bd6c;
@@ -53,21 +54,21 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --color-bg: #0f1513;
-    --color-surface: #18201d;
-    --color-surface-muted: #222c28;
-    --color-border: #33403b;
-    --color-text: #eef3f1;
-    --color-text-muted: #a9b5b0;
+    --color-bg: #12140e;
+    --color-surface: #1c1f17;
+    --color-surface-muted: #272b21;
+    --color-border: #373c2f;
+    --color-text: #f1efe6;
+    --color-text-muted: #b3b0a2;
     --color-primary: #5fc9bc;
-    --color-primary-soft: #173430;
-    --color-on-primary: #0f1513;
+    --color-primary-soft: #1b322d;
+    --color-on-primary: #12140e;
     --color-accent: #f08a70;
     --color-accent-soft: #45231b;
-    --color-on-accent: #0f1513;
+    --color-on-accent: #12140e;
     --color-pomme: #f29a80;
     --color-pomme-soft: #3d211a;
-    --color-on-pomme: #0f1513;
+    --color-on-pomme: #12140e;
     --color-focus: #93b4ff;
     --color-protein: #f08a70;
     --color-carbs: #e0bd6c;
@@ -79,4 +80,39 @@
   --radius-card: 1.25rem;
   --radius-button: 999px;
   --tap-target: 3rem;
+}
+
+/* Lueur du moment, en haut de page : abricot le matin, vert tendre à midi, prune le soir.
+   `data-moment` est posé sur <html> par DAY_MOMENT_SCRIPT (src/domain/day-moment.ts). */
+:root {
+  --color-wash: transparent;
+}
+:root[data-moment="matin"] {
+  --color-wash: #fbdcb6;
+}
+:root[data-moment="midi"] {
+  --color-wash: #d9ecc9;
+}
+:root[data-moment="soir"] {
+  --color-wash: #ead6e6;
+}
+:root[data-theme="dark"][data-moment="matin"] {
+  --color-wash: #3b2a16;
+}
+:root[data-theme="dark"][data-moment="midi"] {
+  --color-wash: #1f3119;
+}
+:root[data-theme="dark"][data-moment="soir"] {
+  --color-wash: #36202f;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"])[data-moment="matin"] {
+    --color-wash: #3b2a16;
+  }
+  :root:not([data-theme="light"])[data-moment="midi"] {
+    --color-wash: #1f3119;
+  }
+  :root:not([data-theme="light"])[data-moment="soir"] {
+    --color-wash: #36202f;
+  }
 }

@@ -645,6 +645,15 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 050 — Fond crème et lueur du moment
+
+- **Date** : 2026-11-09 · **Statut** : adoptée
+- **Contexte** : Adel trouvait l'appli sans personnalité, avec un fond uni. Le fond gris-vert froid s'était éloigné du fond crème « marché du dimanche » du PRD. Un fond chargé (photo, motif sur toute la page) aurait gêné la lecture des chiffres. Maquette : https://claude.ai/artifact/CUoEP9QqUhMXkCCH7LWpEF (piste B choisie).
+- **Décision** : neutres crème en clair, olive très foncé en sombre. Une lueur douce en haut de page suit l'heure de l'appareil (abricot de 5 h à 11 h, vert tendre jusqu'à 17 h, prune ensuite) : `data-moment` sur `<html>` posé par un petit script en ligne (`src/domain/day-moment.ts`), couleur `--color-wash`, dégradé en `body::before`. Tous les `h2` passent en Fraunces arrondie ; une petite étiquette garde `font-sans`.
+- **Conséquences** : uniquement du CSS, aucune image ni appel IA. Les contrastes restent vérifiés par `tests/unit/tokens.test.ts`. Couleur de thème (barre du navigateur, manifest) alignée sur la crème.
+
+---
+
 ## Modèle
 
 ```markdown
