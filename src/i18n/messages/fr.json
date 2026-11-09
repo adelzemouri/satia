@@ -102,10 +102,6 @@
     "ringOver": "kcal en plus",
     "burnedLabel": "Dépensées",
     "slotKcal": "{kcal, number} / {target, number}",
-    "week": {
-      "label": "Ma semaine",
-      "day": "{day} : {kcal, number} kcal"
-    },
     "balance": {
       "title": "Équilibre du jour",
       "outOf": " / 100",
@@ -212,7 +208,9 @@
       "noSteps": "Ta première étape arrive à 3 jours d'affilée.",
       "next": "Prochaine étape : <b>{days} jours d'affilée</b>, encore {remaining, plural, one {# jour} other {# jours}}.",
       "allDone": "Tu as franchi toutes les étapes, bravo pour cette année de régularité."
-    }
+    },
+    "addCurrent": "{slot, select, snack {Ajouter une collation} other {Ajouter mon {name}}}",
+    "alsoToday": "Aussi aujourd'hui"
   },
   "theme": {
     "label": "Thème",

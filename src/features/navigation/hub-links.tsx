@@ -17,7 +17,8 @@ export type HubLink = {
 /**
  * Liste de pages secondaires, regroupées sous un onglet (« Progrès », « Moi »).
  * Chaque ligne occupe toute la largeur de la carte : la surbrillance touche ses
- * bords (arrondis par la carte), et les séparateurs démarrent après l'icône.
+ * bords (arrondis par la carte), et les séparateurs démarrent après l'icône. L'icône est
+ * posée seule, sans pastille de couleur derrière : la liste reste calme et se lit d'un coup d'œil.
  * Le séparateur sous une ligne survolée ne s'efface qu'avec une vraie souris :
  * sur iPhone, la dernière ligne touchée garde `:hover`, ce qui faisait disparaître
  * un trait au hasard en défilant (`hover:` de Tailwind est déjà limité ainsi).
@@ -33,9 +34,9 @@ export function HubLinks({ label, links }: { label: string; links: HubLink[] }) 
           >
             <Link
               href={link.href}
-              className="relative flex min-h-16 items-center gap-4 px-5 py-2 transition-colors before:absolute before:start-[4.75rem] before:end-0 before:top-0 before:h-px hover:bg-surface-muted hover:before:opacity-0 focus-visible:bg-surface-muted focus-visible:outline-offset-[-3px] focus-visible:before:opacity-0 in-[li+li]:before:bg-border in-[li:has(:focus-visible)+li]:before:opacity-0 [@media(hover:hover)]:in-[li:hover+li]:before:opacity-0"
+              className="relative flex min-h-16 items-center gap-4 px-5 py-2 transition-colors before:absolute before:start-[3.75rem] before:end-0 before:top-0 before:h-px hover:bg-surface-muted hover:before:opacity-0 focus-visible:bg-surface-muted focus-visible:outline-offset-[-3px] focus-visible:before:opacity-0 in-[li+li]:before:bg-border in-[li:has(:focus-visible)+li]:before:opacity-0 [@media(hover:hover)]:in-[li:hover+li]:before:opacity-0"
             >
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary">
+              <span className="flex size-6 shrink-0 items-center justify-center text-primary">
                 <Icon name={link.icon} />
               </span>
               <span className="flex min-w-0 flex-1 flex-col">

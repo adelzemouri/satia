@@ -3,7 +3,10 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Icon, type ICONS } from "@/ui/icon";
 
-/** Petite carte de l'accueil : une icône, un titre, une valeur ; toute la carte est un lien. */
+/**
+ * Ligne de la liste « Aussi aujourd'hui » de l'accueil : une icône, un titre et une précision,
+ * la valeur à droite ; toute la ligne est un lien. Les lignes se suivent dans une seule carte.
+ */
 function Tile({
   href,
   icon,
@@ -20,19 +23,24 @@ function Tile({
   children?: React.ReactNode;
 }) {
   return (
-    <Link href={href} className="flex flex-col gap-1 rounded-[var(--radius-card)] bg-surface px-4 py-3">
-      <span className="flex items-center gap-2 text-primary">
-        <Icon name={icon} size={18} />
-        <span className="text-sm font-bold text-text">{title}</span>
+    <Link href={href} className="flex min-h-14 items-center gap-3 py-3">
+      <span className="shrink-0 text-primary">
+        <Icon name={icon} size={22} />
       </span>
-      <span className="font-display text-lg font-extrabold">{value}</span>
-      {hint && <span className="text-xs text-text-muted">{hint}</span>}
-      {children}
+      <span className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className="font-bold">{title}</span>
+        {hint && <span className="text-sm text-text-muted">{hint}</span>}
+        {children}
+      </span>
+      <span className="shrink-0 text-right font-semibold tabular-nums">{value}</span>
+      <span className="shrink-0 text-text-muted" aria-hidden="true">
+        <Icon name="right" size={16} />
+      </span>
     </Link>
   );
 }
 
-/** Pas du jour et calories dépensées en activité, côte à côte (dans la grille de l'accueil). */
+/** Pas du jour et calories dépensées en activité, sur deux lignes de la liste de l'accueil. */
 export async function ActivityTiles({ steps, burnedKcal }: { steps: number; burnedKcal: number }) {
   const t = await getTranslations("home.cards");
   return (

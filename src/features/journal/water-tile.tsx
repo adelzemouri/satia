@@ -17,7 +17,10 @@ export function WaterTile({
   glasses,
   fromMeals,
   goal,
+  bare = false,
 }: {
+  /** Sans fond ni marge : la ligne « Eau » de la liste de l'accueil, dans la carte qui l'entoure. */
+  bare?: boolean;
   date: string;
   glasses: number;
   fromMeals: number;
@@ -30,7 +33,7 @@ export function WaterTile({
   return (
     <section
       aria-labelledby="water-title"
-      className={`flex flex-col gap-3 rounded-[var(--radius-card)] p-5 ${celebrating ? "celebrate bg-primary-soft" : "bg-surface"}`}
+      className={`flex flex-col gap-3 ${bare ? "-mx-5 px-5 py-4" : "rounded-[var(--radius-card)] p-5"} ${celebrating ? "celebrate bg-primary-soft" : bare ? "" : "bg-surface"}`}
       onAnimationEnd={() => setCelebrating(false)}
     >
       <h2 id="water-title" className="text-lg font-bold">

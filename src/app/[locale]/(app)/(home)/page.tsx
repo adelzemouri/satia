@@ -21,14 +21,13 @@ import { StreakSheet } from "@/features/home/streak-sheet";
 import { ActivityTiles, FastingTile, TreatmentTile } from "@/features/home/day-cards";
 import { MealRings } from "@/features/home/meal-rings";
 import { RitualCards, VictoryAnnouncement } from "@/features/home/rituals";
-import { WeekStrip } from "@/features/home/week-strip";
 import { RecipeCard } from "@/features/recipes/recipe-card";
 import { Link, redirect } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { ensureWeeklyCheck } from "@/server/adaptive";
 import { purgePhotosIfDue } from "@/server/photos";
 import { currentFast, fastingAllowed, getFastingPlan } from "@/server/fasting";
-import { daySummary, latestWeight, loggedDaysFor, recentIntake } from "@/server/journal";
+import { daySummary, latestWeight, loggedDaysFor } from "@/server/journal";
 import { dayQualityFor } from "@/server/quality";
 import { treatmentRemindersOn } from "@/server/treatment";
 import { getProfile } from "@/server/profile";
@@ -52,7 +51,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   await ensureWeeklyCheck(user.id, today);
   const now = new Date();
   const weekday = (new Date(`${today}T00:00:00Z`).getUTCDay() + 6) % 7;
-  const [summary, loggedDays, fast, fastingPlan, canFast, catalog, days, quality, reminders, dates, lastWeight] =
+  const [summary, loggedDays, fast, fastingPlan, canFast, catalog, quality, reminders, dates, lastWeight] =
     await Promise.all([
       daySummary(user.id, today),
       loggedDaysFor(user.id, today),
@@ -60,7 +59,6 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       getFastingPlan(user.id),
       fastingAllowed(user.id),
       catalogEntries(),
-      recentIntake(user.id, today),
       dayQualityFor(user.id, today),
       treatmentRemindersOn(user.id, today, weekday),
       ritualDates(user.id, today),
@@ -120,18 +118,16 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     <div data-wide className="flex flex-col gap-6 lg:grid lg:grid-cols-[1.45fr_1fr] lg:items-start">
       <header className="flex flex-col gap-4 lg:col-span-2">
         <div className="flex items-center justify-between gap-3">
-          <Link
-            href="/journal"
-            className="flex min-h-12 min-w-0 items-center gap-2 rounded-full bg-surface px-4 font-semibold"
-          >
-            <span className="shrink-0 text-primary">
-              <Icon name="calendar" size={20} />
-            </span>
+          {/* La date ouvre le journal (la bande des 7 jours n'est plus sur l'accueil). */}
+          <Link href="/journal" className="flex min-h-12 min-w-0 items-center gap-1.5 font-bold">
             {/* Une seule ligne : date abrégée (« dim. 11 oct. ») sur les téléphones étroits. */}
             <span className="truncate first-letter:uppercase min-[430px]:hidden">
               {formatDay(today, locale, "compact")}
             </span>
             <span className="hidden truncate first-letter:uppercase min-[430px]:block">{formatDay(today, locale)}</span>
+            <span className="shrink-0 text-text-muted" aria-hidden="true">
+              <Icon name="down" size={16} />
+            </span>
           </Link>
           <StreakSheet
             stats={streakInfo}
@@ -167,7 +163,6 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             </div>
           </div>
         </div>
-        <WeekStrip days={days} today={today} goalKcal={summary.goal?.kcal ?? null} locale={locale} />
       </header>
 
       <div className="contents lg:flex lg:min-w-0 lg:flex-col lg:gap-6">
@@ -178,6 +173,14 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           </h2>
           <CalorieSummary totals={summary.totals} goal={summary.goal} burnedKcal={burnedKcal} />
           <MacroBars totals={summary.totals} goal={summary.goal} />
+          {/* Le seul bouton plein de l'écran : ajouter le repas du moment. */}
+          <Link
+            href={{ pathname: "/add", query: { slot: current, date: today } }}
+            className="flex min-h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 font-bold text-on-primary shadow-[0_6px_16px_-6px_color-mix(in_srgb,var(--color-primary)_55%,transparent)] transition-transform duration-150 ease-out active:scale-[0.97] lg:self-start"
+          >
+            <Icon name="plus" size={20} />
+            {t("home.addCurrent", { slot: current, name: t(`slotsLower.${current}`) })}
+          </Link>
           <div className="flex items-baseline justify-between gap-3 border-t border-border pt-4">
             <h2 id="meals-title" className="text-lg font-bold">
               {t("home.meals")}
@@ -235,13 +238,18 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       </div>
 
       <div className="contents lg:flex lg:min-w-0 lg:flex-col lg:gap-6">
-        <WaterTile date={today} {...summary.water} />
-
-        <div className="grid grid-cols-2 gap-3">
-          <ActivityTiles steps={summary.activity.steps} burnedKcal={burnedKcal} />
-          {showFasting && <FastingTile fast={fast} now={now} />}
-          {reminders.length > 0 && <TreatmentTile reminders={reminders} />}
-        </div>
+        {/* Eau, pas, activité, jeûne et traitement dans une seule carte, une ligne chacun. */}
+        <Card aria-labelledby="also-title" className="gap-0 py-1">
+          <h2 id="also-title" className="sr-only">
+            {t("home.alsoToday")}
+          </h2>
+          <WaterTile bare date={today} {...summary.water} />
+          <div className="flex flex-col divide-y divide-border border-t border-border">
+            <ActivityTiles steps={summary.activity.steps} burnedKcal={burnedKcal} />
+            {showFasting && <FastingTile fast={fast} now={now} />}
+            {reminders.length > 0 && <TreatmentTile reminders={reminders} />}
+          </div>
+        </Card>
 
         {summary.entries.length > 0 && <BalanceCard quality={quality} />}
 

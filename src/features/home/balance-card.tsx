@@ -54,11 +54,11 @@ export async function BalanceCard({ quality }: { quality: DayQuality }) {
           <span className="sr-only">{t("home.balance.score", { score })}</span>
         </span>
       </span>
-      {/* Jauge en dégradé avec un repère à la position de la note. */}
-      <span className="relative h-2.5 rounded-full bg-linear-to-r from-primary-soft to-primary" aria-hidden="true">
+      {/* Jauge pleine jusqu'à la note, sans dégradé. */}
+      <span className="h-2.5 overflow-hidden rounded-full bg-surface-muted" aria-hidden="true">
         <span
-          className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-surface bg-primary shadow"
-          style={{ left: `${Math.min(97, Math.max(3, score))}%` }}
+          className="bar-grow block h-full rounded-full bg-primary"
+          style={{ width: `${Math.min(100, Math.max(0, score))}%` }}
         />
       </span>
       {/* Les trois repères en une ligne ; le détail est sur le bilan qualité. */}

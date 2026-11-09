@@ -187,47 +187,56 @@ export function CoachChat({
           send();
         }}
       >
-        <label className="flex flex-col gap-1.5">
-          <span className="font-semibold">{t("ask")}</span>
-          <textarea
-            value={text}
-            onChange={(event) => setText(event.target.value)}
-            onKeyDown={(event) => {
-              // Entrée envoie, Maj+Entrée va à la ligne ; rien pendant la saisie d'un caractère composé.
-              if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
-                event.preventDefault();
-                send();
-              }
-            }}
-            rows={2}
-            enterKeyHint="send"
-            maxLength={MAX_LENGTH}
-            placeholder={t("askHint")}
-            className="rounded-2xl border border-border bg-surface px-3 py-2 text-base"
-          />
-        </label>
-        {speech.error && <p className="text-sm text-text-muted">{errorText(speech.error)}</p>}
-        <div className="flex flex-wrap gap-2">
-          <Button type="submit" disabled={pending || text.trim().length === 0}>
-            {t("send")}
-          </Button>
+        {/* Une seule zone de saisie, avec la dictée et l'envoi en boutons ronds à droite. */}
+        <div className="flex items-end gap-2 rounded-[1.75rem] border border-border bg-surface py-1.5 pr-1.5 pl-4 focus-within:border-primary">
+          <label className="flex min-w-0 flex-1">
+            <span className="sr-only">{t("ask")}</span>
+            <textarea
+              value={text}
+              onChange={(event) => setText(event.target.value)}
+              onKeyDown={(event) => {
+                // Entrée envoie, Maj+Entrée va à la ligne ; rien pendant la saisie d'un caractère composé.
+                if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+                  event.preventDefault();
+                  send();
+                }
+              }}
+              rows={3}
+              enterKeyHint="send"
+              maxLength={MAX_LENGTH}
+              placeholder={t("askHint")}
+              className="min-w-0 flex-1 resize-none bg-transparent py-2 text-base outline-none"
+            />
+          </label>
           {speech.supported && (
-            <Button
-              variant="secondary"
+            <button
+              type="button"
               onClick={speech.listening ? speech.stop : dictate}
               aria-pressed={speech.listening}
+              aria-label={speech.listening ? t("stopDictation") : t("dictate")}
               disabled={pending}
+              className={`flex size-11 shrink-0 items-center justify-center rounded-full transition-transform duration-150 ease-out active:scale-[0.94] disabled:opacity-60 ${
+                speech.listening ? "bg-pomme text-on-pomme" : "bg-surface-muted text-text"
+              }`}
             >
-              <Icon name="mic" />
-              {speech.listening ? t("stopDictation") : t("dictate")}
-            </Button>
+              <Icon name={speech.listening ? "pause" : "mic"} />
+            </button>
           )}
-          {messages.length > 0 && (
-            <Button variant="ghost" onClick={clear} disabled={pending}>
-              {t("clear")}
-            </Button>
-          )}
+          <button
+            type="submit"
+            aria-label={t("send")}
+            disabled={pending || text.trim().length === 0}
+            className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary transition-transform duration-150 ease-out active:scale-[0.94] disabled:opacity-50"
+          >
+            <Icon name="up" />
+          </button>
         </div>
+        {speech.error && <p className="text-sm text-text-muted">{errorText(speech.error)}</p>}
+        {messages.length > 0 && (
+          <Button variant="ghost" className="self-start" onClick={clear} disabled={pending}>
+            {t("clear")}
+          </Button>
+        )}
       </form>
     </div>
   );
@@ -237,11 +246,12 @@ function Bubble({ from, label, children }: { from: ChatMessage["role"]; label: s
   const mine = from === "user";
   return (
     <li
-      className={`flex max-w-[85%] flex-col gap-0.5 rounded-2xl px-4 py-2 ${
-        mine ? "self-end bg-primary-soft" : "self-start bg-surface-muted"
+      className={`flex max-w-[85%] flex-col rounded-2xl px-4 py-2.5 ${
+        mine ? "self-end rounded-br-md bg-primary text-on-primary" : "self-start rounded-bl-md bg-surface-muted"
       }`}
     >
-      <span className="text-xs font-semibold text-text-muted">{label}</span>
+      {/* Qui parle se voit à la place et à la couleur de la bulle ; le nom reste lu à voix haute. */}
+      <span className="sr-only">{label} : </span>
       <span className="whitespace-pre-line">{children}</span>
     </li>
   );

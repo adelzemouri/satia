@@ -45,9 +45,9 @@ export function HubLinksBone({ count, hints = false }: { count: number; hints?: 
       {Array.from({ length: count }, (_, index) => (
         <div
           key={index}
-          className="relative flex min-h-16 items-center gap-4 px-5 py-2 [&+&]:before:absolute [&+&]:before:start-[4.75rem] [&+&]:before:end-0 [&+&]:before:top-0 [&+&]:before:h-px [&+&]:before:bg-border"
+          className="relative flex min-h-16 items-center gap-4 px-5 py-2 [&+&]:before:absolute [&+&]:before:start-[3.75rem] [&+&]:before:end-0 [&+&]:before:top-0 [&+&]:before:h-px [&+&]:before:bg-border"
         >
-          <Bone className="size-10 shrink-0 rounded-full" />
+          <Bone className="size-6 shrink-0 rounded-full" />
           <div className="flex flex-1 flex-col gap-1.5">
             <Bone className="h-5 w-2/5" />
             {hints && <Bone className="h-4 w-3/5" />}

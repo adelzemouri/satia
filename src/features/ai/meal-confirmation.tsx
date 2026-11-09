@@ -358,17 +358,19 @@ export function MealConfirmation({
           ))}
         </select>
       </label>
-      <p className="rounded-2xl bg-surface-muted px-4 py-3 font-semibold" aria-live="polite">
-        {t("aiConfirm.total", { kcal: Math.round(total.kcal) })}
-      </p>
-      <div className="flex flex-wrap gap-2">
+      {/* Total et bouton restent collés en bas de l'écran (au-dessus de la barre du bas sur
+          téléphone) : on corrige un aliment sans perdre de vue ce qui sera ajouté. */}
+      <div className="sticky bottom-[calc(6rem+env(safe-area-inset-bottom))] z-10 flex items-center gap-3 rounded-full bg-surface py-2 pr-2 pl-5 shadow-[0_8px_28px_-10px_rgb(0_0_0/0.3)] lg:bottom-4">
+        <p className="flex-1 font-display text-lg font-extrabold tabular-nums" aria-live="polite">
+          {t("aiConfirm.total", { kcal: Math.round(total.kcal) })}
+        </p>
         <Button type="submit" disabled={pending || !complete || toReview.length > 0}>
           {t("aiConfirm.save")}
         </Button>
-        <Button variant="ghost" onClick={onCancel} disabled={pending}>
-          {t("aiConfirm.restart")}
-        </Button>
       </div>
+      <Button variant="ghost" className="self-center" onClick={onCancel} disabled={pending}>
+        {t("aiConfirm.restart")}
+      </Button>
     </form>
   );
 }

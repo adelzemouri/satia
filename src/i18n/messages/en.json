@@ -102,10 +102,6 @@
     "ringOver": "kcal over",
     "burnedLabel": "Burned",
     "slotKcal": "{kcal, number} / {target, number}",
-    "week": {
-      "label": "My week",
-      "day": "{day}: {kcal, number} kcal"
-    },
     "balance": {
       "title": "Today's balance",
       "outOf": " / 100",
@@ -212,7 +208,9 @@
       "noSteps": "Your first milestone comes at 3 days in a row.",
       "next": "Next milestone: <b>{days} days in a row</b>, {remaining, plural, one {# day} other {# days}} to go.",
       "allDone": "You've reached every milestone, well done on a year of consistency."
-    }
+    },
+    "addCurrent": "{slot, select, snack {Add a snack} other {Add my {name}}}",
+    "alsoToday": "Also today"
   },
   "theme": {
     "label": "Theme",

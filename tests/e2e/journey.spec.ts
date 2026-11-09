@@ -1448,7 +1448,7 @@ test("espace Training : profil sportif, séance express guidée, suivi et biblio
   await expectNoA11yViolations(page);
 
   await page.goto("/");
-  await expect(page.getByRole("link", { name: /^Activité/ })).toContainText(/Activité[1-9]\d* kcal/);
+  await expect(page.getByRole("link", { name: /^Activité/ })).toContainText(/\D[1-9]\d* kcal$/);
 
   await page.goto("/training/library?muscle=core");
   await expect(page.getByRole("link", { name: /Planche sur les avant-bras/ })).toBeVisible();
@@ -1524,7 +1524,7 @@ test("corps et activité : mensuration, photos de progression, activité, pas et
   await expectNoA11yViolations(page);
 
   await page.goto("/");
-  await expect(page.getByRole("link", { name: /^Activité/ })).toContainText(/Activité[1-9]\d* kcal/);
+  await expect(page.getByRole("link", { name: /^Activité/ })).toContainText(/\D[1-9]\d* kcal$/);
 });
 
 test("jeûne : planning, minuteur et historique ; traitement : rappel et journal des prises", async ({ page }) => {

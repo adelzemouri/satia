@@ -2,29 +2,21 @@ import { Bone, RingBone, SkeletonCard, SkeletonPage } from "@/ui/skeleton";
 
 /**
  * Squelette de l'accueil, à la forme de la page : date, série et profil, bulle de Pépin avec le
- * bonjour, semaine ; puis la journée (anneau, macros, repas) et les idées ; enfin l'eau, l'activité
- * et Pépin. Sur ordinateur, les mêmes deux colonnes que la page.
+ * bonjour ; puis la journée (anneau, macros, bouton d'ajout, repas) et les idées ; enfin la liste eau et
+ * activité, et Pépin. Sur ordinateur, les mêmes deux colonnes que la page.
  */
 export default function HomeLoading() {
   return (
     <SkeletonPage wide className="lg:grid lg:grid-cols-[1.45fr_1fr] lg:items-start">
       <div className="flex flex-col gap-4 lg:col-span-2">
         <div className="flex items-center gap-3">
-          <Bone className="h-12 w-40 rounded-full min-[430px]:w-56" />
+          <Bone className="h-6 w-36 min-[430px]:w-52" />
           <Bone className="ml-auto h-12 w-16 rounded-full" />
           <Bone className="size-12 shrink-0 rounded-full" />
         </div>
         <div className="flex items-end gap-2">
           <Bone className="size-10 shrink-0 rounded-full" />
           <Bone className="h-20 w-full max-w-sm rounded-2xl rounded-bl-md" />
-        </div>
-        <div className="grid grid-cols-7 gap-1">
-          {[0, 1, 2, 3, 4, 5, 6].map((index) => (
-            <div key={index} className="flex flex-col items-center gap-1 py-1">
-              <Bone className="h-3 w-6" />
-              <RingBone className="size-[38px] border-4" />
-            </div>
-          ))}
         </div>
       </div>
 
@@ -50,6 +42,7 @@ export default function HomeLoading() {
               </div>
             ))}
           </div>
+          <Bone className="h-12 w-full rounded-full" />
           <div className="flex items-center justify-between gap-3 border-t border-border pt-4">
             <Bone className="h-6 w-24" />
             <Bone className="h-4 w-20" />
@@ -88,25 +81,27 @@ export default function HomeLoading() {
       </div>
 
       <div className="contents lg:flex lg:min-w-0 lg:flex-col lg:gap-6">
-        <SkeletonCard className="gap-3">
-          <Bone className="h-6 w-16" />
-          <Bone className="h-4 w-44" />
-          <div className="flex flex-wrap gap-1">
-            {[0, 1, 2, 3, 4, 5, 6, 7].map((index) => (
-              <Bone key={index} className="h-12 w-9" />
-            ))}
+        <SkeletonCard className="gap-0 py-1">
+          <div className="flex flex-col gap-3 py-4">
+            <Bone className="h-6 w-16" />
+            <Bone className="h-4 w-44" />
+            <div className="flex flex-wrap gap-1">
+              {[0, 1, 2, 3, 4, 5, 6, 7].map((index) => (
+                <Bone key={index} className="h-12 w-9" />
+              ))}
+            </div>
           </div>
-        </SkeletonCard>
-
-        <div className="grid grid-cols-2 gap-3">
           {[0, 1].map((index) => (
-            <div key={index} className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-surface px-4 py-3">
-              <Bone className="h-4 w-20" />
-              <Bone className="h-6 w-16" />
-              <Bone className="h-3 w-24" />
+            <div key={index} className="flex min-h-14 items-center gap-3 border-t border-border py-3">
+              <Bone className="size-6 shrink-0 rounded-full" />
+              <div className="flex flex-1 flex-col gap-1.5">
+                <Bone className="h-4 w-20" />
+                <Bone className="h-3 w-32" />
+              </div>
+              <Bone className="h-5 w-12" />
             </div>
           ))}
-        </div>
+        </SkeletonCard>
 
         <SkeletonCard className="gap-3">
           <div className="flex items-center gap-3">
