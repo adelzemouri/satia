@@ -1223,9 +1223,9 @@
     "howTitle": "Comment ça marche ?",
     "how1": "Sur les {days} derniers jours, on compare ce que tu as mangé à l'évolution de ta tendance de poids (la courbe lissée, pas les pesées du jour).",
     "how2": {
-      "lose": "Si ton poids baisse moins vite que prévu, c'est que tu dépenses un peu moins que l'estimation ; s'il baisse plus vite, un peu plus. L'objectif se rapproche alors doucement de ce qui marche pour toi.",
-      "gain": "Si ton poids monte moins vite que prévu, c'est que tu dépenses un peu plus que l'estimation ; s'il monte plus vite, un peu moins. L'objectif se rapproche alors doucement de ce qui marche pour toi.",
-      "steady": "Si ton poids baisse alors qu'il devrait rester stable, c'est que tu dépenses un peu plus que l'estimation ; s'il monte, un peu moins. L'objectif se rapproche alors doucement de ce qui marche pour toi."
+      "lose": "Si ton poids baisse moins vite que prévu alors que tu suis ton objectif, c'est qu'il te faut un peu moins : l'objectif baisse doucement. S'il baisse plus vite, il remonte un peu.",
+      "gain": "Si ton poids monte moins vite que prévu alors que tu suis ton objectif, c'est qu'il te faut un peu plus : l'objectif remonte doucement. S'il monte plus vite, il redescend un peu.",
+      "steady": "Si ton poids baisse alors que tu suis ton objectif, c'est qu'il te faut un peu plus : l'objectif remonte doucement. S'il monte, il redescend un peu."
     },
     "how3": "Il faut au moins 14 jours de suivi, 3 pesées et des repas saisis 8 jours sur 10. L'ajustement reste limité à 150 kcal par semaine et ne descend jamais sous le plancher calorique.",
     "disclaimer": "{appName} ne remplace pas un avis médical. Pour toute question de santé, parles-en à un professionnel."

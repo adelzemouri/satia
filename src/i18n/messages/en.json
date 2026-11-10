@@ -1223,9 +1223,9 @@
     "howTitle": "How does it work?",
     "how1": "Over the last {days} days, we compare what you ate with how your weight trend moved (the smoothed curve, not daily weigh-ins).",
     "how2": {
-      "lose": "If your weight goes down more slowly than expected, you spend a little less than the estimate; faster, a little more. Your goal then gently moves towards what works for you.",
-      "gain": "If your weight goes up more slowly than expected, you spend a little more than the estimate; faster, a little less. Your goal then gently moves towards what works for you.",
-      "steady": "If your weight goes down when it should stay stable, you spend a little more than the estimate; if it goes up, a little less. Your goal then gently moves towards what works for you."
+      "lose": "If your weight goes down more slowly than expected while you follow your goal, you need a little less: your goal gently goes down. If it goes down faster, it goes up a little.",
+      "gain": "If your weight goes up more slowly than expected while you follow your goal, you need a little more: your goal gently goes up. If it goes up faster, it comes down a little.",
+      "steady": "If your weight goes down while you follow your goal, you need a little more: your goal gently goes up. If it goes up, it comes down a little."
     },
     "how3": "It takes at least 14 days of tracking, 3 weigh-ins and meals logged 8 days out of 10. Adjustments are limited to 150 kcal per week and never go below the calorie floor.",
     "disclaimer": "{appName} is not medical advice. For any health question, talk to a professional."
