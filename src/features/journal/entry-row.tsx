@@ -183,7 +183,7 @@ export function EntryRow({
             onClick={() => setOpen(!open)}
             aria-expanded={open}
             aria-label={t("journal.edit", { label: entry.label })}
-            className="flex min-h-12 w-full items-center gap-3 text-left"
+            className="flex min-h-12 w-full items-center gap-3 rounded-lg press-row text-left"
           >
             {summary}
             <span className="font-semibold">{t("common.kcal", { value: Math.round(entry.kcal) })}</span>

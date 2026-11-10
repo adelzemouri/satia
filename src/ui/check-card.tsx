@@ -13,7 +13,7 @@ export function CheckCard({
   name?: string;
 }) {
   return (
-    <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-2 border-border bg-bg px-4 has-checked:border-primary has-checked:bg-primary-soft">
+    <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-2 border-border bg-bg px-4 transition-colors duration-150 ease-out has-checked:border-primary has-checked:bg-primary-soft">
       <input
         type="checkbox"
         name={name}

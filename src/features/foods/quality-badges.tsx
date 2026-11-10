@@ -14,6 +14,7 @@ import {
 } from "@/domain/quality";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
+import { cancelSheet, closeSheet } from "@/ui/sheet-close";
 import { useSheetDrag } from "@/ui/sheet-drag";
 
 type Props = {
@@ -48,7 +49,7 @@ export function QualityBadges({ nutriscore, novaGroup, novaMarkers, fiberG, suga
     setOpen(which);
     dialog.current?.showModal();
   };
-  const close = () => dialog.current?.close();
+  const close = () => closeSheet(dialog.current);
   const scroller = useRef<HTMLDivElement>(null);
   useSheetDrag(dialog, close, scroller);
 
@@ -107,6 +108,7 @@ export function QualityBadges({ nutriscore, novaGroup, novaMarkers, fiberG, suga
         onClick={(event) => {
           if (event.target === event.currentTarget) close();
         }}
+        onCancel={cancelSheet}
         onClose={() => setOpen(null)}
         className="sheet-in fixed inset-x-0 top-auto bottom-0 m-0 max-h-[85dvh] w-full max-w-none rounded-t-3xl bg-surface p-0 text-text backdrop:bg-black/40 lg:inset-0 lg:m-auto lg:h-fit lg:max-w-md lg:rounded-3xl"
       >

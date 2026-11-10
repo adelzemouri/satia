@@ -39,28 +39,21 @@ export function FastingPlanForm({ plan }: { plan: FastingPlan }) {
 
   return (
     <form action={save} className="flex flex-col gap-4">
-      <div className="flex min-h-12 items-start gap-3">
+      <div className="flex min-h-12 items-center gap-4">
+        <label htmlFor="fasting-enabled" className="min-w-0 flex-1 cursor-pointer font-semibold">
+          {t("enabled")}
+        </label>
         <input
           id="fasting-enabled"
           type="checkbox"
+          role="switch"
           checked={draft.enabled}
           onChange={(event) => setDraft({ ...draft, enabled: event.target.checked })}
-          className="mt-1 size-5 shrink-0 accent-primary"
+          className="switch"
         />
-        <label htmlFor="fasting-enabled" className="cursor-pointer font-semibold">
-          {t("enabled")}
-        </label>
       </div>
-      <div className="flex min-h-12 items-start gap-3">
-        <input
-          id="fasting-auto"
-          type="checkbox"
-          checked={draft.autoStart}
-          onChange={(event) => setDraft({ ...draft, autoStart: event.target.checked })}
-          aria-describedby="fasting-auto-hint"
-          className="mt-1 size-5 shrink-0 accent-primary"
-        />
-        <span className="flex flex-col">
+      <div className="flex min-h-12 items-start gap-4">
+        <span className="flex min-w-0 flex-1 flex-col">
           <label htmlFor="fasting-auto" className="cursor-pointer font-semibold">
             {t("autoStart")}
           </label>
@@ -68,6 +61,15 @@ export function FastingPlanForm({ plan }: { plan: FastingPlan }) {
             {t("autoStartHint")}
           </span>
         </span>
+        <input
+          id="fasting-auto"
+          type="checkbox"
+          role="switch"
+          checked={draft.autoStart}
+          onChange={(event) => setDraft({ ...draft, autoStart: event.target.checked })}
+          aria-describedby="fasting-auto-hint"
+          className="switch mt-0.5"
+        />
       </div>
 
       <fieldset className="flex flex-col gap-2">

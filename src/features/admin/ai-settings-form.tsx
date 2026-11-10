@@ -27,9 +27,9 @@ export function AiSettingsForm({
     <form {...action} className="flex flex-col gap-3">
       {state?.error && <Alert>{errorText(state.error === "invalid_form" ? "generic" : state.error)}</Alert>}
       {state?.ok && <Alert tone="success">{t("common.save")} ✓</Alert>}
-      <label className="flex min-h-12 items-center gap-3">
-        <input type="checkbox" name="enabled" defaultChecked={enabled} className="size-5 accent-primary" />
-        <span>{t("aiAdmin.enabled")}</span>
+      <label className="flex min-h-12 cursor-pointer items-center gap-4">
+        <span className="min-w-0 flex-1">{t("aiAdmin.enabled")}</span>
+        <input type="checkbox" role="switch" name="enabled" defaultChecked={enabled} className="switch" />
       </label>
       <Field
         label={t("aiAdmin.budget")}

@@ -28,7 +28,7 @@ export async function CoachCard({ questions }: { questions: CoachQuestion[] }) {
           <li key={question}>
             <Link
               href={{ pathname: "/coach", query: { ask: question } }}
-              className="flex min-h-11 items-center rounded-full bg-surface-muted px-4 py-2 text-sm font-semibold"
+              className="flex min-h-11 press-card items-center rounded-full bg-surface-muted px-4 py-2 text-sm font-semibold"
             >
               {t(`questions.${question}`)}
             </Link>

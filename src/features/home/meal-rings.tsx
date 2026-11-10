@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { MEAL_SLOTS, type MealSlot } from "@/db/schema";
 import { slotShares } from "@/domain/coach";
 import { Link } from "@/i18n/navigation";
+import { LinkPending } from "@/ui/link-pending";
 import { Icon } from "@/ui/icon";
 import { MiniRing } from "@/ui/mini-ring";
 
@@ -45,7 +46,7 @@ export async function MealRings({
                   : { pathname: "/add", query: { slot, date } }
               }
               aria-label={filled ? t("home.viewSlot", { slot, name }) : t("home.addTo", { slot, name })}
-              className="flex w-full flex-col items-center gap-1.5 rounded-2xl px-1 py-2 text-center"
+              className="relative flex w-full flex-col items-center gap-1.5 rounded-2xl press-row px-1 py-2 text-center"
             >
               <MiniRing percent={percent} size={56} stroke={5} dashed={optional}>
                 <span
@@ -60,6 +61,7 @@ export async function MealRings({
               <span className="text-xs text-text-muted">
                 {target > 0 ? t("home.slotKcal", { kcal, target }) : t("home.kcalValue", { value: kcal })}
               </span>
+              <LinkPending />
             </Link>
           </li>
         );

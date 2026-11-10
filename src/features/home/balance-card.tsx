@@ -8,6 +8,7 @@ import {
   SALT_REFERENCE_G,
 } from "@/domain/quality";
 import { Link } from "@/i18n/navigation";
+import { LinkPending } from "@/ui/link-pending";
 import { CountUp } from "@/ui/count-up";
 
 /**
@@ -41,7 +42,10 @@ export async function BalanceCard({ quality }: { quality: DayQuality }) {
     },
   ];
   return (
-    <Link href="/quality" className="flex flex-col gap-3 rounded-[var(--radius-card)] bg-surface px-5 py-4">
+    <Link
+      href="/quality"
+      className="relative flex press-card flex-col gap-3 rounded-[var(--radius-card)] bg-surface px-5 py-4"
+    >
       <span className="flex items-baseline justify-between gap-3">
         <h2 id="balance-title" className="font-bold">
           {t("home.balance.title")}
@@ -73,6 +77,7 @@ export async function BalanceCard({ quality }: { quality: DayQuality }) {
           </span>
         ))}
       </span>
+      <LinkPending />
     </Link>
   );
 }

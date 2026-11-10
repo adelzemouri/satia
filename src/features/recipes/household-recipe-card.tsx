@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
+import { LinkPending } from "@/ui/link-pending";
 
 import { DishThumb } from "./dish-thumb";
 
@@ -22,13 +23,14 @@ export function HouseholdRecipeCard({
   return (
     <Link
       href={`/foods/${id}`}
-      className="flex w-full flex-col overflow-hidden rounded-[var(--radius-card)] bg-surface"
+      className="relative flex w-full press-card flex-col overflow-hidden rounded-[var(--radius-card)] bg-surface"
     >
       <DishThumb imageUrl={imageUrl} sizes="(min-width: 1024px) 180px, (min-width: 640px) 33vw, 50vw" />
       <span className="flex flex-col gap-0.5 px-3 py-2">
         <span className="leading-snug font-bold lg:line-clamp-2">{name}</span>
         <span className="text-sm text-text-muted">{t("perServing", { kcal: portionKcal, count: servings })}</span>
       </span>
+      <LinkPending />
     </Link>
   );
 }

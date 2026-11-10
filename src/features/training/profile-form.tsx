@@ -22,7 +22,7 @@ import { OptionList } from "@/ui/option-list";
 import { saveTrainingProfileAction } from "./actions";
 
 const chipClass =
-  "flex min-h-12 cursor-pointer items-center gap-2 rounded-full border-2 border-border bg-surface px-4 font-semibold has-[:checked]:border-primary has-[:checked]:bg-primary has-[:checked]:text-on-primary has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-[var(--color-focus)]";
+  "flex min-h-12 cursor-pointer transition-colors duration-150 ease-out items-center gap-2 rounded-full border-2 border-border bg-surface px-4 font-semibold has-[:checked]:border-primary has-[:checked]:bg-primary has-[:checked]:text-on-primary has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-[var(--color-focus)]";
 
 type Draft = Omit<TrainingProfile, "excluded">;
 

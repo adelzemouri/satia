@@ -29,7 +29,7 @@ const inputClass = "min-h-12 rounded-2xl border border-border bg-surface px-3 te
 
 /** Petite tuile d'entrée (photo, voix, code-barres, texte) ; la photo, la plus rapide, est mise en avant. */
 function tileClass(main: boolean, extra = ""): string {
-  return `flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-center text-sm font-bold ${
+  return `press-card flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-center text-sm font-bold ${
     main ? "bg-primary text-on-primary" : "bg-surface text-text hover:bg-surface-muted"
   } ${extra}`;
 }

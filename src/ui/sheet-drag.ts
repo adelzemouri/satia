@@ -80,6 +80,8 @@ export function useSheetDrag(
         settle("translateY(100%)", 180);
         window.setTimeout(
           () => {
+            // Déjà hors de l'écran : on ferme sans rejouer la sortie animée.
+            if (element instanceof HTMLDialogElement) element.close();
             close.current();
             element.style.transition = "";
             element.style.transform = "";
