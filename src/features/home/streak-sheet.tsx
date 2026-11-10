@@ -6,6 +6,7 @@ import { useRef } from "react";
 import type { CalendarDay, StreakStats } from "@/domain/streak";
 import { formatDay, formatWeekday } from "@/ui/format-date";
 import { Icon } from "@/ui/icon";
+import { cancelSheet, closeSheet } from "@/ui/sheet-close";
 import { useSheetDrag } from "@/ui/sheet-drag";
 
 /**
@@ -28,7 +29,7 @@ export function StreakSheet({
   const t = useTranslations("home");
   const locale = useLocale();
   const dialog = useRef<HTMLDialogElement>(null);
-  const close = () => dialog.current?.close();
+  const close = () => closeSheet(dialog.current);
   useSheetDrag(dialog, close);
   const days = stats.current.days;
 
@@ -53,6 +54,7 @@ export function StreakSheet({
         onClick={(event) => {
           if (event.target === event.currentTarget) close();
         }}
+        onCancel={cancelSheet}
         className="sheet-in fixed inset-x-0 top-auto bottom-0 m-0 max-h-[90dvh] w-full max-w-none overflow-y-auto overscroll-contain rounded-t-[1.75rem] bg-surface p-0 text-text backdrop:bg-text/45 lg:inset-0 lg:m-auto lg:h-fit lg:max-w-md lg:rounded-[1.75rem]"
       >
         <div className="flex flex-col gap-5 px-5 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] lg:pb-6">

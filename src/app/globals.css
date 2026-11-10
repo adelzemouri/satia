@@ -175,6 +175,140 @@ main[tabindex="-1"]:focus {
   }
 }
 
+/* Fermeture : la feuille redescend, plus vite qu'elle n'est montée (fenêtre centrée sur ordinateur :
+   elle s'efface en rétrécissant un peu). Le voile s'éteint en même temps. */
+.sheet-in::backdrop,
+.sheet-backdrop-in {
+  animation: fade-in 220ms ease-out;
+}
+[data-closing],
+.sheet-out {
+  animation: sheet-out 180ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+[data-closing]::backdrop {
+  animation: fade-out 180ms ease-in forwards;
+}
+
+@keyframes sheet-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@media (min-width: 64rem) {
+  [data-closing],
+  .sheet-out {
+    animation-name: sheet-out-center;
+  }
+}
+
+@keyframes sheet-out-center {
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+.fade-out {
+  animation: fade-out 180ms ease-in forwards;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/*
+ * Retour au toucher. Une ligne de liste se fonce dès que le doigt la touche ; une carte s'enfonce
+ * un peu, comme les boutons. Tant que la page suivante n'est pas arrivée, la ligne reste foncée et
+ * un trait se remplit en bas (LinkPending), comme sur les onglets du bas.
+ */
+@utility press-row {
+  transition: background-color 120ms ease-out;
+  &:active,
+  &:has(> [data-link-pending]) {
+    background-color: var(--color-surface-muted);
+  }
+}
+
+@utility press-card {
+  transition: transform 160ms var(--ease-out-strong);
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.link-pending {
+  position: absolute;
+  inset-inline: 1rem;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-primary);
+  transform-origin: left;
+  pointer-events: none;
+  /* Rien pour une page qui arrive tout de suite : le trait n'apparaît qu'après 100 ms. */
+  animation: link-pending 1200ms var(--ease-out-strong) 100ms both;
+}
+
+@keyframes link-pending {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(0.85);
+  }
+}
+
+/* Interrupteur marche/arrêt : un vrai <input type="checkbox" role="switch">, dessiné en CSS. */
+.switch {
+  appearance: none;
+  position: relative;
+  flex-shrink: 0;
+  width: 3.25rem;
+  height: 2rem;
+  border-radius: 9999px;
+  /* Assez foncé pour se voir sur la carte (3:1), dans les deux thèmes. */
+  background: color-mix(in srgb, var(--color-text-muted) 65%, var(--color-surface));
+  cursor: pointer;
+  transition: background-color 200ms ease-out;
+}
+.switch::before {
+  content: "";
+  position: absolute;
+  top: 0.25rem;
+  left: 0.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(17 24 22 / 0.25);
+  transition: transform 220ms var(--ease-out-strong);
+}
+.switch:checked {
+  background: var(--color-primary);
+}
+.switch:checked::before {
+  transform: translateX(1.25rem);
+}
+.switch:active::before {
+  width: 1.75rem;
+}
+.switch:checked:active::before {
+  transform: translateX(1rem);
+}
+.switch:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 /* Jauges : elles se remplissent à l'ouverture de l'app, puis restent en place (data-fills-done). */
 .bar-grow {
   transform-origin: left;

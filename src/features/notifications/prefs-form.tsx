@@ -45,16 +45,8 @@ function Toggle({
   badge?: { text: string; label: string };
 }) {
   return (
-    <div className="flex min-h-12 items-start gap-3 py-1">
-      <input
-        id={`notify-${name}`}
-        type="checkbox"
-        name={name}
-        defaultChecked={checked}
-        aria-describedby={`notify-${name}-hint`}
-        className="mt-1 size-5 shrink-0 accent-primary"
-      />
-      <span className="flex flex-col">
+    <div className="flex min-h-12 items-start gap-4 py-1">
+      <span className="flex min-w-0 flex-1 flex-col">
         <label htmlFor={`notify-${name}`} className="cursor-pointer font-semibold">
           {label}
           {badge && (
@@ -68,6 +60,15 @@ function Toggle({
           {hint}
         </span>
       </span>
+      <input
+        id={`notify-${name}`}
+        type="checkbox"
+        role="switch"
+        name={name}
+        defaultChecked={checked}
+        aria-describedby={`notify-${name}-hint`}
+        className="switch mt-0.5"
+      />
     </div>
   );
 }

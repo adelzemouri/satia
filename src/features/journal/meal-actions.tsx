@@ -11,6 +11,7 @@ import { CoachAvatar } from "@/features/coach/coach-avatar";
 import { SaveMealForm } from "@/features/saved-meals/save-meal-form";
 import { Icon } from "@/ui/icon";
 import { haptic } from "@/ui/motion";
+import { cancelSheet, closeSheet } from "@/ui/sheet-close";
 import { useSheetDrag } from "@/ui/sheet-drag";
 import { useToast } from "@/ui/toast";
 
@@ -51,7 +52,7 @@ export function MealActions({
     setView("menu");
     dialog.current?.showModal();
   };
-  const close = () => dialog.current?.close();
+  const close = () => closeSheet(dialog.current);
   useSheetDrag(dialog, close);
 
   const copy = () =>
@@ -92,6 +93,7 @@ export function MealActions({
         onClick={(event) => {
           if (event.target === event.currentTarget) close();
         }}
+        onCancel={cancelSheet}
         className="sheet-in fixed inset-x-0 top-auto bottom-0 m-0 w-full max-w-none rounded-t-[1.75rem] bg-surface p-0 text-text backdrop:bg-text/45 lg:inset-0 lg:m-auto lg:h-fit lg:max-w-sm lg:rounded-[1.75rem]"
       >
         <div className="flex flex-col gap-2 px-4 pt-3 pb-[calc(1.25rem+env(safe-area-inset-bottom))] lg:pb-5">

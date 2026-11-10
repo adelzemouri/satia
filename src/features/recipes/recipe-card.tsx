@@ -2,6 +2,7 @@ import { useTranslations } from "next-intl";
 
 import type { CatalogRecipe } from "@/domain/recipes/catalog";
 import { Link } from "@/i18n/navigation";
+import { LinkPending } from "@/ui/link-pending";
 
 import { RecipeVisual } from "./recipe-visual";
 
@@ -23,7 +24,7 @@ export function RecipeCard({
   return (
     <Link
       href={{ pathname: `/foods/${id}`, query }}
-      className="flex w-full flex-col overflow-hidden rounded-[var(--radius-card)] bg-surface"
+      className="relative flex w-full press-card flex-col overflow-hidden rounded-[var(--radius-card)] bg-surface"
     >
       <RecipeVisual
         recipe={recipe}
@@ -35,6 +36,7 @@ export function RecipeCard({
         <span className="leading-snug font-bold lg:line-clamp-2">{recipe.name}</span>
         <span className="text-sm text-text-muted">{t("card", { kcal: portionKcal, minutes: recipe.minutes })}</span>
       </span>
+      <LinkPending />
     </Link>
   );
 }

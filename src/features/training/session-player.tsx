@@ -56,7 +56,7 @@ export type PlayerSession = {
 };
 
 const feelingClass =
-  "flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-border bg-surface px-1 text-center text-sm font-bold has-[:checked]:border-primary has-[:checked]:bg-primary-soft has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-[var(--color-focus)]";
+  "flex min-h-24 cursor-pointer transition-colors duration-150 ease-out flex-col items-center justify-center gap-2 rounded-2xl border-2 border-border bg-surface px-1 text-center text-sm font-bold has-[:checked]:border-primary has-[:checked]:bg-primary-soft has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-[var(--color-focus)]";
 
 /** Quelques pépins et feuilles posés au-dessus de Pépin en fin de séance (positions fixes). */
 const FINISH_CONFETTI = Array.from({ length: 14 }, (_, index) => ({

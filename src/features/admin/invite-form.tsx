@@ -34,7 +34,7 @@ export function InviteForm() {
           {(["household", "separate"] as const).map((value) => (
             <label
               key={value}
-              className="flex cursor-pointer items-start gap-3 rounded-2xl border border-border bg-surface p-3 has-[:checked]:border-primary has-[:checked]:bg-primary-soft"
+              className="flex cursor-pointer items-start gap-3 rounded-2xl border border-border bg-surface p-3 transition-colors duration-150 ease-out has-[:checked]:border-primary has-[:checked]:bg-primary-soft"
             >
               <input
                 type="radio"

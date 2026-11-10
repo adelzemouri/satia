@@ -76,11 +76,13 @@ export function QuickAddButton({
       onClick={add}
       disabled={pending}
       aria-label={added ? t("quickAdded", { name: food.nameFr }) : t("quickAdd", { name: food.nameFr })}
-      className={`flex size-12 shrink-0 items-center justify-center rounded-full border ${
+      className={`flex size-12 shrink-0 items-center justify-center rounded-full border transition-[transform,background-color,border-color] duration-150 ease-out active:scale-[0.94] ${
         added ? "border-primary bg-primary text-on-primary" : "border-border text-text"
       }`}
     >
-      <Icon name={added ? "check" : "plus"} />
+      <span key={String(added)} className={added ? "pop flex" : "flex"}>
+        <Icon name={added ? "check" : "plus"} />
+      </span>
     </button>
   );
 }

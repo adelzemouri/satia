@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
 import { Icon, type ICONS } from "@/ui/icon";
+import { LinkPending } from "@/ui/link-pending";
 
 /**
  * Ligne de la liste « Aussi aujourd'hui » de l'accueil : une icône, un titre et une précision,
@@ -23,7 +24,7 @@ function Tile({
   children?: React.ReactNode;
 }) {
   return (
-    <Link href={href} className="flex min-h-14 items-center gap-3 py-3">
+    <Link href={href} className="relative -mx-3 flex min-h-14 items-center gap-3 rounded-xl press-row px-3 py-3">
       <span className="shrink-0 text-primary">
         <Icon name={icon} size={22} />
       </span>
@@ -36,6 +37,7 @@ function Tile({
       <span className="shrink-0 text-text-muted" aria-hidden="true">
         <Icon name="right" size={16} />
       </span>
+      <LinkPending />
     </Link>
   );
 }

@@ -12,6 +12,7 @@ import { Alert } from "@/ui/alert";
 import { Button, buttonClass } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { haptic } from "@/ui/motion";
+import { useSheetExit } from "@/ui/sheet-close";
 import { useSheetDrag } from "@/ui/sheet-drag";
 import { useWeightShown } from "@/ui/private";
 import { useToast } from "@/ui/toast";
@@ -110,6 +111,7 @@ function WeighSheet({
   onClose: () => void;
 }) {
   const sheet = useRef<HTMLFormElement>(null);
+  const { closing, dismiss } = useSheetExit(onClose, sheet);
   useSheetDrag(sheet, onClose);
   const t = useTranslations("home.rituals");
   const errorText = useErrorText();
@@ -129,10 +131,10 @@ function WeighSheet({
 
   useEffect(() => {
     input.current?.focus({ preventScroll: true });
-    const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
+    const onKey = (event: KeyboardEvent) => event.key === "Escape" && dismiss();
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [dismiss]);
 
   const step = (delta: number) => {
     const base = valid ? parsed : (lastWeight ?? 70);
@@ -148,13 +150,18 @@ function WeighSheet({
       }
       haptic(15);
       toast({ message: t("weighSaved", { date: dates.long(nextWeigh) }) });
-      onClose();
+      dismiss();
       router.refresh();
     });
 
   return (
     <div className="fixed inset-0 z-30 flex items-end justify-center lg:items-center">
-      <button type="button" aria-label={t("close")} onClick={onClose} className="absolute inset-0 bg-text/45" />
+      <button
+        type="button"
+        aria-label={t("close")}
+        onClick={dismiss}
+        className={`absolute inset-0 bg-text/45 ${closing ? "fade-out" : "sheet-backdrop-in"}`}
+      />
       <form
         ref={sheet}
         role="dialog"
@@ -164,7 +171,7 @@ function WeighSheet({
           event.preventDefault();
           if (valid) save();
         }}
-        className="sheet-in relative flex w-full max-w-md flex-col gap-4 rounded-t-[1.75rem] bg-surface px-5 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] lg:rounded-[1.75rem] lg:pb-6"
+        className={`${closing ? "sheet-out" : "sheet-in"} relative flex w-full max-w-md flex-col gap-4 rounded-t-[1.75rem] bg-surface px-5 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] lg:rounded-[1.75rem] lg:pb-6`}
       >
         <span aria-hidden="true" className="h-1.5 w-10 self-center rounded-full bg-border lg:hidden" />
         <h2 id="weigh-sheet-title" className="font-display text-2xl font-extrabold tracking-tight">

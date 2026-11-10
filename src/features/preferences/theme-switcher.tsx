@@ -3,6 +3,8 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { SegmentedPill } from "@/ui/segmented";
+
 import { THEME_COOKIE, THEMES, type Theme } from "./theme";
 
 function applyTheme(theme: Theme) {
@@ -24,11 +26,12 @@ export function ThemeSwitcher({ initialTheme }: { initialTheme: Theme }) {
   return (
     <fieldset className="flex flex-col gap-2">
       <legend className="mb-1 text-sm font-semibold text-text-muted">{t("label")}</legend>
-      <div className="flex gap-1 rounded-full bg-surface-muted p-1">
+      <div className="relative grid auto-cols-fr grid-flow-col rounded-full bg-surface-muted p-1">
+        <SegmentedPill count={THEMES.length} index={Math.max(0, THEMES.indexOf(theme))} />
         {THEMES.map((value) => (
           <label
             key={value}
-            className="flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-full px-3 text-sm font-medium has-[:checked]:bg-primary has-[:checked]:text-on-primary has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-[var(--color-focus)]"
+            className="relative flex min-h-12 cursor-pointer items-center justify-center rounded-full px-3 text-sm font-medium transition-colors duration-200 has-[:checked]:text-on-primary has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-[var(--color-focus)]"
           >
             <input
               type="radio"

@@ -28,7 +28,7 @@ export function OptionList<T extends string | number>({
           <label
             key={option.value}
             htmlFor={inputId}
-            className="flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-2 border-border bg-surface px-4 py-3 has-[:checked]:border-primary has-[:checked]:bg-primary-soft has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-[var(--color-focus)]"
+            className="flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-2 border-border bg-surface px-4 py-3 transition-colors duration-150 ease-out has-[:checked]:border-primary has-[:checked]:bg-primary-soft has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-[var(--color-focus)]"
           >
             <input
               id={inputId}

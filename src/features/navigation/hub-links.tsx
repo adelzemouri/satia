@@ -2,6 +2,7 @@ import type { ComponentProps, ReactNode } from "react";
 
 import { Link } from "@/i18n/navigation";
 import { Icon, type ICONS } from "@/ui/icon";
+import { LinkPending } from "@/ui/link-pending";
 
 export type HubLink = {
   href: ComponentProps<typeof Link>["href"];
@@ -34,7 +35,7 @@ export function HubLinks({ label, links }: { label: string; links: HubLink[] }) 
           >
             <Link
               href={link.href}
-              className="relative flex min-h-16 items-center gap-4 px-5 py-2 transition-colors before:absolute before:start-[3.75rem] before:end-0 before:top-0 before:h-px hover:bg-surface-muted hover:before:opacity-0 focus-visible:bg-surface-muted focus-visible:outline-offset-[-3px] focus-visible:before:opacity-0 in-[li+li]:before:bg-border in-[li:has(:focus-visible)+li]:before:opacity-0 [@media(hover:hover)]:in-[li:hover+li]:before:opacity-0"
+              className="relative flex min-h-16 items-center gap-4 press-row px-5 py-2 before:absolute before:start-[3.75rem] before:end-0 before:top-0 before:h-px hover:bg-surface-muted hover:before:opacity-0 focus-visible:bg-surface-muted focus-visible:outline-offset-[-3px] focus-visible:before:opacity-0 in-[li+li]:before:bg-border in-[li:has(:focus-visible)+li]:before:opacity-0 [@media(hover:hover)]:in-[li:hover+li]:before:opacity-0"
             >
               <span className="flex size-6 shrink-0 items-center justify-center text-primary">
                 <Icon name={link.icon} />
@@ -47,6 +48,7 @@ export function HubLinks({ label, links }: { label: string; links: HubLink[] }) 
               <span className="text-text-muted">
                 <Icon name="right" size={20} />
               </span>
+              <LinkPending />
             </Link>
           </li>
         ))}

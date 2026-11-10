@@ -38,7 +38,7 @@ export function FoodList({
             <button
               type="button"
               onClick={() => onSelect(food)}
-              className="flex min-h-14 min-w-0 flex-1 items-center gap-3 py-2 text-left"
+              className="-ms-2 flex min-h-14 min-w-0 flex-1 items-center gap-3 rounded-xl press-row px-2 py-2 text-left"
             >
               {food.imageUrl && <ProductThumb src={food.imageUrl} />}
               <span className="flex min-w-0 flex-1 flex-col">
@@ -58,9 +58,11 @@ export function FoodList({
                 aria-pressed={favorite}
                 aria-label={t(favorite ? "unfavorite" : "favorite", { name: food.nameFr })}
                 onClick={() => onToggleFavorite(food, !favorite)}
-                className={`flex size-12 items-center justify-center rounded-full ${favorite ? "text-carbs" : "text-text-muted"}`}
+                className={`flex size-12 items-center justify-center rounded-full transition-transform duration-150 ease-out active:scale-[0.92] ${favorite ? "text-carbs" : "text-text-muted"}`}
               >
-                <Icon name="star" filled={favorite} />
+                <span key={String(favorite)} className={favorite ? "pop flex" : "flex"}>
+                  <Icon name="star" filled={favorite} />
+                </span>
               </button>
             )}
           </li>

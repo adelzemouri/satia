@@ -1,8 +1,9 @@
 "use client";
 
-import { type ReactNode, useEffect, useId, useRef } from "react";
+import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 
 import { Icon } from "./icon";
+import { closeSheet } from "./sheet-close";
 import { useSheetDrag } from "./sheet-drag";
 
 /**
@@ -29,12 +30,15 @@ export function Sheet({
   const scroller = useRef<HTMLDivElement>(null);
   const titleId = useId();
   useSheetDrag(dialog, onClose, scroller);
+  // Le contenu reste affiché pendant que la feuille redescend.
+  const [shown, setShown] = useState(open);
+  if (open && !shown) setShown(true);
 
   useEffect(() => {
     const element = dialog.current;
     if (!element) return;
     if (open && !element.open) element.showModal();
-    if (!open && element.open) element.close();
+    if (!open && element.open) closeSheet(element);
   }, [open]);
 
   return (
@@ -43,7 +47,14 @@ export function Sheet({
     <dialog
       ref={dialog}
       aria-labelledby={titleId}
-      onClose={onClose}
+      onClose={() => {
+        setShown(false);
+        onClose();
+      }}
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -67,7 +78,7 @@ export function Sheet({
           </button>
         </div>
         <div ref={scroller} className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
-          {open && children}
+          {(open || shown) && children}
         </div>
       </div>
     </dialog>

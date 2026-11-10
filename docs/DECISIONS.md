@@ -672,6 +672,15 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 053 — Retours au toucher sur les lignes, cartes, fiches et réglages
+
+- **Date** : 2026-11-10 · **Statut** : adoptée
+- **Contexte** : les boutons s'enfonçaient déjà, mais sur téléphone (sans survol) les lignes de liste et les cartes ne réagissaient pas avant l'arrivée de la page suivante, si bien qu'on retouchait. Les fiches montaient du bas mais disparaissaient d'un coup. Adel a choisi les quatre propositions de la maquette (https://claude.ai/artifact/LMFuLKucPtG17HdHsrzrbH), plus les sélecteurs de thème et de langue et les réglages marche/arrêt.
+- **Décision** : utilitaires `press-row` (la ligne se fonce au toucher et pendant le chargement) et `press-card` (la carte s'enfonce à 98 %) ; `LinkPending` (src/ui/link-pending.tsx) dessine un trait de chargement après 100 ms quand la page tarde. Les fiches redescendent en 180 ms (`closeSheet`, `useSheetExit` dans src/ui/sheet-close.ts), fondu sur ordinateur, sans rejouer la sortie après un glissement au doigt. Thème et langue : pastille qui glisse (`SegmentedPill`). Réglages marche/arrêt (rappels, jeûne, IA) : interrupteurs `.switch` sur une vraie case à cocher `role="switch"`. Choix des formulaires : transition de couleur de 150 ms.
+- **Conséquences** : un nouveau lien en forme de ligne ou de carte prend `press-row` ou `press-card` (avec `LinkPending` s'il mène à une page). Pas de glissement entre pages, ni de listes en cascade, ni de vibrations (indisponibles sur iPhone en web). Tout respecte `prefers-reduced-motion`.
+
+---
+
 ## Modèle
 
 ```markdown
