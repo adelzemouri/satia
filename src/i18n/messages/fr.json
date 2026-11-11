@@ -209,7 +209,6 @@
       "next": "Prochaine étape : <b>{days} jours d'affilée</b>, encore {remaining, plural, one {# jour} other {# jours}}.",
       "allDone": "Tu as franchi toutes les étapes, bravo pour cette année de régularité."
     },
-    "addCurrent": "{slot, select, snack {Ajouter une collation} other {Ajouter mon {name}}}",
     "alsoToday": "Aussi aujourd'hui"
   },
   "theme": {

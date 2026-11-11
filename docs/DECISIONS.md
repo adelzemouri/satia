@@ -681,6 +681,15 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 054 — Plus de gros bouton « Ajouter mon repas » sur l'accueil
+
+- **Date** : 2026-11-11 · **Statut** : adoptée (modifie 052)
+- **Contexte** : le bouton plein « Ajouter mon <repas du moment> » ouvrait exactement la même page que l'anneau du repas du moment (pastille rouge), juste en dessous, et le + de la barre du bas faisait un troisième gros + vert. Sur téléphone, il poussait les anneaux sous la barre du bas. Adel a choisi de le retirer.
+- **Décision** : l'accueil n'a plus ce bouton. On ajoute un repas par son anneau (celui du moment reste en rouge tant qu'il est vide), par le + de la barre du bas (éventail) ou, sur ordinateur, par « Ajouter un repas » de la barre latérale.
+- **Conséquences** : la carte du jour est plus courte d'environ 70 px et les anneaux entrent dans le premier écran. Le squelette de chargement suit. Aucun appel IA de plus.
+
+---
+
 ## Modèle
 
 ```markdown

@@ -175,6 +175,7 @@ export async function listFeedback(householdId: string): Promise<FeedbackItem[]>
   );
 }
 
+/** Les plus récents d'abord ; à heure de traitement égale, le message le plus récent passe devant. */
 function feedbackRows(householdId: string, handled: boolean, limit: number) {
   return db()
     .select({
@@ -200,7 +201,7 @@ function feedbackRows(householdId: string, handled: boolean, limit: number) {
         handled ? isNotNull(feedbackMessages.handledAt) : isNull(feedbackMessages.handledAt),
       ),
     )
-    .orderBy(handled ? desc(feedbackMessages.handledAt) : desc(feedbackMessages.createdAt))
+    .orderBy(desc(handled ? feedbackMessages.handledAt : feedbackMessages.createdAt), desc(feedbackMessages.createdAt))
     .limit(limit);
 }
 
