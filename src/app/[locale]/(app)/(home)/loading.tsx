@@ -2,7 +2,7 @@ import { Bone, RingBone, SkeletonCard, SkeletonPage } from "@/ui/skeleton";
 
 /**
  * Squelette de l'accueil, à la forme de la page : date, série et profil, bulle de Pépin avec le
- * bonjour ; puis la journée (anneau, macros, bouton d'ajout, repas) et les idées ; enfin la liste eau et
+ * bonjour ; puis la journée (anneau, macros, repas) et les idées ; enfin la liste eau et
  * activité, et Pépin. Sur ordinateur, les mêmes deux colonnes que la page.
  */
 export default function HomeLoading() {
@@ -42,7 +42,6 @@ export default function HomeLoading() {
               </div>
             ))}
           </div>
-          <Bone className="h-12 w-full rounded-full" />
           <div className="flex items-center justify-between gap-3 border-t border-border pt-4">
             <Bone className="h-6 w-24" />
             <Bone className="h-4 w-20" />

@@ -166,21 +166,14 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       </header>
 
       <div className="contents lg:flex lg:min-w-0 lg:flex-col lg:gap-6">
-        {/* Le premier écran : l'anneau, les macros et les repas du jour, avec un seul geste à faire. */}
+        {/* Le premier écran : l'anneau, les macros et les repas du jour. On ajoute un repas par son
+            anneau (celui du moment en rouge) ou par le + de la barre du bas : pas de gros bouton en plus. */}
         <Card aria-labelledby="today-title">
           <h2 id="today-title" className="sr-only">
             {t("home.todayGoal")}
           </h2>
           <CalorieSummary totals={summary.totals} goal={summary.goal} burnedKcal={burnedKcal} />
           <MacroBars totals={summary.totals} goal={summary.goal} />
-          {/* Le seul bouton plein de l'écran : ajouter le repas du moment. */}
-          <Link
-            href={{ pathname: "/add", query: { slot: current, date: today } }}
-            className="flex min-h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 font-bold text-on-primary shadow-[0_6px_16px_-6px_color-mix(in_srgb,var(--color-primary)_55%,transparent)] transition-transform duration-150 ease-out active:scale-[0.97] lg:self-start"
-          >
-            <Icon name="plus" size={20} />
-            {t("home.addCurrent", { slot: current, name: t(`slotsLower.${current}`) })}
-          </Link>
           <div className="flex items-baseline justify-between gap-3 border-t border-border pt-4">
             <h2 id="meals-title" className="text-lg font-bold">
               {t("home.meals")}
