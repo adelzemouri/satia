@@ -7,6 +7,11 @@ settings:
 overrides:
   browserslist: '>=4.28.7'
 
+patchedDependencies:
+  web-push@3.6.7:
+    hash: a02adddee3a90210fb8a5214b1014e3916bc37b84f32117923b3037e3a0b30c0
+    path: patches/web-push@3.6.7.patch
+
 importers:
 
   .:
@@ -64,7 +69,7 @@ importers:
         version: 9.5.12(browserslist@4.29.3)(typescript@5.9.3)
       web-push:
         specifier: ^3.6.7
-        version: 3.6.7
+        version: 3.6.7(patch_hash=a02adddee3a90210fb8a5214b1014e3916bc37b84f32117923b3037e3a0b30c0)
       zod:
         specifier: ^4.6.5
         version: 4.6.5
@@ -7690,7 +7695,7 @@ snapshots:
     transitivePeerDependencies:
       - msw
 
-  web-push@3.6.7:
+  web-push@3.6.7(patch_hash=a02adddee3a90210fb8a5214b1014e3916bc37b84f32117923b3037e3a0b30c0):
     dependencies:
       asn1.js: 5.4.1
       http_ece: 1.2.0
