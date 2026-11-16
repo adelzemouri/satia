@@ -38,6 +38,11 @@ const STOPWORDS = new Set([
   "morceau",
   "morceaux",
   "portion",
+  // Une crevette décortiquée reste une crevette : on retire la carapace, pas des calories.
+  "decortique",
+  "decortiquee",
+  "decortiques",
+  "decortiquees",
   // Mots courts qui disent le contenant ou le mode de culture, pas l'aliment.
   "bio",
   "bol",
