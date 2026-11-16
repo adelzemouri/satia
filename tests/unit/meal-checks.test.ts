@@ -21,6 +21,11 @@ describe("contrôle des aliments proposés par l'IA", () => {
     expect(line("œuf de poule dur", { nameFr: "Oeuf, dur", kcal: 134 }, 165, 221)).toEqual([]);
     expect(line("œufs durs", { nameFr: "Oeuf, dur", kcal: 134 }, 165, 221)).toEqual([]);
     expect(line("bol de riz", { nameFr: "Riz blanc, cuit", kcal: 130 })).toEqual([]);
+    // Décortiquer retire la carapace, pas l'aliment.
+    expect(line("crevettes décortiquées cuites", { nameFr: "Crevette, cuite", kcal: 93 }, 60, 56)).toEqual([]);
+    // Le reste du nom compte toujours : des crevettes décortiquées ne sont pas du crabe.
+    const crab = { nameFr: "Crabe, miettes et ou pattes décortiquées, appertisé, égoutté", kcal: 111 };
+    expect(line("crevettes décortiquées", crab, 60, 67)).toEqual(["unrelated"]);
   });
 
   it("ne prend pas une pâte à tartiner pour des pâtes sèches", () => {
