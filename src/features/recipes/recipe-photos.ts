@@ -1,5 +1,5 @@
 /**
- * Recettes du catalogue qui ont une photo dans `public/recipes/<slug>-480.webp` et `-960.webp`.
+ * Recettes du catalogue qui ont une photo dans `public/recipes/<slug>-480.webp`, `-640.webp` et `-960.webp`.
  * Photos d'illustration générées par IA pour l'app (format 4:3), puis redimensionnées en WebP.
  */
 export const RECIPE_PHOTOS: ReadonlySet<string> = new Set([

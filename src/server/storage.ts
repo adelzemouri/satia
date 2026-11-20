@@ -46,6 +46,18 @@ export async function deleteObjects(keys: readonly string[]): Promise<void> {
   }
 }
 
+/** Contenu d'un objet du stockage, ou null s'il n'existe plus. */
+export async function getObject(key: string): Promise<{ body: Uint8Array; contentType: string | undefined } | null> {
+  try {
+    const object = await s3().send(new GetObjectCommand({ Bucket: env().S3_BUCKET, Key: key }));
+    if (!object.Body) return null;
+    return { body: await object.Body.transformToByteArray(), contentType: object.ContentType };
+  } catch (error) {
+    if (error instanceof Error && error.name === "NoSuchKey") return null;
+    throw error;
+  }
+}
+
 export function signedGetUrl(key: string): Promise<string> {
   return getSignedUrl(s3(), new GetObjectCommand({ Bucket: env().S3_BUCKET, Key: key }), {
     expiresIn: SIGNED_URL_TTL_SECONDS,

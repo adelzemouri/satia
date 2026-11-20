@@ -19,7 +19,8 @@ import { llmConfig } from "@/llm/config";
 
 import { DomainError } from "./errors";
 import { imageMime, isImage, PHOTO_MIME_TYPES } from "./photos";
-import { deleteObjects, putObject, signedGetUrl } from "./storage";
+import { shrinkRecipePhoto } from "./recipe-photo-image";
+import { deleteObjects, getObject, putObject } from "./storage";
 
 export type Food = typeof foods.$inferSelect;
 
@@ -603,13 +604,19 @@ export async function setRecipePhoto(userId: string, input: z.input<typeof recip
   if (food.photoKey) await deleteObjects([food.photoKey]).catch(logPhotoError);
 }
 
-/** URL signée (courte) de la photo d'une recette visible par l'utilisateur, sinon null. */
-export async function recipePhotoUrl(userId: string, foodId: string): Promise<string | null> {
+/** Photo (contenu et type) d'une recette visible par l'utilisateur, sinon null. */
+export async function recipePhoto(
+  userId: string,
+  foodId: string,
+): Promise<{ body: Uint8Array; contentType: string } | null> {
   const [food] = await db()
     .select({ photoKey: foods.photoKey })
     .from(foods)
     .where(and(eq(foods.id, foodId), visibleTo(userId)));
-  return food?.photoKey ? signedGetUrl(food.photoKey) : null;
+  const object = food?.photoKey ? await getObject(food.photoKey) : null;
+  if (!object) return null;
+  const contentType = object.contentType ?? imageMime(object.body);
+  return contentType ? { body: object.body, contentType } : null;
 }
 
 /** Dossier des photos refaites pour les recettes du catalogue, communes à tous les foyers. */
@@ -642,11 +649,14 @@ async function generatePhoto(
     recipe.name,
     ingredients.map((item) => item.name.split(",")[0]!.toLowerCase()),
   );
-  const mime = imageMime(bytes);
-  if (!mime) return null;
+  const original = imageMime(bytes);
+  if (!original) return null;
+  // L'image générée arrive brute (souvent un PNG d'1 Mo) : on la range réduite, comme le catalogue.
+  const small = await shrinkRecipePhoto(bytes);
+  const [body, mime] = small ? [small, "image/webp"] : [bytes, original];
   const id = randomUUID();
   const photoKey = `recipes/${folder}/${AI_PHOTO_PREFIX}${id}.${mime.slice("image/".length).replace("jpeg", "jpg")}`;
-  await putObject(photoKey, bytes, mime);
+  await putObject(photoKey, body, mime);
   return { photoKey, imageUrl: recipePhotoPath(recipe.id, id.slice(0, 8)) };
 }
 
