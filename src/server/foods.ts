@@ -2,7 +2,7 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 
-import { and, desc, eq, inArray, isNotNull, isNull, like, lt, ne, or, type SQL, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, isNull, lt, ne, or, type SQL, sql } from "drizzle-orm";
 import { after } from "next/server";
 import { z } from "zod";
 
@@ -11,7 +11,6 @@ import { favorites, foods, mealEntries, recipeItems, user } from "@/db/schema";
 import { RECENT_PAGE } from "@/domain/food-name";
 import { kcalFromMacros, type Nutrients, nutrientsFor, recipePer100g } from "@/domain/nutrition";
 import { recipeQuality } from "@/domain/quality";
-import { CATALOG_PREFIX } from "@/domain/recipes/catalog";
 import { normalizeForSearch, searchVariants, searchStems } from "@/domain/search";
 
 import { COUNT_UNITS, type Unit } from "@/domain/units";
@@ -64,10 +63,15 @@ function householdOf(userId: string) {
   return sql`(select ${user.householdId} from ${user} where ${user.id} = ${userId})`;
 }
 
-/** Aliments visibles par un utilisateur : publics, à lui, ou recettes de son foyer. */
+/**
+ * Aliments visibles par un utilisateur : publics, à lui ou à son foyer, et toutes les recettes.
+ * Les recettes forment un seul catalogue commun à tous les comptes (DECISIONS 055) ; les
+ * aliments personnels (« Mes aliments ») restent propres à leur foyer.
+ */
 function visibleTo(userId: string) {
   return or(
     and(isNull(foods.ownerUserId), isNull(foods.householdId)),
+    eq(foods.source, "recipe"),
     eq(foods.ownerUserId, userId),
     eq(foods.householdId, householdOf(userId)),
   );
@@ -76,6 +80,27 @@ function visibleTo(userId: string) {
 /** Aliments qu'un utilisateur peut modifier ou supprimer : les siens et ceux de son foyer. */
 function editableBy(userId: string) {
   return or(eq(foods.ownerUserId, userId), eq(foods.householdId, householdOf(userId)));
+}
+
+/** Utilisateur admin, en sous-requête SQL. */
+function isAdminSql(userId: string) {
+  return sql`exists (select 1 from ${user} where ${user.id} = ${userId} and ${user.role} = 'admin')`;
+}
+
+/** Recettes qu'un utilisateur peut modifier (contenu, étapes, photo) : celles de son foyer. */
+function recipeEditableBy(userId: string) {
+  return and(eq(foods.source, "recipe"), editableBy(userId));
+}
+
+/** Recettes qu'un utilisateur peut supprimer : celles de son foyer, et toutes pour l'admin (modération). */
+function recipeDeletableBy(userId: string) {
+  const memberRecipe = or(isNotNull(foods.ownerUserId), isNotNull(foods.householdId));
+  return and(eq(foods.source, "recipe"), memberRecipe, or(editableBy(userId), isAdminSql(userId)));
+}
+
+/** Aliments ou recettes que l'utilisateur possède (lui ou son foyer), pour les passer en tête. */
+function ownedFirst(userId: string) {
+  return sql`(${foods.ownerUserId} = ${userId} or ${foods.householdId} = ${householdOf(userId)}) desc nulls last`;
 }
 
 export const SEARCH_LIMIT = 25;
@@ -139,7 +164,7 @@ export async function searchFoods(userId: string, query: string): Promise<FoodSu
       ),
     )
     .orderBy(
-      sql`(${foods.ownerUserId} is not null or ${foods.householdId} is not null) desc`,
+      ownedFirst(userId),
       sql`(${foods.searchName} like ${`${q}%`}) desc`,
       ...variants.map((variant) => sql`(${foods.searchName} like ${`${variant}%`}) desc`),
       // Tous les mots avant le premier seul : « coulis de tomate » donne « Tomate, coulis », pas un coulis de fruits.
@@ -351,7 +376,13 @@ async function computeRecipe(userId: string, data: z.infer<typeof recipeSchema>)
       fruitVegShare: foods.fruitVegShare,
     })
     .from(foods)
-    .where(and(inArray(foods.id, ingredientIds), visibleTo(userId)));
+    // Une recette d'un autre foyer ne peut pas servir d'ingrédient : elle bloquerait sa suppression.
+    .where(
+      and(
+        inArray(foods.id, ingredientIds),
+        or(and(isNull(foods.ownerUserId), isNull(foods.householdId)), editableBy(userId)),
+      ),
+    );
   const byId = new Map(ingredients.map((food) => [food.id, food]));
   if (byId.size !== ingredientIds.length) throw new DomainError("not_found");
   const rawGrams = data.items.reduce((sum, item) => sum + item.grams, 0);
@@ -431,7 +462,7 @@ export async function updateRecipe(userId: string, recipeId: string, input: Reci
   const [recipe] = await db()
     .select({ id: foods.id })
     .from(foods)
-    .where(and(eq(foods.id, z.uuid().parse(recipeId)), eq(foods.source, "recipe"), editableBy(userId)));
+    .where(and(eq(foods.id, z.uuid().parse(recipeId)), recipeEditableBy(userId)));
   if (!recipe) throw new DomainError("not_found");
   const values = await computeRecipe(userId, data);
   const householdId = await householdIdOf(userId);
@@ -470,7 +501,7 @@ export async function getRecipeForEdit(userId: string, recipeId: string): Promis
   const [recipe] = await db()
     .select()
     .from(foods)
-    .where(and(eq(foods.id, z.uuid().parse(recipeId)), eq(foods.source, "recipe"), editableBy(userId)));
+    .where(and(eq(foods.id, z.uuid().parse(recipeId)), recipeEditableBy(userId)));
   if (!recipe) throw new DomainError("not_found");
   const rows = await db()
     .select({ ...foodSummaryColumns, grams: recipeItems.grams })
@@ -515,12 +546,12 @@ export async function setRecipeSteps(userId: string, recipeId: string, steps: re
   const updated = await db()
     .update(foods)
     .set({ recipeSteps: value, updatedAt: new Date() })
-    .where(and(eq(foods.id, z.uuid().parse(recipeId)), eq(foods.source, "recipe"), editableBy(userId)))
+    .where(and(eq(foods.id, z.uuid().parse(recipeId)), recipeEditableBy(userId)))
     .returning({ id: foods.id });
   if (updated.length === 0) throw new DomainError("not_found");
 }
 
-/** Recettes du foyer de l'utilisateur. */
+/** Recettes du foyer de l'utilisateur (le menu proposé par l'IA part de celles-là). */
 export async function familyRecipes(userId: string): Promise<FoodSummary[]> {
   return db()
     .select(foodSummaryColumns)
@@ -552,7 +583,7 @@ async function editableRecipe(userId: string, foodId: string) {
   const [food] = await db()
     .select({ id: foods.id, photoKey: foods.photoKey, householdId: foods.householdId })
     .from(foods)
-    .where(and(eq(foods.id, foodId), eq(foods.source, "recipe"), editableBy(userId)));
+    .where(and(eq(foods.id, foodId), recipeEditableBy(userId)));
   if (!food) throw new DomainError("not_found");
   return food;
 }
@@ -743,7 +774,7 @@ export async function deleteOwnFood(userId: string, foodId: string): Promise<voi
   if (used) throw new DomainError("food_in_recipe");
   const deleted = await db()
     .delete(foods)
-    .where(and(eq(foods.id, foodId), editableBy(userId)))
+    .where(and(eq(foods.id, foodId), or(editableBy(userId), recipeDeletableBy(userId))))
     .returning({ id: foods.id, photoKey: foods.photoKey });
   if (deleted.length === 0) throw new DomainError("not_found");
   const keys = deleted.flatMap((row) => row.photoKey ?? []);
@@ -758,7 +789,10 @@ function round2(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
-/** Plats pour la suggestion du coach : recettes de l'utilisateur et de son foyer, et ses favoris. */
+/**
+ * Plats pour la suggestion du coach : toutes les recettes (celles du foyer d'abord) et ses favoris.
+ * Une recette d'un autre foyer n'est proposée qu'une fois notée au journal (voir suggestedDish).
+ */
 export async function dishPool(userId: string) {
   return db()
     .select({
@@ -771,14 +805,7 @@ export async function dishPool(userId: string) {
     })
     .from(foods)
     .leftJoin(favorites, and(eq(favorites.foodId, foods.id), eq(favorites.userId, userId)))
-    .where(
-      and(
-        visibleTo(userId),
-        or(
-          and(eq(foods.source, "recipe"), or(editableBy(userId), like(foods.sourceRef, `${CATALOG_PREFIX}%`))),
-          isNotNull(favorites.userId),
-        ),
-      ),
-    )
+    .where(and(visibleTo(userId), or(eq(foods.source, "recipe"), isNotNull(favorites.userId))))
+    .orderBy(ownedFirst(userId))
     .limit(300);
 }

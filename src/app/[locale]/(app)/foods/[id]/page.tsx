@@ -58,13 +58,14 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
 
   const portion = food.unitWeights?.portion ?? null;
   const catalog = food.source === "recipe" ? catalogRecipeFor(food.sourceRef) : undefined;
+  // Toutes les recettes sont visibles par tous ; seul le foyer qui l'a créée la modifie.
   const editableRecipe =
     food.source === "recipe" && (food.ownerUserId === user.id || food.householdId === user.householdId);
   const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
   // Recette du foyer ou personnelle : ses ingrédients et sa préparation, comme une fiche du catalogue.
   const ownRecipe = food.source === "recipe" && !catalog;
-  // Le menu est commun au foyer : seules les recettes que tous voient y entrent.
-  const menuRecipe = food.source === "recipe" && food.ownerUserId === null;
+  // Toutes les recettes sont communes à tous les comptes : chacune peut entrer au menu.
+  const menuRecipe = food.source === "recipe";
   // L'admin peut refaire par l'IA la photo de n'importe quelle recette, catalogue compris.
   const adminRecipe = food.source === "recipe" && user.role === "admin";
   const [ingredients, ai, favorite] = await Promise.all([
@@ -207,7 +208,8 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
               </Link>
             </div>
           )}
-          {editableRecipe && <DeleteRecipeButton id={food.id} />}
+          {/* L'admin peut aussi retirer du catalogue commun la recette d'un autre foyer. */}
+          {(editableRecipe || (ownRecipe && user.role === "admin")) && <DeleteRecipeButton id={food.id} />}
 
           {catalog && (
             <>
@@ -285,8 +287,10 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
                   <StepList steps={steps} />
                 ) : (
                   <>
-                    <p className="text-text-muted">{t("recipes.stepsEmpty")}</p>
-                    {ai?.available && <RecipeStepsButton recipeId={food.id} coachName={COACH_NAME} />}
+                    <p className="text-text-muted">
+                      {t(editableRecipe ? "recipes.stepsEmpty" : "recipes.stepsEmptyOther")}
+                    </p>
+                    {ai?.available && editableRecipe && <RecipeStepsButton recipeId={food.id} coachName={COACH_NAME} />}
                   </>
                 )}
               </Card>
