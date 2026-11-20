@@ -10,6 +10,7 @@ import { createSharedMeal, otherMembers, pendingShares, respondToShare, shareSav
 import {
   createCustomFood,
   createRecipe,
+  deleteOwnFood,
   familyRecipes,
   fillRecipePhotos,
   getFood,
@@ -156,7 +157,7 @@ describe("espace famille", () => {
     });
   });
 
-  it("photo d'une recette : visible par la famille, privée hors du foyer, remplaçable", async () => {
+  it("photo d'une recette : visible par tous, remplaçable par le foyer seulement", async () => {
     const { admin, member } = await setupFamily();
     const lasagnaId = await familyLasagna(admin.id);
     await setRecipePhoto(admin.id, { foodId: lasagnaId, imageBase64: JPEG_BASE64, mime: "image/jpeg" });
@@ -171,9 +172,9 @@ describe("espace famille", () => {
       setRecipePhoto(member.id, { foodId: lasagnaId, imageBase64: "bm9wZQ==", mime: "image/jpeg" }),
     ).rejects.toMatchObject({ code: "invalid_photo" });
 
-    // Hors du foyer, la photo reste privée.
+    // Catalogue commun : un autre foyer voit la photo mais ne peut pas la changer.
     const outsider = await createOutsider(admin);
-    expect(await recipePhotoUrl(outsider, lasagnaId)).toBeNull();
+    expect(await recipePhotoUrl(outsider, lasagnaId)).toMatch(/^https?:\/\//);
     await expect(
       setRecipePhoto(outsider, { foodId: lasagnaId, imageBase64: JPEG_BASE64, mime: "image/jpeg" }),
     ).rejects.toMatchObject({ code: "not_found" });
@@ -184,14 +185,17 @@ describe("espace famille", () => {
     ).rejects.toMatchObject({ code: "not_found" });
   });
 
-  it("toute recette est visible et modifiable par chaque membre du foyer, pas au-delà", async () => {
+  it("toute recette est visible par tous les comptes, modifiable par son foyer seulement", async () => {
     const { admin, member } = await setupFamily();
     const lasagnaId = await familyLasagna(admin.id);
     const outsider = await createOutsider(admin);
 
     expect((await familyRecipes(member.id)).map((food) => food.id)).toEqual([lasagnaId]);
     expect((await searchFoods(member.id, "lasagnes maison"))[0]?.id).toBe(lasagnaId);
-    await expect(getFood(outsider, lasagnaId)).rejects.toMatchObject({ code: "not_found" });
+    // Un seul catalogue : un autre foyer la voit, la trouve et la retrouve dans la bibliothèque.
+    expect((await getFood(outsider, lasagnaId)).id).toBe(lasagnaId);
+    expect((await searchFoods(outsider, "lasagnes maison"))[0]?.id).toBe(lasagnaId);
+    expect((await familyRecipes(outsider)).map((food) => food.id)).toEqual([]);
 
     const recipe = await getRecipeForEdit(member.id, lasagnaId);
     expect(recipe).toMatchObject({ name: "Lasagnes de la maison", servings: 6, cookedGrams: 1200 });
@@ -205,6 +209,29 @@ describe("espace famille", () => {
     expect(updated).toMatchObject({ nameFr: "Lasagnes de mamie", servings: 8, unitWeights: { portion: 150 } });
     expect(updated.householdId).toBe(admin.householdId);
     await expect(getRecipeForEdit(outsider, lasagnaId)).rejects.toMatchObject({ code: "not_found" });
+    await expect(deleteOwnFood(outsider, lasagnaId)).rejects.toMatchObject({ code: "not_found" });
+  });
+
+  it("l'admin peut retirer la recette d'un autre foyer, pas une recette du catalogue", async () => {
+    const { admin } = await setupFamily();
+    const outsider = await createOutsider(admin);
+    const lasagnaId = await familyLasagna(outsider);
+    const [catalog] = await db()
+      .select({ id: foods.id })
+      .from(foods)
+      .where(and(eq(foods.source, "recipe"), eq(foods.sourceRef, "catalog:minestrone")));
+    await expect(deleteOwnFood(admin.id, catalog!.id)).rejects.toMatchObject({ code: "not_found" });
+    // Une recette d'un autre foyer ne sert pas d'ingrédient : sa suppression serait bloquée.
+    await expect(
+      createRecipe(admin.id, {
+        name: "Assiette",
+        servings: 1,
+        cookedGrams: null,
+        items: [{ foodId: lasagnaId, grams: 300 }],
+      }),
+    ).rejects.toMatchObject({ code: "not_found" });
+    await deleteOwnFood(admin.id, lasagnaId);
+    await expect(getFood(admin.id, lasagnaId)).rejects.toMatchObject({ code: "not_found" });
   });
 
   it("un aliment perso devient commun en entrant dans une recette", async () => {

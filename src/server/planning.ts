@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, eq, gte, inArray, isNull, lte, or } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNotNull, lte, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db/client";
@@ -483,8 +483,10 @@ export async function saveIdeaAsRecipe(userId: string, input: z.input<typeof sav
 
 // --- Bibliothèque ----------------------------------------------------------------------------
 
-/** Recettes de l'utilisateur et du foyer. */
+/** Recettes créées par les membres, tous foyers confondus (hors catalogue Pommelia). */
 export async function recipeLibrary(userId: string, householdId: string) {
+  // Catalogue commun (DECISIONS 055) : les recettes de tous les foyers, celles du sien d'abord.
+  const mine = sql<boolean>`coalesce(${foods.ownerUserId} = ${userId} or ${foods.householdId} = ${householdId}, false)`;
   return db()
     .select({
       id: foods.id,
@@ -494,15 +496,11 @@ export async function recipeLibrary(userId: string, householdId: string) {
       servings: foods.servings,
       ownerUserId: foods.ownerUserId,
       imageUrl: foods.imageUrl,
+      mine,
     })
     .from(foods)
-    .where(
-      and(
-        eq(foods.source, "recipe"),
-        or(eq(foods.ownerUserId, userId), and(isNull(foods.ownerUserId), eq(foods.householdId, householdId))),
-      ),
-    )
-    .orderBy(asc(foods.nameFr));
+    .where(and(eq(foods.source, "recipe"), or(isNotNull(foods.ownerUserId), isNotNull(foods.householdId))))
+    .orderBy(desc(mine), asc(foods.nameFr));
 }
 
 // --- Préparation d'une recette -------------------------------------------------------
