@@ -25,7 +25,7 @@ export function recipePhotoSrc(
 
 /**
  * Visuel d'une recette du catalogue : la photo refaite par l'admin s'il y en a une, sinon sa
- * photo d'origine (générée pour l'app, servie en WebP dans deux tailles), ou l'illustration
+ * photo d'origine (générée pour l'app, servie en WebP dans trois tailles : la 640 px évite au téléphone de prendre la 960 pour une carte), ou l'illustration
  * dessinée si la recette n'a pas encore de photo.
  */
 export function RecipeVisual({
@@ -83,7 +83,7 @@ function picture(
     // eslint-disable-next-line @next/next/no-img-element -- fichiers déjà redimensionnés en WebP
     <img
       src={`${base}-480.webp`}
-      srcSet={`${base}-480.webp 480w, ${base}-960.webp 960w`}
+      srcSet={`${base}-480.webp 480w, ${base}-640.webp 640w, ${base}-960.webp 960w`}
       sizes={sizes}
       width={480}
       height={360}

@@ -19,6 +19,12 @@ const nextConfig: NextConfig = {
   experimental: { serverActions: { bodySizeLimit: "2mb" } },
   // Le proxy ne voit pas /api : ses réponses reçoivent ici les mêmes en-têtes que les pages.
   headers: async () => [
+    // Photos du catalogue : sans cela, Vercel les sert avec `max-age=0` et le navigateur redemande
+    // chaque photo à chaque visite. Une semaine : une photo retouchée sous le même nom finit par passer.
+    {
+      source: "/recipes/:path*",
+      headers: [{ key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=2592000" }],
+    },
     {
       source: "/api/:path*",
       headers: [

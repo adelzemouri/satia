@@ -15,7 +15,7 @@ import {
   getFood,
   getRecipeForEdit,
   ownFoods,
-  recipePhotoUrl,
+  recipePhoto,
   isGeneratedRecipePhoto,
   regenerateRecipePhoto,
   searchFoods,
@@ -137,7 +137,9 @@ describe("espace famille", () => {
       const [redone] = await db().select().from(foods).where(eq(foods.id, recipe!.id));
       expect(redone!.photoKey).toMatch(/^recipes\/catalog\/ai-/);
       expect(redone!.imageUrl).toMatch(new RegExp(`^/api/foods/${recipe!.id}/photo\\?v=`));
-      expect(await recipePhotoUrl(member.id, recipe!.id)).toMatch(/^https?:\/\//);
+      expect(await recipePhoto(member.id, recipe!.id)).toMatchObject({
+        contentType: expect.stringMatching(/^image\//),
+      });
     });
 
     it("IA en pause : pas de photo, nouvel essai plus tard", async () => {
@@ -162,7 +164,7 @@ describe("espace famille", () => {
     await setRecipePhoto(admin.id, { foodId: lasagnaId, imageBase64: JPEG_BASE64, mime: "image/jpeg" });
     const seen = await getFood(member.id, lasagnaId);
     expect(seen.imageUrl).toMatch(new RegExp(`^/api/foods/${lasagnaId}/photo\\?v=`));
-    expect(await recipePhotoUrl(member.id, lasagnaId)).toMatch(/^https?:\/\//);
+    expect(await recipePhoto(member.id, lasagnaId)).toMatchObject({ contentType: "image/jpeg" });
 
     // Le membre change la photo : nouvelle adresse, pour que les téléphones ne gardent pas l'ancienne.
     await setRecipePhoto(member.id, { foodId: lasagnaId, imageBase64: JPEG_BASE64, mime: "image/jpeg" });
@@ -173,7 +175,7 @@ describe("espace famille", () => {
 
     // Hors du foyer, la photo reste privée.
     const outsider = await createOutsider(admin);
-    expect(await recipePhotoUrl(outsider, lasagnaId)).toBeNull();
+    expect(await recipePhoto(outsider, lasagnaId)).toBeNull();
     await expect(
       setRecipePhoto(outsider, { foodId: lasagnaId, imageBase64: JPEG_BASE64, mime: "image/jpeg" }),
     ).rejects.toMatchObject({ code: "not_found" });

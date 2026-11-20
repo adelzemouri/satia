@@ -688,6 +688,13 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 - **Décision** : l'accueil n'a plus ce bouton. On ajoute un repas par son anneau (celui du moment reste en rouge tant qu'il est vide), par le + de la barre du bas (éventail) ou, sur ordinateur, par « Ajouter un repas » de la barre latérale.
 - **Conséquences** : la carte du jour est plus courte d'environ 70 px et les anneaux entrent dans le premier écran. Le squelette de chargement suit. Aucun appel IA de plus.
 
+## 055 — Photos de recettes gardées par le téléphone
+
+- **Date** : 2026-11-20 · **Statut** : adoptée
+- **Contexte** : les photos de Cuisine s'affichaient lentement. Mesuré sur pommelia.fr : Vercel servait les photos du catalogue avec `max-age=0` (un aller-retour par photo à chaque visite, 270 à 480 ms), un iPhone prenait la version 960 px (≈ 70 Ko) pour une petite carte, le cache de l'appli ne gardait que 64 images pour 184 fichiers, et chaque photo d'une recette du foyer repassait par le serveur puis une URL signée nouvelle à chaque fois, donc jamais en cache. Les photos générées par l'IA étaient rangées brutes (PNG d'environ 1 Mo).
+- **Décision** : `Cache-Control` d'une semaine sur `/recipes/*` (`next.config.ts`) ; troisième taille 640 px dans le `srcset` ; cache dédié `recipe-photos` (300 entrées, conservé à la déconnexion, rien de personnel) dans le service worker ; `/api/foods/[id]/photo` renvoie l'image elle-même (contrôle d'accès inchangé) avec `private, immutable` 30 jours quand l'adresse porte `?v=`, au lieu d'une redirection vers une URL signée ; photos IA réduites en WebP 960 px à la création (sharp), les anciennes au moment de l'envoi. Pas l'optimiseur d'images de Vercel (quota du plan gratuit, fichiers déjà en WebP).
+- **Conséquences** : une photo déjà vue s'affiche sans réseau ; sur téléphone, la page Recettes télécharge environ deux fois moins. Une photo du catalogue remplacée sous le même nom peut mettre une semaine à apparaître (la renommer pour un effet immédiat). La photo d'une recette du foyer reste dans le cache privé du navigateur jusqu'à 30 jours, même après la déconnexion. Le serveur transporte les octets des photos du foyer (petites une fois réduites).
+
 ---
 
 ## Modèle

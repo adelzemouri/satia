@@ -44,6 +44,7 @@
     "react-dom": "19.2.8",
     "server-only": "^0.0.1",
     "serwist": "^9.5.12",
+    "sharp": "0.35.5",
     "web-push": "^3.6.7",
     "zod": "^4.6.5"
   },

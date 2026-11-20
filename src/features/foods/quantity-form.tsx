@@ -288,7 +288,11 @@ function FoodPhoto({ src, name }: { src: string; name: string }) {
       {/* eslint-disable-next-line @next/next/no-img-element -- photo Open Food Facts ou WebP déjà redimensionné */}
       <img
         src={src}
-        srcSet={recipe ? `${src} 480w, ${src.replace(/-480\.webp$/, "-960.webp")} 960w` : undefined}
+        srcSet={
+          recipe
+            ? `${src} 480w, ${src.replace(/-480\.webp$/, "-640.webp")} 640w, ${src.replace(/-480\.webp$/, "-960.webp")} 960w`
+            : undefined
+        }
         sizes={recipe ? "(min-width: 640px) 600px, 100vw" : undefined}
         alt=""
         referrerPolicy="no-referrer"

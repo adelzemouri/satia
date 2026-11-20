@@ -1,6 +1,6 @@
 import { defaultCache } from "@serwist/turbopack/worker";
 import type { PrecacheEntry, RouteHandlerCallbackOptions, SerwistGlobalConfig } from "serwist";
-import { ExpirationPlugin, NetworkFirst, Serwist } from "serwist";
+import { ExpirationPlugin, NetworkFirst, Serwist, StaleWhileRevalidate } from "serwist";
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -58,6 +58,15 @@ const serwist = new Serwist({
         sameOrigin && request.mode === "navigate" && !url.pathname.startsWith("/api/"),
       handler: pageHandler,
     },
+    {
+      // Photos du catalogue (92 recettes, trois tailles) : le cache d'images par défaut n'en garde
+      // que 64 et elles s'y chassaient l'une l'autre. Affichées tout de suite, rafraîchies ensuite.
+      matcher: ({ sameOrigin, url }) => sameOrigin && url.pathname.startsWith("/recipes/"),
+      handler: new StaleWhileRevalidate({
+        cacheName: "recipe-photos",
+        plugins: [new ExpirationPlugin({ maxEntries: 300, maxAgeSeconds: 60 * 24 * 3600, maxAgeFrom: "last-used" })],
+      }),
+    },
     ...defaultCache,
   ],
   fallbacks: {
@@ -96,9 +105,12 @@ self.addEventListener("message", (event) => {
   event.waitUntil(messages);
 });
 
+// Les photos du catalogue, communes à tous, restent : rien de personnel.
 async function clearPages(): Promise<void> {
   const names = await caches.keys();
-  await Promise.all(names.filter((name) => !name.includes("precache")).map((name) => caches.delete(name)));
+  await Promise.all(
+    names.filter((name) => !name.includes("precache") && name !== "recipe-photos").map((name) => caches.delete(name)),
+  );
 }
 
 async function warmPages(urls: unknown[]): Promise<void> {
