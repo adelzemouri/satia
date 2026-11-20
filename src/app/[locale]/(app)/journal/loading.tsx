@@ -14,10 +14,7 @@ export default function JournalLoading() {
         <Bone className="h-4 w-36" />
       </div>
       <SkeletonCard tone="highlight">
-        <div className="flex flex-col gap-1.5">
-          <Bone className="h-3 w-24" />
-          <Bone className="h-8 w-36" />
-        </div>
+        <Bone className="h-8 w-40" />
         <div className="flex flex-col gap-2">
           <div className="flex justify-between gap-3">
             <Bone className="h-5 w-40" />

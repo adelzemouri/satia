@@ -1,4 +1,4 @@
-import { Bone, KitchenTabsBone, SkeletonPage, TitleBone } from "@/ui/skeleton";
+import { Bone, IntroBone, KitchenTabsBone, SkeletonPage, TitleBone } from "@/ui/skeleton";
 
 /** Squelette de « Mes repas » : onglets Cuisine, titre, puis les cartes (nom, anneau des macros, pied). */
 export default function MealsLoading() {
@@ -6,7 +6,7 @@ export default function MealsLoading() {
     <SkeletonPage wide>
       <KitchenTabsBone />
       <TitleBone className="w-1/2" />
-      <Bone className="h-5 w-4/5" />
+      <IntroBone />
       <div className="flex flex-col gap-3 lg:grid lg:grid-cols-2">
         {[0, 1, 2].map((index) => (
           <div key={index} className="flex flex-col gap-3 rounded-[var(--radius-card)] bg-surface p-4">

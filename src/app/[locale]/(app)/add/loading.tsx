@@ -1,8 +1,8 @@
 import { Bone, SkeletonPage, TitleBone } from "@/ui/skeleton";
 
 /**
- * Squelette de l'ajout : titre et repas, le grand champ « Qu'as-tu mangé ? », la rangée photo,
- * voix et code-barres, Mes repas, puis les listes (récents, favoris, les miens).
+ * Squelette de l'ajout : titre et repas, le grand champ « Qu'as-tu mangé ? » et la recherche précise,
+ * la rangée photo, voix et code-barres, Mes repas et son titre, puis les listes (récents, favoris, les miens).
  */
 export default function AddLoading() {
   return (
@@ -14,6 +14,7 @@ export default function AddLoading() {
       <div className="flex flex-col gap-1.5">
         <Bone className="h-16 w-full rounded-2xl" />
         <Bone className="h-4 w-3/4" />
+        <Bone className="mt-1.5 h-4 w-48" />
       </div>
       <div className="contents lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
         <div className="contents lg:flex lg:flex-col lg:gap-5">
@@ -21,6 +22,10 @@ export default function AddLoading() {
             {[0, 1, 2].map((index) => (
               <Bone key={index} className="h-16 rounded-2xl" />
             ))}
+          </div>
+          <div className="-mb-3 flex items-center justify-between gap-3">
+            <Bone className="h-6 w-28" />
+            <Bone className="h-5 w-12" />
           </div>
           <div className="flex flex-col rounded-[var(--radius-card)] bg-surface px-4">
             {[0, 1, 2].map((index) => (
