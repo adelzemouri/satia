@@ -7,10 +7,8 @@ import { RECENT_PAGE } from "@/domain/food-name";
 import { type ActionState, toActionState } from "@/server/action-result";
 import {
   createCustomFood,
-  createRecipe,
   type CustomFoodInput,
   deleteOwnFood,
-  fillRecipePhotosLater,
   type RecentFood,
   recentFoods,
   type RecipeInput,
@@ -96,14 +94,6 @@ export async function setUnitWeightAction(input: Parameters<typeof setUnitWeight
 
 export async function createFoodAction(input: CustomFoodInput): Promise<IdState> {
   return run(async (userId) => ({ ok: true, id: await createCustomFood(userId, input) }));
-}
-
-export async function createRecipeAction(input: RecipeInput): Promise<IdState> {
-  return run(async (userId) => {
-    const id = await createRecipe(userId, input);
-    fillRecipePhotosLater(userId);
-    return { ok: true, id };
-  });
 }
 
 export async function updateRecipeAction(id: string, input: RecipeInput): Promise<IdState> {

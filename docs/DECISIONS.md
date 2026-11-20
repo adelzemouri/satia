@@ -706,6 +706,15 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 056 — Les recettes ne se créent plus dans l'appli
+
+- **Date** : 2026-11-20 · **Statut** : adoptée (complète 055)
+- **Contexte** : avec un seul catalogue commun, Adel ne veut plus que chacun ajoute des recettes ; les nouvelles passent par Claude (une PR dans le catalogue, avec la photo IA). Les étiquettes « Recette » et « Recette Pommelia » sur la fiche n'avaient plus de sens.
+- **Décision** : plus de bouton « Nouvelle recette » ni de page `/foods/new-recipe`. L'idée du frigo « Ajouter au journal » entre directement au journal (repas du moment, ses ingrédients sous le nom du plat, `logIdea`) au lieu de créer une recette. Le menu proposé par l'IA ne choisit plus que dans les recettes existantes (foyer puis catalogue) et n'invente plus de plat. La fiche d'une recette n'affiche plus d'étiquette d'origine ; le choix d'un plat au menu montre une seule liste « Recettes ». Les recettes déjà créées restent, modifiables par leur foyer et supprimables par l'admin.
+- **Conséquences** : on ne peut plus enregistrer une recette de famille dans l'appli ; « Mes repas » reste pour noter un plat habituel. La sortie du menu IA est plus courte (moins de tokens) et ne génère plus de photos de recettes en arrière-plan. `createRecipe` reste côté serveur (tests, scripts).
+
+---
+
 ## Modèle
 
 ```markdown

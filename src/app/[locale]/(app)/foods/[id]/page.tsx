@@ -138,9 +138,10 @@ export default async function FoodPage({ params, searchParams }: PageProps<"/[lo
           )}
           <div className="flex items-start gap-4">
             <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <p className="text-sm font-semibold text-text-muted">
-                {catalog ? t("recipes.source") : t(`add.sources.${food.source}`)}
-              </p>
+              {/* Un seul catalogue de recettes : pas d'étiquette d'origine sur une recette (DECISIONS 056). */}
+              {food.source !== "recipe" && (
+                <p className="text-sm font-semibold text-text-muted">{t(`add.sources.${food.source}`)}</p>
+              )}
               <h1 className="font-display text-3xl font-extrabold tracking-tight">{shortFoodName(food.nameFr)}</h1>
               {shortFoodName(food.nameFr) !== food.nameFr && <p className="text-text-muted">{food.nameFr}</p>}
               {food.brand && <p className="text-lg">{food.brand}</p>}

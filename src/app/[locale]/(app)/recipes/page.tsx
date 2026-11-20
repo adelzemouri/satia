@@ -5,13 +5,11 @@ import { KitchenTabs } from "@/features/planning/kitchen-tabs";
 import { HouseholdRecipeCard } from "@/features/recipes/household-recipe-card";
 import { RecipeCard } from "@/features/recipes/recipe-card";
 import { RecipeFilter } from "@/features/recipes/recipe-filter";
-import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { recipeLibrary } from "@/server/planning";
 import { catalogEntries } from "@/server/recipes";
 import { favoriteIds, fillRecipePhotosLater } from "@/server/foods";
 import { requireUser } from "@/server/session";
-import { buttonClass } from "@/ui/button";
 
 /** Les recettes de la famille n'ont pas de catégorie : elles s'affichent sous « Toutes », en tête. */
 const OURS = "ours";
@@ -57,16 +55,9 @@ export default async function RecipesPage({ params }: PageProps<"/[locale]/recip
     <>
       <span data-wide hidden />
       <KitchenTabs current="recipes" />
-      {/* Sur ordinateur, « Nouvelle recette » passe à droite du titre. */}
-      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_auto] lg:items-center lg:gap-x-6 lg:gap-y-2">
+      <div className="flex flex-col gap-6 lg:gap-2">
         <h1 className="font-display text-3xl font-extrabold tracking-tight">{t("title")}</h1>
-        <p className="text-text-muted lg:col-start-1 lg:row-start-2">{t("intro")}</p>
-        <Link
-          href="/foods/new-recipe"
-          className={buttonClass("secondary", "self-start px-4 lg:col-start-2 lg:row-start-1 lg:self-center")}
-        >
-          {t("new")}
-        </Link>
+        <p className="text-text-muted">{t("intro")}</p>
       </div>
       {ours.length + ideas.length === 0 ? (
         <p className="text-text-muted">{t("none")}</p>

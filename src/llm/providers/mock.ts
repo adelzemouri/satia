@@ -18,20 +18,10 @@ const RESPONSES: Record<string, unknown | ((request: LlmRequest) => unknown)> = 
         ?.replace(/^Moi : /, "") ?? ""
     } ». Un bol de lentilles et des crudités tiennent bien dans ton budget.`,
   }),
-  // Un nouveau plat le premier jour au dîner, la première recette de la liste le lendemain midi.
+  // La deuxième recette de la liste le premier jour au dîner, la première le lendemain midi.
   menu_plan: {
     meals: [
-      {
-        day: 0,
-        slot: "dinner",
-        recipe: null,
-        name: "Poêlée de lentilles aux carottes",
-        ingredients: [
-          { name: "lentille cuite", grams: 200 },
-          { name: "carotte crue", grams: 120 },
-          { name: "huile d'olive", grams: 10 },
-        ],
-      },
+      { day: 0, slot: "dinner", recipe: 2, name: "", ingredients: [] },
       { day: 1, slot: "lunch", recipe: 1, name: "", ingredients: [] },
     ],
   },

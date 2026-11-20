@@ -144,10 +144,10 @@ function PickerBody({
       const name = normalizeForSearch(recipe.name);
       return words.every((word) => name.includes(word));
     };
-    return [
-      { key: "household", title: t("householdRecipes"), recipes: household.filter(keep) },
-      { key: "catalog", title: t("catalogRecipes"), recipes: catalog.filter(keep) },
-    ].filter((group) => group.recipes.length > 0);
+    // Un seul catalogue (DECISIONS 056) : les recettes des membres d'abord, puis les autres, sous un même titre.
+    return [{ key: "recipes", title: t("allRecipes"), recipes: [...household, ...catalog].filter(keep) }].filter(
+      (group) => group.recipes.length > 0,
+    );
   }, [query, household, catalog, t]);
 
   const submit = () =>
