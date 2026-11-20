@@ -25,9 +25,11 @@ export function SkeletonCard({
   className?: string;
   tone?: keyof typeof cardTone;
 }) {
+  // Espacement par défaut, sauf s'il est donné : deux classes `gap-*` se contrediraient.
+  const gap = /(^|\s)gap-/.test(className) ? "" : "gap-4";
   return (
     // `data-col` : dans une page en colonnes (`Columns`), la carte se range dans une colonne.
-    <div data-col className={`flex flex-col gap-4 rounded-[var(--radius-card)] p-5 ${cardTone[tone]} ${className}`}>
+    <div data-col className={`flex flex-col ${gap} rounded-[var(--radius-card)] p-5 ${cardTone[tone]} ${className}`}>
       {children}
     </div>
   );
@@ -36,6 +38,16 @@ export function SkeletonCard({
 /** Titre de page (police d'affichage, text-3xl). */
 export function TitleBone({ className = "w-2/3" }: { className?: string }) {
   return <Bone className={`h-9 rounded-2xl ${className}`} />;
+}
+
+/** Phrase de présentation sous un titre : deux lignes sur téléphone, une seule sur ordinateur. */
+export function IntroBone({ className = "lg:w-2/3" }: { className?: string }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <Bone className={`h-5 w-full ${className}`} />
+      <Bone className="h-5 w-3/5 lg:hidden" />
+    </div>
+  );
 }
 
 /** Liste de liens vers des pages secondaires, comme `HubLinks` (« Progrès », « Moi »). */

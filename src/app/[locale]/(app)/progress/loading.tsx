@@ -14,7 +14,7 @@ export default function ProgressLoading() {
           <Bone className="h-4 w-20" />
         </div>
         <Bone className="h-9 w-40 rounded-2xl" />
-        <Bone className="h-36 w-full rounded-2xl" />
+        <Bone className="h-44 w-full rounded-2xl lg:h-80" />
       </SkeletonCard>
       <div className="lg:col-start-3 lg:row-span-3 lg:row-start-2">
         <HubLinksBone count={6} />
