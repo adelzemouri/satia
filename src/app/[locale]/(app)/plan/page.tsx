@@ -17,8 +17,7 @@ import { storedPhotoUrl } from "@/features/recipes/recipe-visual";
 import { Link } from "@/i18n/navigation";
 import { toLocale } from "@/i18n/routing";
 import { aiAvailability } from "@/server/ai-availability";
-import { familyRecipes } from "@/server/foods";
-import { weekPlan } from "@/server/planning";
+import { recipeLibrary, weekPlan } from "@/server/planning";
 import { catalogEntries } from "@/server/recipes";
 import { requireUser } from "@/server/session";
 import { Card } from "@/ui/card";
@@ -41,18 +40,18 @@ export default async function PlanPage({ params, searchParams }: PageProps<"/[lo
   const weekStart = weekParam((await searchParams).week, today);
   const [items, recipes, catalog, ai] = await Promise.all([
     weekPlan(user.householdId, weekStart),
-    familyRecipes(user.id),
+    recipeLibrary(user.id, user.householdId),
     catalogEntries(),
     aiAvailability(),
   ]);
   const t = await getTranslations();
   const days = weekDates(weekStart);
   const linkClass = "font-semibold text-primary underline-offset-4 hover:underline";
-  // Recettes du foyer puis celles du catalogue Pommelia, chacune par ordre alphabétique, avec leur vignette.
+  // Recettes des membres (son foyer d'abord) puis celles du catalogue Pommelia, chacune par ordre alphabétique, avec leur vignette.
   const portionKcal = (kcal: number, portion: number | undefined) => Math.round((kcal * (portion ?? 100)) / 100);
   const householdOptions: MenuRecipe[] = recipes.map((recipe) => ({
     id: recipe.id,
-    name: recipe.nameFr,
+    name: recipe.name,
     kcal: portionKcal(recipe.kcal, recipe.unitWeights?.portion),
     thumb: recipe.imageUrl,
   }));

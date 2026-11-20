@@ -690,6 +690,15 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 055 — Un seul catalogue de recettes pour tous les comptes
+
+- **Date** : 2026-11-20 · **Statut** : adoptée (modifie 031 et 022)
+- **Contexte** : une recette créée n'était visible que par son foyer ; seules les 92 « Recettes Pommelia » étaient communes à tous. Adel veut un seul catalogue, sans cette distinction.
+- **Décision** : toute recette (source `recipe`) est visible par tous les comptes : bibliothèque Recettes, recherche, menu, favoris, photo par URL signée. Les aliments personnels (« Mes aliments ») restent propres à leur foyer. Seul le foyer qui a créé une recette la modifie (contenu, étapes, photo) ; l'admin peut en plus supprimer la recette d'un autre foyer (modération), jamais une recette du catalogue. Les recettes de son foyer passent en tête (bibliothèque, recherche, choix du menu), puis celles des autres, puis le catalogue Pommelia, qui seul garde l'étiquette « Recette Pommelia ». Une recette d'un autre foyer ne peut pas servir d'ingrédient : elle bloquerait la suppression de ce foyer (`recipe_items.food_id` sans cascade).
+- **Conséquences** : les recettes déjà créées par les invités de la bêta (et leurs photos) deviennent visibles par tous, rétroactivement. Les plats inventés par le menu IA, enregistrés comme recettes, rejoignent aussi le catalogue commun. Quand un invité quitte la bêta, ses recettes disparaissent pour tous (le journal garde ses valeurs figées, le menu garde le nom du plat). Le menu proposé par l'IA ne part toujours que des recettes du foyer et du catalogue (régime connu, prompt plus court) ; la suggestion de Pépin peut proposer la recette d'un autre foyer une fois notée au journal. Aucun coût IA de plus : les photos automatiques restent générées pour le foyer qui crée la recette.
+
+---
+
 ## Modèle
 
 ```markdown
