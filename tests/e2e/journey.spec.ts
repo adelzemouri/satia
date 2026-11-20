@@ -1,6 +1,10 @@
 import AxeBuilder from "@axe-core/playwright";
 import { type Browser, expect, type Page, test } from "@playwright/test";
 
+import postgres from "postgres";
+
+import { normalizeForSearch } from "@/domain/search";
+
 import { totp } from "./totp";
 
 /**
@@ -12,6 +16,38 @@ test.describe.configure({ mode: "serial" });
 const ADMIN = { email: "adel@example.com", password: "mot-de-passe-admin-1" };
 const TEEN = { email: "lea@example.com", password: "mot-de-passe-lea-1" };
 let totpSecret = "";
+
+/**
+ * Les recettes ne se créent plus dans l'appli (DECISIONS 056) : on en pose une en base pour le
+ * foyer d'un compte, avec des ingrédients Ciqual trouvés par leur nom.
+ */
+async function seedRecipe(email: string, name: string, servings: number, items: [pattern: string, grams: number][]) {
+  const sql = postgres(process.env.DATABASE_URL ?? "postgres://pommelia:pommelia@localhost:5432/pommelia", { max: 1 });
+  try {
+    const [owner] = await sql`select household_id from users where email = ${email}`;
+    const rows: { id: string; kcal: number; protein_g: number; carbs_g: number; fat_g: number; grams: number }[] = [];
+    for (const [pattern, grams] of items) {
+      const [food] = await sql`select id, kcal, protein_g, carbs_g, fat_g from foods
+        where source = 'ciqual' and name_fr ilike ${pattern} order by length(name_fr) limit 1`;
+      rows.push({ ...(food as unknown as (typeof rows)[number]), grams });
+    }
+    const total = rows.reduce((sum, row) => sum + row.grams, 0);
+    const per100 = (key: "kcal" | "protein_g" | "carbs_g" | "fat_g") =>
+      Math.round((rows.reduce((sum, row) => sum + (Number(row[key]) * row.grams) / 100, 0) * 1000) / total) / 10;
+    const [recipe] = await sql`insert into foods
+      (source, household_id, name_fr, search_name, kcal, protein_g, carbs_g, fat_g, servings, unit_weights)
+      values ('recipe', ${owner!.household_id}, ${name}, ${normalizeForSearch(name)}, ${per100("kcal")},
+        ${per100("protein_g")}, ${per100("carbs_g")}, ${per100("fat_g")}, ${servings},
+        ${sql.json({ portion: Math.round((total / servings) * 100) / 100 })})
+      returning id`;
+    for (const [position, row] of rows.entries()) {
+      await sql`insert into recipe_items (recipe_id, food_id, grams, position)
+        values (${recipe!.id}, ${row.id}, ${row.grams}, ${position})`;
+    }
+  } finally {
+    await sql.end();
+  }
+}
 let inviteUrl = "";
 
 /** Message d'alerte de l'application (hors annonceur de navigation de Next.js). */
@@ -213,7 +249,7 @@ test("sur ordinateur, le menu se remplit case par case et les pages longues se d
     .first()
     .click();
   await dialog.getByRole("searchbox", { name: "Rechercher une recette" }).fill("harira");
-  await expect(dialog.getByRole("region", { name: "Recettes Pommelia" })).toBeVisible();
+  await expect(dialog.getByRole("region", { name: "Recettes" })).toBeVisible();
   await dialog.getByRole("button", { name: /^Harira/ }).click();
   await expectNoA11yViolations(page);
   await dialog.getByRole("button", { name: "Ajouter au menu" }).click();
@@ -362,16 +398,18 @@ test("ajout manuel d'un repas depuis la base Ciqual", async ({ page }) => {
 });
 
 test("recette : l'ordre des ingrédients se change pendant la modification", async ({ page }) => {
+  await seedRecipe(ADMIN.email, "Salade de pâtes", 2, [
+    ["Pâtes%cuites%", 300],
+    ["Pomme, pulpe et peau, crue%", 150],
+  ]);
   await signIn(page, ADMIN);
-  await page.goto("/foods/new-recipe");
-  await page.getByLabel("Nom", { exact: true }).fill("Salade de pâtes");
-  for (const [query, name] of [
-    ["pâtes cuites", /^Pâtes/],
-    ["pomme crue", /^Pomme, pulpe et peau, crue/],
-  ] as const) {
-    await page.getByLabel("Ajouter un ingrédient").fill(query);
-    await page.getByRole("button", { name }).first().click();
-  }
+  // Plus de création de recette dans l'appli : ni bouton, ni page.
+  await page.goto("/recipes");
+  await expect(page.getByRole("link", { name: "Nouvelle recette" })).toHaveCount(0);
+  await page.getByRole("link", { name: /^Salade de pâtes \d/ }).click();
+  const card = page.getByRole("region", { name: "Ingrédients" }).getByRole("listitem");
+  await expect(card.first()).toContainText("Pâtes");
+  await page.getByRole("link", { name: "Modifier la recette" }).click();
   const ingredients = page.getByRole("group", { name: "Ingrédients" }).getByRole("listitem");
   await expect(ingredients).toHaveCount(2);
   // Les longs noms Ciqual proposés ne font pas déborder le formulaire sur téléphone.
@@ -387,21 +425,11 @@ test("recette : l'ordre des ingrédients se change pendant la modification", asy
   await expect(ingredients.first()).toContainText("Pomme");
   await expect(page.getByRole("button", { name: /^Monter Pomme/ })).toBeDisabled();
   await expectNoA11yViolations(page);
-  await page.getByRole("button", { name: "Créer" }).click();
-  // Toute recette est commune à la famille : on la retrouve dans les recettes.
-  await expect(page).toHaveURL(/\/recipes$/);
-
-  await page.getByRole("link", { name: /^Salade de pâtes \d/ }).click();
-  const card = page.getByRole("region", { name: "Ingrédients" }).getByRole("listitem");
-  await expect(card.first()).toContainText("Pomme");
-  // En modification, on redescend la pomme : la fiche suit le nouvel ordre.
-  await page.getByRole("link", { name: "Modifier la recette" }).click();
-  await page.getByRole("button", { name: /^Descendre Pomme/ }).click();
   await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
   await expect(page).toHaveURL(/\/recipes$/);
   await page.getByRole("link", { name: /^Salade de pâtes \d/ }).click();
-  await expect(card.first()).toContainText("Pâtes");
-  await expect(card.last()).toContainText("Pomme");
+  await expect(card.first()).toContainText("Pomme");
+  await expect(card.last()).toContainText("Pâtes");
 });
 
 test("aliment personnel, favori, eau et poids", async ({ page }) => {
@@ -1125,20 +1153,10 @@ test("l'admin génère un lien de nouveau mot de passe pour un membre", async ({
   await expect(teen).toHaveURL(/\/onboarding$/);
 });
 
-test("recette du foyer : l'admin la crée, un membre la retrouve et y met sa photo", async ({ page, browser }) => {
+test("recette du foyer : un membre la retrouve et y met sa photo", async ({ page, browser }) => {
   test.slow(); // deux sessions (admin puis membre) dans le même test
+  await seedRecipe(ADMIN.email, "Gratin du dimanche", 4, [["Pâtes%cuites%", 600]]);
   await signInWithTotp(page);
-  await page.goto("/foods/new-recipe");
-  await page.getByLabel("Nom", { exact: true }).fill("Gratin du dimanche");
-  await page.getByLabel("Nombre de portions").fill("4");
-  await page.getByLabel("Ajouter un ingrédient").fill("pâtes cuites");
-  await page
-    .getByRole("button", { name: /^Pâtes/ })
-    .first()
-    .click();
-  await page.getByRole("textbox", { name: /Quantité de Pâtes/ }).fill("600");
-  await page.getByRole("button", { name: "Créer" }).click();
-  await expect(page).toHaveURL(/\/recipes$/);
 
   // Plus de partage de plat : ni bouton sur l'écran d'ajout, ni repas à valider.
   await page.goto("/add");
@@ -1157,7 +1175,7 @@ test("recette du foyer : l'admin la crée, un membre la retrouve et y met sa pho
   await withServerAction(teen, () =>
     teen.getByLabel("Ajouter une photo").setInputFiles({ name: "gratin.png", mimeType: "image/png", buffer: MEAL_PNG }),
   );
-  await expect(teen.getByText("Photo du foyer, visible seulement par ses membres.")).toBeVisible();
+  await expect(teen.getByText("Photo prise par un membre, pas par l'IA.")).toBeVisible();
   await expect(teen.locator("figure img").first()).toHaveAttribute("src", /\/api\/foods\/.+\/photo\?v=/);
   await expect(teen.getByLabel("Changer la photo")).toBeAttached();
   await expectNoA11yViolations(teen);
@@ -1312,7 +1330,8 @@ test("menu de la semaine, liste de courses commune, recettes et scanner de frigo
   await page.getByRole("button", { name: "Proposer un menu" }).click();
   await expect(page.getByText("2 repas ajoutés au menu.")).toBeVisible();
   await expect(
-    page.getByRole("region", { name: /^lundi/ }).getByText("Poêlée de lentilles aux carottes"),
+    // Le coach simulé ne choisit que des recettes existantes : la n° 2 de la liste lundi soir.
+    page.getByRole("region", { name: /^lundi/ }).getByText("Salade de pâtes"),
   ).toBeVisible();
 
   await page.goto("/shopping");
@@ -1339,7 +1358,6 @@ test("menu de la semaine, liste de courses commune, recettes et scanner de frigo
     page.getByRole("group", { name: "Type de recette" }).getByRole("button", { name: "Nos recettes" }),
   ).toHaveCount(0);
   await expect(page.getByRole("link", { name: /^Gratin du dimanche/ })).toBeVisible();
-  await expect(page.getByRole("link", { name: /^Poêlée de lentilles aux carottes/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /^Minestrone/ })).toBeVisible();
   // Recherche sur place, par nom ou ingrédient.
   await page.getByRole("searchbox", { name: "Rechercher une recette ou un ingrédient" }).fill("gratin");
@@ -1351,9 +1369,9 @@ test("menu de la semaine, liste de courses commune, recettes et scanner de frigo
   await expectNoA11yViolations(page);
 
   // Fiche d'une recette du foyer : ses ingrédients, et sa préparation rédigée à la demande.
-  await page.getByRole("link", { name: /^Poêlée de lentilles aux carottes/ }).click();
+  await page.getByRole("link", { name: /^Gratin du dimanche/ }).click();
   await expect(page.getByRole("heading", { name: "Ingrédients" })).toBeVisible();
-  await expect(page.getByRole("region", { name: "Ingrédients" }).getByRole("listitem")).toHaveCount(3);
+  await expect(page.getByRole("region", { name: "Ingrédients" }).getByRole("listitem")).toHaveCount(1);
   await expect(page.getByText(/Pas encore de préparation/)).toBeVisible();
   await page.getByRole("button", { name: "Demander la préparation à Pépin" }).click();
   await expect(page.getByText("Prépare et coupe les ingrédients.")).toBeVisible();
@@ -1372,8 +1390,9 @@ test("menu de la semaine, liste de courses commune, recettes et scanner de frigo
   }).toPass({ timeout: 30_000 });
   await expect(page.getByText(/^Repéré : œuf, tomate/)).toBeVisible();
   await expectNoA11yViolations(page);
+  // L'idée entre directement au journal sous son nom ; elle ne devient pas une recette.
   await omelette.getByRole("button", { name: "Ajouter au journal" }).click();
-  await expect(page).toHaveURL(/\/add\?food=/);
+  await expect(page).toHaveURL(/\/journal$/);
   await expect(page.getByText("Omelette à la tomate").first()).toBeVisible();
 });
 
@@ -1619,7 +1638,8 @@ test("recettes du catalogue : bibliothèque illustrée, fiche et ajout", async (
   await expect(page.getByRole("link", { name: /^Taboulé aux herbes/ })).toHaveCount(0);
   await page.getByRole("link", { name: /^Minestrone/ }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Minestrone");
-  await expect(page.getByText("Recette Pommelia")).toBeVisible();
+  // Un seul catalogue : plus d'étiquette d'origine sur la fiche.
+  await expect(page.getByText("Recette Pommelia")).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "Ingrédients" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Préparation" })).toBeVisible();
   await expectNoA11yViolations(page);
@@ -1698,7 +1718,6 @@ test("audit d'accessibilité : chaque page de l'app, en thème clair et sombre",
     "/fridge",
     "/foods",
     "/foods/new",
-    "/foods/new-recipe",
     "/meals",
     "/training",
     "/training/history",

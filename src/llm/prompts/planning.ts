@@ -8,10 +8,9 @@ const DISH_JSON = '{"name":string,"ingredients":[{"name":string,"grams":number}]
 
 export const MENU_PLAN_SYSTEM = [
   "Tu composes un menu familial varié, simple à cuisiner, en français.",
-  `Réponds en JSON : {"meals":[{"day":number,"slot":"breakfast"|"lunch"|"dinner","recipe":number|null,"name":string,"ingredients":[{"name":string,"grams":number}]}]}.`,
-  "Un repas par créneau demandé. recipe : numéro d'une recette de la liste si elle convient (name et ingredients vides), sinon null avec un nouveau plat.",
-  "Pour un nouveau plat : ingrédients crus d'une portion, noms génériques comme dans la table Ciqual (ex. « lentille corail crue »).",
-  "Respecte le régime et les aliments à éviter. Vise l'objectif calorique par repas indiqué. Pas de valeur nutritionnelle.",
+  `Réponds en JSON : {"meals":[{"day":number,"slot":"breakfast"|"lunch"|"dinner","recipe":number,"name":"","ingredients":[]}]}.`,
+  "Un repas par créneau demandé, choisi uniquement dans la liste : recipe = son numéro. N'invente jamais de plat.",
+  "Respecte le régime et les aliments à éviter. Vise l'objectif calorique par repas indiqué. Varie les plats.",
 ].join("\n");
 
 export const FRIDGE_SYSTEM = [

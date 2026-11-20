@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { db } from "@/db/client";
-import { foods, llmCalls, recipeItems, user } from "@/db/schema";
+import { foods, llmCalls, mealEntries, user } from "@/db/schema";
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
 import { isoWeekStart } from "@/domain/streak";
@@ -18,7 +18,7 @@ import {
   listShopping,
   recipeLibrary,
   removePlanItem,
-  saveIdeaAsRecipe,
+  logIdea,
   setShoppingChecked,
   shoppingFromMenu,
   weekPlan,
@@ -127,9 +127,10 @@ describe("planification", () => {
     expect((await weekPlan(householdId, nextWeek)).map((item) => item.label)).toEqual(["Restes"]);
   });
 
-  it("le coach remplit les créneaux vides : recette reprise et nouveau plat du foyer", async () => {
+  it("le coach remplit les créneaux vides avec des recettes existantes, sans en créer", async () => {
     const { userId, householdId } = await setupUser();
-    await familySoup(userId);
+    const soup = await familySoup(userId);
+    const recipesBefore = (await db().select({ id: foods.id }).from(foods).where(eq(foods.source, "recipe"))).length;
     const added = await generateMenu(userId, householdId, {
       weekStart: nextWeek,
       slots: ["lunch", "dinner"],
@@ -137,12 +138,12 @@ describe("planification", () => {
     });
     expect(added).toBe(2);
     const plan = await weekPlan(householdId, nextWeek);
-    expect(plan.map((item) => [item.date, item.slot, item.label])).toEqual([
-      [nextWeek, "dinner", "Poêlée de lentilles aux carottes"],
-      [addDays(nextWeek, 1), "lunch", "Soupe de carottes"],
-    ]);
-    const [created] = await db().select().from(foods).where(eq(foods.id, plan[0]!.foodId!));
-    expect(created).toMatchObject({ source: "recipe", ownerUserId: null, householdId });
+    // Le coach simulé prend la recette n° 2 (catalogue) le lundi soir et la n° 1 (celle du foyer) le mardi midi.
+    expect(plan[0]).toMatchObject({ date: nextWeek, slot: "dinner" });
+    expect(plan[0]!.catalogRef).toMatch(/^catalog:/);
+    expect(plan[1]).toMatchObject({ date: addDays(nextWeek, 1), slot: "lunch", foodId: soup });
+    const recipesAfter = (await db().select({ id: foods.id }).from(foods).where(eq(foods.source, "recipe"))).length;
+    expect(recipesAfter).toBe(recipesBefore);
     expect((await db().select().from(llmCalls))[0]).toMatchObject({ feature: "menu_plan", status: "ok" });
 
     // Créneaux déjà pris : rien n'est ajouté une seconde fois.
@@ -175,31 +176,6 @@ describe("planification", () => {
     expect(plan[1]!.catalogRef).toMatch(/^catalog:/);
     const [prompt] = await db().select().from(llmCalls);
     expect(prompt).toMatchObject({ feature: "menu_plan" });
-  });
-
-  it("les ingrédients d'un nouveau plat sont des aliments, jamais un autre plat du foyer", async () => {
-    const { userId, householdId } = await setupUser();
-    // Recette du foyer dont le nom contient deux ingrédients du plat proposé : la recherche la classe en tête.
-    const carrot = await firstFood(userId, "carotte crue");
-    await createRecipe(userId, {
-      name: "Carottes rôties à l'huile d'olive",
-      servings: 2,
-      cookedGrams: null,
-      items: [{ foodId: carrot.id, grams: 300 }],
-    });
-    await generateMenu(userId, householdId, { weekStart: nextWeek, slots: ["dinner"], servings: 2 });
-    const [planned] = await weekPlan(householdId, nextWeek);
-    expect(planned!.label).toBe("Poêlée de lentilles aux carottes");
-    const ingredients = await db()
-      .select({ name: foods.nameFr, source: foods.source })
-      .from(recipeItems)
-      .innerJoin(foods, eq(foods.id, recipeItems.foodId))
-      .where(eq(recipeItems.recipeId, planned!.foodId!));
-    expect(ingredients).toHaveLength(3);
-    expect(ingredients.every((item) => item.source === "ciqual")).toBe(true);
-    // Un seul appel pour choisir les aliments de tout le menu.
-    const calls = await db().select().from(llmCalls);
-    expect(calls.filter((call) => call.feature === "food_match")).toHaveLength(1);
   });
 
   it("remplit la liste de courses avec le menu, en gardant les articles cochés et ajoutés à la main", async () => {
@@ -269,11 +245,15 @@ describe("planification", () => {
       fridgeIdeas(userId, { imageBase64: Buffer.alloc(200, 7).toString("base64"), mime: "image/jpeg" }),
     ).rejects.toMatchObject({ code: "invalid_photo" });
 
-    const id = await saveIdeaAsRecipe(userId, {
+    // L'idée entre au journal sous son nom, sans devenir une recette.
+    const count = await logIdea(userId, {
       name: omelette.name,
       items: omelette.items.map((item) => ({ foodId: item.foodId, grams: item.grams })),
     });
-    const library = await recipeLibrary(userId, householdId);
-    expect(library).toEqual([expect.objectContaining({ id, name: "Omelette à la tomate", ownerUserId: null })]);
+    expect(count).toBe(omelette.items.length);
+    const entries = await db().select().from(mealEntries).where(eq(mealEntries.userId, userId));
+    expect(entries).toHaveLength(omelette.items.length);
+    expect(entries.every((entry) => entry.dish === "Omelette à la tomate" && entry.date === todayIso())).toBe(true);
+    expect(await recipeLibrary(userId, householdId)).toEqual([]);
   });
 });

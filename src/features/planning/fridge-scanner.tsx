@@ -11,7 +11,7 @@ import { Alert } from "@/ui/alert";
 import { Button, buttonClass } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 
-import { fridgeIdeasAction, saveIdeaAction } from "./actions";
+import { fridgeIdeasAction, logIdeaAction } from "./actions";
 
 /**
  * Photo du frigo ou du placard, réduite côté client puis envoyée une fois : ingrédients
@@ -47,11 +47,12 @@ export function FridgeScanner() {
   const save = (idea: FridgeResult["ideas"][number]) =>
     startTransition(async () => {
       setError(null);
-      const response = await saveIdeaAction({
+      // L'idée entre au journal sous son nom, au repas du moment ; elle ne devient plus une recette.
+      const response = await logIdeaAction({
         name: idea.name,
         items: idea.items.map((item) => ({ foodId: item.foodId, grams: item.grams })),
       });
-      if (response.id) router.push({ pathname: "/add", query: { food: response.id } });
+      if (response.count) router.push("/journal");
       else setError(response.error ?? "generic");
     });
 

@@ -5,9 +5,11 @@ import { z } from "zod";
 
 import { db } from "@/db/client";
 import { foods, MEAL_SLOTS, mealPlanItems, recipeItems, shoppingItems } from "@/db/schema";
+import { APP_TIMEZONE } from "@/config/app";
 import { todayIso } from "@/domain/dates";
 import { addDays } from "@/domain/energy";
 import { nutrientsFor } from "@/domain/nutrition";
+import { slotAt } from "@/domain/meals";
 import { AISLES, type PlannedDish, shoppingFromPlan } from "@/domain/planning";
 import { CATEGORY_SLOTS, type RecipeCategory } from "@/domain/recipes/catalog";
 import { seededRandom } from "@/domain/recipes/dish-art";
@@ -15,9 +17,9 @@ import { weekDates } from "@/domain/weekly-budget";
 import { proposeMenu, scanFridge, writeRecipeSteps } from "@/llm";
 
 import { DomainError } from "./errors";
-import { createRecipe, familyRecipes, getFood, getRecipeForEdit, per100, setRecipeSteps } from "./foods";
+import { familyRecipes, getFood, getRecipeForEdit, per100, setRecipeSteps } from "./foods";
 import { daySummary } from "./journal";
-import { matchFoodNames, photoInputSchema } from "./meal-ai";
+import { matchFoodNames, photoInputSchema, saveMeal } from "./meal-ai";
 import { isImage } from "./photos";
 import { getGoalOn, getProfile } from "./profile";
 import { catalogEntries } from "./recipes";
@@ -164,9 +166,10 @@ async function matchIngredients(userId: string, dishes: readonly (readonly Ingre
 }
 
 /**
- * Le coach remplit les créneaux vides de la semaine (à partir d'aujourd'hui) : il reprend une
- * recette du foyer ou propose un nouveau plat, enregistré comme recette du foyer avec ses
- * ingrédients trouvés dans la base. Un seul appel au LLM. Renvoie le nombre de repas ajoutés.
+ * Le coach remplit les créneaux vides de la semaine (à partir d'aujourd'hui) en choisissant
+ * uniquement parmi les recettes existantes (foyer puis catalogue) : il n'invente plus de plat,
+ * les recettes ne se créent plus dans l'appli (DECISIONS 056). Un seul appel au LLM.
+ * Renvoie le nombre de repas ajoutés.
  */
 export async function generateMenu(
   userId: string,
@@ -230,33 +233,16 @@ export async function generateMenu(
     `Créneaux à remplir (jour 0 = lundi) : ${wanted.map((meal) => `${meal.day}:${meal.slot}`).join(", ")}.`,
   ].join("\n");
   const plan = await proposeMenu(userId, prompt);
-  // Ingrédients des nouveaux plats, associés aux aliments de la base en une seule fois.
-  const matched = await matchIngredients(
-    userId,
-    plan.meals.map((meal) => (meal.name && !(meal.recipe !== null && pool[meal.recipe - 1]) ? meal.ingredients : [])),
-  );
 
   let added = 0;
-  for (const [index, meal] of plan.meals.entries()) {
+  for (const meal of plan.meals) {
     const target = wanted.find((slot) => slot.day === meal.day && slot.slot === meal.slot);
     if (!target) continue;
-    let foodId: string | null = null;
-    let label = meal.name;
+    // Un plat hors de la liste (l'IA n'a pas respecté la consigne) est ignoré : le créneau reste libre.
     const recipe = meal.recipe !== null ? pool[meal.recipe - 1] : undefined;
-    if (recipe) {
-      foodId = recipe.id;
-      label = recipe.nameFr;
-    } else if (meal.ingredients.length > 0 && meal.name) {
-      const { items } = matched[index]!;
-      if (items.length > 0) {
-        foodId = await createRecipe(userId, {
-          name: meal.name,
-          servings: 1,
-          cookedGrams: null,
-          items: items.map((item) => ({ foodId: item.food.id, grams: item.grams })),
-        });
-      }
-    }
+    if (!recipe) continue;
+    const foodId = recipe.id;
+    const label = recipe.nameFr;
     if (!label) continue;
     await db().insert(mealPlanItems).values({
       householdId,
@@ -475,10 +461,27 @@ export const saveIdeaSchema = z.object({
     .max(12),
 });
 
-/** Enregistre une idée comme recette d'une portion (elle rejoint la bibliothèque). */
-export async function saveIdeaAsRecipe(userId: string, input: z.input<typeof saveIdeaSchema>): Promise<string> {
+/**
+ * Ajoute une idée du frigo au journal, au repas du moment : ses ingrédients sous le nom du plat.
+ * Elle ne devient plus une recette (DECISIONS 056 : les recettes ne se créent plus dans l'appli).
+ */
+export async function logIdea(userId: string, input: z.input<typeof saveIdeaSchema>): Promise<number> {
   const data = saveIdeaSchema.parse(input);
-  return createRecipe(userId, { name: data.name, servings: 1, cookedGrams: null, items: data.items });
+  return saveMeal(userId, {
+    date: todayIso(),
+    slot: slotAt(new Date(), APP_TIMEZONE),
+    method: "photo",
+    photoId: null,
+    items: data.items.map((item) => ({
+      foodId: item.foodId,
+      estimate: null,
+      quantity: item.grams,
+      unit: "g" as const,
+      aiLabel: null,
+      dish: data.name.slice(0, 60),
+      proposal: null,
+    })),
+  });
 }
 
 // --- Bibliothèque ----------------------------------------------------------------------------

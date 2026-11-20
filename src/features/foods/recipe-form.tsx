@@ -7,7 +7,7 @@ import { shortFoodName } from "@/domain/food-name";
 import { analyzePhotoAction } from "@/features/ai/actions";
 import { compressImage } from "@/features/ai/compress-image";
 import { useErrorText } from "@/features/auth/use-error-text";
-import { createRecipeAction, updateRecipeAction } from "@/features/journal/actions";
+import { updateRecipeAction } from "@/features/journal/actions";
 import { nutrientsFor, sumNutrients } from "@/domain/nutrition";
 import { useRouter } from "@/i18n/navigation";
 import { Alert } from "@/ui/alert";
@@ -42,15 +42,15 @@ function toBase64(blob: Blob): Promise<string> {
 }
 
 /**
- * Création ou modification d'une recette. Toute recette est visible et modifiable par les
- * membres du foyer ; les ingrédients peuvent être pré-remplis depuis une photo (IA).
+ * Modification d'une recette existante par son foyer. On ne crée plus de recette dans l'appli
+ * (DECISIONS 056) ; les ingrédients peuvent être pré-remplis depuis une photo (IA).
  */
 export function RecipeForm({
   initial,
   aiAvailable = false,
   onSaved,
 }: {
-  initial?: RecipeFormInitial;
+  initial: RecipeFormInitial;
   aiAvailable?: boolean;
   /** Sans ce rappel, on revient à la liste des aliments après l'enregistrement. */
   onSaved?: (id: string) => void;
@@ -120,9 +120,9 @@ export function RecipeForm({
           .map((line) => line.trim())
           .filter(Boolean),
       };
-      const result = initial ? await updateRecipeAction(initial.id, input) : await createRecipeAction(input);
+      const result = await updateRecipeAction(initial.id, input);
       if (result?.error) return setError(result.fieldErrors?.items ?? result.fieldErrors?.name ?? result.error);
-      const id = initial?.id ?? (result as { id?: string } | null)?.id;
+      const id = initial.id;
       if (onSaved && id) onSaved(id);
       else router.push("/recipes");
     });
