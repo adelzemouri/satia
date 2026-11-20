@@ -22,7 +22,8 @@ const nextConfig: NextConfig = {
     // Photos du catalogue : sans cela, Vercel les sert avec `max-age=0` et le navigateur redemande
     // chaque photo à chaque visite. Une semaine : une photo retouchée sous le même nom finit par passer.
     {
-      source: "/recipes/:path*",
+      // Fichiers .webp seulement : `:path*` toucherait aussi la page /recipes elle-même.
+      source: "/recipes/:file(.+\\.webp)",
       headers: [{ key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=2592000" }],
     },
     {
