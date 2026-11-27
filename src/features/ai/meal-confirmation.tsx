@@ -164,6 +164,7 @@ export function MealConfirmation({
           aiLabel: line.aiLabel,
           dish: line.dish ?? null,
           proposal: line.proposal,
+          verified: (checksByKey.get(line.key) ?? []).includes("unrelated") && reviewed[line.key] === signature(line),
         })),
       });
       if (result?.error) setError(result.error);

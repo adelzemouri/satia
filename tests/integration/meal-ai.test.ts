@@ -165,6 +165,46 @@ describe("saisie IA", () => {
     expect(viaAi.items[0]!.food!.id).toBe(white.id);
   });
 
+  it("deux « Vérifié » sur le même aliment proposé en font une habitude, sans plus d'alerte", async () => {
+    const userId = await setupUser();
+    const coffee = await firstFood(userId, "café non instantané non sucré");
+    setProviderForTests(
+      scripted({ items: [{ name: "café allongé maison", grams: 200, confidence: 0.8 }] }, { choices: [] }),
+    );
+    const draft = await analyzeText(userId, { text: "un café", method: "text" });
+    const line = draft.items[0]!;
+    const save = (verified: boolean | undefined) =>
+      saveMeal(userId, {
+        date: todayIso(),
+        slot: "breakfast",
+        method: "text",
+        photoId: null,
+        items: [
+          {
+            foodId: coffee.id,
+            estimate: null,
+            quantity: 200,
+            unit: "g",
+            aiLabel: line.aiLabel,
+            proposal: { foodId: coffee.id, grams: 200 },
+            verified,
+          },
+        ],
+      });
+    // Sans « Vérifié », une proposition gardée telle quelle n'apprend rien.
+    await save(undefined);
+    expect(await db().select().from(foodCorrections)).toHaveLength(0);
+
+    await save(true);
+    await save(true);
+    expect(await db().select().from(foodCorrections)).toHaveLength(2);
+    // L'IA n'est plus consultée pour choisir l'aliment de ce nom.
+    setProviderForTests(scripted({ items: [{ name: "café allongé maison", grams: 250, confidence: 0.8 }] }));
+    const again = await analyzeText(userId, { text: "un café allongé", method: "text" });
+    expect(again.items[0]).toMatchObject({ fromHabit: true });
+    expect(again.items[0]!.food!.id).toBe(coffee.id);
+  });
+
   it("des pièces comptées par l'IA s'affichent en pièces si l'aliment a un poids à la pièce", async () => {
     const userId = await setupUser();
     const [croque] = await searchFoods(userId, "croque-monsieur");
