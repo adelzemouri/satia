@@ -307,6 +307,8 @@ export const saveMealSchema = z.object({
         aiLabel: z.string().max(80).nullable(),
         dish: z.string().trim().min(1).max(60).nullish(),
         proposal: z.object({ foodId: z.uuid().nullable(), grams: z.number().positive().max(10_000) }).nullable(),
+        /** L'utilisateur a confirmé (« Vérifié ») l'aliment proposé malgré l'alerte « ne correspond pas ». */
+        verified: z.boolean().optional(),
       }),
     )
     .min(1)
@@ -334,8 +336,14 @@ export async function saveMeal(userId: string, input: SaveMealInput): Promise<nu
       };
       if (item.foodId) {
         const { food, grams, nutrients } = await resolveEntry(userId, item.foodId, item.quantity, item.unit);
+        // Une confirmation compte comme une correction : deux fois le même nom vers le même
+        // aliment, et l'habitude évite de redemander (et l'appel au LLM pour le choisir).
+        const learned =
+          item.proposal &&
+          (isCorrection(item.proposal, { foodId: food.id, grams }) ||
+            (item.verified === true && item.proposal.foodId === food.id));
         const correction =
-          item.aiLabel && item.proposal && isCorrection(item.proposal, { foodId: food.id, grams })
+          item.aiLabel && item.proposal && learned
             ? { userId, aiLabel: item.aiLabel, aiGrams: item.proposal.grams, foodId: food.id, grams }
             : null;
         const label = food.brand ? `${food.nameFr} (${food.brand})` : food.nameFr;

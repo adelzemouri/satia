@@ -715,6 +715,22 @@ Pour ajouter une décision : copier le modèle en bas de page, prendre le numér
 
 ---
 
+## 057 — « Vérifié » apprend comme une correction
+
+- **Date** : 2026-11-27 · **Statut** : adoptée
+- **Contexte** : l'alerte « ne correspond pas tout à fait » repose sur des listes de mots ; l'IA
+  trouve toujours une nouvelle formulation (« café, infusion » après « café, infusé »), et
+  « Vérifié » ne laissait aucune trace : la même alerte revenait au repas suivant.
+- **Décision** : une ligne confirmée par « Vérifié » malgré cette alerte, sans changer d'aliment,
+  est enregistrée dans `food_corrections` comme une correction. Deux confirmations du même nom
+  vers le même aliment en font une habitude (règle existante de `correctionRules`) : plus
+  d'alerte, plus d'appel au LLM pour choisir l'aliment, et le texte seul se résout sans IA.
+- **Conséquences** : deux « Vérifié » distraits sur un mauvais aliment l'installent ; il faut
+  alors le changer plus souvent qu'on ne l'a confirmé pour que l'autre l'emporte. Les alertes
+  « sec » et « lourd » ne sont pas concernées.
+
+---
+
 ## Modèle
 
 ```markdown
