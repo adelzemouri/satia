@@ -66,9 +66,14 @@ describe("contrôle des aliments proposés par l'IA", () => {
     expect(line("lait de vache demi-écrémé", milk, 100, 47)).toEqual([]);
     const coffee = { nameFr: "Café, non instantané, non sucré, prêt à boire", kcal: 1 };
     expect(line("café, infusé", coffee, 150, 2)).toEqual([]);
+    // L'IA dit aussi « café, infusion » (le nom plutôt que l'adjectif).
+    expect(line("café, infusion", coffee, 200, 14)).toEqual([]);
     // Le reste du nom compte toujours : un lait de chèvre, du café moulu.
     expect(line("lait de chèvre", milk, 100, 47)).toEqual(["unrelated"]);
     expect(line("café, infusé", { nameFr: "Café, moulu", kcal: 300 }, 150, 450)).toContain("unrelated");
+    expect(line("café, infusion", { nameFr: "Café, moulu", kcal: 300 }, 200, 600)).toContain("unrelated");
+    // Une infusion seule reste une tisane, pas un café.
+    expect(line("infusion", coffee, 200, 2)).toEqual(["unrelated"]);
     // Un thé infusé n'est pas des feuilles de thé : « infusé » n'est pas ignoré partout.
     expect(line("thé infusé", { nameFr: "Thé noir, en feuilles", kcal: 300 }, 250, 750)).toContain("unrelated");
   });
